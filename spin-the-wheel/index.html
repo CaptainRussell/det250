@@ -7,20 +7,15 @@
 <title>Spin the Wheel</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <link rel="stylesheet" href="../shared/det250.css">
-<link rel="stylesheet" href="../shared/instructor.css?v=2">
+<link rel="stylesheet" href="../shared/instructor.css?v=3">
 <style>
 .cols { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 4px; }
 @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
 .rail { display: grid; gap: 18px; min-width: 0; }
 
 /* ---------- wheel ---------- */
-.wheelbox { position: relative; display: grid; place-items: center; padding: 6px 0 2px; }
-canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
-.ptr {
-  position: absolute; top: -2px; left: 50%; transform: translateX(-50%); z-index: 1;
-  width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent;
-  border-top: 17px solid var(--d250-gold); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35));
-}
+.wheelbox { display: grid; place-items: center; padding: 6px 0 2px; }
+.wheelbox .d250-wheelstage { max-width: 300px; }
 .readout { margin: 12px 0 12px; text-align: center; min-height: 52px; display: grid; align-content: center; gap: 2px; }
 .roface { display: grid; place-items: center; margin-bottom: 8px; }
 .readout.landed .roface { animation: pop .5s var(--d250-ease); }
@@ -106,12 +101,10 @@ label.label { cursor: pointer; }
 .seat.out .nm { text-decoration: line-through; }
 .seat.called .nm { opacity: .6; }
 .seat.called::after { content: "\2713"; position: absolute; top: 2px; right: 6px; font-size: 11px; color: var(--d250-gold); font-weight: 800; }
-.seat.pick { outline: 3px solid var(--d250-gold); outline-offset: 1px; }
-.arranging .seat { border-style: dashed; }
 /* drag and drop: drag a student onto another seat to swap (or onto an open seat to move) */
 .seat.taken { user-select: none; -webkit-user-select: none; }
-.arranging .seat { touch-action: none; }
-.arranging .seat.taken { cursor: grab; }
+.seat.taken { cursor: grab; -webkit-touch-callout: none; }
+.seat.lifted { outline: 3px solid var(--d250-gold); outline-offset: 1px; }
 .seat.dragging { opacity: .35; }
 .seat.ghost { position: fixed; left: 0; top: 0; z-index: 90; margin: 0; pointer-events: none; box-shadow: 0 12px 28px rgba(0,0,0,.45); border-color: var(--d250-gold); border-style: solid; }
 body.dnd, body.dnd * { cursor: grabbing !important; }
@@ -122,6 +115,9 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
 .seat.pending .no { color: var(--d250-faint); }
 .seat.rolling { background: var(--d250-gold-bg); border-color: var(--d250-gold); }
 .seat.rolling .nm { color: var(--d250-gold); }
+.seat.slowing { box-shadow: 0 0 0 2px var(--d250-gold), 0 0 18px color-mix(in srgb, var(--d250-gold) 45%, transparent); }
+.room.rerolling .front { animation: drum .5s ease-in-out infinite alternate; }
+@keyframes drum { to { background: var(--d250-gold); } }
 .seat.flash { animation: land .6s var(--d250-ease); }
 @keyframes land { 0% { transform: scale(.88); background: var(--d250-gold); border-color: var(--d250-gold); } 100% { transform: scale(1); } }
 
@@ -131,13 +127,6 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
 }
 .dlstrip { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .dlstrip .chip { border-style: dashed; }
-.legend { display: flex; gap: 8px 16px; flex-wrap: wrap; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--d250-line); font-size: 12.5px; color: var(--d250-soft); }
-.legend span { display: flex; align-items: center; gap: 6px; }
-.legend i { width: 12px; height: 12px; border-radius: 3px; display: block; }
-.sw-open { background: var(--d250-surface-2); border: 1px solid var(--d250-line); }
-.sw-taken { background: color-mix(in srgb, var(--d250-blue) 14%, var(--d250-surface)); border: 1px solid var(--d250-blue); }
-.sw-called { background: var(--d250-gold); }
-.sw-out { background: var(--d250-surface-2); border: 1px dotted var(--d250-faint); }
 .step-hd-tally .tally { margin-left: auto; }
 .modebar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
@@ -185,7 +174,7 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
           <label>Seats right of aisle <input type="number" id="nRight" min="0" max="8"></label>
         </div>
         <div class="panel-bd">
-          <p class="hint" style="margin:0">Set the room to match your classroom. Everyone is seated from the front automatically; on step 2 you can move seats, reroll all seat assignments and save the chart.</p>
+          <p class="hint" style="margin:0">Set the room to match your classroom. Everyone is seated from the front automatically; on step 2 you can drag students between seats, reroll all seat assignments and save the chart.</p>
         </div>
       </section>
     </div>
@@ -207,8 +196,7 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
         <div class="panel-hd"><span class="label">Wheel Spin</span><span class="label" id="poolNote"></span></div>
         <div class="panel-bd">
           <div class="wheelbox">
-            <div class="ptr"></div>
-            <canvas id="wheel" width="544" height="544" role="img" aria-label="Name wheel"></canvas>
+            <div class="d250-wheelstage"><div class="d250-needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Name wheel"></canvas></div>
           </div>
           <div class="readout" id="readout" aria-live="polite">
             <div class="roface" id="roFace" hidden></div>
@@ -240,7 +228,7 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
         </div>
         <ul class="rlist" id="rlist"></ul>
         <div class="panel-bd" style="border-top:1px solid var(--d250-line);padding-top:10px;padding-bottom:12px">
-          <p class="hint" style="margin:0">Click a name, or their seat, to mark them absent (out of the draw). Click again to bring them back.</p>
+          <p class="hint" style="margin:0">Click a name, or their seat, to mark them absent (out of the draw). Click again to bring them back. Drag a seat onto another seat to move or swap students.</p>
         </div>
       </section>
     </div>
@@ -249,7 +237,6 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
       <div class="panel-hd noprint">
         <span class="label">Room &middot; <span id="seatCount"></span> seats</span>
         <div class="modebar">
-          <button class="btn small" id="arrange" aria-pressed="false" title="Drag a student to another seat, or click two seats to swap them">Move seats</button>
           <button class="btn small" id="shuffle">Reroll all seat assignments</button>
           <button class="btn small" id="saveChart" title="Remember this seating as the assigned chart">Save chart</button>
           <button class="btn small" id="restore" title="Put everyone back in the saved chart">Restore chart</button>
@@ -261,13 +248,6 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
         <div class="rows" id="rows"></div>
         <div class="front">Front &middot; Instructor &amp; screen</div>
         <div class="dlstrip" id="dlstrip" hidden></div>
-        <div class="legend">
-          <span><i class="sw-open"></i> Open</span>
-          <span><i class="sw-taken"></i> Seated</span>
-          <span id="legendCalled"><i class="sw-called"></i> Called</span>
-          <span><i class="sw-out"></i> Absent</span>
-          <span class="noprint" id="modeHint" style="margin-left:auto">Click a seat to mark that student absent</span>
-        </div>
       </div>
     </section>
   </div>
@@ -285,12 +265,12 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
 
 <script src="../shared/class-roster.js"></script>
 <script src="../shared/cadet-groups.js"></script>
-<script src="../shared/instructor.js?v=2"></script>
+<script src="../shared/instructor.js?v=3"></script>
 <script>
 "use strict";
 /* ------------------------------------------------------------------ model */
 const KEY = "d250-spin-wheel-v1";
-const SPIN_MIN = 800, SPIN_MAX = 6000, SPIN_STEP = 400, SPIN_DEFAULT = 3200;
+const SPIN_MIN = 2000, SPIN_MAX = 8000, SPIN_STEP = 400, SPIN_DEFAULT = 4200;
 const clampSpin = ms => Math.min(SPIN_MAX, Math.max(SPIN_MIN, Math.round(ms / SPIN_STEP) * SPIN_STEP));
 const clampN = (v, lo, hi, d) => { v = Math.round(+v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
 
@@ -306,7 +286,7 @@ function parseLines(text){
 }
 function fresh(){
   return { roster: D250Class.load().map(name => ({ name, dl: false, out: false })),
-           rows: 5, left: 4, right: 2, seats: {}, chart: null, history: [], called: [], spinMs: SPIN_DEFAULT, noRepeat: true };
+           rows: 5, left: 4, right: 2, seats: {}, chart: null, history: [], called: [], spinMs: SPIN_DEFAULT, noRepeat: true, order: [] };
 }
 function load(){
   try{
@@ -316,6 +296,7 @@ function load(){
     s.rows = clampN(s.rows, 1, 12, 5); s.left = clampN(s.left, 0, 8, 4); s.right = clampN(s.right, 0, 8, 2);
     s.spinMs = clampSpin(s.spinMs || SPIN_DEFAULT);
     s.noRepeat = s.noRepeat !== false;
+    s.order = Array.isArray(s.order) ? s.order : [];
     return s;
   }catch(e){ return null; }
 }
@@ -361,10 +342,19 @@ function reconcile(){
 let unseatedCount = reconcile();
 
 const seatOfName = name => seatIds.find(id => state.seats[id] === name);
-/* Every seated student in seat order, so the highlight sweeps the room.
+/* Every seated student, in the wheel's own random order (state.order), which is
+   reshuffled after every spin so the wheel never follows the seat numbers.
    ok: present and not called yet (can be landed on). */
+function shuffleOrder(){
+  const a = seatIds.filter(id => state.seats[id]).map(id => state.seats[id]);
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  state.order = a;
+}
 function wheelOrder(){
-  return seatIds.filter(id => state.seats[id]).map(id => {
+  const seated = seatIds.filter(id => state.seats[id]);
+  const rank = new Map(state.order.map((n, i) => [n, i]));
+  if (seated.some(id => !rank.has(state.seats[id]))){ shuffleOrder(); state.order.forEach((n, i) => rank.set(n, i)); }
+  return seated.sort((a, b) => rank.get(state.seats[a]) - rank.get(state.seats[b])).map(id => {
     const p = person(state.seats[id]);
     return { name: p.name, seat: id, ok: !p.out && !state.called.includes(p.name) };
   });
@@ -382,7 +372,7 @@ const seatLabel = id => "Seat " + seatNo[id] + " (row " + id.match(/r(\d+)/)[1] 
 
 /* ------------------------------------------------------------------ view */
 const $ = id => document.getElementById(id);
-let arranging = false, pick = null;
+
 
 function render(){
   const per = state.left + state.right;
@@ -395,7 +385,6 @@ function render(){
     html += '</div>';
   }
   $("rows").innerHTML = html;
-  $("room").classList.toggle("arranging", arranging);
   $("roomEmpty").hidden = state.roster.length > 0;
 
   const dl = state.roster.filter(p => p.dl);
@@ -427,10 +416,6 @@ function render(){
   const nIn = inClass().length;
   $("roomSum").textContent = seatIds.length + " seats · " + nIn + " in the room" + (unseatedCount ? " · " + unseatedCount + " without a seat" : "");
   $("nRows").value = state.rows; $("nLeft").value = state.left; $("nRight").value = state.right;
-  $("legendCalled").hidden = !state.noRepeat;
-  $("arrange").setAttribute("aria-pressed", String(arranging));
-  $("arrange").textContent = arranging ? "Done moving" : "Move seats";
-  $("modeHint").textContent = arranging ? "Drag a student to another seat, or click two seats to swap them" : "Click a seat to mark that student absent";
   const ms = clampSpin(state.spinMs);
   $("spinDur").textContent = (ms / 1000).toFixed(1) + "s";
   $("spinShorter").disabled = ms <= SPIN_MIN;
@@ -440,7 +425,7 @@ function render(){
 }
 function seatHTML(r, s){
   const id = "r" + r + "s" + s, who = state.seats[id], p = who && person(who);
-  const cls = ["seat", who ? "taken" : "", p && p.out ? "out" : "", who && state.called.includes(who) ? "called" : "", pick === id ? "pick" : ""].join(" ");
+  const cls = ["seat", who ? "taken" : "", p && p.out ? "out" : "", who && state.called.includes(who) ? "called" : ""].join(" ");
   return '<button class="' + cls + '" data-seat="' + id + '" aria-label="' + seatLabel(id) + (who ? ", " + esc(who) + (p.out ? ", absent" : "") : ", open") + '">' +
          '<span class="no">' + seatNo[id] + '</span>' + (who ? D250Face.html(who, 34) : '') + '<span class="nm"' + (who ? ' title="' + esc(who) + '"' : '') + '>' + (who ? esc(shortName(who)) : "") + '</span></button>';
 }
@@ -455,41 +440,14 @@ const idleWhere = () => !state.roster.length ? "Add your roster to start" : !pre
   : !state.noRepeat || drawPool().length ? "Spin to call on a student" : "Everyone has been called. Spin to start a new round.";
 
 /* ----------------------------------------------------------------- wheel */
-const cv = $("wheel"), cx = cv.getContext("2d");
+const cv = $("wheel");
 let angle = 0;
-const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const FONT = getComputedStyle(document.body).fontFamily;
 
+/* the shared wheel (shared/instructor.js): same look and spin as Make the Call */
 function drawWheel(rot, list){
   const slots = list || wheelSlots();
-  const R = cv.width / 2;
-  cx.clearRect(0, 0, cv.width, cv.height);
-  const line = css("--d250-line-strong"), surf = css("--d250-surface"), surf2 = css("--d250-surface-2");
-  const ink = css("--d250-ink"), faint = css("--d250-faint"), gold = css("--d250-gold"), card = css("--d250-cardinal");
-  if (!slots.length){
-    cx.beginPath(); cx.arc(R, R, R - 8, 0, Math.PI * 2);
-    cx.fillStyle = surf2; cx.fill(); cx.strokeStyle = line; cx.lineWidth = 3; cx.stroke();
-    cx.fillStyle = faint; cx.font = "700 30px " + FONT; cx.textAlign = "center"; cx.textBaseline = "middle";
-    cx.fillText(!state.roster.length ? "ADD YOUR CLASS" : state.noRepeat && present().length ? "ROUND COMPLETE" : "NO ONE SEATED", R, R);
-    return;
-  }
-  const seg = (Math.PI * 2) / slots.length, small = slots.length > 20;
-  slots.forEach((slot, i) => {
-    const a0 = rot + i * seg - Math.PI / 2 - seg / 2;
-    cx.beginPath(); cx.moveTo(R, R); cx.arc(R, R, R - 8, a0, a0 + seg); cx.closePath();
-    cx.fillStyle = slot.ok ? (i % 2 ? surf : surf2) : surf2; cx.fill();
-    cx.globalAlpha = slot.ok ? 1 : .4;
-    cx.strokeStyle = line; cx.lineWidth = 1; cx.stroke();
-    cx.save(); cx.translate(R, R); cx.rotate(a0 + seg / 2);
-    cx.fillStyle = slot.ok ? ink : faint;
-    cx.font = "700 " + (small ? 16 : 20) + "px " + FONT;
-    cx.textAlign = "right"; cx.textBaseline = "middle";
-    cx.fillText(seatNo[slot.seat] + "  " + shortName(slot.name).toUpperCase(), R - 20, 0, R * .72);
-    cx.restore(); cx.globalAlpha = 1;
-  });
-  cx.beginPath(); cx.arc(R, R, R - 8, 0, Math.PI * 2); cx.strokeStyle = gold; cx.lineWidth = 4; cx.stroke();
-  cx.beginPath(); cx.arc(R, R, 32, 0, Math.PI * 2); cx.fillStyle = card; cx.fill();
-  cx.strokeStyle = surf; cx.lineWidth = 5; cx.stroke();
+  D250Wheel.draw(cv, { labels: slots.map(sl => shortName(sl.name)), rot, dim: i => !slots[i].ok,
+    empty: !state.roster.length ? "Add your class" : state.noRepeat && present().length ? "Round complete" : "No one seated" });
 }
 
 /* ------------------------------------------------------------------ spin */
@@ -497,9 +455,8 @@ let spinning = false;
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clearChase = () => document.querySelectorAll(".seat.chase").forEach(el => el.classList.remove("chase"));
 
-/* The wheel turns and the highlight walks the chart at the same time. The
-   wheel's slots are in seat order, so the name under the pointer is the seat
-   lit up in the room, all the way to the stop. */
+/* The wheel turns and the seat under the needle lights up in the room as it
+   goes, all the way to the stop. */
 function spin(){
   if (spinning) return;
   /* Don't repeat students: once everyone has been called, start a new round */
@@ -507,50 +464,28 @@ function spin(){
   const slots = wheelSlots();
   const live = slots.map((s, i) => s.ok ? i : -1).filter(i => i >= 0);
   if (!live.length) return;
-  if (arranging){ arranging = false; pick = null; render(); }
   const pickI = live[Math.floor(Math.random() * live.length)], chosen = slots[pickI];
-  const n = slots.length, seg = (Math.PI * 2) / n, dur = clampSpin(state.spinMs);
   $("readout").classList.add("live"); $("readout").classList.remove("landed");
   if (reduced()){ land(chosen); return; }
   spinning = true; $("spin").disabled = true;
-  /* Stop anywhere inside the winner's slice, not dead center. The spin has two
-     parts: a fast spin that slows down, then a slow crawl over the last slice or
-     two that keeps creeping before it stops. The two parts join at the same
-     speed, so there is no jerk. */
-  const turns = Math.max(2, Math.round(dur / 560));
-  const offset = (Math.random() - .5) * seg * .86;
-  const target = -(Math.PI * 2 * turns) - pickI * seg + offset;
-  const start = performance.now(), from = angle % (Math.PI * 2);
-  const total = from - target;                                   /* radians to travel */
-  const crawlMs = Math.min(2600, Math.max(400, dur * .45)), fastMs = dur - crawlMs;
-  const crawl = Math.min(total * .25, seg * (1 + Math.random() * .8));  /* radians in the crawl */
-  const fast = total - crawl;
-  let lin = 3 * crawl * fastMs / crawlMs;                        /* matches the crawl's starting speed */
-  if (lin > fast) lin = fast;
-  const dist = t => {                                            /* t in ms since start */
-    if (t < fastMs){ const u = t / fastMs; return lin * u + (fast - lin) * (1 - Math.pow(1 - u, 4)); }
-    const u = Math.min(1, (t - fastMs) / crawlMs);
-    return fast + crawl * (1 - Math.pow(1 - u, 3));
-  };
   let shown = -1;
-  (function frame(now){
-    const t = Math.min(1, (now - start) / dur);
-    angle = from - dist(now - start);
-    drawWheel(angle, slots);
-    const i = t < 1 ? (Math.round(-angle / seg) % n + n) % n : pickI;
-    if (i !== shown){
+  D250Wheel.spin({ n: slots.length, pick: pickI, from: angle, dur: clampSpin(state.spinMs),
+    onFrame(rot, i){
+      angle = rot; drawWheel(angle, slots);
+      if (i === shown) return;
       shown = i; clearChase();
       const el = document.querySelector('[data-seat="' + slots[i].seat + '"]');
       if (el) el.classList.add("chase");
       say(shortName(slots[i].name).toUpperCase(), "Seat " + seatNo[slots[i].seat], slots[i].name);
-    }
-    if (t < 1) requestAnimationFrame(frame); else land(chosen);
-  })(start);
+    },
+    onDone(rot){ angle = rot; drawWheel(angle, slots); setTimeout(() => land(chosen), 450); }
+  });
 }
 function land(chosen){
   spinning = false;
   angle = angle % (Math.PI * 2);
   clearChase();
+  shuffleOrder();           /* new wheel order for the next spin */
   if (state.noRepeat){
     if (!state.called.includes(chosen.name)) state.called.push(chosen.name);
     state.history.push({ name: chosen.name });
@@ -580,51 +515,74 @@ $("spinShorter").addEventListener("click", () => nudgeSpin(-SPIN_STEP));
 $("spinLonger").addEventListener("click", () => nudgeSpin(SPIN_STEP));
 $("print").addEventListener("click", () => window.print());
 
-$("arrange").addEventListener("click", () => { if (spinning) return; arranging = !arranging; pick = null; render(); });
-/* Reroll all seat assignments: deal everyone a new random seat, then reveal
-   it seat by seat (#1 first). Each seat flickers through names like a slot
-   reel and locks on its new student. Reduced motion shows the result at once. */
+/* Reroll all seat assignments, with a build-up:
+   1. Every seat goes blank, then the whole room starts rolling names at once,
+      speeding up like a drum roll.
+   2. Seat by seat (#1 first), each reel slows down, ticks over a few last
+      names and locks on its new student with a flash.
+   3. The last seat holds a little longer, then the whole room flashes.
+   Reduced motion shows the result at once. */
 $("shuffle").addEventListener("click", () => {
   if (spinning || !inClass().length) return;
-  if (arranging){ arranging = false; pick = null; }
   const names = inClass().map(p => p.name);
   for (let i = names.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
   state.seats = {}; seatIds.forEach((id, i) => { state.seats[id] = names[i] || null; });
   unseatedCount = reconcile();
+  shuffleOrder();
   render();
   const done = () => say("Ready", "New seats assigned. Save chart to keep them.");
   const order = seatIds.filter(id => state.seats[id]);
   if (reduced() || order.length < 2){ done(); return; }
   spinning = true; $("spin").disabled = true;
   document.querySelectorAll(".modebar .btn").forEach(b => { b.dataset.wasDisabled = b.disabled ? "1" : ""; b.disabled = true; });
-  say("Rerolling…", "Assigning new seats", null);
-  const ROLL = 750, STEP = Math.max(45, Math.min(150, 2600 / order.length)), FLICK = 75;
-  const reel = (el, n) => {
-    el.querySelector(".nm").textContent = shortName(n);
+  say("Rerolling…", "Shuffling the whole room", null);
+  const n = order.length;
+  const BUILD = 1600;                                         /* everyone rolling, speeding up */
+  const STEP = Math.max(260, Math.min(650, 8000 / n));        /* time between seats locking */
+  const SLOW = Math.min(1100, STEP * 2.2);                    /* each reel slows over this long */
+  const LAST = 900;                                           /* extra hold before the final seat */
+  const lockAt = k => BUILD + k * STEP + (k === n - 1 ? LAST : 0);
+  const reel = (el, nm) => {
+    el.querySelector(".nm").textContent = shortName(nm);
     const f = el.querySelector(".d250-face");
-    if (f) f.outerHTML = D250Face.html(n, 34); else el.querySelector(".no").insertAdjacentHTML("afterend", D250Face.html(n, 34));
+    if (f) f.outerHTML = D250Face.html(nm, 34); else el.querySelector(".no").insertAdjacentHTML("afterend", D250Face.html(nm, 34));
   };
-  /* hide the new seats until their turn, so the reveal is not spoiled */
+  const randName = () => names[Math.floor(Math.random() * names.length)];
+  /* hide the new seats so the reveal is not spoiled */
   const els = order.map(id => document.querySelector('[data-seat="' + id + '"]'));
   els.forEach(el => { if (!el) return; el.classList.add("pending"); el.querySelector(".nm").textContent = ""; const f = el.querySelector(".d250-face"); if (f) f.remove(); });
+  $("room").classList.add("rerolling");
   const t0 = performance.now(), locked = new Set(), lastFlick = {};
   (function frame(now){
-    order.forEach((id, k) => {
-      const el = els[k]; if (!el || locked.has(k)) return;
-      const start = t0 + k * STEP;
-      if (now >= start + ROLL){
-        locked.add(k); el.classList.remove("rolling"); reel(el, state.seats[id]);
+    const t = now - t0;
+    els.forEach((el, k) => {
+      if (!el || locked.has(k)) return;
+      /* seats join the roll one after another during the build-up */
+      const join = (k / n) * BUILD * .6;
+      if (t < join) return;
+      const left = lockAt(k) - t;
+      if (left <= 0){
+        locked.add(k); el.classList.remove("rolling", "slowing"); reel(el, state.seats[order[k]]);
         el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650);
-        say(shortName(state.seats[id]).toUpperCase(), "Seat " + seatNo[id], state.seats[id]);
-      } else if (now >= start && (!lastFlick[k] || now - lastFlick[k] >= FLICK)){
+        say(shortName(state.seats[order[k]]).toUpperCase(), "Seat " + seatNo[order[k]] + " · " + locked.size + " of " + n, state.seats[order[k]]);
+        return;
+      }
+      /* flicker speed: a fast blur while waiting, slowing to a tick-tick-tick near the lock */
+      const build = Math.min(1, t / BUILD);
+      let gap = 140 - 85 * build;                               /* 140ms down to 55ms: the drum roll */
+      if (left < SLOW){ const u = 1 - left / SLOW; gap = 55 + 320 * u * u; el.classList.add("slowing"); }
+      if (!lastFlick[k] || now - lastFlick[k] >= gap){
         if (!lastFlick[k]){ el.classList.remove("pending"); el.classList.add("rolling"); }
-        lastFlick[k] = now; reel(el, names[Math.floor(Math.random() * names.length)]);
+        lastFlick[k] = now; reel(el, randName());
       }
     });
-    if (locked.size < order.length) return requestAnimationFrame(frame);
+    if (locked.size < n) return requestAnimationFrame(frame);
+    $("room").classList.remove("rerolling");
+    els.forEach((el, k) => { if (el) setTimeout(() => { el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650); }, 120 + k * 25); });
     spinning = false;
     document.querySelectorAll(".modebar .btn").forEach(b => { b.disabled = b.dataset.wasDisabled === "1"; });
     $("spin").disabled = present().length === 0;
+    drawWheel(angle);
     done();
   })(t0);
 });
@@ -655,21 +613,31 @@ $("rows").addEventListener("click", e => {
   const btn = e.target.closest("[data-seat]");
   if (!btn || spinning || dropped) return;
   const id = btn.dataset.seat;
-  if (arranging){
-    if (!pick){ pick = id; render(); return; }
-    if (pick !== id){ const a = state.seats[pick]; state.seats[pick] = state.seats[id]; state.seats[id] = a; }
-    pick = null; render(); return;
-  }
   const p = state.seats[id] && person(state.seats[id]);
   if (p) toggleOut(p);
 });
 /* Drag and drop: drag a seated student onto another seat. A taken seat swaps,
-   an open seat just moves them. Works with a mouse any time; with touch it works
-   in Move seats mode (outside it, a finger on a seat still scrolls the page). */
+   an open seat just moves them. Mouse: press and drag. Touch: press and hold
+   a moment, then drag (a quick swipe still scrolls the page). */
 let drag = null, dropped = false;
 function seatAt(x, y){ const el = document.elementFromPoint(x, y); return el && el.closest("#rows [data-seat]"); }
+function lift(x, y){
+  const r = drag.el.getBoundingClientRect();
+  drag.on = true; drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+  drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost"); drag.ghost.removeAttribute("data-seat");
+  drag.ghost.style.width = r.width + "px"; drag.ghost.style.height = r.height + "px";
+  document.body.appendChild(drag.ghost); drag.el.classList.add("dragging"); document.body.classList.add("dnd");
+  moveGhost(x, y);
+  try { if (drag.touch && navigator.vibrate) navigator.vibrate(15); } catch (e) {}
+}
+function moveGhost(x, y){
+  drag.ghost.style.transform = `translate(${x - drag.dx}px, ${y - drag.dy}px) rotate(-2deg)`;
+  const t = seatAt(x, y);
+  document.querySelectorAll("#rows .seat").forEach(el => el.classList.toggle("over", el === t && el !== drag.el));
+}
 function endDrag(e, cancel){
   if (!drag) return;
+  clearTimeout(drag.timer);
   if (drag.on){
     const t = cancel ? null : seatAt(e.clientX, e.clientY);
     drag.ghost.remove(); drag.el.classList.remove("dragging"); document.body.classList.remove("dnd");
@@ -679,7 +647,6 @@ function endDrag(e, cancel){
       const a = drag.id, b = t.dataset.seat, who = state.seats[a];
       state.seats[a] = state.seats[b]; state.seats[b] = who;
       if (!state.seats[a]) delete state.seats[a];
-      pick = null;
       say("Ready", shortName(who) + " moved to " + seatLabel(b) + (state.seats[a] ? ", swapped with " + shortName(state.seats[a]) : ""), who);
       render();
       const el = document.querySelector('#rows [data-seat="' + b + '"]');
@@ -691,24 +658,23 @@ function endDrag(e, cancel){
 document.addEventListener("pointerdown", e => {
   const el = e.target.closest("#rows .seat.taken[data-seat]");
   if (!el || spinning || e.button > 0) return;
-  drag = { id: el.dataset.seat, el, x: e.clientX, y: e.clientY, on: false, pid: e.pointerId };
+  drag = { id: el.dataset.seat, el, x: e.clientX, y: e.clientY, on: false, pid: e.pointerId, touch: e.pointerType === "touch" };
+  if (drag.touch) drag.timer = setTimeout(() => { if (drag && !drag.on) lift(drag.x, drag.y); }, 320);
 });
 document.addEventListener("pointermove", e => {
   if (!drag || e.pointerId !== drag.pid) return;
   if (!drag.on){
     if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
-    const r = drag.el.getBoundingClientRect();
-    drag.on = true; drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
-    drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost"); drag.ghost.removeAttribute("data-seat");
-    drag.ghost.style.width = r.width + "px"; drag.ghost.style.height = r.height + "px";
-    document.body.appendChild(drag.ghost); drag.el.classList.add("dragging"); document.body.classList.add("dnd");
+    if (drag.touch){ clearTimeout(drag.timer); drag = null; return; }   /* a swipe: let the page scroll */
+    lift(e.clientX, e.clientY);
   }
   e.preventDefault();
-  drag.ghost.style.transform = `translate(${e.clientX - drag.dx}px, ${e.clientY - drag.dy}px) rotate(-2deg)`;
-  const t = seatAt(e.clientX, e.clientY);
-  document.querySelectorAll("#rows .seat").forEach(el => el.classList.toggle("over", el === t && el !== drag.el));
+  moveGhost(e.clientX, e.clientY);
   if (e.clientY < 60) scrollBy(0, -14); else if (e.clientY > innerHeight - 60) scrollBy(0, 14);
 });
+/* once a seat is lifted, a finger moves the seat, not the page */
+document.addEventListener("touchmove", e => { if (drag && drag.on) e.preventDefault(); }, { passive: false });
+document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("#rows .seat.taken")) e.preventDefault(); });
 document.addEventListener("pointerup", e => endDrag(e, false));
 document.addEventListener("pointercancel", e => endDrag(e, true));
 $("rlist").addEventListener("click", e => {

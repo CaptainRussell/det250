@@ -7,7 +7,7 @@
 <title>Make the Call</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <link rel="stylesheet" href="../shared/det250.css">
-<link rel="stylesheet" href="../shared/instructor.css?v=2">
+<link rel="stylesheet" href="../shared/instructor.css?v=3">
 <style>
 :root {
   --t1: #a06f00; --t2: #1f4e9c; --t3: #c8102e; --t4: #1f8a4c;
@@ -83,9 +83,6 @@ body.dnd .dropzone.over { box-shadow: 0 0 0 3px var(--d250-gold); background: co
 .rubric div { background: var(--d250-surface); border: 1px solid var(--d250-line); border-left: 3px solid var(--d250-gold); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--d250-soft); }
 .rubric b { font-size: 15px; display: block; color: var(--d250-ink); margin-bottom: 2px; }
 .spin { display: grid; grid-template-columns: minmax(240px, 400px) minmax(0, 1fr); gap: 22px; align-items: center; padding: 18px; }
-.wheelstage { position: relative; width: 100%; aspect-ratio: 1; }
-.wheelstage canvas { width: 100%; height: 100%; display: block; }
-.needle { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--d250-gold); filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); z-index: 2; }
 .speaker { font-size: 44px; font-weight: 800; line-height: 1.05; min-height: 56px; margin-top: 16px; }
 .speaker small { display: block; font-size: 15px; font-weight: 400; color: var(--d250-soft); margin-top: 6px; }
 .speaker.pop > span { display: inline-block; animation: pop .55s var(--d250-ease); }
@@ -227,7 +224,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
     <div class="cols" id="cols"></div>
 
     <div class="panel spin" style="--i:3">
-      <div class="wheelstage"><div class="needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Speaker wheel"></canvas></div>
+      <div class="d250-wheelstage"><div class="d250-needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Speaker wheel"></canvas></div>
       <div>
         <h2 class="sec">Speaker wheel</h2>
         <p class="hint">Pick a position, spin, and whoever it lands on makes that group's case to the board. Cadets who already spoke this round are left off until everyone in that group has had a turn.</p>
@@ -283,7 +280,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
 
 <script src="../shared/class-roster.js"></script>
 <script src="../shared/cadet-groups.js"></script>
-<script src="../shared/instructor.js?v=2"></script>
+<script src="../shared/instructor.js?v=3"></script>
 <script>
 const COLORS = ["var(--t1)", "var(--t2)", "var(--t3)", "var(--t4)"];
 const POS = [{ k: "A", n: "AGREE", c: "var(--agree)" }, { k: "N", n: "NEUTRAL", c: "var(--neutral)" }, { k: "D", n: "DISAGREE", c: "var(--disagree)" }];
@@ -546,25 +543,10 @@ function wheelNames(){
   const fresh = inn.filter(n => !S.spoke[n]);
   return fresh.length ? fresh : inn;
 }
+/* the shared wheel (shared/instructor.js), slices in team colors */
 function drawWheel(){
-  const cv = $("wheel"), x = cv.getContext("2d"), W = cv.width, R = W / 2 - 8, names = wheelNames();
-  const page = cssVar("--d250-page"), surf2 = cssVar("--d250-surface-2"), faint = cssVar("--d250-faint");
-  x.clearRect(0, 0, W, W); x.save(); x.translate(W / 2, W / 2);
-  if (!names.length){
-    x.beginPath(); x.arc(0, 0, R, 0, 7); x.fillStyle = surf2; x.fill(); x.fillStyle = faint; x.font = "700 40px " + FONT;
-    x.textAlign = "center"; x.fillText("No cadets here", 0, 12); x.restore(); return;
-  }
-  const seg = 2 * Math.PI / names.length;
-  names.forEach((n, i) => {
-    const a0 = angle + i * seg - Math.PI / 2;
-    x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, R, a0, a0 + seg); x.closePath();
-    x.fillStyle = cssVar(COLORS[teamOf(n)]); x.globalAlpha = i % 2 ? .8 : 1; x.fill(); x.globalAlpha = 1;
-    x.strokeStyle = page; x.lineWidth = 4; x.stroke();
-    x.save(); x.rotate(a0 + seg / 2); x.fillStyle = "#16161a"; x.textAlign = "right";
-    x.font = `800 ${Math.min(50, Math.max(22, 360 / names.length + 14))}px ${FONT}`;
-    x.fillText(n.length > 18 ? n.slice(0, 17) + "…" : n, R - 22, 14, R * .72); x.restore();
-  });
-  x.beginPath(); x.arc(0, 0, 40, 0, 7); x.fillStyle = page; x.fill(); x.restore();
+  const names = wheelNames();
+  D250Wheel.draw($("wheel"), { labels: names, rot: angle, color: i => cssVar(COLORS[teamOf(names[i])]), empty: "No cadets here" });
 }
 function renderSpinBtns(){
   $("spinBtns").innerHTML = POS.map(p => `<button class="btn ${p.k === spinPos ? "on" : ""}" style="--k:${p.c}" data-sp="${p.k}" aria-pressed="${p.k === spinPos}">${p.n}</button>`).join("");
@@ -572,19 +554,17 @@ function renderSpinBtns(){
 }
 $("spinBtn").onclick = () => {
   const names = wheelNames(); if (spinning || !names.length) return;
-  const seg = 2 * Math.PI / names.length, pick = Math.floor(Math.random() * names.length);
-  const target = -(pick * seg + seg / 2) + (Math.random() - .5) * seg * .6;
-  const start = angle, end = target - 2 * Math.PI * (Math.ceil((target - start) / (2 * Math.PI)) + 6 + Math.floor(Math.random() * 3));
-  const t0 = performance.now(), dur = pace(4200); spinning = true; $("speaker").innerHTML = ""; $("speaker").classList.remove("pop");
-  (function f(now){
-    const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - Math.pow(1 - t, 4); angle = start + (end - start) * e; drawWheel();
-    if (t < 1) return requestAnimationFrame(f);
-    spinning = false; angle = target; drawWheel();
+  const pick = Math.floor(Math.random() * names.length);
+  spinning = true; $("speaker").innerHTML = ""; $("speaker").classList.remove("pop");
+  D250Wheel.spin({ n: names.length, pick, from: angle, dur: pace(4200),
+    onFrame(rot){ angle = rot; drawWheel(); },
+    onDone(rot){
+    spinning = false; angle = rot % (2 * Math.PI); drawWheel();
     const n = names[pick], p = POS.find(p => p.k === spinPos), tm = teams()[teamOf(n)];
     S.spoke[n] = 1; save(); beep();
     $("speaker").innerHTML = `<span class="spface">${D250Face.html(n, 96)}</span><span style="color:${tm.c}">${esc(n)}</span><small>Speaks for <b style="color:${p.c}">${p.n}</b> · ${esc(tm.n)}</small>`;
     $("speaker").classList.add("pop");
-  })(t0);
+  } });
 };
 
 /* ---------- final reveal ---------- */
