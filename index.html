@@ -110,14 +110,14 @@ section{margin-top:26px}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Every Det 250 cadet and evaluator tool, one link. New tools show up here as they're added.</p>
+  <p class="source-line">Every Det 250 cadet, evaluator and instructor tool, one link. New tools show up here as they're added.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
 <script>
 /* =====================================================================
    TOOLS: add a new tool by dropping its folder in the repo and adding
-   one entry here. section: "cadets" or "evaluators". tone: card color.
+   one entry here. section: "cadets", "evaluators" or "instructors". tone: card color.
    icon: one of the keys in ICONS below.
    ===================================================================== */
 const TOOLS = [
@@ -128,15 +128,27 @@ const TOOLS = [
   {href:"org-chart/", name:"Org Chart", tag:"Wing", tone:"#2f7d32", icon:"tree", section:"cadets",
    blurb:"Fall 2026 250th Cadet Wing: cadre, wing staff, flights and the Flip Week view."},
   {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tag:"Evaluators", tone:"#a06f00", icon:"chart", section:"evaluators", locked:true,
-   blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."}
+   blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
+  {href:"spin-the-wheel/", name:"Spin the Wheel", tag:"Classroom", tone:"#b45309", icon:"wheel", section:"instructors",
+   blurb:"Seating chart and cold-call wheel. Add your class, set up the room, and spin to call on a student."},
+  {href:"make-the-call/", name:"Make the Call", tag:"Classroom", tone:"#0f766e", icon:"scale", section:"instructors",
+   blurb:"Agree, Neutral or Disagree: teams argue leadership statements to a board and split the prize pool."},
+  {href:"battle-buddy-recon/", name:"Battle Buddy Recon", tag:"OPSEC", tone:"#4a5a36", icon:"binoculars", section:"instructors",
+   blurb:"OPSEC practical exercise: pair cadets on a wheel, run the open-source recon clock, then brief out."},
+  {href:"practicum-adventure/", name:"Practicum Adventure", tag:"Classroom game", tone:"#6d28d9", icon:"dice", section:"instructors",
+   blurb:"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."}
 ];
-const SECTIONS = {cadets:["Cadet tools", "Open to everyone"], evaluators:["Evaluator tools", "Password required"]};
+const SECTIONS = {cadets:["Cadet tools", "Open to everyone"], evaluators:["Evaluator tools", "Password required"], instructors:["Instructor tools", "Classroom games and exercises"]};
 
 const ICONS = {
   stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/>',
   faces:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/>',
   tree:'<rect x="9" y="2.5" width="6" height="5" rx="1.2"/><rect x="2.5" y="16.5" width="6" height="5" rx="1.2"/><rect x="15.5" y="16.5" width="6" height="5" rx="1.2"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/>',
-  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z"/>',
+  binoculars:'<circle cx="6.5" cy="15.5" r="3.5"/><circle cx="17.5" cy="15.5" r="3.5"/><path d="M10 15.5h4M4 13l2-8h3l1 7M20 13l-2-8h-3l-1 7"/>',
+  dice:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/>'
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let i = 0;

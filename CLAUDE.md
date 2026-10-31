@@ -14,13 +14,19 @@
 ## Repo layout
 | Path | What |
 |---|---|
-| `index.html` | Hub page. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tag, tone, icon, section `cadets` or `evaluators`, locked, blurb). |
+| `index.html` | Hub page. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tag, tone, icon, section `cadets`, `evaluators` or `instructors`, locked, blurb). Hub sections: Cadet tools, Evaluator tools, Instructor tools. |
 | `shared/det250.css` | Det 250 bar styles and cross-page view transitions. |
 | `shared/det250-patch.png`, `det250-patch-icon.png` | Det 250 patch (transparent background) and favicon. |
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
 | `whos-that-cadet/` | Who's That Cadet! face/name flashcard drills, shadow mode, printable cards (`index.html`, `photos/`). |
 | `org-chart/` | Fall 2026 Org Chart (`index.html`, `photos/` 240px face crops, `assets/`). |
 | `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), encrypted behind a password. `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
+| `spin-the-wheel/` | Instructor tool: classroom seating chart + cold-call wheel. Room size (rows, seats left/right of aisle) is set on the page; `*` after a name = distance learning. |
+| `make-the-call/` | Instructor tool: Agree/Neutral/Disagree leadership debate game (2 to 4 teams, editable statements, sealed scores, podium reveal). |
+| `battle-buddy-recon/` | Instructor tool: OPSEC exercise (brief, pairing wheel, recon clock, brief-out queue). |
+| `practicum-adventure/` | Instructor tool: Practicum Adventure classroom RPG, copied from the `CaptainRussell/practicum-adventure` repo (that repo still has its own dev tools, tests and docs). GM console + Field Guide use the hub look (`hub-skin.css`); projector (`#player`) and phones (`join.html`) keep the 8-bit look. `settings.js` holds the Game settings card (instructor name `GM_NAME`, course, IG name, the four NPC rosters), saved in `d250-practicum-settings-v1`. |
+| `shared/instructor.css` | Common panels, buttons, fields for instructor tools (load after `det250.css`). |
+| `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) shared by the instructor tools. |
 | `tools/encrypt.mjs`, `tools/locked-template.html` | Re-encrypt a password-protected page. |
 | `README.md` | Short how-to. |
 
@@ -29,7 +35,8 @@
 2. Add the shared bar: `<link rel="stylesheet" href="../shared/det250.css">` in `<head>`, and copy the `<a class="d250-bar" ...>` line from the top of `org-chart/index.html` to just after `<body>`.
 3. Add the standard tool header (`<header class="d250-head" style="--tone:...">`) and footer (`<footer class="d250-foot">`). Markup for both is in the comments in `shared/det250.css`; copy from `org-chart/index.html`. Use the tool's hub card `tone`, and the `--d250-*` tokens for colors.
 4. Add one entry to `TOOLS` in the root `index.html`.
-5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock).
+5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock), `d250-class-roster-v1` (shared class roster), `d250-spin-wheel-v1`, `d250-make-the-call-v1`, `d250-battle-buddy-v1`, `d250-practicum-settings-v1`, and Practicum Adventure's own `sq_*` keys.
+6. Instructor tools never ship a built-in roster: names are entered on the page and kept in the browser.
 
 ## Password-protected page (Flight Staff Evaluation)
 - The published file is AES-GCM encrypted (key from the password via PBKDF2-SHA256, 310k iterations). Without the password the content cannot be read, even in the source. It stays unlocked for the browser tab via sessionStorage.
@@ -81,3 +88,4 @@ Serve the parent folder (`python3 -m http.server`) so the site loads at `/det250
 - A23/FLI title is a placeholder ("FLI Officer") until the official title is known.
 - McConnell's photo file is named "Lauren L." but the roster says "Liam"; the chart uses Liam.
 - The ISU cadre page still lists Matthews as Captain; the chart uses Maj.
+- `CaptainRussell/practicum-adventure` still serves its own GitHub Pages copy. Once the hub copy is live, replace it with a forwarding page like the other old repos (phones then join through `det250/practicum-adventure/join.html`). Changes made in that repo must be copied here by hand.

@@ -1,0 +1,100 @@
+/* Det 250 Cadet Hub: shared pieces for the instructor tools (classroom games).
+   Load after det250.css. Uses the --d250-* tokens, so light and dark come for free.
+   Each tool keeps its own layout CSS; this file only holds the common parts:
+   page, panels, labels, buttons, form fields, chips, the stat tally and entrance motion. */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--d250-page); color: var(--d250-ink);
+  font: 15px/1.5 var(--d250-font); -webkit-text-size-adjust: 100%; overflow-x: hidden;
+}
+:focus-visible { outline: 3px solid var(--d250-gold); outline-offset: 2px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: var(--d250-measure, 1180px); margin: 0 auto; padding: 18px 16px 8px; }
+
+/* ---------- panels ---------- */
+.panel {
+  background: var(--d250-surface); border: 1px solid var(--d250-line); border-radius: 14px;
+  box-shadow: var(--d250-shadow); min-width: 0;
+  animation: ins-rise .5s var(--d250-ease) both; animation-delay: calc(var(--i, 0) * 60ms);
+}
+.panel-hd {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; border-bottom: 1px solid var(--d250-line);
+}
+.panel-bd { padding: 16px; }
+@keyframes ins-rise { from { opacity: 0; transform: translateY(12px); } }
+
+.label {
+  font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--d250-soft);
+}
+.muted { color: var(--d250-soft); }
+.hint { font-size: 12.5px; color: var(--d250-soft); margin-top: 8px; }
+.mono { font-variant-numeric: tabular-nums; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--d250-line-strong); background: var(--d250-surface-2); color: var(--d250-ink);
+  padding: 8px 14px; border-radius: 9px; cursor: pointer; font-weight: 600; font-size: 14px; line-height: 1.2;
+  transition: background .18s, border-color .18s, transform .18s var(--d250-ease), box-shadow .18s;
+}
+.btn:hover:not(:disabled) { border-color: var(--d250-gold); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .42; cursor: not-allowed; }
+.btn.primary { background: var(--d250-cardinal); border-color: var(--d250-cardinal); color: #fff; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 6px 16px color-mix(in srgb, var(--d250-cardinal) 35%, transparent); }
+.btn.big { font-size: 17px; padding: 13px 22px; border-radius: 11px; font-weight: 800; letter-spacing: .02em; }
+.btn.block { width: 100%; }
+.btn.quiet { background: transparent; }
+.btn.small { padding: 4px 10px; font-size: 12.5px; border-radius: 7px; }
+.btn.danger { color: var(--d250-cardinal); border-color: color-mix(in srgb, var(--d250-cardinal) 55%, var(--d250-line)); background: transparent; }
+.btn.danger.armed { background: var(--d250-cardinal); color: #fff; }
+.btn[aria-pressed="true"] { background: var(--d250-gold-bg); border-color: var(--d250-gold); color: var(--d250-gold); }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--d250-soft); text-decoration: underline; cursor: pointer; font-size: 13px; }
+.linkbtn:hover { color: var(--d250-ink); }
+
+/* ---------- fields ---------- */
+textarea, input[type="text"], input[type="number"], select {
+  background: var(--d250-page); color: var(--d250-ink);
+  border: 1px solid var(--d250-line-strong); border-radius: 9px; padding: 8px 10px;
+}
+textarea { width: 100%; min-height: 200px; resize: vertical; font-size: 14px; line-height: 1.6; }
+input[type="number"] { width: 72px; }
+textarea:focus, input:focus, select:focus { outline: 2px solid var(--d250-gold); outline-offset: 1px; }
+
+/* ---------- chips ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--d250-line); background: var(--d250-surface-2); color: var(--d250-ink);
+  border-radius: 999px; padding: 4px 11px; font-size: 13.5px; font-weight: 600;
+}
+
+/* ---------- tally (big numbers in the header) ---------- */
+.tally { display: flex; gap: 22px; align-items: flex-end; }
+.tally .n { font-size: 26px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.tally .n.gold { color: var(--d250-gold); }
+
+/* ---------- empty / setup state ---------- */
+.empty {
+  border: 1px dashed var(--d250-line-strong); border-radius: 12px; padding: 18px; text-align: center; color: var(--d250-soft);
+}
+.empty b { color: var(--d250-ink); }
+
+/* ---------- shared class roster picker ---------- */
+.roster-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+}
+@media print {
+  body { background: #fff; color: #000; }
+  .panel { box-shadow: none; border-color: #999; animation: none; }
+  .noprint { display: none !important; }
+}

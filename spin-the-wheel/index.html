@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Spin the Wheel</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+.cols { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 4px; }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+.rail { display: grid; gap: 18px; min-width: 0; }
+
+/* ---------- wheel ---------- */
+.wheelbox { position: relative; display: grid; place-items: center; padding: 6px 0 2px; }
+canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
+.ptr {
+  position: absolute; top: -2px; left: 50%; transform: translateX(-50%); z-index: 1;
+  width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent;
+  border-top: 17px solid var(--d250-gold); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35));
+}
+.readout { margin: 12px 0 12px; text-align: center; min-height: 52px; display: grid; align-content: center; gap: 2px; }
+.readout .who { font-size: 24px; font-weight: 800; letter-spacing: -.01em; line-height: 1.1; }
+.readout .where { font-size: 13px; color: var(--d250-soft); }
+.readout.live .who { color: var(--d250-gold); }
+.readout.landed .who { animation: pop .5s var(--d250-ease); }
+@keyframes pop { 0% { transform: scale(.85); opacity: .4; } 60% { transform: scale(1.06); } }
+.steprow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.dur { font-size: 14px; color: var(--d250-soft); min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+.btngrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+
+/* ---------- roster ---------- */
+.rlist { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; }
+.rlist li { border-bottom: 1px solid var(--d250-line); }
+.rlist li:last-child { border-bottom: 0; }
+.rname {
+  width: 100%; display: flex; align-items: center; gap: 9px; padding: 7px 16px;
+  background: none; border: 0; text-align: left; cursor: pointer; font-size: 14px; color: var(--d250-ink);
+}
+.rname:hover { background: var(--d250-surface-2); }
+.rname .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--d250-faint); flex: none; }
+.rname.seated .dot { background: var(--d250-blue); }
+.rname.called { color: var(--d250-faint); }
+.rname.called .dot { background: var(--d250-gold); }
+.rname.called .nm { text-decoration: line-through; }
+.rname.out { color: var(--d250-faint); opacity: .65; }
+.rname.out .dot { background: transparent; border: 1px solid var(--d250-line-strong); }
+.rname.dl .dot { background: transparent; border: 2px dashed var(--d250-soft); }
+.rname .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rname .tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--d250-soft);
+  background: var(--d250-surface-2); border: 1px solid var(--d250-line); padding: 1px 6px; border-radius: 6px; white-space: nowrap;
+}
+
+/* ---------- room ---------- */
+.room { padding: 18px 16px 20px; }
+.roomset { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--d250-line); }
+.roomset label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--d250-soft); }
+.roomset input { width: 60px; padding: 5px 8px; }
+.rows { display: flex; flex-direction: column; gap: 12px; }
+.srow { display: flex; align-items: center; gap: 12px; }
+.rowno { font-size: 11px; color: var(--d250-faint); width: 18px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+.block { display: grid; gap: 8px; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); min-width: 0; }
+.block.left { flex: var(--n) 1 0; }
+.block.right { flex: var(--n) 1 0; }
+.aisle { flex: 0 0 22px; align-self: stretch; min-height: 34px; border-left: 1px dashed var(--d250-line-strong); margin: 2px 0; }
+@media (max-width: 620px) {
+  .aisle { flex-basis: 10px; } .rowno { display: none; } .srow { gap: 8px; } .block { gap: 5px; }
+  .seat { min-height: 50px; padding: 14px 3px 5px; }
+  .seat .nm { font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.seat {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-height: 56px; padding: 14px 4px 6px; cursor: pointer; text-align: center; color: var(--d250-ink);
+  background: var(--d250-surface-2); border: 1px solid var(--d250-line); border-radius: 10px;
+  transition: background .16s, border-color .16s, transform .16s var(--d250-ease);
+}
+.seat:hover { border-color: var(--d250-line-strong); }
+.seat .no { position: absolute; top: 3px; left: 6px; font-size: 11px; font-weight: 700; color: var(--d250-faint); font-variant-numeric: tabular-nums; }
+.seat .nm { font-size: 14px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+.seat.taken { background: color-mix(in srgb, var(--d250-blue) 14%, var(--d250-surface)); border-color: color-mix(in srgb, var(--d250-blue) 60%, var(--d250-line)); }
+.seat.taken .no { color: var(--d250-blue); }
+.seat.out { background: var(--d250-surface-2); border-style: dotted; }
+.seat.out .nm, .seat.out .no { color: var(--d250-faint); }
+.seat.out .nm { text-decoration: line-through; }
+.seat.called .nm { opacity: .6; }
+.seat.called::after { content: "\2713"; position: absolute; top: 2px; right: 6px; font-size: 11px; color: var(--d250-gold); font-weight: 800; }
+.seat.pick { outline: 3px solid var(--d250-gold); outline-offset: 1px; }
+.arranging .seat { border-style: dashed; }
+.seat.chase { background: var(--d250-gold); border-color: var(--d250-gold); transition: none; transform: scale(1.05); }
+.seat.chase .nm, .seat.chase .no { color: var(--d250-page); }
+.seat.flash { animation: land .6s var(--d250-ease); }
+@keyframes land { 0% { transform: scale(.88); background: var(--d250-gold); border-color: var(--d250-gold); } 100% { transform: scale(1); } }
+
+.front {
+  background: var(--d250-ink); color: var(--d250-page); text-align: center; padding: 7px; margin-top: 22px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase;
+}
+.dlstrip { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dlstrip .chip { border-style: dashed; }
+.legend { display: flex; gap: 8px 16px; flex-wrap: wrap; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--d250-line); font-size: 12.5px; color: var(--d250-soft); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: block; }
+.sw-open { background: var(--d250-surface-2); border: 1px solid var(--d250-line); }
+.sw-taken { background: color-mix(in srgb, var(--d250-blue) 14%, var(--d250-surface)); border: 1px solid var(--d250-blue); }
+.sw-called { background: var(--d250-gold); }
+.sw-out { background: var(--d250-surface-2); border: 1px dotted var(--d250-faint); }
+.modebar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+@media print {
+  .d250-head .tally, .rail { display: none !important; }
+  .cols { display: block; }
+  .seat { min-height: 50px; }
+  .seat.taken, .front { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .front { background: #000; color: #fff; }
+}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+
+<header class="d250-head" style="--tone:#b45309;--d250-measure:1180px">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
+      <h1>Spin the Wheel</h1>
+      <p class="d250-head-sub">Seating chart and cold-call wheel. Add your class, set up the room, spin.</p>
+    </div>
+    <div class="tally" aria-live="polite">
+      <div><div class="label">To call</div><div class="n gold" id="tPool">0</div></div>
+      <div><div class="label">Seated</div><div class="n" id="tSeated">0</div></div>
+      <div><div class="label">Absent</div><div class="n" id="tOut">0</div></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cols">
+    <div class="rail">
+      <section class="panel" style="--i:0">
+        <div class="panel-hd"><span class="label">Cold call</span><span class="label" id="poolNote"></span></div>
+        <div class="panel-bd">
+          <div class="wheelbox">
+            <div class="ptr"></div>
+            <canvas id="wheel" width="544" height="544" role="img" aria-label="Name wheel"></canvas>
+          </div>
+          <div class="readout" id="readout" aria-live="polite">
+            <div class="who" id="roWho">Ready</div>
+            <div class="where" id="roWhere">Spin to call on a student</div>
+          </div>
+          <button class="btn primary big block" id="spin">Spin</button>
+          <div class="steprow">
+            <span class="label">Spin time</span>
+            <div class="stepper">
+              <button class="btn small" id="spinShorter" aria-label="Shorter spin">&minus;</button>
+              <span class="dur" id="spinDur">3.2s</span>
+              <button class="btn small" id="spinLonger" aria-label="Longer spin">+</button>
+            </div>
+          </div>
+          <div class="btngrid">
+            <button class="btn" id="resetCalls">Reset calls</button>
+            <button class="btn" id="undo">Undo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="--i:1">
+        <div class="panel-hd">
+          <span class="label">Roster <span id="rCount"></span></span>
+          <button class="btn small" id="editToggle" aria-expanded="false">Edit</button>
+        </div>
+        <div class="panel-bd" id="editPane" hidden>
+          <textarea id="rosterEdit" spellcheck="false" aria-label="Roster, one name per line" placeholder="Last, First&#10;Last, First&#10;Last, First*"></textarea>
+          <p class="hint">One name per line, like <b>Smith, Jordan</b>. Add <code>*</code> after a name for a distance-learning student: listed with the room, never in the draw. Saving also updates your saved class roster for the other instructor tools.</p>
+          <div class="roster-tools">
+            <button class="btn primary" id="saveRoster">Save roster</button>
+            <button class="btn" id="cancelRoster">Cancel</button>
+            <button class="btn quiet" id="loadClass">Load saved class</button>
+          </div>
+          <p class="hint" id="rosterMsg" aria-live="polite"></p>
+        </div>
+        <ul class="rlist" id="rlist"></ul>
+        <div class="panel-bd" style="border-top:1px solid var(--d250-line);padding-top:10px;padding-bottom:12px">
+          <p class="hint" style="margin:0">Click a name, or their seat, to mark them absent (out of the draw). Click again to bring them back.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="--i:2">
+      <div class="panel-hd noprint">
+        <span class="label">Room &middot; <span id="seatCount"></span> seats</span>
+        <div class="modebar">
+          <button class="btn small" id="arrange" aria-pressed="false" title="Click two seats to swap them">Move seats</button>
+          <button class="btn small" id="shuffle">Shuffle seats</button>
+          <button class="btn small" id="saveChart" title="Remember this seating as the assigned chart">Save chart</button>
+          <button class="btn small" id="restore" title="Put everyone back in the saved chart">Restore chart</button>
+          <button class="btn small" id="print">Print</button>
+        </div>
+      </div>
+      <div class="roomset noprint">
+        <label>Rows <input type="number" id="nRows" min="1" max="12"></label>
+        <label>Seats left of aisle <input type="number" id="nLeft" min="0" max="8"></label>
+        <label>Seats right of aisle <input type="number" id="nRight" min="0" max="8"></label>
+      </div>
+      <div class="room" id="room">
+        <div class="empty" id="roomEmpty" hidden><b>No class yet.</b> Open <b>Roster &rarr; Edit</b> and paste your names. Everyone is seated from the front automatically.</div>
+        <div class="rows" id="rows"></div>
+        <div class="front">Front &middot; Instructor &amp; screen</div>
+        <div class="dlstrip" id="dlstrip" hidden></div>
+        <div class="legend">
+          <span><i class="sw-open"></i> Open</span>
+          <span><i class="sw-taken"></i> Seated</span>
+          <span><i class="sw-called"></i> Called</span>
+          <span><i class="sw-out"></i> Absent</span>
+          <span class="noprint" id="modeHint" style="margin-left:auto">Click a seat to mark that student absent</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">A classroom seating chart with a cold-call wheel. The roster, room and calls are saved in this browser only.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../shared/class-roster.js"></script>
+<script>
+"use strict";
+/* ------------------------------------------------------------------ model */
+const KEY = "d250-spin-wheel-v1";
+const SPIN_MIN = 800, SPIN_MAX = 6000, SPIN_STEP = 400, SPIN_DEFAULT = 3200;
+const clampSpin = ms => Math.min(SPIN_MAX, Math.max(SPIN_MIN, Math.round(ms / SPIN_STEP) * SPIN_STEP));
+const clampN = (v, lo, hi, d) => { v = Math.round(+v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
+
+function parseLines(text){
+  const seen = new Set(), out = [];
+  text.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(raw => {
+    const name = raw.replace(/\*+$/, "").trim();
+    if (!name || seen.has(name.toLowerCase())) return;
+    seen.add(name.toLowerCase());
+    out.push({ name, dl: /\*$/.test(raw), out: false });
+  });
+  return out;
+}
+function fresh(){
+  return { roster: D250Class.load().map(name => ({ name, dl: false, out: false })),
+           rows: 5, left: 4, right: 2, seats: {}, chart: null, history: [], called: [], spinMs: SPIN_DEFAULT };
+}
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (!s || !Array.isArray(s.roster)) return null;
+    s.seats = s.seats || {}; s.history = s.history || []; s.called = Array.isArray(s.called) ? s.called : [];
+    s.rows = clampN(s.rows, 1, 12, 5); s.left = clampN(s.left, 0, 8, 4); s.right = clampN(s.right, 0, 8, 2);
+    s.spinMs = clampSpin(s.spinMs || SPIN_DEFAULT);
+    return s;
+  }catch(e){ return null; }
+}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} };
+
+let state = load() || fresh();
+
+/* Seats carry one running number. #1 is the front-right seat; numbering runs
+   right to left across a row, then back a row. */
+let seatIds = [], seatNo = {};
+function buildSeats(){
+  seatIds = []; seatNo = {};
+  const per = state.left + state.right;
+  for (let r = 1; r <= state.rows; r++)
+    for (let s = per; s >= 1; s--) seatIds.push("r" + r + "s" + s);
+  seatIds.forEach((id, i) => { seatNo[id] = i + 1; });
+}
+const person = name => state.roster.find(p => p.name === name);
+const inClass = () => state.roster.filter(p => !p.dl);
+
+/* Keep the seat map honest: only current seats, only roster names, each name
+   once. Anyone without a seat takes the lowest open one. Returns how many
+   students could not be seated (room too small). */
+function reconcile(){
+  buildSeats();
+  const seats = {}, placed = new Set();
+  seatIds.forEach(id => {
+    const n = state.seats[id], p = n && person(n);
+    seats[id] = p && !p.dl && !placed.has(n) ? (placed.add(n), n) : null;
+  });
+  let unseated = 0;
+  inClass().forEach(p => {
+    if (placed.has(p.name)) return;
+    const spot = seatIds.find(id => !seats[id]);
+    if (spot){ seats[spot] = p.name; placed.add(p.name); } else unseated++;
+  });
+  state.seats = seats;
+  const valid = new Set(state.roster.map(p => p.name));
+  state.called = state.called.filter(n => valid.has(n));
+  state.history = state.history.filter(h => valid.has(h.name));
+  return unseated;
+}
+let unseatedCount = reconcile();
+
+const seatOfName = name => seatIds.find(id => state.seats[id] === name);
+/* The wheel carries every seated student in seat order, so the highlight sweeps
+   the room. Absent or already-called students keep their slot, greyed out, but
+   cannot be landed on. */
+function wheelOrder(){
+  return seatIds.filter(id => state.seats[id]).map(id => {
+    const p = person(state.seats[id]);
+    return { name: p.name, seat: id, ok: !p.out && !state.called.includes(p.name) };
+  });
+}
+const drawPool = () => wheelOrder().filter(s => s.ok);
+const shortName = n => { const [last, first] = n.split(",").map(s => s.trim()); return first ? last + " " + first[0] + "." : last; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const seatLabel = id => "Seat " + seatNo[id] + " (row " + id.match(/r(\d+)/)[1] + ")";
+
+/* ------------------------------------------------------------------ view */
+const $ = id => document.getElementById(id);
+let arranging = false, pick = null;
+
+function render(){
+  const per = state.left + state.right;
+  let html = "";
+  for (let r = state.rows; r >= 1; r--){
+    html += '<div class="srow"><div class="rowno">' + r + '</div>';
+    if (state.left) { html += '<div class="block left" style="--n:' + state.left + '">'; for (let s = 1; s <= state.left; s++) html += seatHTML(r, s); html += '</div>'; }
+    if (state.left && state.right) html += '<div class="aisle"></div>';
+    if (state.right) { html += '<div class="block right" style="--n:' + state.right + '">'; for (let s = state.left + 1; s <= per; s++) html += seatHTML(r, s); html += '</div>'; }
+    html += '</div>';
+  }
+  $("rows").innerHTML = html;
+  $("room").classList.toggle("arranging", arranging);
+  $("roomEmpty").hidden = state.roster.length > 0;
+
+  const dl = state.roster.filter(p => p.dl);
+  $("dlstrip").hidden = !dl.length;
+  $("dlstrip").innerHTML = dl.length ? '<span class="label">Distance learning</span>' + dl.map(p => '<span class="chip">' + esc(p.name) + '</span>').join("") : "";
+
+  $("rlist").innerHTML = state.roster.map((p, i) => {
+    const sid = seatOfName(p.name), isCalled = state.called.includes(p.name);
+    const cls = ["rname", sid ? "seated" : "", p.dl ? "dl" : "", isCalled ? "called" : "", p.out ? "out" : ""].join(" ");
+    const tag = p.dl ? "DL" : p.out ? "ABSENT" : sid ? "#" + seatNo[sid] + (isCalled ? " ✓" : "") : "NO SEAT";
+    return '<li><button class="' + cls + '" data-i="' + i + '"><span class="dot"></span><span class="nm">' + esc(p.name) + '</span><span class="tag">' + tag + '</span></button></li>';
+  }).join("");
+  $("rCount").textContent = state.roster.length ? "· " + state.roster.length : "";
+
+  const toCall = drawPool().length;
+  $("tPool").textContent = toCall;
+  $("tSeated").textContent = Object.values(state.seats).filter(Boolean).length;
+  $("tOut").textContent = inClass().filter(p => p.out).length;
+  $("poolNote").textContent = !state.roster.length ? "" : toCall ? toCall + " left" : "all called";
+  $("spin").disabled = spinning || toCall === 0;
+  $("undo").disabled = !state.history.length;
+  $("resetCalls").disabled = !state.called.length;
+  $("restore").disabled = !state.chart;
+  $("seatCount").textContent = seatIds.length;
+  $("nRows").value = state.rows; $("nLeft").value = state.left; $("nRight").value = state.right;
+  $("arrange").setAttribute("aria-pressed", String(arranging));
+  $("arrange").textContent = arranging ? "Done moving" : "Move seats";
+  $("modeHint").textContent = arranging ? "Click a seat, then another, to swap them" : "Click a seat to mark that student absent";
+  const ms = clampSpin(state.spinMs);
+  $("spinDur").textContent = (ms / 1000).toFixed(1) + "s";
+  $("spinShorter").disabled = ms <= SPIN_MIN;
+  $("spinLonger").disabled = ms >= SPIN_MAX;
+  drawWheel(angle);
+  save();
+}
+function seatHTML(r, s){
+  const id = "r" + r + "s" + s, who = state.seats[id], p = who && person(who);
+  const cls = ["seat", who ? "taken" : "", p && p.out ? "out" : "", who && state.called.includes(who) ? "called" : "", pick === id ? "pick" : ""].join(" ");
+  return '<button class="' + cls + '" data-seat="' + id + '" aria-label="' + seatLabel(id) + (who ? ", " + esc(who) + (p.out ? ", absent" : "") : ", open") + '">' +
+         '<span class="no">' + seatNo[id] + '</span><span class="nm"' + (who ? ' title="' + esc(who) + '"' : '') + '>' + (who ? esc(shortName(who)) : "") + '</span></button>';
+}
+function say(who, where){ $("roWho").textContent = who; $("roWhere").textContent = where; }
+const idleWhere = () => !state.roster.length ? "Add your roster to start" : drawPool().length ? "Spin to call on a student" : "Everyone has been called. Reset calls to go again.";
+
+/* ----------------------------------------------------------------- wheel */
+const cv = $("wheel"), cx = cv.getContext("2d");
+let angle = 0;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const FONT = getComputedStyle(document.body).fontFamily;
+
+function drawWheel(rot, list){
+  const slots = list || wheelOrder();
+  const R = cv.width / 2;
+  cx.clearRect(0, 0, cv.width, cv.height);
+  const line = css("--d250-line-strong"), surf = css("--d250-surface"), surf2 = css("--d250-surface-2");
+  const ink = css("--d250-ink"), faint = css("--d250-faint"), gold = css("--d250-gold"), card = css("--d250-cardinal");
+  if (!slots.length){
+    cx.beginPath(); cx.arc(R, R, R - 8, 0, Math.PI * 2);
+    cx.fillStyle = surf2; cx.fill(); cx.strokeStyle = line; cx.lineWidth = 3; cx.stroke();
+    cx.fillStyle = faint; cx.font = "700 30px " + FONT; cx.textAlign = "center"; cx.textBaseline = "middle";
+    cx.fillText(state.roster.length ? "NO ONE SEATED" : "ADD YOUR CLASS", R, R);
+    return;
+  }
+  const seg = (Math.PI * 2) / slots.length, small = slots.length > 20;
+  slots.forEach((slot, i) => {
+    const a0 = rot + i * seg - Math.PI / 2 - seg / 2;
+    cx.beginPath(); cx.moveTo(R, R); cx.arc(R, R, R - 8, a0, a0 + seg); cx.closePath();
+    cx.fillStyle = slot.ok ? (i % 2 ? surf : surf2) : surf2; cx.fill();
+    cx.globalAlpha = slot.ok ? 1 : .4;
+    cx.strokeStyle = line; cx.lineWidth = 1; cx.stroke();
+    cx.save(); cx.translate(R, R); cx.rotate(a0 + seg / 2);
+    cx.fillStyle = slot.ok ? ink : faint;
+    cx.font = "700 " + (small ? 16 : 20) + "px " + FONT;
+    cx.textAlign = "right"; cx.textBaseline = "middle";
+    cx.fillText(seatNo[slot.seat] + "  " + shortName(slot.name).toUpperCase(), R - 20, 0, R * .72);
+    cx.restore(); cx.globalAlpha = 1;
+  });
+  cx.beginPath(); cx.arc(R, R, R - 8, 0, Math.PI * 2); cx.strokeStyle = gold; cx.lineWidth = 4; cx.stroke();
+  cx.beginPath(); cx.arc(R, R, 32, 0, Math.PI * 2); cx.fillStyle = card; cx.fill();
+  cx.strokeStyle = surf; cx.lineWidth = 5; cx.stroke();
+}
+
+/* ------------------------------------------------------------------ spin */
+let spinning = false;
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clearChase = () => document.querySelectorAll(".seat.chase").forEach(el => el.classList.remove("chase"));
+
+/* The wheel turns and the highlight walks the chart at the same time. The
+   wheel's slots are in seat order, so the name under the pointer is the seat
+   lit up in the room, all the way to the stop. */
+function spin(){
+  const slots = wheelOrder();
+  const live = slots.map((s, i) => s.ok ? i : -1).filter(i => i >= 0);
+  if (spinning || !live.length) return;
+  if (arranging){ arranging = false; pick = null; render(); }
+  const pickI = live[Math.floor(Math.random() * live.length)], chosen = slots[pickI];
+  const n = slots.length, seg = (Math.PI * 2) / n, dur = clampSpin(state.spinMs);
+  $("readout").classList.add("live"); $("readout").classList.remove("landed");
+  if (reduced()){ land(chosen); return; }
+  spinning = true; $("spin").disabled = true;
+  const turns = Math.max(2, Math.round(dur / 640));
+  const target = -(Math.PI * 2 * turns) - pickI * seg;
+  const start = performance.now(), from = angle % (Math.PI * 2);
+  let shown = -1;
+  (function frame(now){
+    const t = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - t, 3);
+    angle = from + (target - from) * e;
+    drawWheel(angle, slots);
+    const i = t < 1 ? (Math.round(-angle / seg) % n + n) % n : pickI;
+    if (i !== shown){
+      shown = i; clearChase();
+      const el = document.querySelector('[data-seat="' + slots[i].seat + '"]');
+      if (el) el.classList.add("chase");
+      say(shortName(slots[i].name).toUpperCase(), "Seat " + seatNo[slots[i].seat]);
+    }
+    if (t < 1) requestAnimationFrame(frame); else land(chosen);
+  })(start);
+}
+function land(chosen){
+  spinning = false;
+  angle = angle % (Math.PI * 2);
+  clearChase();
+  if (!state.called.includes(chosen.name)) state.called.push(chosen.name);
+  state.history.push({ name: chosen.name });
+  render();
+  say(shortName(chosen.name).toUpperCase(), "→ " + seatLabel(chosen.seat));
+  const ro = $("readout"); ro.classList.remove("live"); void ro.offsetWidth; ro.classList.add("landed");
+  const el = document.querySelector('[data-seat="' + chosen.seat + '"]');
+  if (el){ el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650); }
+}
+
+/* --------------------------------------------------------------- actions */
+$("spin").addEventListener("click", spin);
+$("undo").addEventListener("click", () => {
+  const last = state.history.pop(); if (!last) return;
+  state.called = state.called.filter(n => n !== last.name);
+  say("Ready", shortName(last.name) + " is back in the draw"); render();
+});
+$("resetCalls").addEventListener("click", () => {
+  if (spinning) return;
+  state.called = []; state.history = [];
+  say("Ready", "Calls reset. Everyone is back in the draw."); render();
+});
+function nudgeSpin(d){ if (spinning) return; state.spinMs = clampSpin(state.spinMs + d); render(); }
+$("spinShorter").addEventListener("click", () => nudgeSpin(-SPIN_STEP));
+$("spinLonger").addEventListener("click", () => nudgeSpin(SPIN_STEP));
+$("print").addEventListener("click", () => window.print());
+
+$("arrange").addEventListener("click", () => { if (spinning) return; arranging = !arranging; pick = null; render(); });
+$("shuffle").addEventListener("click", () => {
+  if (spinning) return;
+  const names = inClass().map(p => p.name);
+  for (let i = names.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
+  state.seats = {}; seatIds.forEach((id, i) => { state.seats[id] = names[i] || null; });
+  unseatedCount = reconcile();
+  say("Ready", "Seats shuffled. Save chart to keep it."); render();
+});
+$("saveChart").addEventListener("click", () => {
+  state.chart = Object.assign({}, state.seats);
+  say("Ready", "Chart saved. Restore chart puts everyone back here."); render();
+});
+$("restore").addEventListener("click", () => {
+  if (spinning || !state.chart) return;
+  state.seats = Object.assign({}, state.chart);
+  unseatedCount = reconcile();
+  say("Ready", "Chart restored"); render();
+});
+
+function setLayout(){
+  if (spinning) return;
+  state.rows = clampN($("nRows").value, 1, 12, state.rows);
+  state.left = clampN($("nLeft").value, 0, 8, state.left);
+  state.right = clampN($("nRight").value, 0, 8, state.right);
+  if (state.left + state.right === 0) state.left = 1;
+  unseatedCount = reconcile();
+  say("Ready", unseatedCount ? unseatedCount + " without a seat: add rows or seats" : "Room updated: " + seatIds.length + " seats");
+  render();
+}
+["nRows", "nLeft", "nRight"].forEach(id => $(id).addEventListener("change", setLayout));
+
+$("rows").addEventListener("click", e => {
+  const btn = e.target.closest("[data-seat]");
+  if (!btn || spinning) return;
+  const id = btn.dataset.seat;
+  if (arranging){
+    if (!pick){ pick = id; render(); return; }
+    if (pick !== id){ const a = state.seats[pick]; state.seats[pick] = state.seats[id]; state.seats[id] = a; }
+    pick = null; render(); return;
+  }
+  const p = state.seats[id] && person(state.seats[id]);
+  if (p) toggleOut(p);
+});
+$("rlist").addEventListener("click", e => {
+  const btn = e.target.closest("[data-i]");
+  if (!btn || spinning) return;
+  const p = state.roster[+btn.dataset.i];
+  if (!p) return;
+  if (p.dl){ say("Ready", shortName(p.name) + " is distance learning, never in the draw"); return; }
+  toggleOut(p);
+});
+function toggleOut(p){
+  p.out = !p.out;
+  if (p.out) state.called = state.called.filter(n => n !== p.name);
+  say("Ready", shortName(p.name) + (p.out ? " marked absent" : " is back in the draw")); render();
+}
+
+/* roster editing */
+function openEditor(open){
+  $("editPane").hidden = !open;
+  $("editToggle").textContent = open ? "Close" : "Edit";
+  $("editToggle").setAttribute("aria-expanded", String(open));
+  $("rosterMsg").textContent = "";
+  if (open){ $("rosterEdit").value = state.roster.map(p => p.name + (p.dl ? "*" : "")).join("\n"); $("rosterEdit").focus(); }
+}
+$("editToggle").addEventListener("click", () => openEditor($("editPane").hidden));
+$("cancelRoster").addEventListener("click", () => openEditor(false));
+$("loadClass").addEventListener("click", () => {
+  const names = D250Class.load();
+  if (!names.length){ $("rosterMsg").textContent = "No saved class yet. Type your names and save."; return; }
+  $("rosterEdit").value = names.join("\n");
+  $("rosterMsg").textContent = "Loaded " + names.length + " names. Click Save roster to use them.";
+});
+$("saveRoster").addEventListener("click", () => {
+  const list = parseLines($("rosterEdit").value);
+  const prev = state.roster;
+  state.roster = list.map(p => { const old = prev.find(x => x.name === p.name); return Object.assign(p, { out: old ? old.out : false }); });
+  D250Class.save(state.roster.map(p => p.name));
+  unseatedCount = reconcile();
+  openEditor(false);
+  say("Ready", unseatedCount ? unseatedCount + " without a seat: add rows or seats" : idleWhere());
+  render();
+});
+
+/* redraw the wheel when the theme changes under it */
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => drawWheel(angle)); } catch (e) {}
+new MutationObserver(() => drawWheel(angle)).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+render();
+say("Ready", idleWhere());
+if (!state.roster.length) openEditor(true);
+</script>
+</body>
+</html>
