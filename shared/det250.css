@@ -13,6 +13,13 @@
 .d250-bar { view-transition-name: d250-bar; }
 ::view-transition-group(d250-bar) { animation-duration: .3s; }
 
+/* No blinking text caret or I-beam on content you can't type into
+   (headings, logos, cards). Fields you type in keep both. */
+html { caret-color: transparent; cursor: default; }
+input, textarea, select, [contenteditable]:not([contenteditable="false"]) { caret-color: auto; }
+textarea, [contenteditable]:not([contenteditable="false"]),
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=button]):not([type=submit]):not([type=reset]):not([type=file]):not([type=image]) { cursor: text; }
+
 /* ---------- the bar ---------- */
 .d250-bar {
   position: relative; z-index: 50;
