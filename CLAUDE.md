@@ -20,7 +20,7 @@
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
 | `whos-that-cadet/` | Who's That Cadet! face/name flashcard drills, shadow mode, printable cards (`index.html`, `photos/`). |
 | `org-chart/` | Fall 2026 Org Chart (`index.html`, `photos/` 240px face crops, `assets/`). |
-| `gmc-strats/` | GMC Stratification evaluator, encrypted behind a password. |
+| `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), encrypted behind a password. `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
 | `tools/encrypt.mjs`, `tools/locked-template.html` | Re-encrypt a password-protected page. |
 | `README.md` | Short how-to. |
 
@@ -29,14 +29,14 @@
 2. Add the shared bar: `<link rel="stylesheet" href="../shared/det250.css">` in `<head>`, and copy the `<a class="d250-bar" ...>` line from the top of `org-chart/index.html` to just after `<body>`.
 3. Add the standard tool header (`<header class="d250-head" style="--tone:...">`) and footer (`<footer class="d250-foot">`). Markup for both is in the comments in `shared/det250.css`; copy from `org-chart/index.html`. Use the tool's hub card `tone`, and the `--d250-*` tokens for colors.
 4. Add one entry to `TOOLS` in the root `index.html`.
-5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (GMC Strats), `d250-gmc-pass` (sessionStorage, GMC unlock).
+5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock).
 
-## Password-protected page (GMC Strats)
+## Password-protected page (Flight Staff Evaluation)
 - The published file is AES-GCM encrypted (key from the password via PBKDF2-SHA256, 310k iterations). Without the password the content cannot be read, even in the source. It stays unlocked for the browser tab via sessionStorage.
 - To update: edit the plain page locally (never commit it), inject the Det 250 bar, then run
-  `node tools/encrypt.mjs plain.html gmc-strats/index.html <password> tools/locked-template.html`.
+  `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
 - The password is not stored in this repo; ask Captain Russell.
-- Results from GMC Strats go to a private spreadsheet via a Google Apps Script URL in its config, not to GitHub.
+- Results from Flight Staff Evaluation go to a private spreadsheet via a Google Apps Script URL in its config, not to GitHub.
 
 ## Shared design
 - Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, defaults to dark (`data-theme="dark"` on `<html>`; the light palette is still in each page for `data-theme="light"`), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.

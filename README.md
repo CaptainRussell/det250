@@ -8,7 +8,7 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 | `pfra/` | PFRA Calculator |
 | `whos-that-cadet/` | Who's That Cadet! |
 | `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
-| `gmc-strats/` | GMC Stratification (password protected) |
+| `flight-staff-eval/` | Flight Staff Evaluation (password protected). `gmc-strats/` redirects here. |
 | `shared/` | Det 250 bar, page transitions, patch |
 
 ## Adding a tool
@@ -19,8 +19,8 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 3. Add one entry to the `TOOLS` list in the root `index.html`.
 
 ## Password-protected pages
-`gmc-strats/index.html` is encrypted (AES-GCM, key from the password via PBKDF2), so its contents
+`flight-staff-eval/index.html` is encrypted (AES-GCM, key from the password via PBKDF2), so its contents
 can't be read without the password, even in the page source. To update it, edit the plain page
 locally (never commit it), then re-encrypt:
 
-    node tools/encrypt.mjs plain.html gmc-strats/index.html <password> tools/locked-template.html
+    node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html
