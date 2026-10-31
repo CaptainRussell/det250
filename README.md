@@ -8,7 +8,7 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 | `pfra/` | PFRA Calculator |
 | `whos-that-cadet/` | Who's That Cadet! |
 | `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
-| `flight-staff-eval/` | Flight Staff Evaluation (password protected). `gmc-strats/` redirects here. |
+| `flight-staff-eval/` | Flight Staff Evaluation. `gmc-strats/` redirects here. |
 | `spin-the-wheel/` | Spin the Wheel (seating chart + cold-call wheel) |
 | `make-the-call/` | Make the Call (leadership debate game) |
 | `battle-buddy-recon/` | Battle Buddy Recon (OPSEC exercise) |
@@ -23,8 +23,7 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 3. Add one entry to the `TOOLS` list in the root `index.html`.
 
 ## Password-protected pages
-`flight-staff-eval/index.html` is encrypted (AES-GCM, key from the password via PBKDF2), so its contents
-can't be read without the password, even in the page source. To update it, edit the plain page
-locally (never commit it), then re-encrypt:
+No page is locked right now (Flight Staff Evaluation was unlocked in Oct 2026). To lock a page,
+keep the plain page out of the repo and encrypt it:
 
-    node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html
+    node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html

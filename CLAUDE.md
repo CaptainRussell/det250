@@ -20,14 +20,14 @@
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
 | `whos-that-cadet/` | Who's That Cadet! face/name flashcard drills, shadow mode, printable cards (`index.html`, `photos/`). |
 | `org-chart/` | Fall 2026 Org Chart (`index.html`, `photos/` 240px face crops, `assets/`). |
-| `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), encrypted behind a password. `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
+| `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), a plain page (no password since Oct 2026). `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
 | `spin-the-wheel/` | Instructor tool: classroom seating chart + cold-call wheel. Room size (rows, seats left/right of aisle) is set on the page; `*` after a name = distance learning. |
 | `make-the-call/` | Instructor tool: Agree/Neutral/Disagree leadership debate game (2 to 4 teams, editable statements, sealed scores, podium reveal). |
 | `battle-buddy-recon/` | Instructor tool: OPSEC exercise (brief, pairing wheel, recon clock, brief-out queue). |
 | `practicum-adventure/` | Instructor tool: Practicum Adventure classroom RPG, copied from the `CaptainRussell/practicum-adventure` repo (that repo still has its own dev tools, tests and docs). GM console + Field Guide use the hub look (`hub-skin.css`); projector (`#player`) and phones (`join.html`) keep the 8-bit look. `settings.js` holds the Game settings card (instructor name `GM_NAME`, course, IG name, the four NPC rosters), saved in `d250-practicum-settings-v1`. |
 | `shared/instructor.css` | Common panels, buttons, fields for instructor tools (load after `det250.css`). |
 | `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) and class name (`d250-class-name-v1`, `D250Class.name()`) shared by the instructor tools. Practicum Adventure uses the class name as its course unless its Game settings set one. |
-| `tools/encrypt.mjs`, `tools/locked-template.html` | Re-encrypt a password-protected page. |
+| `tools/encrypt.mjs`, `tools/locked-template.html` | Encrypt a page behind a password (not used by any page right now). |
 | `README.md` | Short how-to. |
 
 ## Adding a tool
@@ -38,12 +38,10 @@
 5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock), `d250-class-roster-v1` (shared class roster), `d250-class-name-v1` (shared class or course name, set in the "Class" box on each instructor tool), `d250-spin-wheel-v1`, `d250-make-the-call-v1`, `d250-battle-buddy-v1`, `d250-practicum-settings-v1`, and Practicum Adventure's own `sq_*` keys.
 6. Instructor tools never ship a built-in roster: names are entered on the page and kept in the browser.
 
-## Password-protected page (Flight Staff Evaluation)
-- The published file is AES-GCM encrypted (key from the password via PBKDF2-SHA256, 310k iterations). Without the password the content cannot be read, even in the source. It stays unlocked for the browser tab via sessionStorage.
-- To update: edit the plain page locally (never commit it), inject the Det 250 bar, then run
-  `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
-- The password is not stored in this repo; ask Captain Russell.
-- Results from Flight Staff Evaluation go to a private spreadsheet via a Google Apps Script URL in its config, not to GitHub.
+## Flight Staff Evaluation
+- Plain HTML in `flight-staff-eval/index.html` (the password lock was removed at Captain Russell's request, Oct 2026). Roster, evaluator roles, photos and the submit settings live in `CONFIG` near the bottom.
+- Results go to a private spreadsheet via the Google Apps Script `submitUrl` in `CONFIG`, not to GitHub. That URL is now readable in the public page source.
+- To lock it again: move the plain page out of the repo and run `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
 
 ## Shared design
 - Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, defaults to dark (`data-theme="dark"` on `<html>`; the light palette is still in each page for `data-theme="light"`), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
@@ -80,7 +78,7 @@ Cadre display order left to right: Matthews, Russell, Orr (with Cabral, Moore), 
 Crop to a 240 x 240 face-centered square (face about 38% of the width), JPEG quality about 82, progressive. Faces come from stored coordinates or OpenCV Haar detection. Patch cutouts must clear every white region touching the image border, not just the corners.
 
 ## Testing before pushing
-Serve the parent folder (`python3 -m http.server`) so the site loads at `/det250/`, then check with Playwright at 1366 x 900 and 390 x 844, in light and dark, for console errors, failed requests and sideways scroll. Test both org chart views and the GMC lock (wrong and right password).
+Serve the parent folder (`python3 -m http.server`) so the site loads at `/det250/`, then check with Playwright at 1366 x 900 and 390 x 844, in light and dark, for console errors, failed requests and sideways scroll. Test both org chart views and Flight Staff Evaluation.
 
 ## Open items
 - Archive the three old tool repos on GitHub (optional; forwarding still works).
