@@ -58,7 +58,6 @@ h1{margin:4px 0 6px;font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacin
 section{margin-top:26px}
 .sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
 .sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
-.sechead span{font-size:12px;color:var(--faint)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
   transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 70ms + .15s)}
@@ -70,16 +69,12 @@ section{margin-top:26px}
 .tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
 .body{min-width:0;flex:1}
 .name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
-.blurb{margin:4px 0 10px;color:var(--soft);font-size:14px}
+.blurb{margin:4px 0 0;color:var(--soft);font-size:14px}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .tool{--tone-ink:var(--tone)}
-.tag{font-size:11px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--tone) 18%,var(--surface));color:var(--tone-ink)}
 .lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
-.go{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--tone-ink)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
 :root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
-.go svg{transition:transform .28s var(--ease)}
-.tool:hover .go svg{transform:translateX(4px)}
 
 @media (max-width:640px){
   .hero{padding:30px 0 18px}
@@ -100,7 +95,7 @@ section{margin-top:26px}
   <img class="patch" src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="132" height="137">
   <div class="eyebrow">AFROTC Detachment 250 · Iowa State University</div>
   <h1>Det 250 Cadet Hub</h1>
-  <p class="lede">Every Det 250 tool in one place. Bookmark this page; new tools show up here as they're added.</p>
+  <p class="lede">Every Det 250 tool in one place.</p>
 </header>
 
 <main class="wrap" id="tools"></main>
@@ -121,24 +116,24 @@ section{margin-top:26px}
    icon: one of the keys in ICONS below.
    ===================================================================== */
 const TOOLS = [
-  {href:"pfra/", name:"PFRA Calculator", tag:"Fitness", tone:"#c8102e", icon:"stopwatch", section:"cadets",
+  {href:"pfra/", name:"PFRA Calculator", tone:"#c8102e", icon:"stopwatch", section:"cadets",
    blurb:"Score a Physical Fitness Readiness Assessment against DAFMAN 36-2905 and the 2026 USAF scoring charts."},
-  {href:"whos-that-cadet/", name:"Who's That Cadet!", tag:"Wing", tone:"#1f4e9c", icon:"faces", section:"cadets",
+  {href:"whos-that-cadet/", name:"Who's That Cadet!", tone:"#1f4e9c", icon:"faces", section:"cadets",
    blurb:"Learn every face in the wing with flashcard drills, shadow mode and printable cards."},
-  {href:"org-chart/", name:"Org Chart", tag:"Wing", tone:"#2f7d32", icon:"tree", section:"cadets",
+  {href:"org-chart/", name:"Org Chart", tone:"#2f7d32", icon:"tree", section:"cadets",
    blurb:"Fall 2026 250th Cadet Wing: cadre, wing staff, flights and the Flip Week view."},
-  {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tag:"Evaluators", tone:"#a06f00", icon:"chart", section:"evaluators",
+  {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tone:"#a06f00", icon:"chart", section:"evaluators",
    blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
-  {href:"spin-the-wheel/", name:"Spin the Wheel", tag:"Classroom", tone:"#b45309", icon:"wheel", section:"instructors",
+  {href:"spin-the-wheel/", name:"Spin the Wheel", tone:"#b45309", icon:"wheel", section:"instructors",
    blurb:"Seating chart and cold-call wheel. Add your class, set up the room, and spin to call on a student."},
-  {href:"make-the-call/", name:"Make the Call", tag:"Classroom", tone:"#0f766e", icon:"scale", section:"instructors",
+  {href:"make-the-call/", name:"Make the Call", tone:"#0f766e", icon:"scale", section:"instructors",
    blurb:"Agree, Neutral or Disagree: teams argue leadership statements to a board and split the prize pool."},
-  {href:"battle-buddy-recon/", name:"Battle Buddy Recon", tag:"OPSEC", tone:"#4a5a36", icon:"binoculars", section:"instructors",
+  {href:"battle-buddy-recon/", name:"Battle Buddy Recon", tone:"#4a5a36", icon:"binoculars", section:"instructors",
    blurb:"OPSEC practical exercise: pair cadets on a wheel, run the open-source recon clock, then brief out."},
-  {href:"practicum-adventure/", name:"Practicum Adventure", tag:"Classroom game", tone:"#6d28d9", icon:"dice", section:"instructors",
+  {href:"practicum-adventure/", name:"Practicum Adventure", tone:"#6d28d9", icon:"dice", section:"instructors",
    blurb:"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."}
 ];
-const SECTIONS = {cadets:["Cadet tools", "Open to everyone"], evaluators:["Evaluator tools", "For cadet evaluators"], instructors:["Instructor tools", "Classroom games and exercises"]};
+const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
 
 const ICONS = {
   stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/>',
@@ -152,15 +147,14 @@ const ICONS = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let i = 0;
-document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, [title, note]]) => {
+document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, title]) => {
   const list = TOOLS.filter(t => t.section === key);
   if(!list.length) return "";
-  return `<section aria-labelledby="h-${key}"><div class="sechead"><h2 id="h-${key}">${title}</h2><span>${note}</span></div><div class="grid">${
+  return `<section aria-labelledby="h-${key}"><div class="sechead"><h2 id="h-${key}">${title}</h2></div><div class="grid">${
     list.map(t => `<a class="tool" href="${esc(t.href)}" style="--tone:${t.tone};--i:${i++}">
       <span class="icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg></span>
       <span class="body"><span class="name">${esc(t.name)}</span><p class="blurb">${esc(t.blurb)}</p>
-      <span class="meta"><span class="tag">${esc(t.tag)}</span>${t.locked ? `<span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span>` : ""}
-      <span class="go">Open<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></span></a>`).join("")
+      ${t.locked ? `<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span></span>` : ""}</span></a>`).join("")
   }</div></section>`;
 }).join("");
 </script>

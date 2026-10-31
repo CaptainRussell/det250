@@ -109,10 +109,11 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 .sw-taken { background: color-mix(in srgb, var(--d250-blue) 14%, var(--d250-surface)); border: 1px solid var(--d250-blue); }
 .sw-called { background: var(--d250-gold); }
 .sw-out { background: var(--d250-surface-2); border: 1px dotted var(--d250-faint); }
+.step-hd-tally .tally { margin-left: auto; }
 .modebar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 @media print {
-  .d250-head .tally, .rail { display: none !important; }
+  .tally, .rail, .d250-step-hd, .d250-next, [data-step-view="roster"] { display: none !important; }
   .cols { display: block; }
   .seat { min-height: 50px; }
   .seat.taken, .front { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -131,16 +132,46 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
       <h1>Spin the Wheel</h1>
       <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>Seating chart and cold-call wheel. Add your class, set up the room, spin.</p>
     </div>
-    <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
+    <div class="d250-head-ctl noprint">
+      <label class="classname">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
+      <nav class="d250-steps" aria-label="Steps">
+        <button type="button" data-step="roster"><span class="n">1</span>Roster</button>
+        <button type="button" data-step="class"><span class="n">2</span>Class</button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- STEP 1: ROSTER -->
+  <section class="d250-step" data-step-view="roster">
+    <div class="d250-step-hd"><span class="label">Step 1</span><h2>Roster and room</h2></div>
+    <div class="d250-setup">
+      <section id="rosterPanel" style="--i:0"></section>
+      <section class="panel" style="--i:1">
+        <div class="panel-hd"><span class="label">Room</span><span class="label" id="roomSum"></span></div>
+        <div class="roomset">
+          <label>Rows <input type="number" id="nRows" min="1" max="12"></label>
+          <label>Seats left of aisle <input type="number" id="nLeft" min="0" max="8"></label>
+          <label>Seats right of aisle <input type="number" id="nRight" min="0" max="8"></label>
+        </div>
+        <div class="panel-bd">
+          <p class="hint" style="margin:0">Set the room to match your classroom. Everyone is seated from the front automatically; on step 2 you can move or shuffle seats and save the chart.</p>
+        </div>
+      </section>
+    </div>
+    <div class="d250-next"><button type="button" class="btn primary big" data-step-go="class">Next: Class &rarr;</button></div>
+  </section>
+
+  <!-- STEP 2: CLASS -->
+  <section class="d250-step" data-step-view="class" hidden>
+  <div class="d250-step-hd step-hd-tally"><span class="label">Step 2</span><h2>Class</h2>
     <div class="tally" aria-live="polite">
       <div><div class="label">To call</div><div class="n gold" id="tPool">0</div></div>
       <div><div class="label">Seated</div><div class="n" id="tSeated">0</div></div>
       <div><div class="label">Absent</div><div class="n" id="tOut">0</div></div>
     </div>
   </div>
-</header>
-
-<main class="wrap">
   <div class="cols">
     <div class="rail">
       <section class="panel" style="--i:0">
@@ -172,18 +203,8 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 
       <section class="panel" style="--i:1">
         <div class="panel-hd">
-          <span class="label">Roster <span id="rCount"></span></span>
-          <button class="btn small" id="editToggle" aria-expanded="false">Edit</button>
-        </div>
-        <div class="panel-bd" id="editPane" hidden>
-          <textarea id="rosterEdit" spellcheck="false" aria-label="Roster, one name per line" placeholder="Last, First&#10;Last, First&#10;Last, First*"></textarea>
-          <p class="hint">One name per line, like <b>Smith, Jordan</b>. Add <code>*</code> after a name for a distance-learning student: listed with the room, never in the draw. Saving also updates your saved class roster for the other instructor tools.</p>
-          <div class="roster-tools">
-            <button class="btn primary" id="saveRoster">Save roster</button>
-            <button class="btn" id="cancelRoster">Cancel</button>
-            <button class="btn quiet" id="loadClass">Load saved class</button>
-          </div>
-          <p class="hint" id="rosterMsg" aria-live="polite"></p>
+          <span class="label">Attendance <span id="rCount"></span></span>
+          <button type="button" class="btn small" data-step-go="roster">Edit roster</button>
         </div>
         <ul class="rlist" id="rlist"></ul>
         <div class="panel-bd" style="border-top:1px solid var(--d250-line);padding-top:10px;padding-bottom:12px">
@@ -203,13 +224,8 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
           <button class="btn small" id="print">Print</button>
         </div>
       </div>
-      <div class="roomset noprint">
-        <label>Rows <input type="number" id="nRows" min="1" max="12"></label>
-        <label>Seats left of aisle <input type="number" id="nLeft" min="0" max="8"></label>
-        <label>Seats right of aisle <input type="number" id="nRight" min="0" max="8"></label>
-      </div>
       <div class="room" id="room">
-        <div class="empty" id="roomEmpty" hidden><b>No class yet.</b> Open <b>Roster &rarr; Edit</b> and paste your names. Everyone is seated from the front automatically.</div>
+        <div class="empty" id="roomEmpty" hidden><b>No class yet.</b> Go to <button type="button" class="linkbtn" data-step-go="roster">step 1, Roster</button> and add your names. Everyone is seated from the front automatically.</div>
         <div class="rows" id="rows"></div>
         <div class="front">Front &middot; Instructor &amp; screen</div>
         <div class="dlstrip" id="dlstrip" hidden></div>
@@ -223,6 +239,7 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
       </div>
     </section>
   </div>
+  </section>
 </main>
 
 <footer class="d250-foot">
@@ -235,6 +252,8 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 </footer>
 
 <script src="../shared/class-roster.js"></script>
+<script src="../shared/cadet-groups.js"></script>
+<script src="../shared/instructor.js"></script>
 <script>
 "use strict";
 /* ------------------------------------------------------------------ model */
@@ -363,6 +382,8 @@ function render(){
   $("resetCalls").disabled = !state.called.length;
   $("restore").disabled = !state.chart;
   $("seatCount").textContent = seatIds.length;
+  const nIn = inClass().length;
+  $("roomSum").textContent = seatIds.length + " seats · " + nIn + " in the room" + (unseatedCount ? " · " + unseatedCount + " without a seat" : "");
   $("nRows").value = state.rows; $("nLeft").value = state.left; $("nRight").value = state.right;
   $("arrange").setAttribute("aria-pressed", String(arranging));
   $("arrange").textContent = arranging ? "Done moving" : "Move seats";
@@ -545,31 +566,26 @@ function toggleOut(p){
   say("Ready", shortName(p.name) + (p.out ? " marked absent" : " is back in the draw")); render();
 }
 
-/* roster editing */
-function openEditor(open){
-  $("editPane").hidden = !open;
-  $("editToggle").textContent = open ? "Close" : "Edit";
-  $("editToggle").setAttribute("aria-expanded", String(open));
-  $("rosterMsg").textContent = "";
-  if (open){ $("rosterEdit").value = state.roster.map(p => p.name + (p.dl ? "*" : "")).join("\n"); $("rosterEdit").focus(); }
-}
-$("editToggle").addEventListener("click", () => openEditor($("editPane").hidden));
-$("cancelRoster").addEventListener("click", () => openEditor(false));
-$("loadClass").addEventListener("click", () => {
-  const names = D250Class.load();
-  if (!names.length){ $("rosterMsg").textContent = "No saved class yet. Type your names and save."; return; }
-  $("rosterEdit").value = names.join("\n");
-  $("rosterMsg").textContent = "Loaded " + names.length + " names. Click Save roster to use them.";
+/* roster (step 1): the shared roster panel */
+const rosterText = () => state.roster.map(p => p.name + (p.dl ? "*" : "")).join("\n");
+const roster = D250Roster.mount($("rosterPanel"), {
+  text: rosterText,
+  placeholder: "Last, First\nLast, First\nLast, First*",
+  hint: 'Add <code>*</code> after a name for a distance-learning student: listed with the room, never in the draw.',
+  apply(text){
+    if (spinning) return { error: "Wait for the wheel to stop." };
+    const list = parseLines(text), prev = state.roster;
+    state.roster = list.map(p => { const old = prev.find(x => x.name === p.name); return Object.assign(p, { out: old ? old.out : false }); });
+    unseatedCount = reconcile();
+    say("Ready", idleWhere());
+    render();
+    return "Roster saved: " + state.roster.length + " students" + (unseatedCount ? ", " + unseatedCount + " without a seat (add rows or seats)." : ".");
+  }
 });
-$("saveRoster").addEventListener("click", () => {
-  const list = parseLines($("rosterEdit").value);
-  const prev = state.roster;
-  state.roster = list.map(p => { const old = prev.find(x => x.name === p.name); return Object.assign(p, { out: old ? old.out : false }); });
-  D250Class.save(state.roster.map(p => p.name));
-  unseatedCount = reconcile();
-  openEditor(false);
-  say("Ready", unseatedCount ? unseatedCount + " without a seat: add rows or seats" : idleWhere());
-  render();
+D250Steps.mount({
+  steps: ["roster", "class"], initial: state.roster.length ? "class" : "roster",
+  beforeLeave(from){ if (from === "roster" && roster.dirty()) return roster.save(); },
+  onShow(step){ if (step === "roster") roster.refresh(); else drawWheel(angle); }
 });
 
 /* redraw the wheel when the theme changes under it */
@@ -578,7 +594,6 @@ new MutationObserver(() => drawWheel(angle)).observe(document.documentElement, {
 
 render();
 say("Ready", idleWhere());
-if (!state.roster.length) openEditor(true);
 </script>
 </body>
 </html>

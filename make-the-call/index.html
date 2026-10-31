@@ -30,7 +30,7 @@ h2.sec { font-size: 18px; font-weight: 800; }
 
 /* setup */
 .setup { display: grid; grid-template-columns: minmax(260px, 400px) minmax(0, 1fr); gap: 18px; align-items: start; }
-.setup textarea#roster { min-height: 300px; }
+.step-hd-ctl .row { margin-left: auto; }
 .teamgrid { display: grid; grid-template-columns: repeat(var(--teams, 4), minmax(0, 1fr)); gap: 10px; }
 .tcard { background: var(--d250-surface-2); border: 1px solid var(--d250-line); border-top: 4px solid var(--c); border-radius: 12px; padding: 10px 12px; min-height: 120px; min-width: 0; }
 .tcard input { width: 100%; font-weight: 800; color: var(--c); background: transparent; border-color: transparent; padding: 2px 4px; margin: -2px -4px 4px; }
@@ -99,7 +99,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 10px -2px var(--c); } 50% { box-shadow: 0 0 60px 8px var(--c); } }
 
 @media (max-width: 800px) {
-  .setup, .cols, .rubric, .spin { grid-template-columns: 1fr; }
+  .cols, .rubric, .spin { grid-template-columns: 1fr; }
   .score, .teamgrid { grid-template-columns: 1fr 1fr; }
   .clock { font-size: 40px; min-width: 90px; }
   .speaker { font-size: 32px; }
@@ -118,55 +118,65 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
       <h1>Make the Call</h1>
       <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>Agree, Neutral or Disagree. Cadets take a position, argue it to a board, and split the pool.</p>
     </div>
-    <div class="tools">
-      <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
-      <button class="btn small" id="setupBtn">Roster and teams</button>
-      <button class="btn small" id="undoBtn">Undo last award</button>
-      <button class="btn small" id="endBtn">End early</button>
-      <button class="btn small danger" id="resetBtn">Reset everything</button>
+    <div class="d250-head-ctl noprint">
+      <label class="classname">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
+      <nav class="d250-steps" aria-label="Steps">
+        <button type="button" data-step="roster"><span class="n">1</span>Roster</button>
+        <button type="button" data-step="rounds"><span class="n">2</span>Rounds</button>
+      </nav>
     </div>
   </div>
 </header>
 
 <main class="wrap" style="--d250-measure:1280px">
-  <div class="score" id="score"></div>
-
-  <!-- SETUP -->
-  <section id="sSetup">
-    <div class="setup">
-      <div class="panel panel-bd stack" style="--i:0">
-        <div>
-          <h2 class="sec">Roster</h2>
-          <p class="hint">One cadet per line. To put someone on a team, add the team number: <code>Smith, 2</code>. No number means auto-balanced.</p>
-        </div>
-        <textarea id="roster" spellcheck="false" placeholder="Smith&#10;Jones, 1&#10;Garcia&#10;..."></textarea>
-        <div class="roster-tools" style="margin-top:0">
-          <button class="btn quiet" id="loadClass">Load saved class</button>
-          <button class="btn" id="shuffleBtn">Shuffle teams</button>
-          <button class="btn primary" id="startBtn">Lock roster and start</button>
-        </div>
-        <p class="hint" id="rosterMsg" aria-live="polite" style="margin-top:0"></p>
-        <div class="opts">
-          <label>Teams <select id="teamsIn"><option>2</option><option>3</option><option selected>4</option></select></label>
-          <label>Prize pool <input type="number" id="poolIn" value="60" min="1"> pts</label>
-          <label>Board size <input type="number" id="boardIn" value="4" min="1"></label>
-        </div>
-        <details class="qs">
-          <summary>Statements (<span id="qCount">20</span>)</summary>
-          <p class="hint">One statement per line. They run in this order.</p>
-          <textarea id="qText" spellcheck="false"></textarea>
-          <div class="row"><button class="btn small quiet" id="qDefault">Restore the default statements</button></div>
-        </details>
-      </div>
-      <div class="panel panel-bd" style="--i:1">
-        <h2 class="sec" style="margin-bottom:10px">Teams <span class="hint" style="font-weight:400">(click a team name to rename it)</span></h2>
-        <div class="teamgrid" id="teams"></div>
+  <!-- STEP 1: ROSTER -->
+  <section class="d250-step" data-step-view="roster">
+    <div class="d250-step-hd"><span class="label">Step 1</span><h2>Roster and teams</h2></div>
+    <div class="d250-setup">
+      <section id="rosterPanel" style="--i:0"></section>
+      <div class="stack">
+        <section class="panel" style="--i:1">
+          <div class="panel-hd"><span class="label">Teams</span><span class="hint" style="margin:0">Click a team name to rename it</span></div>
+          <div class="panel-bd stack">
+            <div class="opts" style="margin:0">
+              <label>Teams <select id="teamsIn"><option>2</option><option>3</option><option selected>4</option></select></label>
+              <button type="button" class="btn small" id="shuffleBtn">Shuffle teams</button>
+            </div>
+            <div class="teamgrid" id="teams"></div>
+          </div>
+        </section>
+        <section class="panel" style="--i:2">
+          <div class="panel-hd"><span class="label">Game</span></div>
+          <div class="panel-bd">
+            <div class="opts" style="margin:0">
+              <label>Prize pool <input type="number" id="poolIn" value="60" min="1"> pts</label>
+              <label>Board size <input type="number" id="boardIn" value="4" min="1"></label>
+            </div>
+            <details class="qs" style="margin-top:12px">
+              <summary>Statements (<span id="qCount">20</span>)</summary>
+              <p class="hint">One statement per line. They run in this order.</p>
+              <textarea id="qText" spellcheck="false"></textarea>
+              <div class="row"><button type="button" class="btn small quiet" id="qDefault">Restore the default statements</button></div>
+            </details>
+          </div>
+        </section>
       </div>
     </div>
+    <div class="d250-next"><p class="hint" id="startMsg" aria-live="polite"></p><button type="button" class="btn primary big" id="startBtn" data-step-go="rounds">Lock roster and start &rarr;</button></div>
   </section>
 
   <!-- ROUND -->
-  <section id="sRound" class="stack" hidden>
+  <section class="d250-step stack" data-step-view="rounds" hidden>
+    <div class="d250-step-hd step-hd-ctl"><span class="label">Step 2</span><h2>Rounds</h2>
+      <div class="row noprint">
+        <button type="button" class="btn small" id="undoBtn">Undo last award</button>
+        <button type="button" class="btn small" id="endBtn">End early</button>
+        <button type="button" class="btn small danger" id="resetBtn">Reset everything</button>
+      </div>
+    </div>
+    <div class="empty" id="notStarted" hidden><b>No game yet.</b> Set up your roster and teams on <button type="button" class="linkbtn" data-step-go="roster">step 1</button>, then press <b>Lock roster and start</b>.</div>
+    <div id="sRound" class="stack">
+    <div class="score" id="score" style="margin:0"></div>
     <div class="panel statement" style="--i:0">
       <span class="label" id="qLabel">Statement 1</span>
       <div class="st" id="qSt"></div>
@@ -230,6 +240,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
         <li>Debrief: <i>What did this show about effective communication or commander's intent?</i></li>
       </ul>
     </details>
+    </div>
   </section>
 </main>
 
@@ -252,6 +263,8 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
 </div>
 
 <script src="../shared/class-roster.js"></script>
+<script src="../shared/cadet-groups.js"></script>
+<script src="../shared/instructor.js"></script>
 <script>
 const COLORS = ["var(--t1)", "var(--t2)", "var(--t3)", "var(--t4)"];
 const POS = [{ k: "A", n: "AGREE", c: "var(--agree)" }, { k: "N", n: "NEUTRAL", c: "var(--neutral)" }, { k: "D", n: "DISAGREE", c: "var(--disagree)" }];
@@ -308,7 +321,7 @@ const pace = ms => reduced() ? 0 : ms;
 
 /* ---------- roster ---------- */
 function parseRoster(shuffle){
-  const lines = $("roster").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = D250Roster.lines(roster.value());
   const fixed = [], free = [], seen = new Set();
   const re = new RegExp("^(.*?)[,\\t]\\s*([1-" + T() + "])\\s*$");
   lines.forEach(l => {
@@ -330,33 +343,36 @@ function renderTeams(list){
     S.teamNames[+inp.dataset.tn] = inp.value.trim() || "Team " + (+inp.dataset.tn + 1); save(); renderScore();
   }));
 }
-const baseNames = () => parseRoster(false).map(c => c.name);
-$("roster").addEventListener("input", () => { S.rosterText = $("roster").value; save(); renderTeams(parseRoster(false)); });
+const roster = D250Roster.mount($("rosterPanel"), {
+  text: () => S.rosterText || "",
+  placeholder: "Last, First\nLast, First, 1\nLast, First",
+  hint: 'To put someone on a team, add the team number: <code>Smith, Jordan, 2</code>. No number means auto-balanced.',
+  onInput(){ if (!S.started) renderTeams(parseRoster(false)); },
+  apply(text){
+    S.rosterText = text; save();
+    if (!S.started) renderTeams(parseRoster(false));
+    return "Roster saved: " + parseRoster(false).length + " cadets." + (S.started ? " The game in progress keeps its teams until you reset." : "");
+  }
+});
 $("teamsIn").addEventListener("change", () => { S.teamCount = +$("teamsIn").value; save(); renderTeams(parseRoster(false)); renderScore(); });
-$("shuffleBtn").onclick = () => { const l = parseRoster(true); $("roster").value = l.map(c => `${c.name}, ${c.team + 1}`).join("\n"); S.rosterText = $("roster").value; save(); renderTeams(l); };
-$("loadClass").onclick = () => {
-  const names = D250Class.load();
-  if (!names.length){ $("rosterMsg").textContent = "No saved class yet. Type your names here; they are saved when you start."; return; }
-  $("roster").value = names.join("\n"); S.rosterText = $("roster").value; save(); renderTeams(parseRoster(false));
-  $("rosterMsg").textContent = "Loaded " + names.length + " names.";
-};
+$("shuffleBtn").onclick = () => { if (S.started) return; const l = parseRoster(true); roster.fill(l.map(c => `${c.name}, ${c.team + 1}`).join("\n")); renderTeams(l); };
 $("qText").addEventListener("input", () => {
   const qs = $("qText").value.split("\n").map(s => s.trim()).filter(Boolean);
   S.questions = qs.length ? qs : DEFAULT_Q.slice(); $("qCount").textContent = S.questions.length; save();
 });
 $("qDefault").onclick = () => { S.questions = DEFAULT_Q.slice(); $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length; save(); };
-$("startBtn").onclick = () => {
+/* Leaving step 1 for the rounds locks the roster and starts the game (once). */
+function start(){
+  if (roster.dirty() && !roster.save()) return false;
+  if (S.started) return true;
   const l = parseRoster(false);
-  if (l.length < 6){ $("rosterMsg").textContent = "Need at least 6 cadets."; return; }
-  D250Class.save(baseNames());
+  if (l.length < 6){ $("startMsg").textContent = "Need at least 6 cadets."; return false; }
+  $("startMsg").textContent = "";
   S.cadets = l; S.pool = +$("poolIn").value || 60; S.boardSize = Math.max(1, +$("boardIn").value || 4);
   S.scores = Array(T()).fill(0);
   S.started = true; S.pos = {}; S.winners = []; drawBoard(); save(); show();
-};
-$("setupBtn").onclick = () => {
-  const open = $("sSetup").hidden;
-  $("sSetup").hidden = !open; $("sRound").hidden = open || !S.started;
-};
+  return true;
+}
 let resetArmed = null;
 $("resetBtn").onclick = e => {
   const b = e.currentTarget;
@@ -551,18 +567,24 @@ document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { clearInte
 $("clockStop").onclick = () => clearInterval(tInt);
 
 function show(){
-  $("roster").value = S.rosterText || ""; $("poolIn").value = S.pool; $("boardIn").value = S.boardSize; $("teamsIn").value = String(T());
-  $("teamsIn").disabled = S.started;
+  $("poolIn").value = S.pool; $("boardIn").value = S.boardSize; $("teamsIn").value = String(T());
+  $("teamsIn").disabled = S.started; $("shuffleBtn").disabled = S.started;
+  $("startBtn").innerHTML = S.started ? "Back to the rounds &rarr;" : "Lock roster and start &rarr;";
   $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length;
   renderScore();
   renderTeams(S.started ? S.cadets : parseRoster(false));
-  $("sSetup").hidden = S.started; $("sRound").hidden = !S.started;
+  $("sRound").hidden = !S.started; $("notStarted").hidden = S.started;
   if (S.started){ renderSpinBtns(); renderQ(); renderRound(); }
   if (S.finished) showFinal(true);
   else if (S.awarded){ $("result").innerHTML = nextBtnHTML(); $("nextRound").onclick = nextRound; }
 }
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!spinning) drawWheel(); }); } catch (e) {}
 show();
+const steps = D250Steps.mount({
+  steps: ["roster", "rounds"], initial: S.started ? "rounds" : "roster",
+  beforeLeave(from, to){ if (from === "roster" && to === "rounds") return start(); },
+  onShow(step){ if (step === "rounds" && S.started && !spinning) drawWheel(); }
+});
 </script>
 </body>
 </html>
