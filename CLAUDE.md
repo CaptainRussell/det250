@@ -39,8 +39,8 @@
 - Results from GMC Strats go to a private spreadsheet via a Google Apps Script URL in its config, not to GitHub.
 
 ## Shared design
-- Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, follows the device light/dark setting (PFRA included), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
-- Look: matches the hub page. Dark palette: page #16161a, surface #1f1f25, ink #ececee, soft #b2b3b8, line #34343c, ISU cardinal #c8102e / #ef4054, gold #f1be48. Light palette: page #f4f4f6, surface #fff, ink #1b1b1d. Follow `prefers-color-scheme`. System font stack.
+- Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, defaults to dark (`data-theme="dark"` on `<html>`; the light palette is still in each page for `data-theme="light"`), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
+- Look: matches the hub page. Dark palette: page #16161a, surface #1f1f25, ink #ececee, soft #b2b3b8, line #34343c, ISU cardinal #c8102e / #ef4054, gold #f1be48. Light palette (kept, not the default): page #f4f4f6, surface #fff, ink #1b1b1d. Dark is the default on every page via `data-theme="dark"`. System font stack.
 - Det 250 bar: dark strip with a cardinal bottom border, patch icon, gold "Det 250", "Cadet Hub", and an "All tools" pill linking to `../`.
 - Footer (all tools): patch, "Optimi In Medio Patrae" (italic), "WE ARE THE STORM", "AFROTC Detachment 250 · Iowa State University", a short source/description line, then "Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250".
 - Pages use `<meta name="robots" content="noindex, nofollow">`.
