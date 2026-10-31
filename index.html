@@ -81,14 +81,6 @@ section{margin-top:26px}
 .go svg{transition:transform .28s var(--ease)}
 .tool:hover .go svg{transform:translateX(4px)}
 
-/* ---------- footer ---------- */
-footer{margin-top:44px;padding:30px 0 40px;border-top:1px solid var(--line);text-align:center;color:var(--soft);font-size:13px}
-footer p{margin:0}
-.motto{font-style:italic;color:var(--ink);opacity:.85;font-size:15px}
-.tagline{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px!important}
-.note{font-size:12.5px;margin-top:6px!important}
-.created-by{display:inline-block;margin-top:14px!important;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink);opacity:.85}
-
 @media (max-width:640px){
   .hero{padding:30px 0 18px}
   .patch{width:104px}
@@ -113,13 +105,13 @@ footer p{margin:0}
 
 <main class="wrap" id="tools"></main>
 
-<footer>
-  <div class="wrap">
-    <p class="motto">Optimi In Medio Patrae</p>
-    <p class="tagline">We Are The Storm</p>
-    <p class="note">AFROTC Detachment 250 &middot; Iowa State University</p>
-    <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
-  </div>
+<footer class="d250-foot">
+  <img class="footer-patch" src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Every Det 250 cadet and evaluator tool, one link. New tools show up here as they're added.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
 <script>

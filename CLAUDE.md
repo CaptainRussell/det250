@@ -27,8 +27,9 @@
 ## Adding a tool
 1. Put it in its own folder with `index.html`. Use relative paths only.
 2. Add the shared bar: `<link rel="stylesheet" href="../shared/det250.css">` in `<head>`, and copy the `<a class="d250-bar" ...>` line from the top of `org-chart/index.html` to just after `<body>`.
-3. Add one entry to `TOOLS` in the root `index.html`.
-4. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (GMC Strats), `d250-gmc-pass` (sessionStorage, GMC unlock).
+3. Add the standard tool header (`<header class="d250-head" style="--tone:...">`) and footer (`<footer class="d250-foot">`). Markup for both is in the comments in `shared/det250.css`; copy from `org-chart/index.html`. Use the tool's hub card `tone`, and the `--d250-*` tokens for colors.
+4. Add one entry to `TOOLS` in the root `index.html`.
+5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (GMC Strats), `d250-gmc-pass` (sessionStorage, GMC unlock).
 
 ## Password-protected page (GMC Strats)
 - The published file is AES-GCM encrypted (key from the password via PBKDF2-SHA256, 310k iterations). Without the password the content cannot be read, even in the source. It stays unlocked for the browser tab via sessionStorage.
@@ -38,7 +39,8 @@
 - Results from GMC Strats go to a private spreadsheet via a Google Apps Script URL in its config, not to GitHub.
 
 ## Shared design
-- Look: matches the PFRA Calculator. Dark palette: page #16161a, surface #1f1f25, ink #ececee, soft #b2b3b8, line #34343c, ISU cardinal #c8102e / #ef4054, gold #f1be48. Light palette: page #f4f4f6, surface #fff, ink #1b1b1d. Follow `prefers-color-scheme`. System font stack.
+- Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, follows the device light/dark setting (PFRA included), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
+- Look: matches the hub page. Dark palette: page #16161a, surface #1f1f25, ink #ececee, soft #b2b3b8, line #34343c, ISU cardinal #c8102e / #ef4054, gold #f1be48. Light palette: page #f4f4f6, surface #fff, ink #1b1b1d. Follow `prefers-color-scheme`. System font stack.
 - Det 250 bar: dark strip with a cardinal bottom border, patch icon, gold "Det 250", "Cadet Hub", and an "All tools" pill linking to `../`.
 - Footer (all tools): patch, "Optimi In Medio Patrae" (italic), "WE ARE THE STORM", "AFROTC Detachment 250 · Iowa State University", a short source/description line, then "Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250".
 - Pages use `<meta name="robots" content="noindex, nofollow">`.

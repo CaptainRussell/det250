@@ -9,14 +9,14 @@
 <meta name="description" content="250th Cadet Wing, Det 250 Iowa State University: Fall 2026 organization chart with a Flip Week view.">
 <style>
 :root{
-  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eef1f5; --border:#d8dde4; --border-strong:#b9c1cc;
-  --text:#18212e; --muted:#5b6676; --accent:#1f4e9c; --accent-weak:#e4ecf9; --accent-text:#ffffff;
+  --bg:#f4f4f6; --surface:#ffffff; --surface-2:#eeeef1; --border:#d9d9de; --border-strong:#c2c2c9;
+  --text:#1b1b1d; --muted:#55565c; --accent:#1f4e9c; --accent-weak:#e4ecf9; --accent-text:#ffffff;
   --as100:#2b67ad; --as100-weak:#e3eefa; --as200:#8f3a7c; --as200-weak:#f6e6f2;
   --poc:#1b2f57; --poc-weak:#e6e9f0;
   --as250:#0f7b7b; --as300:#2f7d32; --as400:#b45309; --as500:#b42318; --gb:#1b2f57;
   --flip:#9a5b00; --flip-weak:#fdf1dc;
-  --cadre:#5f6b7a; --cadre-weak:#e9ecf0;
-  --line:#b9c1cc; --lit:#1f4e9c;
+  --cadre:#5f6067; --cadre-weak:#ebebee;
+  --line:#c2c2c9; --lit:#1f4e9c;
   --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
   --shadow-lg:0 12px 28px rgba(16,24,40,.18),0 2px 6px rgba(16,24,40,.1);
   --ease:cubic-bezier(.2,.7,.2,1);
@@ -24,34 +24,34 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0f141b; --surface:#171e28; --surface-2:#1e2733; --border:#2b3644; --border-strong:#3d4a5b;
-    --text:#e6ebf2; --muted:#9aa6b6; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
+    --bg:#16161a; --surface:#1f1f25; --surface-2:#26262e; --border:#34343c; --border-strong:#46464f;
+    --text:#ececee; --muted:#b2b3b8; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
     --as100:#7fb1ea; --as100-weak:#1a2a40; --as200:#d68cc4; --as200-weak:#341d30;
-    --poc:#c3cfe6; --poc-weak:#232c3b;
+    --poc:#c3cfe6; --poc-weak:#2a2a33;
     --as250:#5cc8c8; --as300:#74c77a; --as400:#f0a35b; --as500:#f0776b; --gb:#c3cfe6;
     --flip:#e3a64b; --flip-weak:#33260f;
-    --cadre:#aab4c2; --cadre-weak:#252d39;
-    --line:#3d4a5b; --lit:#6f9ee8;
+    --cadre:#b2b3b8; --cadre-weak:#2a2a33;
+    --line:#46464f; --lit:#6f9ee8;
     --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 28px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0f141b; --surface:#171e28; --surface-2:#1e2733; --border:#2b3644; --border-strong:#3d4a5b;
-  --text:#e6ebf2; --muted:#9aa6b6; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
+  --bg:#16161a; --surface:#1f1f25; --surface-2:#26262e; --border:#34343c; --border-strong:#46464f;
+  --text:#ececee; --muted:#b2b3b8; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
   --as100:#7fb1ea; --as100-weak:#1a2a40; --as200:#d68cc4; --as200-weak:#341d30;
-  --poc:#c3cfe6; --poc-weak:#232c3b;
+  --poc:#c3cfe6; --poc-weak:#2a2a33;
   --as250:#5cc8c8; --as300:#74c77a; --as400:#f0a35b; --as500:#f0776b; --gb:#c3cfe6;
   --flip:#e3a64b; --flip-weak:#33260f;
-  --cadre:#aab4c2; --cadre-weak:#252d39;
-  --line:#3d4a5b; --lit:#6f9ee8;
+  --cadre:#b2b3b8; --cadre-weak:#2a2a33;
+  --line:#46464f; --lit:#6f9ee8;
   --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 28px rgba(0,0,0,.5);
   color-scheme:dark;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0}
-html{scroll-padding-top:96px}
+html{scroll-padding-top:116px}
 body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -60,9 +60,8 @@ button{cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:0 16px}
 
 /* ---------- header ---------- */
-header.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
-.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;padding:12px 0}
-.h1sub{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+header.top{--d250-measure:1240px;position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
+header.top .d250-head-in{padding-top:12px;padding-bottom:12px}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:6px}
 .toolbar .legend{margin:0}
 .toolbar .search{order:2}
@@ -312,14 +311,14 @@ section.band{margin-top:26px}
 
 /* ---------- mobile outline ---------- */
 @media (max-width:760px){
-  html{scroll-padding-top:120px}
+  html{scroll-padding-top:140px}
   h1{font-size:18px;margin:0}
-  .hrow{padding:10px 0;flex-direction:column;align-items:stretch;gap:8px}
-  .h1sub{display:inline;margin-left:8px;font-size:10.5px}
+  header.top .d250-head-in{padding-top:10px;padding-bottom:10px;gap:8px}
+  header.top .d250-head-icon,header.top .d250-head-sub{display:none}
+  header.top .d250-head h1,header.top h1{font-size:20px}
   .seg{min-width:0;width:100%}
   .toolbar .search{flex:1 1 100%;order:-1}
   .seg button{padding:8px 10px;font-size:15px;min-height:46px}
-  .hrow>div:first-child{min-width:0;flex:1}
   .controls{flex:none}
   .navrow{gap:8px}
   .jump{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;max-width:calc(100% + 32px)}
@@ -396,16 +395,6 @@ section.band{margin-top:26px}
   .hero img{width:120px;height:120px}
 }
 
-.site-footer{margin-top:34px;padding:30px 0 40px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:13px}
-.site-footer p{margin:0}
-.footer-patch{display:block;width:110px;height:auto;margin:0 auto;opacity:.95;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
-.motto{font-style:italic;color:var(--text);opacity:.8;margin-top:10px !important;font-size:15px}
-.tagline{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px !important}
-.footer-note{font-size:12.5px;margin-top:6px !important}
-.source-line{max-width:620px;margin:16px auto 0 !important;padding-top:14px;border-top:1px solid var(--border);line-height:1.6;color:var(--text);opacity:.85}
-.created-by{display:inline-block;margin-top:14px !important;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text);opacity:.85}
-.also{font-size:12px;margin-top:8px !important}
-.also a{color:var(--accent);font-weight:600}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0ms !important;transition-duration:.01ms !important;transition-delay:0ms !important;scroll-behavior:auto !important}
@@ -416,15 +405,18 @@ section.band{margin-top:26px}
 <body>
 <a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 <script>document.documentElement.classList.add('js');document.documentElement.dataset.mode=new URLSearchParams(location.search).get('view')==='flip'?'flip':'poc';</script>
-<header class="top">
-  <div class="wrap">
-    <div class="hrow">
-      <h1>Fall 2026 Org Chart<span class="h1sub">Det 250 · 250th Cadet Wing</span></h1>
+<header class="top d250-head" style="--tone:#2f7d32">
+  <div class="d250-head-in">
+      <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="5" rx="1.2"/><rect x="2.5" y="16.5" width="6" height="5" rx="1.2"/><rect x="15.5" y="16.5" width="6" height="5" rx="1.2"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg></span>
+      <div class="d250-head-text">
+        <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
+        <h1>Fall 2026 Org Chart</h1>
+        <p class="d250-head-sub">250th Cadet Wing: cadre, wing staff, flights and the Flip Week view.</p>
+      </div>
       <div class="seg" role="group" aria-label="Which chart to show">
         <button type="button" data-set-mode="poc" aria-pressed="true">POC Chart</button>
         <button type="button" data-set-mode="flip" aria-pressed="false">Flip Week</button>
       </div>
-    </div>
   </div>
 </header>
 
@@ -474,20 +466,17 @@ section.band{margin-top:26px}
     <div class="panel"><div class="tree" id="tree-group"></div></div>
   </section>
 </main>
-<footer class="site-footer">
-  <div class="wrap">
-    <img class="footer-patch" src="assets/det250-patch.png" alt="AFROTC Detachment 250 patch" width="110" height="114" loading="lazy">
-    <p class="motto">Optimi In Medio Patrae</p>
-    <p class="tagline">We Are The Storm</p>
-    <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
-    <p class="source-line">
-      Positions reflect the <strong>Fall 2026</strong> 250th Cadet Wing organization chart, the
-      <strong>Flip Week</strong> construct, and current flight assignments. Tap or click anyone for details;
-      use the toggle at the top to switch between the POC chart and Flip Week.
-    </p>
-    <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
-    <p class="also"><a href="../">All Det 250 tools</a></p>
-  </div>
+<footer class="d250-foot">
+  <img class="footer-patch" src="assets/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">
+    Positions reflect the <strong>Fall 2026</strong> 250th Cadet Wing organization chart, the
+    <strong>Flip Week</strong> construct, and current flight assignments. Tap or click anyone for details;
+    use the toggle at the top to switch between the POC chart and Flip Week.
+  </p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
 <div class="peek" id="peek" role="tooltip" aria-hidden="true"></div>
