@@ -145,8 +145,14 @@
   function faceHTML(name, size) {
     const c = find(name);
     return `<span class="d250-face ${c ? RING[c.cls] || "" : ""}" style="--sz:${size || 32}px" aria-hidden="true"><b>${esc(initials(name))}</b>${
-      c && c.key ? `<img src="../org-chart/photos/${esc(c.key)}.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+      c && c.key ? `<img draggable="false" src="../org-chart/photos/${esc(c.key)}.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
   }
+
+  /* Photos are never dragged on their own: grabbing a seat or chip by its photo
+     drags the seat or chip (the tools' own drag and drop), not the picture. */
+  document.addEventListener("dragstart", e => {
+    if (e.target && e.target.closest && e.target.closest(".d250-face")) e.preventDefault();
+  });
 
   window.D250Steps = { mount: mountSteps };
   window.D250Face = { html: faceHTML, find };
