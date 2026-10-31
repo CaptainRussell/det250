@@ -230,6 +230,25 @@ const GENDER = {
   'Peter': 'f',
   'States': 'm',
   'Tjaden': 'm',
+  // AS 300's
+  'Helle': 'm',
+  'Bourek': 'm',
+  'Barszcz': 'm',
+  'Marschang': 'f',
+  'Ashbacker': 'm',
+  'Cooper': 'm',
+  'Coulthard': 'm',
+  'Davis': 'm',
+  'Collier': 'm',
+  'Gaul': 'm',
+  'Van Devander': 'm',
+  'Bradlee': 'm',
+  'Curtis': 'm',
+  'Davila': 'm',
+  'Humiston': 'f',
+  'Jalodia': 'f',
+  'Hader': 'm',
+  'Tu': 'm',
 };
 // Named characters outside your Unit. Each run draws them from roster names nobody else is using.
 // In text: {X:wing} = "Col Hyman" · {X:wing.name} = "Hyman" · {X:wing.he} {X:wing.He} {X:wing.him} {X:wing.his} {X:wing.His}.
