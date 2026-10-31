@@ -5,15 +5,11 @@
  * and nothing depends on hover.
  */
 
-/* Dark is the default, not a preference the browser is asked about.
- *
- * This used to follow prefers-color-scheme, which meant the same URL opened
- * dark in one window and light in a private one on the same machine, because
- * the browser reports its own setting there. The dark palette is the one the
- * detachment wanted, so it is simply the palette. Light is still here, under
- * an explicit data-theme="light", if a toggle is ever wanted; nothing sets it
- * today. Printing is unaffected: the print block forces its own light-on-white
- * palette and outranks both of these.
+/* Hub Standard: follow the device's light or dark setting, like every other
+ * Det 250 tool. Dark is the plain :root; the light palette applies when the
+ * device asks for light. data-theme="light" or "dark" on <html> overrides
+ * either way. Printing is unaffected: the print block forces its own
+ * light-on-white palette and outranks all of these.
  */
 :root {
   /* The lap pace bar. Lifted from the shield blue so it reads on the dark
@@ -49,6 +45,7 @@
   --radius: 12px;
   --gutter: 16px;
   --measure: 46rem;
+  --d250-measure: var(--measure);
 
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .3);
 
@@ -71,8 +68,7 @@
   background: center / contain no-repeat var(--shield);
 }
 
-/* The light palette, kept whole and unused. Set data-theme="light" on <html>
- * to get it back. */
+/* The light palette: used when the device prefers light, or when forced. */
 :root[data-theme="light"] {
   --pace-accent: #006186;
   --pace-bg: #0061861a;
@@ -97,6 +93,33 @@
   --oval-surface: #c97f68;
 
   --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .05);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --pace-accent: #006186;
+    --pace-bg: #0061861a;
+    --cardinal: #c8102e;
+    --cardinal-dark: #9c0c24;
+  
+    --ink: #1b1b1d;
+    --ink-soft: #55565a;
+    --ink-faint: #7c7d82;
+    --page: #f4f4f2;
+    --surface: #ffffff;
+    --line: #dededa;
+    --line-strong: #c3c3bd;
+  
+    --pass: #1d7a4c;
+    --pass-bg: #e6f4ec;
+    --fail: #b3261e;
+    --fail-bg: #fdecea;
+    --warn-bg: #fff6e0;
+    --track-fail: #f2cdc9;
+    --track-pass: #c9dfd2;
+    --oval-surface: #c97f68;
+  
+    --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .05);
+  }
 }
 
 * { box-sizing: border-box; }
@@ -130,38 +153,8 @@ main {
 
 /* --- masthead ----------------------------------------------------------- */
 
-/* Deliberately small: the tool is the point, so the masthead is a name badge
- * rather than a banner. The detachment line, motto and citations live in the
- * footer, where they are read once rather than scrolled past every time. */
-/* Air Force blue rather than Iowa State cardinal: the assessment is the same
- * one across AFROTC, and a detachment's colours on the banner made the tool
- * look like it was only for that detachment. The Det 250 patch stays in the
- * footer, where the attribution is. */
-.masthead {
-  background: var(--af-blue);
-  color: #fff;
-  padding: 10px var(--gutter);
-  border-bottom: 4px solid var(--gold);
-}
-
-.masthead-inner {
-  max-width: var(--measure);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* The shield carries its own gold border, so it needs no halo to separate it
- * from the blue bar; a faint dark shadow just lifts it off. */
-.mark {
-  flex: 0 0 auto;
-  width: 38px;
-  height: 39px;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35));
-}
-
-.masthead h1 { font-size: 1.15rem; letter-spacing: -.01em; }
+/* The header is the shared Det 250 tool header (.d250-head in
+ * ../shared/det250.css). It keeps the .masthead class for the print rules. */
 
 .tagline {
   font-size: .72rem;
@@ -1308,31 +1301,16 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 
 /* --- footer ------------------------------------------------------------- */
 
-footer {
-  text-align: center;
-  padding: 28px var(--gutter) calc(96px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
-  color: var(--ink-faint);
+/* The look is the shared .d250-foot. The bottom padding keeps the byline
+ * clear of the fixed running total. */
+footer.d250-foot {
+  margin-top: 12px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
-.footer-patch {
-  width: 110px;
-  height: 114px;
-  margin: 0 auto;
-  opacity: .95;
-}
-.motto {
-  font-style: italic;
-  color: var(--ink-soft);
-  margin-top: 6px;
-  font-size: .9rem;
-}
-.footer-note { font-size: .78rem; margin-top: 4px; }
 
 /* --- wider screens ------------------------------------------------------ */
 
 @media (min-width: 620px) {
-  .masthead h1 { font-size: 1.3rem; }
-  .mark { width: 44px; height: 45px; }
   .composite { font-size: 4.2rem; }
   .card { padding: 22px 24px; }
 }
@@ -1345,15 +1323,6 @@ footer {
 
 @media (prefers-reduced-motion: no-preference) {
   .results { scroll-margin-top: 12px; }
-}
-
-.created-by {
-  font-size: .78rem;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-  display: inline-block;
-  color: var(--ink-soft);
 }
 
 /* --- running total ------------------------------------------------------ */

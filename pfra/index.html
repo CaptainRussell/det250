@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AFROTC PFRA Calculator, Det 250</title>
 <meta name="description" content="Unofficial PFRA score calculator for AFROTC Detachment 250 cadets at Iowa State University.">
-<!-- Dark first so the browser paints scrollbars, form controls and the
-     page background dark before the stylesheet arrives. -->
+<meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
-<link rel="icon" href="assets/afrotc-shield-icon.png" type="image/png" sizes="96x96">
-<link rel="stylesheet" href="styles.css?v=c1401fb0cb">
+<link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
+<link rel="stylesheet" href="styles.css?v=d250std1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
-<header class="masthead">
-  <div class="masthead-inner">
-    <div class="mark shield" role="img" aria-label="Air Force ROTC shield"></div>
-    <h1>AFROTC PFRA Calculator</h1>
+<header class="d250-head masthead" style="--tone:#c8102e">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
+      <h1>AFROTC PFRA Calculator</h1>
+      <p class="d250-head-sub">Score a Physical Fitness Readiness Assessment against DAFMAN 36-2905 and the 2026 USAF charts.</p>
+    </div>
   </div>
 </header>
 
@@ -1012,8 +1015,8 @@
   </button>
 </div>
 
-<footer>
-  <div class="footer-patch patch" aria-hidden="true"></div>
+<footer class="d250-foot">
+  <div class="footer-patch patch" role="img" aria-label="AFROTC Detachment 250 patch"></div>
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
