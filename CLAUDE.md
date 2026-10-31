@@ -20,7 +20,7 @@
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
 | `whos-that-cadet/` | Who's That Cadet! face/name flashcard drills, shadow mode, printable cards (`index.html`, `photos/`). |
 | `org-chart/` | Fall 2026 Org Chart (`index.html`, `photos/` 240px face crops, `assets/`). |
-| `gmc-strats/` | GMC Stratification evaluator, encrypted behind a password. |
+| `gmc-strats/` | Flight Staff Evaluation (formerly GMC Stratification), encrypted behind a password. The folder keeps the old name so links still work. |
 | `tools/encrypt.mjs`, `tools/locked-template.html` | Re-encrypt a password-protected page. |
 | `README.md` | Short how-to. |
 

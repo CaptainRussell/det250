@@ -8,7 +8,7 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 | `pfra/` | PFRA Calculator |
 | `whos-that-cadet/` | Who's That Cadet! |
 | `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
-| `gmc-strats/` | GMC Stratification (password protected) |
+| `gmc-strats/` | Flight Staff Evaluation (password protected) |
 | `shared/` | Det 250 bar, page transitions, patch |
 
 ## Adding a tool
