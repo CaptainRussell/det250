@@ -7,7 +7,7 @@
 <title>Battle Buddy Recon</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <link rel="stylesheet" href="../shared/det250.css">
-<link rel="stylesheet" href="../shared/instructor.css?v=2">
+<link rel="stylesheet" href="../shared/instructor.css?v=3">
 <style>
 :root { --signal: var(--d250-gold); --alert: var(--d250-cardinal); --ok: #1f8a4c; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ok: #5cc98d; } }
@@ -53,7 +53,7 @@ textarea { margin: 10px 0; }
 /* View 2: pairing */
 .pairing { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 26px; align-items: start; }
 .wheelbox { display: grid; gap: 18px; justify-items: center; }
-.wheelbox canvas { width: 100%; max-width: 540px; aspect-ratio: 1; display: block; }
+.wheelbox .d250-wheelstage { max-width: 540px; }
 .draw { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 10px; }
 .slot { border: 2px dashed var(--d250-line-strong); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; min-height: 86px; align-content: center; transition: border-color .25s, background .25s; }
 .slot.filled { border-style: solid; border-color: var(--d250-gold); background: var(--d250-gold-bg); }
@@ -284,7 +284,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   <section class="view d250-step" id="view-pair" data-step-view="pair" hidden>
     <div class="pairing">
       <div class="wheelbox">
-        <canvas id="wheel" aria-label="Pairing wheel showing cadets not yet paired" role="img"></canvas>
+        <div class="d250-wheelstage"><div class="d250-needle"></div><canvas id="wheel" width="840" height="840" aria-label="Pairing wheel showing cadets not yet paired" role="img"></canvas></div>
         <button class="btn primary big" id="spin">Spin</button>
       </div>
       <div class="stack">
@@ -437,7 +437,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
 
 <script src="../shared/class-roster.js"></script>
 <script src="../shared/cadet-groups.js"></script>
-<script src="../shared/instructor.js?v=2"></script>
+<script src="../shared/instructor.js?v=3"></script>
 <script>
 (() => {
     const KEY = "d250-battle-buddy-v1";
@@ -569,78 +569,25 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   const canvas = $("#wheel"), ctx = canvas.getContext("2d");
   let rot = 0, spinning = false, hi = -1, lastFresh = -1, note = "";
   const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  function sizeWheel() {
-    const w = canvas.clientWidth; if (!w) return;
-    const d = window.devicePixelRatio || 1;
-    canvas.width = Math.round(w * d); canvas.height = Math.round(w * d);
-    drawWheel();
-  }
+  /* the shared wheel (shared/instructor.js), same look and spin as the other tools */
+  function sizeWheel() { drawWheel(); }
   function drawWheel() {
-    const W = canvas.width; if (!W) return;
-    const c = W / 2, r = c * 0.93, names = state.remaining, n = names.length;
-    const cols = [tok("--d250-surface"), tok("--d250-surface-2"), tok("--d250-line")];
-    const FONT = getComputedStyle(document.body).fontFamily;
-    ctx.clearRect(0, 0, W, W);
-    ctx.save(); ctx.translate(c, c);
-    if (n === 0) {
-      ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fillStyle = tok("--d250-surface-2"); ctx.fill();
-      ctx.fillStyle = tok("--d250-soft"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = `800 ${W * 0.055}px ${FONT}`;
-      ctx.fillText(state.roster.length ? "ALL CADETS PAIRED" : "ADD YOUR ROSTER", 0, 0);
-    } else {
-      const seg = TAU / n;
-      for (let i = 0; i < n; i++) {
-        const a0 = -Math.PI / 2 + rot + i * seg;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, a0, a0 + seg); ctx.closePath();
-        let ci = i % 3; if (n > 1 && i === n - 1 && ci === 0) ci = 1;
-        ctx.fillStyle = i === hi ? tok("--d250-gold") : cols[ci]; ctx.fill();
-        if (n > 1) { ctx.strokeStyle = tok("--d250-line-strong"); ctx.lineWidth = W * 0.002; ctx.stroke(); }
-        ctx.save(); ctx.rotate(a0 + seg / 2);
-        const fs = Math.min(W * 0.045, Math.max(W * 0.024, seg * r * 0.5));
-        ctx.font = `${i === hi ? 800 : 700} ${fs}px ${FONT}`;
-        ctx.fillStyle = i === hi ? tok("--d250-page") : tok("--d250-ink"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
-        ctx.fillText(names[i].toUpperCase(), r * 0.92, 0, r * 0.64);
-        ctx.restore();
-      }
-    }
-    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.strokeStyle = tok("--d250-gold"); ctx.lineWidth = W * 0.008; ctx.stroke();
-    if (n) {
-    ctx.beginPath(); ctx.arc(0, 0, r * 0.16, 0, TAU); ctx.fillStyle = tok("--d250-cardinal"); ctx.fill();
-    ctx.strokeStyle = tok("--d250-surface"); ctx.lineWidth = W * 0.008; ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.font = `800 ${W * 0.05}px ${FONT}`;
-    ctx.fillText(String(n), 0, W * 0.003);
-    }
-    ctx.restore();
-    // Pointer, fixed at 12 o'clock
-    const pw = W * 0.035, top = W * 0.004, tip = W * 0.1;
-    ctx.beginPath(); ctx.moveTo(c - pw, top); ctx.lineTo(c + pw, top); ctx.lineTo(c, tip); ctx.closePath();
-    ctx.fillStyle = tok("--d250-gold"); ctx.fill(); ctx.strokeStyle = tok("--d250-page"); ctx.lineWidth = W * 0.006; ctx.lineJoin = "round"; ctx.stroke();
+    D250Wheel.draw(canvas, { labels: state.remaining, rot, hi, empty: state.roster.length ? "All cadets paired" : "Add your roster" });
   }
 
   function spin() {
     const n = state.remaining.length;
     if (spinning || n === 0) return;
     unlockAudio();
-    const idx = Math.floor(rand() * n), seg = TAU / n;
-    // Rotation that puts the chosen segment (with a little jitter) under the pointer, after several full turns.
-    const desired = -((idx + 0.5) * seg + (rand() - 0.5) * seg * 0.6);
-    const delta = (((desired - rot) % TAU) + TAU) % TAU + TAU * (5 + Math.floor(rand() * 3));
+    const idx = Math.floor(rand() * n);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dur = reduce ? 500 : 5200, start = rot, t0 = performance.now();
     let lastSeg = -1;
     spinning = true; hi = -1; note = state.pendingA ? `Spinning for ${state.pendingA}'s partner…` : "Spinning…";
     renderPairing();
-    function frame(t) {
-      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
-      rot = start + delta * e;
-      const k = Math.floor(((((-rot) % TAU) + TAU) % TAU) / seg);
-      if (k !== lastSeg) { lastSeg = k; if (p < 1 && !reduce) tick(); }
-      drawWheel();
-      if (p < 1) requestAnimationFrame(frame);
-      else { rot = ((rot % TAU) + TAU) % TAU; hi = idx; drawWheel(); chime(); setTimeout(() => land(idx), 1000); }
-    }
-    requestAnimationFrame(frame);
+    D250Wheel.spin({ n, pick: idx, from: rot, dur: reduce ? 0 : 4200,
+      onFrame(r, k) { rot = r; if (k !== lastSeg) { lastSeg = k; if (!reduce) tick(); } drawWheel(); },
+      onDone(r) { rot = ((r % TAU) + TAU) % TAU; hi = idx; drawWheel(); chime(); setTimeout(() => land(idx), 1000); }
+    });
   }
 
   function land(idx) {

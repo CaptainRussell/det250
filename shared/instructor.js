@@ -148,6 +148,81 @@
       c && c.key ? `<img draggable="false" src="../org-chart/photos/${esc(c.key)}.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
   }
 
+
+  /* ------------------------------------------------------------ wheel
+     One wheel for every instructor tool (the Make the Call look): colored
+     slices, dark bold names, a plain hub, and the gold needle at 12 o'clock
+     (markup: <div class="d250-wheelstage"><div class="d250-needle"></div>
+     <canvas width="840" height="840"></canvas></div>).
+
+     D250Wheel.draw(canvas, { labels, rot, color(i), dim(i), hi, empty })
+       labels: slice text; rot: wheel angle; color(i): a CSS color for slice i
+       (default: the four wheel colors in turn); dim(i): greyed out; hi: index
+       to light up; empty: text when there are no slices.
+     D250Wheel.spin({ n, pick, from, dur, onFrame(rot, i), onDone(rot) })
+       Turns six to eight times, slows down, then creeps over the last slice
+       or two before it stops on slice `pick`. i is the slice under the needle.
+     D250Wheel.at(rot, n): the slice under the needle. */
+  const TAU = Math.PI * 2;
+  const cssv = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const WCOL = ["--d250-w1", "--d250-w2", "--d250-w3", "--d250-w4"];
+  function wheelColor(i, n) {
+    let k = i % 4;
+    if (n > 1 && i === n - 1 && k === 0) k = 1;   /* the last slice never matches the first */
+    return cssv(WCOL[k]);
+  }
+  function drawWheel(cv, o) {
+    const x = cv.getContext("2d"), W = cv.width, k = W / 840, R = W / 2 - 8 * k;
+    const labels = o.labels || [], n = labels.length, rot = o.rot || 0;
+    const page = cssv("--d250-page"), surf2 = cssv("--d250-surface-2"), faint = cssv("--d250-faint"), ink = cssv("--d250-ink");
+    const FONT = getComputedStyle(document.body).fontFamily;
+    x.clearRect(0, 0, W, W); x.save(); x.translate(W / 2, W / 2);
+    if (!n) {
+      x.beginPath(); x.arc(0, 0, R, 0, TAU); x.fillStyle = surf2; x.fill();
+      x.fillStyle = faint; x.font = `700 ${40 * k}px ${FONT}`; x.textAlign = "center"; x.textBaseline = "middle";
+      x.fillText(o.empty || "No names", 0, 0, R * 1.6); x.restore(); return;
+    }
+    const seg = TAU / n, fs = Math.min(50, Math.max(22, 360 / n + 14)) * k;
+    for (let i = 0; i < n; i++) {
+      const a0 = rot + i * seg - Math.PI / 2, dim = o.dim && o.dim(i), hi = o.hi === i;
+      x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, R, a0, a0 + seg); x.closePath();
+      x.fillStyle = hi ? ink : dim ? surf2 : (o.color ? o.color(i) : wheelColor(i, n));
+      x.globalAlpha = hi || dim ? 1 : i % 2 ? .8 : 1; x.fill(); x.globalAlpha = 1;
+      if (n > 1) { x.strokeStyle = page; x.lineWidth = 4 * k; x.stroke(); }
+      x.save(); x.rotate(a0 + seg / 2);
+      x.fillStyle = hi ? page : dim ? faint : "#16161a"; x.textAlign = "right"; x.textBaseline = "middle";
+      x.font = `800 ${fs}px ${FONT}`;
+      const t = String(labels[i]);
+      x.fillText(t.length > 18 ? t.slice(0, 17) + "…" : t, R - 22 * k, 0, R * .72);
+      x.restore();
+    }
+    x.beginPath(); x.arc(0, 0, 40 * k, 0, TAU); x.fillStyle = page; x.fill();
+    x.restore();
+  }
+  const wheelAt = (rot, n) => n ? Math.floor((((-rot) % TAU) + TAU) % TAU / (TAU / n)) % n : -1;
+  function spinWheel(o) {
+    const n = o.n, seg = TAU / n, from = o.from || 0, dur = o.dur || 0;
+    const target = -(o.pick * seg + seg / 2) + (Math.random() - .5) * seg * .7;
+    const end = target - TAU * (Math.ceil((target - from) / TAU) + 6 + Math.floor(Math.random() * 3));
+    if (!dur) { if (o.onFrame) o.onFrame(end, o.pick); o.onDone(end); return; }
+    /* a fast spin that slows down, then a slow creep over the last slice or two;
+       the two parts meet at the same speed so there is no jerk */
+    const total = from - end;
+    const crawlMs = Math.min(2600, Math.max(400, dur * .42)), fastMs = dur - crawlMs;
+    const crawl = Math.min(total * .2, seg * (1 + Math.random() * .8)), fast = total - crawl;
+    const lin = Math.min(fast, 3 * crawl * fastMs / crawlMs);
+    const dist = t => {
+      if (t < fastMs) { const u = t / fastMs; return lin * u + (fast - lin) * (1 - Math.pow(1 - u, 4)); }
+      const u = Math.min(1, (t - fastMs) / crawlMs); return fast + crawl * (1 - Math.pow(1 - u, 3));
+    };
+    const t0 = performance.now();
+    (function frame(now) {
+      const t = Math.min(dur, now - t0), rot = from - dist(t);
+      if (o.onFrame) o.onFrame(rot, t < dur ? wheelAt(rot, n) : o.pick);
+      if (t < dur) requestAnimationFrame(frame); else o.onDone(end);
+    })(t0);
+  }
+
   /* Photos are never dragged on their own: grabbing a seat or chip by its photo
      drags the seat or chip (the tools' own drag and drop), not the picture. */
   document.addEventListener("dragstart", e => {
@@ -155,6 +230,7 @@
   });
 
   window.D250Steps = { mount: mountSteps };
+  window.D250Wheel = { draw: drawWheel, spin: spinWheel, at: wheelAt };
   window.D250Face = { html: faceHTML, find };
   window.D250Roster = { mount: mountRoster, base, lines };
 })();
