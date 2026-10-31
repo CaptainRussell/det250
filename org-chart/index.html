@@ -269,7 +269,14 @@ section.band{margin-top:26px}
 .pk span{display:flex;flex-direction:column;min-width:0}
 .pk b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pk small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.peek.show .pk{animation:rise .32s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms + 40ms)}
+/* FLT/CC: the rest of the flight's GMC as one summary row */
+.pk-flight{display:flex;align-items:center;gap:10px;width:100%;margin-top:6px;border:1px dashed var(--border-strong);background:var(--surface-2);border-radius:10px;padding:6px 8px;text-align:left;transition:border-color .15s,background .15s}
+.pk-flight:hover,.pk-flight:focus-visible{border-style:solid;border-color:var(--accent);background:var(--accent-weak)}
+.pk-flight .stack img,.pk-flight .stack .more{width:26px;height:26px}
+.pk-flight .pf{display:flex;flex-direction:column;min-width:0}
+.pk-flight b{font-size:12.5px}
+.pk-flight small{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);font-weight:700;white-space:nowrap}
+.peek.show .pk,.peek.show .pk-flight{animation:rise .32s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms + 40ms)}
 @media (hover:none){.peek{display:none}}
 
 /* cadre: collapsed by default so cadet leadership leads the page */
@@ -713,6 +720,14 @@ const flightPOC = fl => [byId[fl].poc[0], ...(FLIGHTS_POC[fl] || [])];
 function primaryOf(key){
   return SEATS.find(x => !x.member && !x.cadre && x.poc && x.poc[0] === key) || SEATS.find(x => x.member && x.poc[0] === key);
 }
+/* a FLT/CC leads every GMC in the flight; returns the ones not already named as a direct report */
+function flightLeads(seat, named){
+  if(MODE !== "poc" || !FLIGHTS[seat.id]) return [];
+  const have = new Set(named.map(s => holder(s).key));
+  return flightGMC(seat.id).filter(k => !have.has(k));
+}
+const EXPAND = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
+const faceStack = (keys, n) => `<span class="stack" aria-hidden="true">${keys.slice(0, n).map(k => img(k)).join("")}${keys.length > n ? `<span class="more">+${keys.length - n}</span>` : ""}</span>`;
 const membersOf = fl => kids(fl).filter(c => c.member);
 /* compact button under each FLT/CC; the full roster opens in a larger window */
 function roster(seat){
@@ -892,16 +907,17 @@ function pkItem(seat, i){
 function showPeek(card){
   const seat = byId[card.dataset.seat]; if(!seat) return;
   const ups = supervisorsOf(seat);
-  const downs = kids(seat.id, MODE).filter(k => !k.member);
-  if(!ups.length && !downs.length){ hidePeek(); return; }
+  const downs = kids(seat.id, MODE).filter(k => !k.member), gmc = flightLeads(seat, downs);
+  if(!ups.length && !downs.length && !gmc.length){ hidePeek(); return; }
   let i = 0;
-  const part = (label, list) => {
-    if(!list.length) return "";
+  const part = (label, list, extra = 0, tail = "") => {
+    if(!list.length && !extra) return "";
     const where = [...new Set(list.map(s => sectionName(shownCard(s.id))).filter(Boolean))].join(", ");
-    return `<div class="peek-h"><span>${label}</span><b>${list.length}</b>${where ? `<em>in ${esc(where)}</em>` : ""}</div><div class="peek-grid" style="--cols:${Math.min(list.length, 3)}">${list.map(s => pkItem(s, i++)).join("")}</div>`;
+    return `<div class="peek-h"><span>${label}</span><b>${list.length + extra}</b>${where && !extra ? `<em>in ${esc(where)}</em>` : ""}</div>${list.length ? `<div class="peek-grid" style="--cols:${Math.min(list.length, 3)}">${list.map(s => pkItem(s, i++)).join("")}</div>` : ""}${tail}`;
   };
+  const fl = gmc.length ? `<button type="button" class="pk-flight" data-flight="${seat.id}" style="--i:${i + downs.length}" aria-label="View ${esc(flightName(seat.id))} Flight: ${gmc.length} ${downs.length ? "more " : ""}GMC cadets">${faceStack(gmc, 4)}<span class="pf"><b>${gmc.length} ${downs.length ? "more " : ""}GMC cadets</b><small>${esc(flightName(seat.id))} Flight ·${EXPAND}View flight</small></span></button>` : "";
   const pk = $("#peek");
-  pk.innerHTML = part("Reports to", ups) + part("Leads", downs);
+  pk.innerHTML = part("Reports to", ups) + part("Leads", downs, gmc.length, fl);
   pk.classList.remove("show", "above");
   // place below the card, or above if there is no room
   const r = card.getBoundingClientRect(), pw = pk.offsetWidth, ph = pk.offsetHeight;
