@@ -36,7 +36,9 @@ h2.sec { font-size: 18px; font-weight: 800; }
 .tcard input { width: 100%; font-weight: 800; color: var(--c); background: transparent; border-color: transparent; padding: 2px 4px; margin: -2px -4px 4px; }
 .tcard input:hover { border-color: var(--d250-line); }
 .tcard ul { list-style: none; margin: 0; padding: 0; font-size: 14px; }
-.tcard li { border-bottom: 1px solid var(--d250-line); padding: 3px 0; overflow-wrap: anywhere; }
+.tcard li { border-bottom: 1px solid var(--d250-line); padding: 5px 0; overflow-wrap: anywhere; display: flex; align-items: center; gap: 9px; min-width: 0; }
+.tcard li span { min-width: 0; }
+.speaker .spface, .speaker.pop > .spface { display: block; margin: 4px 0 14px 6px; }
 .opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 12px; font-size: 14px; color: var(--d250-soft); }
 .opts label { display: inline-flex; gap: 6px; align-items: center; }
 details.qs { margin-top: 4px; }
@@ -51,7 +53,7 @@ details.qs textarea { min-height: 260px; margin-top: 10px; }
 .clockrow { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; }
 .clock { font-size: 52px; font-weight: 800; line-height: 1; min-width: 120px; text-align: center; font-variant-numeric: tabular-nums; }
 .clock.low { color: var(--d250-cardinal); }
-.chip.cad { border-left: 4px solid var(--c); border-radius: 8px; cursor: pointer; padding: 5px 11px; margin: 3px; transition: transform .2s var(--d250-ease), border-color .2s; }
+.chip.cad { border-left: 4px solid var(--c); border-radius: 8px; cursor: pointer; padding: 5px 11px 5px 14px; margin: 3px; transition: transform .2s var(--d250-ease), border-color .2s; }
 .chip.cad:hover:not(:disabled) { border-color: var(--d250-gold); border-left-color: var(--c); transform: translateY(-1px); }
 .chip.cad:disabled { cursor: default; }
 .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -72,7 +74,7 @@ details.qs textarea { min-height: 260px; margin-top: 10px; }
 .needle { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--d250-gold); filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); z-index: 2; }
 .speaker { font-size: 44px; font-weight: 800; line-height: 1.05; min-height: 56px; margin-top: 16px; }
 .speaker small { display: block; font-size: 15px; font-weight: 400; color: var(--d250-soft); margin-top: 6px; }
-.speaker.pop span { display: inline-block; animation: pop .55s var(--d250-ease); }
+.speaker.pop > span { display: inline-block; animation: pop .55s var(--d250-ease); }
 @keyframes pop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.08); } }
 .spinbtns .btn.on { background: var(--k); border-color: var(--k); color: var(--d250-page); }
 .spinbtns .btn { border-color: var(--k); }
@@ -338,7 +340,7 @@ function setTeamsVar(){ document.documentElement.style.setProperty("--teams", T(
 function renderTeams(list){
   setTeamsVar();
   $("teams").innerHTML = teams().map((t, i) => `<div class="tcard" style="--c:${t.c}"><input value="${esc(t.n)}" data-tn="${i}" aria-label="Team ${i + 1} name" maxlength="24"><ul>${
-    list.filter(c => c.team === i).map(c => `<li>${esc(c.name)}</li>`).join("")}</ul></div>`).join("");
+    list.filter(c => c.team === i).map(c => `<li>${D250Face.html(c.name, 24)}<span>${esc(c.name)}</span></li>`).join("")}</ul></div>`).join("");
   document.querySelectorAll("[data-tn]").forEach(inp => inp.addEventListener("input", () => {
     S.teamNames[+inp.dataset.tn] = inp.value.trim() || "Team " + (+inp.dataset.tn + 1); save(); renderScore();
   }));
@@ -394,7 +396,7 @@ $("drawBoard").onclick = () => { drawBoard(); save(); renderRound(); };
 
 /* ---------- round ---------- */
 const teamOf = n => S.cadets.find(c => c.name === n).team;
-const chip = (n, extra = "") => `<button class="chip cad" data-n="${esc(n)}" style="--c:${COLORS[teamOf(n)]}" ${extra}>${esc(n)}</button>`;
+const chip = (n, extra = "") => `<button class="chip cad" data-n="${esc(n)}" style="--c:${COLORS[teamOf(n)]}" ${extra}>${D250Face.html(n, 24)}${esc(n)}</button>`;
 function renderQ(){
   const i = Math.min(S.qi, Q().length - 1);
   $("qLabel").textContent = `Statement ${i + 1} of ${Q().length}`;
@@ -501,7 +503,7 @@ $("spinBtn").onclick = () => {
     spinning = false; angle = target; drawWheel();
     const n = names[pick], p = POS.find(p => p.k === spinPos), tm = teams()[teamOf(n)];
     S.spoke[n] = 1; save(); beep();
-    $("speaker").innerHTML = `<span style="color:${tm.c}">${esc(n)}</span><small>Speaks for <b style="color:${p.c}">${p.n}</b> · ${esc(tm.n)}</small>`;
+    $("speaker").innerHTML = `<span class="spface">${D250Face.html(n, 96)}</span><span style="color:${tm.c}">${esc(n)}</span><small>Speaks for <b style="color:${p.c}">${p.n}</b> · ${esc(tm.n)}</small>`;
     $("speaker").classList.add("pop");
   })(t0);
 };

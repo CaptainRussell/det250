@@ -68,7 +68,13 @@ textarea { margin: 10px 0; }
 .count div { display: grid; }
 .count b { font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
 ol.pairs { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-ol.pairs li { display: grid; grid-template-columns: 2.2em 1fr; align-items: baseline; gap: 4px; padding: 7px 10px; border: 1px solid var(--d250-line); border-radius: 9px; background: var(--d250-surface); font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.slotface { display: flex; gap: 10px; margin: 6px 0 4px; }
+.slotface:empty { display: none; }
+.now .nrow { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.now .nrow > span:first-child:empty { display: none; }
+ol.pairs li .pf { display: flex; }
+ol.pairs li .pf .d250-face + .d250-face { margin-left: -6px; }
+ol.pairs li { display: grid; grid-template-columns: 2.2em auto 1fr; align-items: center; gap: 4px; padding: 7px 10px; border: 1px solid var(--d250-line); border-radius: 9px; background: var(--d250-surface); font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
 ol.pairs li .k { font-size: .8rem; color: var(--d250-soft); font-variant-numeric: tabular-nums; }
 ol.pairs li.fresh { border-color: var(--signal); box-shadow: inset 4px 0 0 var(--signal); animation: ins-rise .4s var(--d250-ease); }
 ol.pairs li.trio { grid-column: 1 / -1; }
@@ -287,9 +293,9 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
           <h2>Draw partners</h2>
         </div>
         <div class="draw">
-          <div class="slot" id="slot-a"><span class="label">Cadet</span><span class="who empty" id="who-a">-</span></div>
+          <div class="slot" id="slot-a"><span class="label">Cadet</span><span class="slotface" id="face-a"></span><span class="who empty" id="who-a">-</span></div>
           <span class="swap" aria-hidden="true">⇄</span>
-          <div class="slot" id="slot-b"><span class="label">Partner</span><span class="who empty" id="who-b">-</span></div>
+          <div class="slot" id="slot-b"><span class="label">Partner</span><span class="slotface" id="face-b"></span><span class="who empty" id="who-b">-</span></div>
         </div>
         <p class="status" id="status" aria-live="polite"></p>
         <div class="count">
@@ -358,9 +364,9 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
         <div class="panel now">
           <span class="label" id="b-count">Brief 1 of 22</span>
           <div class="names">
-            <span class="a" id="b-a">-</span>
+            <span class="nrow"><span id="bf-a"></span><span class="a" id="b-a">-</span></span>
             <span class="on">briefs findings on</span>
-            <span class="b" id="b-b">-</span>
+            <span class="nrow"><span id="bf-b"></span><span class="b" id="b-b">-</span></span>
           </div>
           <div class="btimer">
             <span class="time" id="b-time" role="timer">2:00</span>
@@ -496,12 +502,22 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   /* ---------- Roster ---------- */
   /* Names show as last names. Two cadets with the same last name get a first
      initial ("Reid E."), or the first name if the initials match too ("Johnson Zion"). */
-  function parseRoster(text) {
+  function parseRoster(text) { return parseRosterFull(text).map(r => r.name); }
+  /* display name -> the full roster line, for the org chart photos */
+  let faceMapText = null, faceMap = {};
+  function face(display, size) {
+    if (faceMapText !== state.rosterText) {
+      faceMapText = state.rosterText; faceMap = {};
+      parseRosterFull(state.rosterText || "").forEach(r => { faceMap[r.name] = r.full; });
+    }
+    return D250Face.html(faceMap[display] || display, size);
+  }
+  function parseRosterFull(text) {
     const rows = [], seen = new Set();
     D250Roster.lines(text).forEach(line => {
       const [last, first = ""] = D250Roster.base(line).split(",").map(x => x.trim());
       const k = (last + "," + first).toLowerCase();
-      if (last && !seen.has(k)) { seen.add(k); rows.push({ last, first }); }
+      if (last && !seen.has(k)) { seen.add(k); rows.push({ last, first, full: D250Roster.base(line) }); }
     });
     const count = (f) => { const n = {}; rows.forEach(r => { const k = f(r).toLowerCase(); n[k] = (n[k] || 0) + 1; }); return n; };
     const byLast = count(r => r.last), byInit = count(r => r.last + " " + (r.first[0] || ""));
@@ -510,14 +526,14 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
       let name = r.last;
       if (byLast[r.last.toLowerCase()] > 1 && r.first) name = byInit[(r.last + " " + r.first[0]).toLowerCase()] > 1 ? r.last + " " + r.first : r.last + " " + r.first[0] + ".";
       for (let i = 2; used.has(name.toLowerCase()); i++) name = name.replace(/ \d+$/, "") + " " + i;
-      used.add(name.toLowerCase()); return name;
+      used.add(name.toLowerCase()); return { name, full: r.full };
     });
   }
   function renderRoster() {
     $("#roster-count").textContent = state.roster.length + (state.roster.length === 1 ? " cadet" : " cadets");
     $("#roster-empty").hidden = state.roster.length > 0;
     document.querySelectorAll(".recon-mins").forEach(el => { el.textContent = state.reconMin; });
-    $("#roster-chips").innerHTML = state.roster.map(n => `<span class="chip">${esc(n)}</span>`).join("");
+    $("#roster-chips").innerHTML = state.roster.map(n => `<span class="chip">${face(n, 22)}${esc(n)}</span>`).join("");
     const briefs = state.roster.length, mins = Math.round(briefs * (state.briefLen + 30) / 60);
     $("#brief-total").textContent = "~" + mins + " min";
     $("#brief-each").textContent = fmt(state.briefLen) + " per cadet, plus 30 seconds for your partner to confirm or correct.";
@@ -697,6 +713,8 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
     const aName = state.pendingA || (lp ? lp[0] : null);
     const bName = state.pendingA ? null : (lp ? lp.slice(1).join(" + ") : null);
     wa.textContent = aName || "-"; wa.classList.toggle("empty", !aName); $("#slot-a").classList.toggle("filled", !!aName);
+    $("#face-a").innerHTML = aName ? face(aName, 64) : "";
+    $("#face-b").innerHTML = state.pendingA || !lp ? "" : lp.slice(1).map(n => face(n, 64)).join("");
     wb.textContent = bName || (spinning && state.pendingA ? "…" : "-"); wb.classList.toggle("empty", !bName); $("#slot-b").classList.toggle("filled", !!bName);
     const st = $("#status");
     st.textContent = note || "Spin to draw the first cadet.";
@@ -711,7 +729,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
     $("#done-banner").hidden = !done;
     const ol = $("#pairs");
     ol.innerHTML = state.pairs.length
-      ? state.pairs.map((g, i) => `<li class="${i === lastFresh ? "fresh" : ""} ${g.length > 2 ? "trio" : ""}"><span class="k">${String(i + 1).padStart(2, "0")}</span><span>${groupText(g)}</span></li>`).join("")
+      ? state.pairs.map((g, i) => `<li class="${i === lastFresh ? "fresh" : ""} ${g.length > 2 ? "trio" : ""}"><span class="k">${String(i + 1).padStart(2, "0")}</span><span class="pf">${g.map(n => face(n, 24)).join("")}</span><span>${groupText(g)}</span></li>`).join("")
       : `<li style="grid-column:1/-1; border:0; background:none; padding:0"><span></span><span class="empty-note">Pairs will appear here.</span></li>`;
   }
 
@@ -785,6 +803,8 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
     $("#b-count").textContent = has ? `Brief ${state.briefIdx + 1} of ${rows.length}` : "No briefs yet";
     $("#b-a").textContent = r ? r.a : "-";
     $("#b-b").textContent = r ? r.b : "-";
+    $("#bf-a").innerHTML = r ? face(r.a, 76) : "";
+    $("#bf-b").innerHTML = r ? face(r.b, 60) : "";
     $("#b-reply").textContent = r ? `Then ${r.b} confirms or corrects (30 sec).` : "Pair cadets on the wheel first.";
     $("#b-next").disabled = !has; $("#b-prev").disabled = !has || state.briefIdx === 0;
     const doneCount = rows.filter(x => state.briefDone[x.a + "→" + x.b]).length;
