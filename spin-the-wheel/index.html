@@ -15,6 +15,12 @@
 
 /* ---------- wheel ---------- */
 .wheelbox { display: grid; place-items: center; padding: 6px 0 2px; }
+/* pop-out only: the winner's photo and name flash over the wheel after a spin */
+.winflash { display: none; position: absolute; inset: 0; z-index: 3; place-items: center; align-content: center; gap: 2cqw; pointer-events: none;
+  border-radius: 50%; background: color-mix(in srgb, var(--d250-page) 72%, transparent); opacity: 0; transform: scale(.85); transition: opacity .35s, transform .45s var(--d250-ease); }
+.winflash.show { opacity: 1; transform: none; }
+.winflash .who { font-size: 9cqw; font-weight: 800; color: var(--d250-ink); text-align: center; line-height: 1.05; padding: 0 8cqw; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+@media (prefers-reduced-motion: reduce) { .winflash { transition: none; } }
 .popnote { display: grid; gap: 8px; justify-items: start; padding: 12px; margin-bottom: 12px; border: 1px dashed var(--d250-gold); border-radius: 10px; background: var(--d250-gold-bg); }
 .popnote .hint { margin: 0; }
 .wheelbox .d250-wheelstage { max-width: 300px; }
@@ -204,7 +210,7 @@ body.dnd, body.dnd * { cursor: grabbing !important; }
           </div>
           <div id="stage">
           <div class="wheelbox">
-            <div class="d250-wheelstage"><div class="d250-needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Name wheel"></canvas></div>
+            <div class="d250-wheelstage"><div class="d250-needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Name wheel"></canvas><div class="winflash" id="winFlash" aria-hidden="true"></div></div>
           </div>
           <div class="readout" id="readout" aria-live="polite">
             <div class="roface" id="roFace" hidden></div>
@@ -480,6 +486,7 @@ function spin(){
   /* Don't repeat students: once everyone has been called, start a new round */
   if (state.noRepeat && !drawPool().length && present().length){ state.called = []; state.history = []; render(); }
   held = null;
+  $("winFlash").classList.remove("show");
   const slots = wheelSlots();
   const live = slots.map((s, i) => s.ok ? i : -1).filter(i => i >= 0);
   if (!live.length) return;
@@ -512,9 +519,20 @@ function land(chosen, slots, pickI){
   if (slots) held = { slots, hi: pickI, sig: wheelSig(wheelSlots()) };
   render();
   say(shortName(chosen.name).toUpperCase(), "→ " + seatLabel(chosen.seat), chosen.name);
+  if (pipWin) flashWinner(chosen.name);
   const ro = $("readout"); ro.classList.remove("live"); void ro.offsetWidth; ro.classList.add("landed");
   const el = document.querySelector('[data-seat="' + chosen.seat + '"]');
   if (el){ el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650); }
+}
+
+/* pop-out: show the winner's photo and name over the wheel for a moment */
+let flashT = null;
+function flashWinner(name){
+  const f = $("winFlash"), w = pipWin || window;
+  f.innerHTML = D250Face.html(name, 10).replace("--sz:10px", "--sz:38cqw") + '<div class="who">' + esc(shortName(name)) + '</div>';
+  w.clearTimeout(flashT);
+  f.classList.remove("show"); void f.offsetWidth; f.classList.add("show");
+  flashT = w.setTimeout(() => f.classList.remove("show"), 2800);
 }
 
 /* --------------------------------------------------------------- actions */
@@ -736,12 +754,11 @@ const PIP_CSS = `
 html, body { margin: 0; height: 100%; }
 body { background: var(--d250-page); color: var(--d250-ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; caret-color: transparent; }
 #stage { box-sizing: border-box; height: 100%; padding: 12px 14px 14px; display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: 8px; }
-#stage .wheelbox { min-height: 0; padding: 4px 0 0; container-type: size; }
-#stage .d250-wheelstage { width: min(100cqw, 100cqh); max-width: none; }
-#stage .readout { margin: 0; min-height: 0; }
-#stage .roface { margin-bottom: 4px; }
-#stage .readout .who { font-size: clamp(20px, 7vw, 40px); }
-#stage .readout .where { font-size: clamp(12px, 3.6vw, 16px); }
+#stage { grid-template-rows: minmax(0, 1fr); padding: 8px; }
+#stage .wheelbox { min-height: 0; padding: 0; container-type: size; }
+#stage .d250-wheelstage { width: min(100cqw, 100cqh); max-width: none; cursor: pointer; container-type: inline-size; }
+#stage .readout, #stage #spin { display: none; }
+#stage .winflash { display: grid; }
 `;
 function setPopped(on){
   $("popNote").hidden = !on; $("spinHere").hidden = !on;
@@ -752,10 +769,10 @@ async function popOut(){
   const stage = $("stage"), home = stage.parentNode, mark = document.createComment("stage");
   let w = null;
   try {
-    if (window.documentPictureInPicture) w = await documentPictureInPicture.requestWindow({ width: 360, height: 520 });
+    if (window.documentPictureInPicture) w = await documentPictureInPicture.requestWindow({ width: 420, height: 440 });
   } catch (e) { w = null; }
   if (!w){
-    w = window.open("", "d250-wheel", "popup,width=380,height=560");
+    w = window.open("", "d250-wheel", "popup,width=440,height=480");
     if (!w){ say("Ready", "Your browser blocked the pop-out window. Allow pop-ups for this site and try again."); return; }
     w.document.open(); w.document.write("<!doctype html><title>Wheel Spin</title>"); w.document.close();
   }
@@ -774,9 +791,16 @@ async function popOut(){
   drawWheel(angle);
   /* space or enter in the pop-out spins */
   d.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && !e.repeat){ e.preventDefault(); spin(); } });
+  /* the pop-out is just the wheel: click it (or press Space) to spin */
+  const wheelClick = () => spin();
+  stage.querySelector(".d250-wheelstage").addEventListener("click", wheelClick);
+  stage.querySelector(".d250-wheelstage").title = "Click or press Space to spin";
   const back = () => {
     if (!pipWin) return;
     pipWin = null;
+    stage.querySelector(".d250-wheelstage").removeEventListener("click", wheelClick);
+    stage.querySelector(".d250-wheelstage").removeAttribute("title");
+    stage.querySelector("#winFlash").classList.remove("show");
     mark.parentNode.insertBefore(document.adoptNode(stage), mark); mark.remove();
     setPopped(false); drawWheel(angle);
   };
