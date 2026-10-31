@@ -9,7 +9,11 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 | `whos-that-cadet/` | Who's That Cadet! |
 | `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
 | `flight-staff-eval/` | Flight Staff Evaluation (password protected). `gmc-strats/` redirects here. |
-| `shared/` | Det 250 bar, page transitions, patch |
+| `spin-the-wheel/` | Spin the Wheel (seating chart + cold-call wheel) |
+| `make-the-call/` | Make the Call (leadership debate game) |
+| `battle-buddy-recon/` | Battle Buddy Recon (OPSEC exercise) |
+| `practicum-adventure/` | Practicum Adventure (classroom RPG; see its `HOW-TO-RUN.md`) |
+| `shared/` | Det 250 bar, page transitions, patch, instructor tool styles, shared class roster |
 
 ## Adding a tool
 1. Put the tool in its own folder, with its page at `<folder>/index.html`.

@@ -1,0 +1,85 @@
+/* Practicum Adventure: Det 250 Hub Standard skin for the instructor-facing
+   pages (GM console and Field Guide). Loaded after style.css. The projector
+   screen (body.player) and the phones (body[data-mode=phone]) keep the
+   8-bit game look on purpose. */
+
+/* the projector window is the same page as the console: no hub chrome there */
+body.player .d250-bar, body.player .d250-head, body.player .d250-foot { display: none !important; }
+
+/* style.css sets pixel fonts on headings; the hub header keeps the hub font */
+.d250-head h1, .d250-head p { font-family: var(--d250-font) !important; text-shadow: none !important; }
+
+/* ---------- GM console ---------- */
+body.gm, body.guide {
+  --bg: var(--d250-page); --bg2: var(--d250-surface-2); --panel: var(--d250-surface); --panel2: var(--d250-surface-2);
+  --line: var(--d250-line); --text: var(--d250-ink); --dim: var(--d250-soft); --gold: var(--d250-gold); --accent: var(--d250-blue);
+  --ui: var(--d250-font);
+  background: var(--d250-page); color: var(--d250-ink); font-family: var(--d250-font);
+}
+body.gm .gmw { max-width: 1440px; margin: 0 auto; min-height: 0; padding: 14px 16px; }
+body.gm .gmtop { border-bottom: 1px solid var(--d250-line); }
+body.gm .gmtop h1 { display: none; } /* the hub header above already names the tool */
+body.gm .gmtop .ph { margin-right: auto; }
+body.gm .gmtop .ph, body.gm .gmprogress-label { font-family: var(--d250-font); font-size: 12px; font-weight: 700; letter-spacing: .12em; color: var(--d250-gold); }
+body.gm .gmprogress { background: var(--d250-surface); border: 1px solid var(--d250-line-strong); border-radius: 12px; box-shadow: var(--d250-shadow); }
+body.gm .b {
+  background: var(--d250-surface-2); color: var(--d250-ink); border: 1px solid var(--d250-line-strong); border-radius: 9px;
+  padding: 7px 12px; font-weight: 600; transition: border-color .18s, transform .18s var(--d250-ease), filter .18s;
+}
+body.gm .b:hover { border-color: var(--d250-gold); }
+body.gm .b:active:not([disabled]) { transform: translateY(1px); }
+body.gm .b.pri { background: var(--d250-cardinal); border-color: var(--d250-cardinal); color: #fff; }
+body.gm .b.pri:hover { filter: brightness(1.08); }
+body.gm .b.go { background: color-mix(in srgb, #1f8a4c 70%, var(--d250-surface)); border-color: #1f8a4c; color: #fff; }
+body.gm .b.red { background: transparent; border-color: color-mix(in srgb, var(--d250-cardinal) 60%, var(--d250-line)); color: var(--d250-cardinal); }
+body.gm .b.on { outline: 2px solid var(--d250-gold); outline-offset: 1px; }
+body.gm .gcard {
+  background: var(--d250-surface); border: 1px solid var(--d250-line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--d250-shadow);
+  animation: pa-rise .45s var(--d250-ease) both;
+}
+@keyframes pa-rise { from { opacity: 0; transform: translateY(10px); } }
+body.gm .gcard h2 { font-family: var(--d250-font); font-weight: 800; color: var(--d250-ink); }
+body.gm .gcard h3 { font-family: var(--d250-font); font-weight: 700; font-size: 12px; letter-spacing: .12em; color: var(--d250-soft); }
+body.gm .gchoice { background: var(--d250-surface-2); border: 1px solid var(--d250-line); border-radius: 10px; }
+body.gm input[type=text], body.gm input[type=number], body.gm select, body.gm textarea {
+  background: var(--d250-page); color: var(--d250-ink); border: 1px solid var(--d250-line-strong); border-radius: 8px;
+}
+body.gm input:focus, body.gm select:focus, body.gm textarea:focus { outline: 2px solid var(--d250-gold); outline-offset: 1px; }
+body.gm .mt, body.gm .event-recap { background: var(--d250-surface-2); border-color: var(--d250-line); }
+body.gm .event-recap b { font-family: var(--d250-font); font-size: 11px; }
+body.gm .event-recap div, body.gm .log { color: var(--d250-soft); }
+body.gm .log div, body.gm table.g td, body.gm table.g th { border-color: var(--d250-line); }
+body.gm .pill { background: var(--d250-surface-2); }
+body.gm .pill.y { background: var(--d250-gold-bg); color: var(--d250-gold); }
+body.gm :focus-visible, body.guide :focus-visible { outline: 3px solid var(--d250-gold); outline-offset: 2px; }
+
+/* game settings card (settings.js) */
+.pa-settings .pa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+.pa-settings .pa-grid label, .pa-settings .pa-rosters label { display: grid; gap: 4px; font-size: 12.5px; color: var(--d250-soft); font-weight: 600; }
+.pa-settings .pa-rosters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 8px 0; }
+.pa-settings .pa-rosters label > .row { margin: 0; color: var(--d250-ink); }
+.pa-settings textarea { min-height: 150px; font-size: 13px; line-height: 1.5; }
+
+/* ---------- Field Guide ---------- */
+body.guide { font-size: 16px; }
+body.guide .g-top { background: var(--d250-surface); border-bottom: 1px solid var(--d250-line); }
+body.guide .g-top .logo { display: none; }
+body.guide .g-sub { font-family: var(--d250-font); font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--d250-gold); margin-top: 0; }
+body.guide .g-top nav { justify-content: center; flex-wrap: wrap; overflow: visible; }
+body.guide .g-top nav a {
+  font-family: var(--d250-font); font-size: 13px; font-weight: 600; background: var(--d250-surface-2);
+  border: 1px solid var(--d250-line); border-radius: 999px; padding: 5px 12px; transition: border-color .18s;
+}
+body.guide .g-top nav a:hover { border-color: var(--d250-gold); }
+body.guide .g-join { font-family: var(--d250-font); font-size: 13px; font-weight: 700; color: var(--d250-gold); }
+body.guide .g-main h2 { font-family: var(--d250-font); font-size: 22px; font-weight: 800; color: var(--d250-ink); line-height: 1.25; }
+body.guide .g-main h3 { font-family: var(--d250-font); font-size: 16px; font-weight: 800; color: var(--d250-ink); }
+body.guide .g-main b { color: var(--d250-ink); }
+body.guide .g-card, body.guide .g-class { background: var(--d250-surface); border: 1px solid var(--d250-line); border-radius: 14px; }
+body.guide .g-card p { color: var(--d250-soft); }
+body.guide .g-win { background: var(--d250-gold-bg); border-left-color: var(--d250-gold); border-radius: 0 10px 10px 0; }
+body.guide .g-lose { background: color-mix(in srgb, var(--d250-cardinal) 14%, var(--d250-surface)); border-left-color: var(--d250-cardinal); border-radius: 0 10px 10px 0; }
+body.guide .g-small { color: var(--d250-soft); }
+
+@media (max-width: 900px) { body.gm .gmw { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { body.gm .gcard { animation: none; } }

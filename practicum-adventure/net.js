@@ -1,0 +1,306 @@
+/* =====================================================================
+   PRACTICUM ADVENTURE - phone play (GM side)
+   The GM console opens a PeerJS "room". Cadets' phones (join.html) connect
+   to it directly over WebRTC: no server of our own, no accounts. The free
+   PeerJS broker only introduces the two ends; game traffic is peer-to-peer.
+
+   Phones only ever receive publicView(): what the projector already shows,
+   plus their own picks. Hidden traits, exact effects and trap flags never
+   leave this window.
+   ===================================================================== */
+const NET = { peer: null, conns: {}, status: 'off', err: '' };
+const ROOM_PREFIX = IS_BOSS_PRACTICE ? 'afas3410-practice-' : 'afas3410-sq-';
+const ROOM_STORAGE_KEY = IS_BOSS_PRACTICE ? 'sq_practice_room' : 'sq_room';
+
+function roomCode() {
+  let c = localStorage.getItem(ROOM_STORAGE_KEY);
+  if (!c) { c = Array.from({ length: 4 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ'[rnd(23)]).join(''); localStorage.setItem(ROOM_STORAGE_KEY, c); }
+  return c;
+}
+function siteBase() {
+  if (/^https?:/.test(location.protocol)) return location.href.split('#')[0].split('?')[0].replace(/[^/]*$/, '');
+  return localStorage.getItem('sq_site') || '';
+}
+function joinUrl() { const b = siteBase(); return b ? `${b}join.html?room=${roomCode()}${IS_BOSS_PRACTICE ? '&practice=boss' : ''}&gm=${encodeURIComponent(GM_NAME)}` : ''; }
+
+function netStart() {
+  if (NET.peer && !NET.peer.destroyed) return;
+  if (!window.Peer) { NET.status = 'nolib'; NET.err = 'PeerJS did not load (no internet?)'; return; }
+  NET.status = 'connecting';
+  const peer = new Peer(ROOM_PREFIX + roomCode().toLowerCase(), { debug: 0 });
+  NET.peer = peer;
+  peer.on('open', () => { NET.status = 'live'; NET.err = ''; renderGM(); push(true); });
+  peer.on('connection', conn => {
+    conn.on('data', d => onClient(conn, d));
+    conn.on('close', () => { for (const k in NET.conns) if (NET.conns[k] === conn) delete NET.conns[k]; renderGM(); push(true); });
+  });
+  peer.on('disconnected', () => { NET.status = 'reconnecting'; try { peer.reconnect(); } catch (e) { } renderGM(); });
+  peer.on('error', e => {
+    NET.err = e.type || String(e);
+    if (e.type === 'unavailable-id') { NET.status = 'retrying'; try { peer.destroy(); } catch (x) { } setTimeout(netStart, 4000); }
+    else if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) NET.status = 'error';
+    renderGM();
+  });
+}
+function netStop() {
+  for (const k in NET.conns) { try { NET.conns[k].send({ t: 'bye' }); NET.conns[k].close(); } catch (e) { } }
+  NET.conns = {};
+}
+// every seat has a cadet whose phone is connected right now (then the projector hides the join QR)
+function seatsFull() {
+  return S.party.length > 0 && S.party.every((p, i) => p.name.trim() && Object.entries(S.clients || {}).some(([cid, c]) => c.slot === i && NET.conns[cid] && NET.conns[cid].open));
+}
+function phonesOnline() { return Object.keys(NET.conns).length; }
+
+/* ---- incoming ---- */
+const JOINABLE = ['title', 'join', 'welcome', 'intro', 'avatars', 'roster', 'party'];
+function slotOf(cid) { const c = (S.clients || {})[cid]; return c ? c.slot : null; }
+function onClient(conn, d) {
+  if (!d || !d.cid) return;
+  const cid = String(d.cid).slice(0, 40);
+  S.clients = S.clients || {}; S.blocked = S.blocked || {};
+  if (d.t === 'hello') {
+    NET.conns[cid] = conn;
+    if (S.blocked[cid]) { conn.send({ t: 'bye', why: 'removed' }); return; }
+    if (!S.clients[cid]) {
+      const name = String(d.name || '').trim().slice(0, 24) || 'Cadet';
+      // seats fill while the party forms; anyone later is a spectator the GM can move into a seat (device transfer)
+      const occupied = new Set(Object.values(S.clients).map(c => c.slot).filter(slot => slot != null));
+      const matching = S.party.findIndex((p, i) => !occupied.has(i) && p.name.toLowerCase() === name.toLowerCase());
+      const slot = IS_BOSS_PRACTICE ? (matching >= 0 ? matching : S.party.findIndex((_, i) => !occupied.has(i))) : JOINABLE.includes(S.phase) ? S.party.findIndex(p => !p.name.trim()) : -1;
+      if (slot >= 0) {
+        S.party[slot].name = name;
+        S.clients[cid] = { name, slot };
+        log('Phone joined', `${name} (P${slot + 1})`);
+        toast('📱', 'CADET JOINED', name); sfx('click');
+      } else S.clients[cid] = { name, slot: null };
+    }
+    push(true); renderGM();
+    return;
+  }
+  const slot = slotOf(cid);
+  if (slot == null || !S.party[slot]) return;
+  // Match the GM's result hold: phones cannot start the next step before Next.
+  if ((S.gmNext || S.phase === 'itemAward') && ['vote', 'rvote', 'act', 'roll', 'bact', 'req'].includes(d.t)) return netSendTo(cid);
+  const me = S.party[slot];
+  const apply = fn => { snap(); const r = fn(); if (r === false) { hist.pop(); netSendTo(cid); return; } push(); };
+  switch (d.t) {
+    case 'cls': if (S.phase !== 'party' || !CLASS[d.v]) return netSendTo(cid);
+      if (S.party.some((p, i) => i !== slot && p.name && p.cls === d.v)) return netSendTo(cid);
+      return apply(() => { me.cls = d.v; me.perk = ''; });
+    case 'perk': if (S.phase !== 'perks' || !me.cls || !CLASS[me.cls].perks.some(p => p.id === d.v)) return netSendTo(cid);
+      return apply(() => { me.perk = d.v; });
+    case 'av': if (S.phase !== 'avatars' || !(d.v >= 0 && d.v < AVATARS.length)) return netSendTo(cid);
+      if (S.party.some((p, i) => i !== slot && p.av === d.v)) return netSendTo(cid);
+      return apply(() => { me.av = d.v; me.g = AVATARS[d.v].g; });
+    case 'look': { // uniform / hair colour (cosmetic), any time before the classes lock
+      const [k, val] = String(d.v || '').split(':');
+      const ok = ['avatars', 'roster', 'party'].includes(S.phase) && ((k === 'uni' && UNIFORMS.some(u => u.id === (val || ''))) || (k === 'hair' && HAIR_COLORS.some(h => h.id === (val || ''))));
+      if (!ok) return netSendTo(cid);
+      return apply(() => { me[k] = val || ''; });
+    }
+    case 'up': if (me.fired || S.phase !== 'levelup' || !CLASS[me.cls].ups.some(u => u.id === d.v)) return netSendTo(cid);
+      return apply(() => { me.up = d.v; });
+    case 'vote': {
+      if (S.party[slot] && S.party[slot].fired) return netSendTo(cid); // relieved of command: no more votes
+      // what can be voted on depends on the screen: route stop, rest/depot option, or mission choice
+      const c = S.cur; let ok = false;
+      // in a meeting: no vote this stop, and none on the route right after being pulled in
+      if (isOut(S, slot) || (S.phase === 'map' && slot === S.offlineNext)) return netSendTo(cid);
+      if (S.phase === 'map') ok = available().some(([t, i]) => `${t},${i}` === String(d.v)) || wpOptions().some(o => o.key === String(d.v)) || (S.bossReady && String(d.v) === 'boss');
+      else if (S.phase === 'roster') ok = ROSTER_OPTIONS.some(r => r.id === String(d.v));
+      else if (S.phase === 'unit' && !S.unitRolled) ok = UNITS.some(u => u.id === String(d.v));
+      else if (S.phase === 'patch' && !S.patch) ok = patchFree(S, String(d.v)); // team patch vote (Captain Russell locks the winner)
+      else if (S.phase === 'node' && c && (c.step === 'choose' || c.step === 'who') && (c.type === 'rest' || c.type === 'depot'))
+        ok = stopOptions().some(o => o.key === String(d.v) && !o.dis);
+      else if (S.phase === 'node' && c && c.step === 'brief' && curMission()) {
+        const ch = curMission().choices[d.v];
+        ok = !!ch && (c.type !== 'spot' || slot === c.slot); // spotlight: only that cadet decides
+      }
+      else if (S.inject && S.inject.stage === 'result' && S.inject.idx != null && !spinning()) {
+        const mm = MURPHY[S.inject.idx], n = (mm.options || []).length;
+        ok = !!(mm.options || [])[d.v] || (!!mm.tackle && d.v === n && !S.inject.blocked);
+      }
+      if (!ok) return netSendTo(cid);
+      return apply(() => { S.votes = S.votes || {}; S.votes[slot] = d.v; });
+    }
+    // before a team d20 check (scenario check or Tackle it): vote for who rolls ("r2" = the third cadet)
+    case 'rvote': {
+      const t = +d.v;
+      if (!rollerVoteOpen(S) || spinning() || isOut(S, slot) || !S.party[t] || isOut(S, t)) return netSendTo(cid);
+      return apply(() => { S.votes = S.votes || {}; S.votes[slot] = 'r' + t; });
+    }
+    case 'act': {
+      // the cadet whose turn it is presses their roll/spin button
+      if (!S.actor || S.actor.slot !== slot || S.actor.kind !== d.v || spinning() || !ACTOR_RUN[d.v]) return netSendTo(cid);
+      return apply(() => { S.lastActor = slot; ACTOR_RUN[d.v](); });
+    }
+    case 'roll': {
+      const c = S.cur;
+      if (S.phase !== 'node' || !c || c.step !== 'roll' || !c.rollerLocked || c.roller !== slot || spinning() || isOut(S, slot)) return netSendTo(cid);
+      return apply(() => resolveRoll(slot, {}));
+    }
+    case 'bact': { // boss: this cadet votes for one shared team action
+      if (S.phase !== 'boss' || !S.boss || S.boss.stage !== 'act' || spinning()) return netSendTo(cid);
+      const a = d.v && typeof d.v === 'object' ? { type: String(d.v.type) } : null;
+      if (!a || !bossActOk(slot, a)) return netSendTo(cid);
+      return apply(() => { S.boss.votes[slot] = a.type; });
+    }
+    case 'kit': { // the cadet opened their kit and came back to the game tab
+      if (S.phase !== 'kit' || slot == null || !S.party[slot] || S.party[slot].kitOk) return netSendTo(cid);
+      S.party[slot].kitOk = true; save(); push(true); renderGM();
+      return;
+    }
+    case 'team': { // any cadet can name the team while the party forms
+      if (!['title', 'join', 'welcome', 'intro', 'party', 'perks', 'kit', 'avatars', 'roster'].includes(S.phase)) return netSendTo(cid);
+      S.callsign = String(d.v || '').trim().slice(0, 14); save(); push(true); renderGM();
+      return;
+    }
+    case 'hotseatRoll':
+      if (S.gmNext || S.notice) return netSendTo(cid);
+      return apply(() => bossHotSeat(slot));
+    case 'req': {
+      if (me.fired) return netSendTo(cid);
+      const kinds = { ability: 'use their ability' };
+      const k = String(d.v || '');
+      if (!usableNow(S).some(u => u.req === k && (u.who == null || u.who === slot))) return netSendTo(cid);
+      let what = kinds[k];
+      if (k.startsWith('item:')) { const it = LOOT.find(l => l.id === k.slice(5)); if (it && S.items.includes(it.id)) what = `use the team's ${it.icon} ${it.name}`; }
+      if (k.startsWith('perk:')) { const pk = CLASS[me.cls] && CLASS[me.cls].perks.find(p => p.id === k.slice(5)); if (pk && me.perk === pk.id) what = `use their perk: ${pk.name}`; }
+      if (!what) return;
+      S.requests = (S.requests || []).filter(r => !(r.slot === slot && r.kind === k));
+      S.requests.push({ slot, kind: k, text: `${rankName(me)} wants to ${what}` });
+      toast('🙋', 'REQUEST SENT TO CAPTAIN RUSSELL', `${rankName(me)}: ${what}`);
+      sfx('click'); push(true); renderGM();
+      return;
+    }
+  }
+}
+
+/* ---- outgoing: what a phone is allowed to see ---- */
+function publicView(slot) {
+  const m = S.phase === 'node' ? curMission() : null;
+  const c = S.cur, u = unitObj();
+  const v = {
+    phase: S.phase, introPage: S.introPage, you: slot, gm: GM_NAME, room: roomCode(), spinning: spinning() || !!S.gmNext,
+    crown: crownIdx(S), positionOrder: S.positionOrder, unitOrder: S.unitOrder, rosterChoice: S.rosterChoice || null,
+    preIGRest: !!(S.unit === 'sr' && S.cur && S.cur.type === 'rest' && S.map && S.pos && S.pos.tier === S.map.tiers.length - 1),
+    commStopsRemaining: S.commStopsRemaining ?? 2, fssDeployedName: S.fssDeployedName || '', fssDeployedRank: S.fssDeployedRank || 'SrA',
+    party: S.party.map((p, i) => ({ fired: !!p.fired, name: p.name, cls: p.cls, perk: p.perk, av: p.av, g: p.g || null, uni: p.uni || '', hair: p.hair || '', up: p.up, used: p.used, kitOk: !!p.kitOk,
+      st: p.cls ? Object.fromEntries(STATS.map(x => [x, statOf(i, x)])) : null, perkUsed: !!(p.perk && S.flags['perkUsed_' + p.perk]) })),
+    tokenHolder: S.tokenHolder, offline: S.offline, offlineNext: S.offlineNext, unit: S.unit, cc: S.cc, notice: S.notice || null,
+    mapSeed: S.mapSeed, mapRoll: S.mapRoll || 0,
+    branch: !!S.branch, objectives: S.phase === 'intro' || S.phase === 'debrief',
+    myGrade: slot != null && S.grades && S.grades[slot] && S.grades[slot].shown ? S.grades[slot] : null,
+    ccInfo: u ? { pos: u.cc.pos, neg: u.cc.neg, negOff: !!S.flags.ccNegOff, intent: u.cc.intent } : null,
+    meters: S.meters, deocs: deocsOn(S), deocsLeft: deocsLeft(S), items: S.items,
+    itemAward: S.itemAward ? { id: S.itemAward.id, count: S.itemAward.count, dropped: S.itemAward.dropped } : null,
+    npcs: (S.npcs || []).map(n => ({ slot: n.slot, rank: n.rank, name: n.name, pub: n.pub, loy: n.loy, out: n.out, gone: !!n.gone, deceased: !!n.deceased, broken: n.broken, ally: isAlly(n), trait: n.trait, done: !!(S.traitDone || {})[n.slot] })),
+    unitPicked: !!S.unitRolled, benderTell: benderTell(S),
+    map: S.map ? S.map.tiers.map(t => t.map(n => ({ type: n.type, done: n.done, visited: n.visited }))) : null, pos: S.pos, links: S.map ? S.map.links : null, levelAfter: S.map ? S.map.levelAfter || 3 : 3,
+    avail: S.phase === 'map' ? available().map(([t, i]) => `${t},${i}`) : [], bossReady: !!S.bossReady,
+    wpOpts: S.phase === 'map' ? wpOptions().map(o => ({ key: o.key, icon: CHECKPOINT[o.kind].icon, name: CHECKPOINT[o.kind].name, then: `${o.then.icon} ${o.then.name}` })) : [],
+    votes: S.votes || {}, voters: votingOpen(S) ? S.party.filter((_, i) => !isOut(S, i) && !(S.phase === 'map' && i === S.offlineNext)).length : 0,
+    actor: S.gmNext ? null : S.actor || null, danger: dangerInfo(S), actorTable: S.actor && !spinning() && !S.gmNext ? actorTable(S) : null,
+    usable: S.gmNext ? [] : usableNow(S),
+    itemInfo: (S.items || []).map(id => { const l = LOOT.find(x => x.id === id); return { id, icon: l.icon, name: l.name, text: fill(S, l.text), color: lootColor(l) }; }),
+    ach: S.ach, final: S.final ? { g: S.final.grade.g, title: S.final.grade.title, total: S.final.total } : null,
+    team: S.callsign || '', patch: patchOf(S), patches: S.phase === 'patch' ? (PATCHES[S.unit] || []).map(p => ({ ...p, taken: !patchFree(S, p.id) })) : null, tie: voteTie(S) ? tieText(S) : null,
+    result: resultReady(S) ? { head: resultHeadline(S), ...resultSummary(S) } : null,
+    gameOver: S.gameOver,
+  };
+  if (S.phase === 'node' && c && (c.type === 'rest' || c.type === 'depot') && (c.step === 'choose' || c.step === 'who'))
+    v.options = stopOptions().map(o => ({ key: o.key, html: mt(esc(o.label)), dis: !!o.dis }));
+  if (c && S.phase === 'node') {
+    v.cur = { type: c.type, step: c.step, choice: c.choice, intel: !!c.intel, intelRisk: c.intelRisk || '', roller: c.rollerLocked ? c.roller : null, rollerVote: c.step === 'roll' && !c.rollerLocked, lead: c.lead ?? null, result: c.result || null, stars: c.stars || null,
+      slot: c.type === 'spot' ? c.slot : null, trade: c.trade || null, freeLoot: isFreeLoot(c),
+      roll: c.rollRes ? { d20: c.rollRes.d20, total: c.rollRes.total, dc: c.rollRes.dc, pass: c.rollRes.pass, nat: c.rollRes.nat, safe: !!c.rollRes.safe } : null,
+      check: c.step === 'roll' && c.spec && c.spec.check ? { stat: c.spec.check.stat } : null };
+    if (c.step === 'roll' && c.spec && c.spec.check) {
+      const p = rollPreview(), st = c.spec.check.stat;
+      Object.assign(v.cur, { safe: !!c.safe, odds: rollOdds(p, c.safe),
+        odds4: S.party.map((_, i) => isOut(S, i) ? null : rollerOdds(S, i)),
+        stats: st && st !== 'LOYB' ? S.party.map((_, i) => rollBonus(i, st, c.spec.check.m)) : null,
+        spec: st && st !== 'LOYB' ? S.party.map((_, i) => isSpec(i, c.spec.check.m)) : null });
+    }
+    if (m) { const actOut = isActOutEncounter(S, m); v.mission = { title: m.title, icon: m.icon, iconRank: m.iconRank || null, badge: m.badge || null, sob: m.sob, text: fill(S, m.text), cc: !!m.cc, loss: m.loss ? fill(S, m.loss) : null, help: !!m.help,
+      realres: c.step === 'done' ? effChips(Object.fromEntries(resultSummary(S).meters)) : null,
+      compartmented: arrowsHidden(S), choices: m.choices.map(ch => ({ t: fill(S, ch.t), roleplay: actOut && ch.roleplay ? fill(S, ch.roleplay) : null, show: arrowsHidden(S) ? null : choiceShow(ch), mic: actOut, checkLabel: choiceCheckLabel(S, ch), intel: c.intel ? specText(S, ch) : null,
+        smell: !!(ch.trap && benderTell(S)) })) };
+    }
+  }
+  if (S.phase === 'inject' && S.inject) {
+    const inj = S.inject, mm = inj.idx != null && !spinning() ? MURPHY[inj.idx] : null;
+    v.inject = { stage: inj.stage, wheel: inj.filter ? INJECT_WHEELS[inj.filter] : null, name: mm ? mm.name : null, text: mm ? fill(S, mm.text || '') : '', note: inj.note ? fill(S, inj.note) : null, type: mm ? mm.type : null,
+      effHtml: mm && !mm.options ? effLines(S, mm.eff) : null,
+      options: mm && mm.options ? mm.options.map(o => ({ t: fill(S, o.t), html: effLines(S, o.eff) })).concat(mm.tackle && !inj.blocked
+        ? [(() => { const r = bestRoller(mm.tackle.stat, mm.tackle.m), b = rollBonus(r, mm.tackle.stat, mm.tackle.m) + leanBonus(S), need = Math.min(20, Math.max(2, mm.tackle.dc + DIFFICULTY.dcPlus - b));
+            return { t: `Tackle it (${mm.tackle.stat} roll)`, html: tackleRows(mm), tackle: true }; })()] : []) : null,
+      tackle: inj.stage === 'tackle' ? { stat: mm.tackle.stat, dc: mm.tackle.dc + DIFFICULTY.dcPlus, roller: inj.rollerLocked ? inj.roller : null, vote: !inj.rollerLocked, m: mm.tackle.m,
+        odds4: S.party.map((_, i) => isOut(S, i) ? null : tackleOdds(S, mm, i)),
+      bonus: S.party.map((_, i) => rollBonus(i, mm.tackle.stat, mm.tackle.m) + leanBonus(S) + pendingCheckBonus(S)), spec: S.party.map((_, i) => isSpec(i, mm.tackle.m)) } : null };
+  }
+  if (S.boss) {
+    const Bs = S.boss, actionVotes = Object.values(Bs.votes || {});
+    v.boss = { hp: Bs.hp, max: Bs.max, round: Bs.round, stage: Bs.stage, atk: Bs.atk, adverse: Bs.adverse, weak: Bs.weak, dc: examDC(Bs),
+      openingCurrent: Bs.openingCurrent || null, openingCount: (Bs.opening || []).length, openingIndex: Bs.openingIdx || 0,
+      hotSeatRolls: S.party.map((p, i) => ({ active: !!p.name && !p.fired, value: Bs.p2.settled?.[i] ? Bs.p2.rolls?.[i] : null, rolled: Bs.p2.rolls?.[i] != null, settled: !!Bs.p2.settled?.[i] })), hotSeatTied: !!Bs.p2.tied,
+      roundName: Bs.round ? BOSS_ROUNDS[Bs.round - 1].name : null,
+      interviewConsequences: Bs.interviewConsequences || [], stageLabel: bossStageLabel(Bs), attackPreview: bossAttackPreview(S), block: Bs.block || 0,
+      attackLoss: Bs.atk ? meterLossPreview(Bs.atk.k, Bs.atk.n).loss : null,
+      defendLoss: Bs.atk ? meterLossPreview(Bs.atk.k, Math.max(0, Bs.atk.n - 2)).loss : null,
+      enemyForecast: Bs.atk ? meterLossPreview(Bs.atk.k, Math.max(0, Bs.atk.n - (Bs.block || 0))) : null,
+      attackDamage: Bs.attackDamage, attackBlocked: Bs.attackBlocked || 0, recap: bossRecap(Bs),
+      teamAction: Bs.teamAction || null, supportIndex: Bs.vouchIdx || 0, supportCount: (Bs.vouches || []).length,
+      who: Bs.p2.who, q: Bs.p2.who ? Bs.p2.q : null, best: slot != null && S.party[slot] ? (() => { const st = bestStat(slot); return { stat: st, v: statOf(slot, st) + leanBonus(S) }; })() : null,
+      my: slot != null ? (Bs.votes || {})[slot] || null : null, myText: slot != null && (Bs.votes || {})[slot] ? bossActText(Bs.votes[slot]) : null,
+      locked: S.party.map((_, i) => !!(Bs.votes || {})[i]), votes: { press: actionVotes.filter(a => a === 'press').length, defend: actionVotes.filter(a => a === 'defend').length },
+      supporters: Bs.supporters || [], vouchCurrent: Bs.vouchCurrent || null,
+      log: Bs.log.slice(-6), result: Bs.result || null };
+  }
+  return v;
+}
+function netSendTo(cid) {
+  const conn = NET.conns[cid]; if (!conn || !conn.open) return;
+  const real = S; S = shownState(); // mid-spin, phones see the state from before the spin (no spoilers)
+  try { conn.send({ t: 'view', v: publicView(slotOf(cid)) }); } catch (e) { } finally { S = real; }
+}
+function netBroadcast() { for (const cid in NET.conns) netSendTo(cid); }
+
+/* ---- GM panel ---- */
+function gmPhonesCard() {
+  const url = joinUrl();
+  const st = { off: '⚪ off', connecting: '🟡 connecting…', live: '🟢 live', reconnecting: '🟡 reconnecting…', retrying: '🟡 room code busy, retrying…', error: '🔴 error', nolib: '🔴 offline' }[NET.status] || NET.status;
+  const reqs = S.requests || [];
+  return `<div class="gcard"><h3>📱 Phones · room ${roomCode()} · ${st} · ${phonesOnline()} connected</h3>
+    ${NET.err && NET.status !== 'live' ? `<p class="warnline">${esc(NET.err)}. If this keeps happening, the network may block phone connections; just run the game from this console.</p>` : ''}
+    ${url ? `<p class="note">Join: <b>${esc(url)}</b></p>` : `<p class="warnline">Opened from a file: paste your GitHub Pages address to show a join link. <input type="text" id="siteUrl" placeholder="https://you.github.io/practicum-adventure/" value="${esc(localStorage.getItem('sq_site') || '')}" data-inp="site"></p>`}
+    ${spectators().map(([cid, c]) => `<div class="row warnline">👀 <b>${esc(c.name)}</b> is watching (new device). Move into seat: ${S.party.map((p, i) => p.name.trim() ? B('moveSeat', `P${i + 1} ${esc(rankName(p) || p.name)}`, { arg: `${i}|${cid}`, cls: 'sm go', title: 'Device transfer: this device takes over that cadet (the old device becomes a spectator)' }) : '').join(' ')}</div>`).join('')}
+    ${reqs.map((r, k) => `<div class="row warnline">🙋 ${esc(r.text)} ${B('reqOk', 'Approve', { arg: k, cls: 'sm go' })} ${B('reqNo', 'Dismiss', { arg: k, cls: 'sm' })}</div>`).join('')}
+    <div class="row">${B('newRoom', '🔄 New room code', { cls: 'sm' })} ${B('dropPhones', '📴 Disconnect all phones', { cls: 'sm' })}</div></div>`;
+}
+act('reqOk', k => {
+  const r = (S.requests || [])[+k]; if (!r) return false;
+  S.requests.splice(+k, 1);
+  if (r.kind === 'ability') return useAbility(r.slot);
+  if (r.kind.startsWith('item:')) { const k2 = S.items.indexOf(r.kind.slice(5)); if (k2 < 0) return alert('The team no longer has that item.'); return useItem(k2); }
+  if (r.kind.startsWith('perk:')) return usePerk(r.slot);
+});
+// connected devices that aren't in a seat (joined late, a new phone, a private tab...)
+function spectators() { return Object.entries(S.clients || {}).filter(([cid, c]) => c.slot == null && NET.conns[cid] && NET.conns[cid].open); }
+// Device transfer: a spectator device takes over a cadet's seat; whatever device had it becomes a spectator
+act('moveSeat', a => {
+  const k = a.indexOf('|'), slot = +a.slice(0, k), cid = a.slice(k + 1), c = (S.clients || {})[cid], p = S.party[slot];
+  if (!c || !p || !p.name.trim()) return false;
+  for (const o in S.clients) if (S.clients[o].slot === slot) S.clients[o].slot = null;
+  c.slot = slot; c.name = p.name;
+  log('Device transfer', `${rankName(p) || p.name} moved to a new device`); toast('📱', 'DEVICE TRANSFER', `${rankName(p) || p.name} is back in the game`);
+});
+act('reqNo', k => { (S.requests || []).splice(+k, 1); });
+act('newRoom', () => { if (!confirm('Make a new room code? Connected phones will need to rejoin.')) return false; netStop(); localStorage.removeItem(ROOM_STORAGE_KEY); try { NET.peer.destroy(); } catch (e) { } NET.peer = null; setTimeout(netStart, 300); });
+act('dropPhones', () => { if (!confirm('Disconnect every phone?')) return false; netStop(); S.clients = {}; });
+act('kick', i => {
+  const cid = Object.keys(S.clients || {}).find(k => S.clients[k].slot === +i);
+  if (cid) { S.blocked = S.blocked || {}; S.blocked[cid] = true; delete S.clients[cid]; try { NET.conns[cid].send({ t: 'bye', why: 'removed' }); } catch (e) { } }
+  S.party[+i] = { name: '', cls: '', perk: '', up: '', used: 0, av: null };
+});

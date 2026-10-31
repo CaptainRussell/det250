@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Make the Call</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+:root {
+  --t1: #a06f00; --t2: #1f4e9c; --t3: #c8102e; --t4: #1f8a4c;
+  --agree: #1f8a4c; --neutral: #a06f00; --disagree: #c8102e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --t1: #f1be48; --t2: #6f9ee8; --t3: #ef4054; --t4: #5cc98d; --agree: #5cc98d; --neutral: #f1be48; --disagree: #ef4054; }
+}
+:root[data-theme="dark"] { --t1: #f1be48; --t2: #6f9ee8; --t3: #ef4054; --t4: #5cc98d; --agree: #5cc98d; --neutral: #f1be48; --disagree: #ef4054; }
+
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.stack { display: grid; gap: 16px; }
+h2.sec { font-size: 18px; font-weight: 800; }
+
+/* scoreboard */
+.score { display: grid; grid-template-columns: repeat(var(--teams, 4), minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.sc { background: var(--d250-surface); border: 1px solid var(--d250-line); border-top: 4px solid var(--c); padding: 10px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
+.sc h3 { font-size: 16px; color: var(--c); overflow-wrap: anywhere; }
+.sc .pts { font-size: 22px; font-weight: 800; color: var(--d250-faint); letter-spacing: .14em; }
+
+/* setup */
+.setup { display: grid; grid-template-columns: minmax(260px, 400px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.setup textarea#roster { min-height: 300px; }
+.teamgrid { display: grid; grid-template-columns: repeat(var(--teams, 4), minmax(0, 1fr)); gap: 10px; }
+.tcard { background: var(--d250-surface-2); border: 1px solid var(--d250-line); border-top: 4px solid var(--c); border-radius: 12px; padding: 10px 12px; min-height: 120px; min-width: 0; }
+.tcard input { width: 100%; font-weight: 800; color: var(--c); background: transparent; border-color: transparent; padding: 2px 4px; margin: -2px -4px 4px; }
+.tcard input:hover { border-color: var(--d250-line); }
+.tcard ul { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.tcard li { border-bottom: 1px solid var(--d250-line); padding: 3px 0; overflow-wrap: anywhere; }
+.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 12px; font-size: 14px; color: var(--d250-soft); }
+.opts label { display: inline-flex; gap: 6px; align-items: center; }
+details.qs { margin-top: 4px; }
+details.qs summary { cursor: pointer; font-weight: 700; color: var(--d250-soft); }
+details.qs textarea { min-height: 260px; margin-top: 10px; }
+
+/* round */
+.statement { padding: 20px 22px; }
+.statement .st { font-size: clamp(24px, 3.6vw, 36px); line-height: 1.2; font-weight: 800; color: var(--d250-ink); margin-top: 8px; letter-spacing: -.01em; animation: ins-rise .5s var(--d250-ease) both; }
+.statement .intent { border-left: 3px solid var(--neutral); padding-left: 12px; color: var(--d250-soft); margin-top: 14px; }
+.statement .intent b { color: var(--neutral); }
+.clockrow { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; }
+.clock { font-size: 52px; font-weight: 800; line-height: 1; min-width: 120px; text-align: center; font-variant-numeric: tabular-nums; }
+.clock.low { color: var(--d250-cardinal); }
+.chip.cad { border-left: 4px solid var(--c); border-radius: 8px; cursor: pointer; padding: 5px 11px; margin: 3px; transition: transform .2s var(--d250-ease), border-color .2s; }
+.chip.cad:hover:not(:disabled) { border-color: var(--d250-gold); border-left-color: var(--c); transform: translateY(-1px); }
+.chip.cad:disabled { cursor: default; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.col { background: var(--d250-surface); border: 1px solid var(--d250-line); border-top: 5px solid var(--k); border-radius: 12px; min-height: 220px; padding: 12px 14px; transition: box-shadow .25s, transform .25s var(--d250-ease); min-width: 0; }
+.col h2 { font-size: 26px; font-weight: 800; color: var(--k); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.col h2 small { font-size: 13px; color: var(--d250-soft); font-weight: 600; }
+.col.win { box-shadow: 0 0 0 3px var(--k), 0 10px 30px -8px var(--k); transform: translateY(-2px); }
+.col .pick { border: 1px solid var(--k); color: var(--k); background: transparent; border-radius: 8px; padding: 3px 10px; margin: 6px 0 8px; font-weight: 700; cursor: pointer; }
+.col.win .pick { background: var(--k); color: var(--d250-page); }
+.tray { min-height: 40px; }
+.result table { border-collapse: collapse; }
+.rubric { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rubric div { background: var(--d250-surface); border: 1px solid var(--d250-line); border-left: 3px solid var(--d250-gold); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--d250-soft); }
+.rubric b { font-size: 15px; display: block; color: var(--d250-ink); margin-bottom: 2px; }
+.spin { display: grid; grid-template-columns: minmax(240px, 400px) minmax(0, 1fr); gap: 22px; align-items: center; padding: 18px; }
+.wheelstage { position: relative; width: 100%; aspect-ratio: 1; }
+.wheelstage canvas { width: 100%; height: 100%; display: block; }
+.needle { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--d250-gold); filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); z-index: 2; }
+.speaker { font-size: 44px; font-weight: 800; line-height: 1.05; min-height: 56px; margin-top: 16px; }
+.speaker small { display: block; font-size: 15px; font-weight: 400; color: var(--d250-soft); margin-top: 6px; }
+.speaker.pop span { display: inline-block; animation: pop .55s var(--d250-ease); }
+@keyframes pop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.08); } }
+.spinbtns .btn.on { background: var(--k); border-color: var(--k); color: var(--d250-page); }
+.spinbtns .btn { border-color: var(--k); }
+details.rules summary { cursor: pointer; font-weight: 700; color: var(--d250-soft); }
+details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
+
+/* final reveal */
+#final { position: fixed; inset: 0; z-index: 80; background: radial-gradient(ellipse at center, var(--d250-surface) 0%, #08080a 78%); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 20px; }
+#final canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#final h2 { font-size: clamp(30px, 6vw, 64px); font-weight: 800; color: var(--d250-gold); letter-spacing: .12em; animation: drop .8s var(--d250-ease) both; text-align: center; }
+.podium { display: flex; align-items: flex-end; gap: clamp(8px, 2vw, 28px); height: 52vh; margin-top: 20px; position: relative; z-index: 2; max-width: 100%; }
+.pcol { width: clamp(64px, 15vw, 200px); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.pbar { width: 100%; height: 0; background: linear-gradient(to top, color-mix(in srgb, var(--c) 45%, #16161a), var(--c)); border-radius: 8px 8px 0 0; transition: height 1.6s cubic-bezier(.2,.9,.3,1); display: flex; align-items: flex-start; justify-content: center; font-size: clamp(18px, 3vw, 36px); font-weight: 800; color: #16161a; padding-top: 6px; }
+.pname { font-size: clamp(15px, 2.4vw, 28px); font-weight: 800; color: var(--c); opacity: 0; transition: opacity .5s; text-align: center; overflow-wrap: anywhere; }
+.prank { color: var(--d250-soft); font-weight: 700; font-size: 16px; opacity: 0; transition: opacity .5s; }
+.pcol.shown .pname, .pcol.shown .prank { opacity: 1; }
+.pcol.champ .pbar { animation: glow 1.2s ease-in-out infinite; }
+.champ-banner { font-size: clamp(34px, 8vw, 96px); font-weight: 900; line-height: 1; margin-top: 18px; z-index: 2; opacity: 0; transform: scale(.3); text-align: center; }
+.champ-banner.slam { animation: slam .7s cubic-bezier(.2,1.6,.4,1) forwards; }
+.drum { font-size: 26px; font-weight: 800; color: var(--d250-soft); height: 36px; margin-top: 10px; z-index: 2; letter-spacing: .2em; }
+#final .closeX { position: absolute; top: 14px; right: 14px; z-index: 3; }
+@keyframes drop { from { opacity: 0; transform: translateY(-40px); } }
+@keyframes slam { to { opacity: 1; transform: scale(1); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 10px -2px var(--c); } 50% { box-shadow: 0 0 60px 8px var(--c); } }
+
+@media (max-width: 800px) {
+  .setup, .cols, .rubric, .spin { grid-template-columns: 1fr; }
+  .score, .teamgrid { grid-template-columns: 1fr 1fr; }
+  .clock { font-size: 40px; min-width: 90px; }
+  .speaker { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .pbar { transition: none; } }
+</style>
+</head>
+<body data-d250-title="Make the Call">
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+
+<header class="d250-head" style="--tone:#0f766e;--d250-measure:1280px">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
+      <h1>Make the Call</h1>
+      <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>Agree, Neutral or Disagree. Cadets take a position, argue it to a board, and split the pool.</p>
+    </div>
+    <div class="tools">
+      <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
+      <button class="btn small" id="setupBtn">Roster and teams</button>
+      <button class="btn small" id="undoBtn">Undo last award</button>
+      <button class="btn small" id="endBtn">End early</button>
+      <button class="btn small danger" id="resetBtn">Reset everything</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="--d250-measure:1280px">
+  <div class="score" id="score"></div>
+
+  <!-- SETUP -->
+  <section id="sSetup">
+    <div class="setup">
+      <div class="panel panel-bd stack" style="--i:0">
+        <div>
+          <h2 class="sec">Roster</h2>
+          <p class="hint">One cadet per line. To put someone on a team, add the team number: <code>Smith, 2</code>. No number means auto-balanced.</p>
+        </div>
+        <textarea id="roster" spellcheck="false" placeholder="Smith&#10;Jones, 1&#10;Garcia&#10;..."></textarea>
+        <div class="roster-tools" style="margin-top:0">
+          <button class="btn quiet" id="loadClass">Load saved class</button>
+          <button class="btn" id="shuffleBtn">Shuffle teams</button>
+          <button class="btn primary" id="startBtn">Lock roster and start</button>
+        </div>
+        <p class="hint" id="rosterMsg" aria-live="polite" style="margin-top:0"></p>
+        <div class="opts">
+          <label>Teams <select id="teamsIn"><option>2</option><option>3</option><option selected>4</option></select></label>
+          <label>Prize pool <input type="number" id="poolIn" value="60" min="1"> pts</label>
+          <label>Board size <input type="number" id="boardIn" value="4" min="1"></label>
+        </div>
+        <details class="qs">
+          <summary>Statements (<span id="qCount">20</span>)</summary>
+          <p class="hint">One statement per line. They run in this order.</p>
+          <textarea id="qText" spellcheck="false"></textarea>
+          <div class="row"><button class="btn small quiet" id="qDefault">Restore the default statements</button></div>
+        </details>
+      </div>
+      <div class="panel panel-bd" style="--i:1">
+        <h2 class="sec" style="margin-bottom:10px">Teams <span class="hint" style="font-weight:400">(click a team name to rename it)</span></h2>
+        <div class="teamgrid" id="teams"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROUND -->
+  <section id="sRound" class="stack" hidden>
+    <div class="panel statement" style="--i:0">
+      <span class="label" id="qLabel">Statement 1</span>
+      <div class="st" id="qSt"></div>
+      <div class="intent"><b>Choosing Neutral?</b> You must name the missing information or condition that would move you to Agree or Disagree. "It depends" is where your argument starts, not where it ends.</div>
+    </div>
+
+    <div class="clockrow">
+      <div class="clock" id="clock" role="timer">0:00</div>
+      <button class="btn" data-t="90">Prep 1:30</button>
+      <button class="btn" data-t="45">Case 0:45</button>
+      <button class="btn" data-t="30">Board Q 0:30</button>
+      <button class="btn quiet" id="clockStop">Stop</button>
+    </div>
+
+    <div class="panel panel-bd" style="--i:1;border-top:4px solid var(--t2)">
+      <div class="row" style="justify-content:space-between">
+        <h2 class="sec">The Board <span class="hint" style="font-weight:400">evaluators this round, no points</span></h2>
+        <button class="btn small" id="drawBoard">Draw new board</button>
+      </div>
+      <div id="boardList" style="margin-top:6px"></div>
+    </div>
+
+    <div>
+      <p class="hint" style="margin:0 0 6px">Click a cadet to move them: Unplaced &rarr; Agree &rarr; Neutral &rarr; Disagree. Positions lock once prep starts.
+        <button class="linkbtn" id="randAll" style="margin-left:6px">(test: random)</button></p>
+      <div class="panel panel-bd" style="--i:2"><span class="label">Unplaced</span> <span id="unplaced" class="tray"></span></div>
+    </div>
+
+    <div class="cols" id="cols"></div>
+
+    <div class="panel spin" style="--i:3">
+      <div class="wheelstage"><div class="needle"></div><canvas id="wheel" width="840" height="840" role="img" aria-label="Speaker wheel"></canvas></div>
+      <div>
+        <h2 class="sec">Speaker wheel</h2>
+        <p class="hint">Pick a position, spin, and whoever it lands on makes that group's case to the board. Cadets who already spoke this round are left off until everyone in that group has had a turn.</p>
+        <div class="row spinbtns" id="spinBtns" style="margin-top:12px"></div>
+        <div class="row" style="margin-top:12px"><button class="btn primary big" id="spinBtn">Spin</button></div>
+        <div class="speaker" id="speaker" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary big" id="awardBtn" disabled>Award the pool</button>
+      <span class="muted" id="awardNote">Board: tap the winning position (tap two for a tie).</span>
+    </div>
+    <div class="result" id="result"></div>
+
+    <div class="rubric">
+      <div><b>Clear communication &middot; 0 to 2</b>Could someone act on what they said? Specific position, real reasons, inside the time.</div>
+      <div><b>Listening and response &middot; 0 to 2</b>Did they fairly restate and answer the strongest opposing argument?</div>
+      <div><b>Leadership and intent &middot; 0 to 2</b>Did they tie it to the leader's purpose, the desired end state, and the cost of unclear communication?</div>
+    </div>
+    <details class="rules panel panel-bd">
+      <summary>Rules card</summary>
+      <ul>
+        <li>Every cadet picks <b>Agree, Neutral, or Disagree</b> on their own. Your team doesn't have to agree.</li>
+        <li>The pool is <b>fixed</b>. Everyone in the winning position splits it; each share goes to that cadet's team. Smaller winning group means bigger shares.</li>
+        <li><b>Neutral must make a case:</b> name the missing information or condition that would move you to Agree or Disagree.</li>
+        <li>Board members score independently first, then name the <b>decisive argument</b> out loud.</li>
+        <li>Rotate speakers. No one speaks twice until everyone in the group has spoken once.</li>
+        <li>Debrief: <i>What did this show about effective communication or commander's intent?</i></li>
+      </ul>
+    </details>
+  </section>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">A leadership discussion game on communication and commander's intent. Team totals stay sealed until the final reveal. Everything is saved in this browser only.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<div id="final" hidden>
+  <canvas id="confetti"></canvas>
+  <button class="btn closeX" id="finalClose">Close</button>
+  <h2>FINAL RESULTS</h2>
+  <div class="podium" id="podium"></div>
+  <div class="drum" id="drum"></div>
+  <div class="champ-banner" id="champ"></div>
+</div>
+
+<script src="../shared/class-roster.js"></script>
+<script>
+const COLORS = ["var(--t1)", "var(--t2)", "var(--t3)", "var(--t4)"];
+const POS = [{ k: "A", n: "AGREE", c: "var(--agree)" }, { k: "N", n: "NEUTRAL", c: "var(--neutral)" }, { k: "D", n: "DISAGREE", c: "var(--disagree)" }];
+
+const DEFAULT_Q = [
+ "A leader should prioritize the team's success over an individual member's needs.",
+ "Someone who delivers excellent results deserves more flexibility with the rules than someone who consistently underperforms.",
+ "When a team makes a decision, every member should publicly support it, even those who strongly disagree.",
+ "Giving everyone an equal opportunity is more important than ensuring everyone has an equal chance of success.",
+ "A leader should share uncomfortable information with the team, even when the team cannot do anything about it.",
+ "When someone makes an honest mistake, the consequences should depend more on the harm caused than on their intentions.",
+ "The most qualified person should get the leadership position, even if someone else would benefit more from the experience.",
+ "It is acceptable to let a teammate fail when stepping in would prevent them from learning an important lesson.",
+ "A team should choose a reliable plan with average results over a risky plan with potentially exceptional results.",
+ "A leader who inherits an unrealistic deadline should push the team to meet it before asking for an extension.",
+ "A leader should enforce a rule they believe is unfair while working to change it.",
+ "Team members should have a say in choosing their leader.",
+ "An individual who contributes the most should receive the most credit, even when that recognition weakens team unity.",
+ "It is better to make a timely decision with incomplete information than to delay until you are confident.",
+ "Leaders should hold their strongest performers to a higher standard than everyone else.",
+ "A team should address a member's poor performance internally before bringing it to the leader's attention.",
+ "Maintaining a professional relationship with a teammate is more important than telling them exactly what you think.",
+ "A leader should give people responsibilities before they have demonstrated that they are ready.",
+ "A team member who identifies a serious problem has a responsibility to propose a solution.",
+ "When resources are limited, a leader should invest more in struggling members than in those already excelling."
+];
+
+const KEY = "d250-make-the-call-v1";
+let S = load() || fresh();
+function fresh(){
+  const cls = D250Class.load();
+  return { cadets: [], teamNames: ["Team 1", "Team 2", "Team 3", "Team 4"], teamCount: 4, scores: [0, 0, 0, 0], started: false, qi: 0, round: 1,
+           board: [], served: {}, pos: {}, winners: [], history: [], pool: 60, boardSize: 4, rosterText: cls.join("\n"), questions: DEFAULT_Q.slice() };
+}
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (!s || !Array.isArray(s.cadets)) return null;
+    s.teamNames = s.teamNames || ["Team 1", "Team 2", "Team 3", "Team 4"];
+    s.teamCount = Math.min(4, Math.max(2, +s.teamCount || 4));
+    s.questions = Array.isArray(s.questions) && s.questions.length ? s.questions : DEFAULT_Q.slice();
+    return s;
+  }catch(e){ return null; }
+}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => (Math.round(n * 10) / 10).toString();
+const T = () => S.teamCount;
+const teams = () => Array.from({ length: T() }, (_, i) => ({ n: S.teamNames[i] || "Team " + (i + 1), c: COLORS[i] }));
+const Q = () => S.questions;
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pace = ms => reduced() ? 0 : ms;
+
+/* ---------- roster ---------- */
+function parseRoster(shuffle){
+  const lines = $("roster").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const fixed = [], free = [], seen = new Set();
+  const re = new RegExp("^(.*?)[,\\t]\\s*([1-" + T() + "])\\s*$");
+  lines.forEach(l => {
+    const m = l.match(re), c = m ? { name: m[1].trim(), team: +m[2] - 1 } : { name: l, team: -1 };
+    if (!c.name || seen.has(c.name.toLowerCase())) return;
+    seen.add(c.name.toLowerCase()); (m ? fixed : free).push(c);
+  });
+  if (shuffle) for (let i = free.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
+  const count = Array(T()).fill(0); fixed.forEach(c => count[c.team]++);
+  free.forEach(c => { const t = count.indexOf(Math.min(...count)); c.team = t; count[t]++; });
+  return fixed.concat(free);
+}
+function setTeamsVar(){ document.documentElement.style.setProperty("--teams", T()); }
+function renderTeams(list){
+  setTeamsVar();
+  $("teams").innerHTML = teams().map((t, i) => `<div class="tcard" style="--c:${t.c}"><input value="${esc(t.n)}" data-tn="${i}" aria-label="Team ${i + 1} name" maxlength="24"><ul>${
+    list.filter(c => c.team === i).map(c => `<li>${esc(c.name)}</li>`).join("")}</ul></div>`).join("");
+  document.querySelectorAll("[data-tn]").forEach(inp => inp.addEventListener("input", () => {
+    S.teamNames[+inp.dataset.tn] = inp.value.trim() || "Team " + (+inp.dataset.tn + 1); save(); renderScore();
+  }));
+}
+const baseNames = () => parseRoster(false).map(c => c.name);
+$("roster").addEventListener("input", () => { S.rosterText = $("roster").value; save(); renderTeams(parseRoster(false)); });
+$("teamsIn").addEventListener("change", () => { S.teamCount = +$("teamsIn").value; save(); renderTeams(parseRoster(false)); renderScore(); });
+$("shuffleBtn").onclick = () => { const l = parseRoster(true); $("roster").value = l.map(c => `${c.name}, ${c.team + 1}`).join("\n"); S.rosterText = $("roster").value; save(); renderTeams(l); };
+$("loadClass").onclick = () => {
+  const names = D250Class.load();
+  if (!names.length){ $("rosterMsg").textContent = "No saved class yet. Type your names here; they are saved when you start."; return; }
+  $("roster").value = names.join("\n"); S.rosterText = $("roster").value; save(); renderTeams(parseRoster(false));
+  $("rosterMsg").textContent = "Loaded " + names.length + " names.";
+};
+$("qText").addEventListener("input", () => {
+  const qs = $("qText").value.split("\n").map(s => s.trim()).filter(Boolean);
+  S.questions = qs.length ? qs : DEFAULT_Q.slice(); $("qCount").textContent = S.questions.length; save();
+});
+$("qDefault").onclick = () => { S.questions = DEFAULT_Q.slice(); $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length; save(); };
+$("startBtn").onclick = () => {
+  const l = parseRoster(false);
+  if (l.length < 6){ $("rosterMsg").textContent = "Need at least 6 cadets."; return; }
+  D250Class.save(baseNames());
+  S.cadets = l; S.pool = +$("poolIn").value || 60; S.boardSize = Math.max(1, +$("boardIn").value || 4);
+  S.scores = Array(T()).fill(0);
+  S.started = true; S.pos = {}; S.winners = []; drawBoard(); save(); show();
+};
+$("setupBtn").onclick = () => {
+  const open = $("sSetup").hidden;
+  $("sSetup").hidden = !open; $("sRound").hidden = open || !S.started;
+};
+let resetArmed = null;
+$("resetBtn").onclick = e => {
+  const b = e.currentTarget;
+  if (!resetArmed){ b.classList.add("armed"); b.textContent = "Click again to reset"; resetArmed = setTimeout(() => { resetArmed = null; b.classList.remove("armed"); b.textContent = "Reset everything"; }, 3000); return; }
+  clearTimeout(resetArmed); S = fresh(); save(); location.reload();
+};
+
+/* ---------- board: one per team where possible, least-served first ---------- */
+function drawBoard(){
+  const pick = [], by = teams().map((_, t) => S.cadets.filter(c => c.team === t).sort((a, b) => (S.served[a.name] || 0) - (S.served[b.name] || 0) || Math.random() - .5));
+  let t = Math.floor(Math.random() * T());
+  while (pick.length < Math.min(S.boardSize, S.cadets.length - 2)){
+    const list = by[t % T()]; if (list.length) pick.push(list.shift().name); t++;
+    if (by.every(l => !l.length)) break;
+  }
+  S.board = pick; pick.forEach(n => delete S.pos[n]); S.winners = [];
+}
+$("drawBoard").onclick = () => { drawBoard(); save(); renderRound(); };
+
+/* ---------- round ---------- */
+const teamOf = n => S.cadets.find(c => c.name === n).team;
+const chip = (n, extra = "") => `<button class="chip cad" data-n="${esc(n)}" style="--c:${COLORS[teamOf(n)]}" ${extra}>${esc(n)}</button>`;
+function renderQ(){
+  const i = Math.min(S.qi, Q().length - 1);
+  $("qLabel").textContent = `Statement ${i + 1} of ${Q().length}`;
+  const st = $("qSt"); st.textContent = "“" + Q()[i] + "”";
+  st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
+}
+function renderRound(){
+  $("boardList").innerHTML = S.board.map(n => chip(n, "disabled")).join("") || '<span class="muted">none</span>';
+  const players = S.cadets.filter(c => !S.board.includes(c.name));
+  $("unplaced").innerHTML = players.filter(c => !S.pos[c.name]).map(c => chip(c.name)).join("") || '<span class="muted">everyone is placed</span>';
+  $("cols").innerHTML = POS.map(p => {
+    const inn = players.filter(c => S.pos[c.name] === p.k), share = inn.length ? S.pool / inn.length : 0;
+    return `<div class="col ${S.winners.includes(p.k) ? "win" : ""}" style="--k:${p.c}">
+      <h2>${p.n}<small>${inn.length} cadet${inn.length === 1 ? "" : "s"}${inn.length ? ` · ${fmt(share)} pts each if they win` : ""}</small></h2>
+      <button class="pick" data-w="${p.k}">${S.winners.includes(p.k) ? "WINNER" : "Board picks this"}</button>
+      <div class="tray">${inn.map(c => chip(c.name)).join("")}</div></div>`;
+  }).join("");
+  $("awardBtn").disabled = !S.winners.length || !!S.awarded;
+  if (!spinning) drawWheel();
+  document.querySelectorAll("#unplaced .chip, #cols .chip").forEach(b => b.onclick = () => {
+    const order = [undefined, "A", "N", "D"], cur = S.pos[b.dataset.n];
+    const nx = order[(order.indexOf(cur) + 1) % 4]; nx ? S.pos[b.dataset.n] = nx : delete S.pos[b.dataset.n]; save(); renderRound();
+  });
+  document.querySelectorAll(".pick").forEach(b => b.onclick = () => {
+    const k = b.dataset.w; S.winners = S.winners.includes(k) ? S.winners.filter(x => x !== k) : [...S.winners, k]; save(); renderRound();
+  });
+}
+function renderScore(){
+  setTeamsVar();
+  $("score").innerHTML = teams().map(t => `<div class="sc" style="--c:${t.c}"><h3>${esc(t.n)}</h3><span class="pts" title="Sealed until the final reveal">? ? ?</span></div>`).join("");
+}
+function nextBtnHTML(){ return `<button class="btn primary big" id="nextRound">${S.qi + 1 >= Q().length ? "Final results &rarr;" : "Next statement &rarr;"}</button>`; }
+$("awardBtn").onclick = () => {
+  const winners = S.cadets.filter(c => !S.board.includes(c.name) && S.winners.includes(S.pos[c.name]));
+  if (!winners.length){ $("awardNote").textContent = "Nobody is standing in the winning position."; return; }
+  const share = S.pool / winners.length, gain = Array(T()).fill(0); winners.forEach(c => gain[c.team] += share);
+  S.history.push({ scores: S.scores.slice(), round: S.round, qi: S.qi, board: S.board.slice(), served: { ...S.served }, pos: { ...S.pos }, winners: S.winners.slice() });
+  S.scores = S.scores.map((s, i) => s + (gain[i] || 0));
+  const label = S.winners.map(k => POS.find(p => p.k === k).n).join(" + ");
+  $("result").innerHTML = `<div class="panel panel-bd stack"><h2 class="sec" style="color:var(--d250-gold)">${label} takes it: ${winners.length} cadet${winners.length === 1 ? "" : "s"} split ${S.pool} pts (${fmt(share)} each)</h2>
+    <div>${winners.map(c => chip(c.name, "disabled")).join("")}</div>
+    <p class="muted">Team totals stay sealed until all ${Q().length} statements are done.</p>
+    <p class="muted">Board: name the decisive argument. Then ask the room: did anyone's mind change? Why?</p>
+    <div>${nextBtnHTML()}</div></div>`;
+  S.board.forEach(n => S.served[n] = (S.served[n] || 0) + 1);
+  S.awarded = true; save(); renderScore(); renderRound();
+  $("nextRound").onclick = nextRound;
+};
+function nextRound(){
+  if (S.qi + 1 >= Q().length){ S.finished = true; save(); showFinal(); return; }
+  S.awarded = false; S.round++; S.qi++; S.pos = {}; S.spoke = {}; $("speaker").innerHTML = ""; drawBoard(); $("result").innerHTML = "";
+  save(); renderQ(); renderRound(); window.scrollTo(0, 0);
+}
+$("undoBtn").onclick = () => {
+  const h = S.history.pop(); if (!h){ $("awardNote").textContent = "Nothing to undo."; return; }
+  Object.assign(S, h); S.awarded = false; S.finished = false; $("final").hidden = true; $("result").innerHTML = ""; save(); renderScore(); renderQ(); renderRound();
+};
+$("endBtn").onclick = () => { if (!S.started || !confirm("End the game now and reveal the final results?")) return; S.finished = true; save(); showFinal(); };
+$("randAll").onclick = () => { S.cadets.filter(c => !S.board.includes(c.name)).forEach(c => S.pos[c.name] = "AND"[Math.floor(Math.random() * 3)]); save(); renderRound(); };
+
+/* ---------- speaker wheel ---------- */
+let spinPos = "A", angle = 0, spinning = false;
+const cssVar = v => getComputedStyle(document.documentElement).getPropertyValue(v.startsWith("var(") ? v.slice(4, -1) : v).trim();
+const FONT = getComputedStyle(document.body).fontFamily;
+function wheelNames(){
+  const inn = S.cadets.filter(c => !S.board.includes(c.name) && S.pos[c.name] === spinPos).map(c => c.name);
+  S.spoke = S.spoke || {};
+  const fresh = inn.filter(n => !S.spoke[n]);
+  return fresh.length ? fresh : inn;
+}
+function drawWheel(){
+  const cv = $("wheel"), x = cv.getContext("2d"), W = cv.width, R = W / 2 - 8, names = wheelNames();
+  const page = cssVar("--d250-page"), surf2 = cssVar("--d250-surface-2"), faint = cssVar("--d250-faint");
+  x.clearRect(0, 0, W, W); x.save(); x.translate(W / 2, W / 2);
+  if (!names.length){
+    x.beginPath(); x.arc(0, 0, R, 0, 7); x.fillStyle = surf2; x.fill(); x.fillStyle = faint; x.font = "700 40px " + FONT;
+    x.textAlign = "center"; x.fillText("No cadets here", 0, 12); x.restore(); return;
+  }
+  const seg = 2 * Math.PI / names.length;
+  names.forEach((n, i) => {
+    const a0 = angle + i * seg - Math.PI / 2;
+    x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, R, a0, a0 + seg); x.closePath();
+    x.fillStyle = cssVar(COLORS[teamOf(n)]); x.globalAlpha = i % 2 ? .8 : 1; x.fill(); x.globalAlpha = 1;
+    x.strokeStyle = page; x.lineWidth = 4; x.stroke();
+    x.save(); x.rotate(a0 + seg / 2); x.fillStyle = "#16161a"; x.textAlign = "right";
+    x.font = `800 ${Math.min(50, Math.max(22, 360 / names.length + 14))}px ${FONT}`;
+    x.fillText(n.length > 18 ? n.slice(0, 17) + "…" : n, R - 22, 14, R * .72); x.restore();
+  });
+  x.beginPath(); x.arc(0, 0, 40, 0, 7); x.fillStyle = page; x.fill(); x.restore();
+}
+function renderSpinBtns(){
+  $("spinBtns").innerHTML = POS.map(p => `<button class="btn ${p.k === spinPos ? "on" : ""}" style="--k:${p.c}" data-sp="${p.k}" aria-pressed="${p.k === spinPos}">${p.n}</button>`).join("");
+  document.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { if (spinning) return; spinPos = b.dataset.sp; angle = 0; $("speaker").innerHTML = ""; renderSpinBtns(); drawWheel(); });
+}
+$("spinBtn").onclick = () => {
+  const names = wheelNames(); if (spinning || !names.length) return;
+  const seg = 2 * Math.PI / names.length, pick = Math.floor(Math.random() * names.length);
+  const target = -(pick * seg + seg / 2) + (Math.random() - .5) * seg * .6;
+  const start = angle, end = target - 2 * Math.PI * (Math.ceil((target - start) / (2 * Math.PI)) + 6 + Math.floor(Math.random() * 3));
+  const t0 = performance.now(), dur = pace(4200); spinning = true; $("speaker").innerHTML = ""; $("speaker").classList.remove("pop");
+  (function f(now){
+    const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - Math.pow(1 - t, 4); angle = start + (end - start) * e; drawWheel();
+    if (t < 1) return requestAnimationFrame(f);
+    spinning = false; angle = target; drawWheel();
+    const n = names[pick], p = POS.find(p => p.k === spinPos), tm = teams()[teamOf(n)];
+    S.spoke[n] = 1; save(); beep();
+    $("speaker").innerHTML = `<span style="color:${tm.c}">${esc(n)}</span><small>Speaks for <b style="color:${p.c}">${p.n}</b> · ${esc(tm.n)}</small>`;
+    $("speaker").classList.add("pop");
+  })(t0);
+};
+
+/* ---------- final reveal ---------- */
+function showFinal(instant){
+  $("final").hidden = false;
+  const tm = teams(), idx = tm.map((_, i) => i);
+  const order = idx.slice().sort((a, b) => S.scores[b] - S.scores[a]);
+  const top = Math.max(1, S.scores[order[0]]);
+  const place = ["1ST", "2ND", "3RD", "4TH"];
+  const layout = [order[2], order[0], order[1], order[3]].filter(t => t != null);
+  $("podium").innerHTML = layout.map(t => `<div class="pcol" id="pc${t}" style="--c:${tm[t].c}">
+    <div class="prank">${place[order.indexOf(t)]}</div><div class="pname">${esc(tm[t].n)}</div>
+    <div class="pbar" data-h="${Math.max(8, S.scores[t] / top * 80)}"><span class="pv">0</span></div></div>`).join("");
+  $("champ").className = "champ-banner"; $("champ").innerHTML = ""; $("drum").textContent = "";
+  const raise = (t, ms) => new Promise(res => {
+    const col = $("pc" + t), bar = col.querySelector(".pbar"), pv = col.querySelector(".pv"), t0 = performance.now(), d = pace(1600);
+    bar.style.height = bar.dataset.h + "%"; col.classList.add("shown");
+    (function f(now){ const k = d ? Math.min(1, (now - t0) / d) : 1; pv.textContent = fmt(S.scores[t] * (1 - Math.pow(1 - k, 3))); k < 1 ? requestAnimationFrame(f) : setTimeout(res, pace(ms)); })(t0);
+  });
+  const win = order[0], tied = order.filter(t => S.scores[t] === S.scores[win]);
+  const crown = () => {
+    $("pc" + win).classList.add("champ");
+    $("champ").innerHTML = tied.length > 1 ? `<span style="color:var(--d250-gold)">TIE: ${tied.map(t => esc(tm[t].n)).join(" &amp; ")}</span>` : `<span style="color:${tm[win].c}">${esc(tm[win].n).toUpperCase()} WINS</span>`;
+    $("champ").classList.add("slam"); if (!reduced()) confetti(tied.map(t => cssVar(tm[t].c)));
+  };
+  if (instant || reduced()){
+    order.forEach(t => { const b = $("pc" + t).querySelector(".pbar"); b.style.transition = "none"; b.style.height = b.dataset.h + "%"; b.querySelector(".pv").textContent = fmt(S.scores[t]); $("pc" + t).classList.add("shown"); });
+    crown(); return;
+  }
+  (async () => {
+    await new Promise(r => setTimeout(r, 900));
+    for (let k = order.length - 1; k >= 1; k--) await raise(order[k], k === 1 ? 900 : 700);
+    for (const d of ["AND THE WINNER IS", ". . .", "3", "2", "1"]){ $("drum").textContent = d; beep(); await new Promise(r => setTimeout(r, 800)); }
+    $("drum").textContent = ""; await raise(win, 100); crown();
+  })();
+}
+function confetti(colors){
+  const cv = $("confetti"), x = cv.getContext("2d"); cv.width = innerWidth; cv.height = innerHeight;
+  const P = Array.from({ length: 260 }, () => ({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6.3, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 8, c: Math.random() < .75 ? colors[Math.floor(Math.random() * colors.length)] : "#ececee" }));
+  const t0 = performance.now();
+  (function f(now){
+    x.clearRect(0, 0, cv.width, cv.height);
+    P.forEach(p => { p.x += p.vx; p.y += p.vy; p.r += p.vr; if (p.y > cv.height + 20 && now - t0 < 9000){ p.y = -20; p.x = Math.random() * cv.width; }
+      x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (P.some(p => p.y < cv.height + 20)) requestAnimationFrame(f);
+  })(t0);
+}
+$("finalClose").onclick = () => { $("final").hidden = true; };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("final").hidden) $("final").hidden = true; });
+
+/* ---------- timer ---------- */
+let tEnd = 0, tInt = null;
+function tick(){
+  const r = Math.max(0, Math.ceil((tEnd - Date.now()) / 1000));
+  $("clock").textContent = Math.floor(r / 60) + ":" + String(r % 60).padStart(2, "0"); $("clock").classList.toggle("low", r <= 10);
+  if (!r){ clearInterval(tInt); beep(); }
+}
+let ac = null;
+function beep(){ try{ ac = ac || new AudioContext(); const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 660; o.connect(g); g.connect(ac.destination); g.gain.value = .2; o.start(); o.stop(ac.currentTime + .6); }catch(e){} }
+document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { clearInterval(tInt); tEnd = Date.now() + b.dataset.t * 1000; tick(); tInt = setInterval(tick, 250); });
+$("clockStop").onclick = () => clearInterval(tInt);
+
+function show(){
+  $("roster").value = S.rosterText || ""; $("poolIn").value = S.pool; $("boardIn").value = S.boardSize; $("teamsIn").value = String(T());
+  $("teamsIn").disabled = S.started;
+  $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length;
+  renderScore();
+  renderTeams(S.started ? S.cadets : parseRoster(false));
+  $("sSetup").hidden = S.started; $("sRound").hidden = !S.started;
+  if (S.started){ renderSpinBtns(); renderQ(); renderRound(); }
+  if (S.finished) showFinal(true);
+  else if (S.awarded){ $("result").innerHTML = nextBtnHTML(); $("nextRound").onclick = nextRound; }
+}
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!spinning) drawWheel(); }); } catch (e) {}
+show();
+</script>
+</body>
+</html>
