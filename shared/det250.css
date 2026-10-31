@@ -1,0 +1,48 @@
+/* Det 250 Cadet Hub: shared bar + page transitions.
+   Included by every tool so moving between them feels like one site. */
+
+/* Smooth cross-page transitions (Chrome, Edge, Safari 18.2+; other browsers just navigate). */
+@view-transition { navigation: auto; }
+
+::view-transition-old(root) { animation: d250-out .2s ease both; }
+::view-transition-new(root) { animation: d250-in .34s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes d250-out { to { opacity: 0; transform: scale(.985); } }
+@keyframes d250-in  { from { opacity: 0; transform: translateY(12px); } }
+
+/* The bar stays put while the page underneath changes. */
+.d250-bar { view-transition-name: d250-bar; }
+::view-transition-group(d250-bar) { animation-duration: .3s; }
+
+/* ---------- the bar ---------- */
+.d250-bar {
+  position: relative; z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+  min-height: 40px; margin: 0; padding: 6px 16px;
+  background: #16161a; color: #ececee;
+  border-bottom: 2px solid #c8102e;
+  font: 600 13px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: 0; text-decoration: none; text-align: left;
+  box-sizing: border-box;
+}
+.d250-bar * { box-sizing: border-box; }
+.d250-bar img { width: 26px; height: 26px; flex: none; display: block; }
+.d250-bar .d250-name { color: #f1be48; font-weight: 800; letter-spacing: .02em; }
+.d250-bar .d250-sub { color: #b2b3b8; font-weight: 600; }
+.d250-bar .d250-all {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: 999px; border: 1px solid #46464f;
+  color: #ececee; font-weight: 700; font-size: 12px; white-space: nowrap;
+  transition: background .2s, border-color .2s;
+}
+.d250-bar .d250-all svg { transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
+.d250-bar:hover .d250-all { background: #c8102e; border-color: #c8102e; }
+.d250-bar:hover .d250-all svg { transform: translateX(-3px); }
+.d250-bar:focus-visible { outline: 3px solid #f1be48; outline-offset: -3px; }
+
+@media (max-width: 480px) { .d250-bar .d250-sub { display: none; } }
+
+@media print { .d250-bar { display: none !important; } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

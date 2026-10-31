@@ -1,0 +1,2406 @@
+/* AFROTC PFRA Calculator, Det 250
+ *
+ * Iowa State cardinal and gold. Mobile first: a cadet opens this on a phone,
+ * often standing outside right after PT, so type stays large, targets stay big,
+ * and nothing depends on hover.
+ */
+
+/* Dark is the default, not a preference the browser is asked about.
+ *
+ * This used to follow prefers-color-scheme, which meant the same URL opened
+ * dark in one window and light in a private one on the same machine, because
+ * the browser reports its own setting there. The dark palette is the one the
+ * detachment wanted, so it is simply the palette. Light is still here, under
+ * an explicit data-theme="light", if a toggle is ever wanted; nothing sets it
+ * today. Printing is unaffected: the print block forces its own light-on-white
+ * palette and outranks both of these.
+ */
+:root {
+  /* The lap pace bar. Lifted from the shield blue so it reads on the dark
+   * card; the light palette uses the shield blue as it is. */
+  --pace-accent: #4aa3cf;
+  --pace-bg: #4aa3cf1f;
+
+  /* Iowa State University brand, lifted for a dark background */
+  --cardinal: #ef4054;
+  --cardinal-dark: #c8102e;
+  --gold: #f1be48;
+  --gold-deep: #caa042;
+
+  --ink: #ececee;
+  --ink-soft: #b2b3b8;
+  --ink-faint: #8b8c92;
+  --page: #16161a;
+  --surface: #1f1f25;
+  --line: #34343c;
+  --line-strong: #46464f;
+
+  --pass: #5cc98d;
+  --pass-bg: #16302280;
+  --fail: #ff8a80;
+  --fail-bg: #3a1b1880;
+  --warn-bg: #3a2f1580;
+  --track-fail: #4a2624;
+  --track-pass: #23422f;
+  /* The running surface in the track layout diagram. Named for the oval to
+   * keep it clear of --track-pass/--track-fail, which shade slider tracks. */
+  --oval-surface: #6d3a2e;
+
+  --radius: 12px;
+  --gutter: 16px;
+  --measure: 46rem;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .3);
+
+  /* The patch appears twice, masthead and footer. Holding it in one custom
+   * property means the offline build inlines the image once instead of twice. */
+  --patch: url("assets/det250-patch.png");
+  --shield: url("assets/afrotc-shield.png");
+
+  /* The shield's own colours, sampled from the artwork rather than guessed,
+   * so the bar it sits on is the blue it is drawn in. */
+  --af-blue: #006186;
+  --af-blue-deep: #004d6b;
+}
+
+.patch {
+  background: center / contain no-repeat var(--patch);
+}
+
+.shield {
+  background: center / contain no-repeat var(--shield);
+}
+
+/* The light palette, kept whole and unused. Set data-theme="light" on <html>
+ * to get it back. */
+:root[data-theme="light"] {
+  --pace-accent: #006186;
+  --pace-bg: #0061861a;
+  --cardinal: #c8102e;
+  --cardinal-dark: #9c0c24;
+
+  --ink: #1b1b1d;
+  --ink-soft: #55565a;
+  --ink-faint: #7c7d82;
+  --page: #f4f4f2;
+  --surface: #ffffff;
+  --line: #dededa;
+  --line-strong: #c3c3bd;
+
+  --pass: #1d7a4c;
+  --pass-bg: #e6f4ec;
+  --fail: #b3261e;
+  --fail-bg: #fdecea;
+  --warn-bg: #fff6e0;
+  --track-fail: #f2cdc9;
+  --track-pass: #c9dfd2;
+  --oval-surface: #c97f68;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .05);
+}
+
+* { box-sizing: border-box; }
+
+/* The browser's own [hidden] rule is a plain element style, so any class that
+ * sets display beats it. Several here do (.field, .results). Without this,
+ * hidden="" silently stops working and panels meant to stay out of sight are
+ * on screen from the first paint. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0; font-weight: 700; }
+p { margin: 0; }
+ul { margin: 0; padding-left: 1.1em; }
+li + li { margin-top: .5em; }
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 28px;
+  display: grid;
+  gap: var(--gutter);
+}
+
+/* --- masthead ----------------------------------------------------------- */
+
+/* Deliberately small: the tool is the point, so the masthead is a name badge
+ * rather than a banner. The detachment line, motto and citations live in the
+ * footer, where they are read once rather than scrolled past every time. */
+/* Air Force blue rather than Iowa State cardinal: the assessment is the same
+ * one across AFROTC, and a detachment's colours on the banner made the tool
+ * look like it was only for that detachment. The Det 250 patch stays in the
+ * footer, where the attribution is. */
+.masthead {
+  background: var(--af-blue);
+  color: #fff;
+  padding: 10px var(--gutter);
+  border-bottom: 4px solid var(--gold);
+}
+
+.masthead-inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The shield carries its own gold border, so it needs no halo to separate it
+ * from the blue bar; a faint dark shadow just lifts it off. */
+.mark {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 39px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35));
+}
+
+.masthead h1 { font-size: 1.15rem; letter-spacing: -.01em; }
+
+.tagline {
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+/* In the footer now, so it is styled for paper-coloured background. */
+.source-line {
+  max-width: 34rem;
+  margin: 14px auto 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: .78rem;
+  color: var(--ink-soft);
+}
+.source-line strong { color: var(--ink); }
+
+/* --- cards -------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px var(--gutter);
+  box-shadow: var(--shadow);
+}
+
+.card > h2 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.card-intro, .hint {
+  color: var(--ink-soft);
+  font-size: .85rem;
+}
+.card-intro { margin-bottom: 14px; }
+
+/* --- fields ------------------------------------------------------------- */
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field { display: grid; gap: 5px; align-content: start; }
+
+label {
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+input[type="number"], select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  padding: 11px 12px;
+  width: 100%;
+  min-height: 46px;
+}
+
+input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+input:disabled {
+  background: var(--page);
+  color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--fail);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+button {
+  font: inherit;
+  font-weight: 700;
+  border-radius: 10px;
+  min-height: 50px;
+  padding: 12px 18px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+button.secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+  align-self: end;
+}
+button.secondary:hover { border-color: var(--cardinal); color: var(--cardinal); }
+
+.form-footer {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+/* Reset throws away everything that has been typed, so it does not pretend to
+ * be a quiet secondary control. Cardinal and full width: easy to find on
+ * purpose, and unmistakable enough that nobody hits it by accident thinking it
+ * clears one field. */
+.reset-button {
+  width: 100%;
+  max-width: 22rem;
+  min-height: 52px;
+  padding: 12px 24px;
+  border: 1px solid var(--cardinal-dark);
+  border-radius: 10px;
+  background: var(--cardinal);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  box-shadow: var(--shadow);
+  transition: background .15s ease;
+}
+.reset-button:hover { background: var(--cardinal-dark); }
+.reset-button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* --- form --------------------------------------------------------------- */
+
+form.card { display: grid; gap: 14px; padding-bottom: 20px; }
+
+.label-text { font-weight: 600; font-size: .9rem; }
+
+.about-row { align-items: start; }
+
+/* Sex: one tap, no picker to open. */
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--page);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.segment {
+  min-height: 40px;
+  padding: 8px 6px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: .92rem;
+  border: none;
+  transition: background .15s ease, color .15s ease;
+}
+/* Gold rather than cardinal: these two answers are settings, not scores, and
+ * cardinal is what the tool uses to mean "attention here". Dark ink is fixed
+ * rather than --ink because gold does not change between themes. */
+/* Mars and Venus sit slightly large next to the word, and a touch lighter so
+ * the label still leads. Decorative: the word is what is read out. */
+.sex-glyph {
+  /* Big enough to read as a symbol rather than as punctuation, but capped so
+   * the button keeps the same height as the age one beside it: line-height 0
+   * lets the glyph grow without pushing the row taller. */
+  font-size: 1.75em;
+  line-height: 0;
+  position: relative;
+  top: .12em;
+  opacity: .8;
+  margin-right: 5px;
+}
+.segment.on .sex-glyph { opacity: 1; }
+
+.segment.on {
+  background: var(--gold);
+  color: #2a2205;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+}
+
+
+/* --- before you test ------------------------------------------------------
+ *
+ * Reference, not arithmetic, so it is folded away and styled quietly. The
+ * citation under each item is the point: a cadet who needs to argue one of
+ * these with somebody needs the paragraph, not a paraphrase.
+ */
+.pretest > summary {
+  display: grid;
+  gap: 2px;
+  cursor: pointer;
+  list-style: none;
+}
+.pretest > summary::-webkit-details-marker { display: none; }
+.pretest-title { font-weight: 700; font-size: 1rem; }
+.pretest > summary::after {
+  content: "▾";
+  position: absolute;
+  right: var(--gutter);
+  margin-top: 2px;
+  color: var(--ink-faint);
+}
+.pretest[open] > summary::after { content: "▴"; }
+.pretest { position: relative; }
+
+.pretest-item { margin-top: 18px; }
+.pretest-item h3 { margin: 0 0 4px; font-size: .92rem; }
+.pretest-item p { margin: 0; font-size: .88rem; line-height: 1.5; color: var(--ink-soft); }
+.pretest-cite {
+  margin-top: 4px !important;
+  font-size: .74rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.pretest-footer {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: .8rem;
+  color: var(--ink-faint);
+}
+
+/* --- the in-line scoring chart -------------------------------------------
+ *
+ * A validation reference, folded away until asked for. It scrolls inside its
+ * own box rather than pushing the rest of the form down a screen and a half.
+ */
+.chart-inline { display: grid; justify-items: start; gap: 8px; }
+
+.chart-body {
+  width: 100%;
+  max-height: 20rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-table caption {
+  caption-side: top;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--page);
+}
+
+/* Sticky, because the point of scrolling 26 rows is lost if you forget which
+ * column is which. */
+.chart-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: .7rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.chart-table td,
+.chart-table tbody th {
+  padding: 5px 12px;
+  text-align: left;
+  font-weight: 400;
+  border-bottom: 1px solid var(--line);
+}
+.chart-table tbody tr:last-child td,
+.chart-table tbody tr:last-child th { border-bottom: none; }
+
+.chart-measure { color: var(--ink); }
+.chart-detail { color: var(--ink-soft); }
+.chart-points { text-align: right !important; font-weight: 600; }
+
+/* The row this cadet landed on. Gold, the tool's colour for a thing that is
+ * set, and heavy enough to find at a glance in a 26 row table. */
+.chart-table .chart-current {
+  background: var(--warn-bg);
+  box-shadow: inset 3px 0 0 var(--gold-deep);
+}
+.chart-table .chart-current th,
+.chart-table .chart-current td { font-weight: 700; }
+
+/* The floor. Below this row the component fails whatever the composite says. */
+.chart-table .chart-minimum th,
+.chart-table .chart-minimum td {
+  border-bottom: none;
+  box-shadow: inset 0 -2px 0 var(--line-strong);
+}
+.chart-table .chart-minimum .chart-measure::after {
+  content: " · minimum";
+  font-size: .68rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+@media print {
+  .chart-body { max-height: none; overflow: visible; }
+}
+
+/* The Fitness Award: earned reads as a reward, blocked as a caveat. Neither is
+ * a pass or a fail, so neither borrows the green and red that mean those. */
+.award-line {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: .9rem;
+  line-height: 1.45;
+  text-align: left;
+}
+.award-earned {
+  border-left: 4px solid var(--gold-deep);
+  background: var(--warn-bg);
+  font-weight: 600;
+}
+.award-star { border-left-width: 6px; }
+.award-blocked {
+  border-left: 4px solid var(--line-strong);
+  background: var(--page);
+  color: var(--ink-soft);
+}
+
+/* --- the waist to height ratio ------------------------------------------
+ *
+ * The figure the chart is read on, so it is the largest thing in the card
+ * after the score itself. Deliberately not gold: gold in this tool means a
+ * setting somebody chose, and this is a measurement, not a choice.
+ */
+.ratio-readout {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--page);
+}
+
+.ratio-label {
+  margin: 0;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.ratio-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.ratio-working {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- an applied altitude correction -------------------------------------
+ *
+ * A number that silently changes the score has to be readable at a glance, so
+ * this is a strip of its own rather than a clause on the end of the chart row.
+ * Gold, because that is what this tool uses for a setting that has been chosen,
+ * the same as the age and sex segments.
+ */
+.altitude-applied {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--gold-deep);
+  border-radius: 8px;
+  background: var(--warn-bg);
+}
+
+.altitude-applied-tag {
+  margin: 0;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* The conversion is the fact, so it is the biggest thing in the strip. */
+.altitude-applied-change {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.altitude-applied-change .altitude-arrow { color: var(--ink-faint); font-weight: 400; }
+.altitude-applied-change .altitude-to { color: var(--gold-deep); }
+
+.altitude-applied-detail {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--ink-soft);
+}
+
+/* The walk moves the bar rather than the member's time, so the emphasis moves
+ * with it: the new maximum is the thing that changed. */
+.altitude-applied.is-standard .altitude-applied-tag::after { content: " · standard raised"; }
+
+/* An altitude that actually changes a score says so in the tool's own
+ * attention colour, because a quiet hint is easy to leave switched on. */
+.altitude-on {
+  color: var(--cardinal);
+  font-weight: 600;
+}
+
+/* --- the verbiage dialog -------------------------------------------------
+ *
+ * A quotation of a regulation, so it is set to be read: a comfortable measure,
+ * and the spoken text distinguished from the administrator's own directions.
+ * The publication does that with italics; italic at this length is tiring on a
+ * screen, so the spoken text takes weight and a rule down its edge instead.
+ */
+.verbiage {
+  width: min(56rem, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .28);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.verbiage::backdrop { background: rgba(0, 0, 0, .55); }
+
+.verbiage-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 12px;
+  margin: 0;
+  padding: 16px var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.verbiage-head h2 { font-size: 1.05rem; margin: 0; }
+
+.verbiage-direction,
+.verbiage-source { padding: 0 var(--gutter); color: var(--ink-soft); font-size: .86rem; }
+.verbiage-direction { margin: 14px 0 0; }
+.verbiage-source {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  padding-bottom: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: .78rem;
+}
+
+#verbiage-body { padding: 0 var(--gutter); }
+
+.verbiage-part { margin-top: 16px; }
+
+.verbiage-ref {
+  margin: 0 0 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .74rem;
+  color: var(--ink-faint);
+}
+
+/* Not read out: this is the administrator being told what to do. */
+.verbiage-lead { margin: 0 0 6px; color: var(--ink-soft); font-size: .9rem; }
+
+/* Read out, word for word. */
+.verbiage-spoken {
+  margin: 0;
+  padding-left: 14px;
+  border-left: 3px solid var(--gold-deep);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+/* A2.1 is not an event script; it is the opening statement for the whole
+ * assessment, and it is only shown on the first component. */
+.verbiage-general {
+  margin-top: 14px;
+  padding: 2px 14px 16px;
+  background: var(--page);
+  border-radius: 10px;
+}
+.verbiage-general-head {
+  margin: 14px 0 0;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* --- the guide cue ------------------------------------------------------
+ *
+ * One section glows at a time: the next one still to be answered. The ring is
+ * drawn with box-shadow so it never participates in layout, and the padding on
+ * .field is cancelled by an equal negative margin so that the cue moving from
+ * age to sex to the events does not shift anything on the page.
+ */
+.cue {
+  border-radius: var(--radius);
+  animation: cue-glow 2.4s ease-in-out infinite;
+}
+
+.field.cue, .band-picker.cue {
+  padding: 6px;
+  margin: -6px;
+}
+
+/* .band-picker carries its own reveal animation, and a later rule of equal
+ * specificity would win, so the cue is restated here with both running. */
+.band-picker.cue {
+  margin: -10px -6px -6px;
+  animation: rise .22s ease both, cue-glow 2.4s ease-in-out infinite;
+}
+
+/* The cue usually lands on a slider now, so the ring hugs the track rather
+ * than the card around it. The padding is cancelled by an equal negative
+ * margin, as it is on the fields, so a cue arriving does not shift the page. */
+.slider-row.cue {
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: 10px;
+}
+
+/* Height and waist sliders sit inside a .field, which already gives them a
+ * 2px top margin; -6 would move them 8px, so this puts it back. */
+.field > .slider-row.cue { margin-top: -4px; }
+
+/* Only reached when a component has no slider to point at: the walk, or one
+ * marked exempt or did-not-finish. */
+.event.cue { border-color: var(--gold-deep); }
+
+@keyframes cue-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(202, 160, 66, .45); }
+  50%      { box-shadow: 0 0 0 5px rgba(241, 190, 72, .55); }
+}
+
+/* A steady ring still says "this one next" without anything moving. */
+@media (prefers-reduced-motion: reduce) {
+  .cue,
+  .band-picker.cue { animation: none; box-shadow: 0 0 0 3px rgba(241, 190, 72, .45); }
+}
+
+/* Revealed only when a cadet says they are 25 or older. */
+.band-picker {
+  margin-top: -4px;
+  animation: rise .22s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-picker { animation: none; }
+}
+
+/* Each event is its own block with a live score chip. */
+.event {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px var(--gutter);
+  display: grid;
+  gap: 10px;
+  transition: border-color .2s ease;
+}
+.event:focus-within { border-color: var(--cardinal); }
+
+/* Explicit placement rather than wrapping: the exercise and its score are what
+ * a cadet reads, so they hold the first row at any width. The tools take the
+ * second row, and the picture, which changes the exercise in the proctor
+ * view, sits to the left of both. */
+.event-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+}
+.event-head h2 { grid-area: 1 / 2; font-size: 1rem; }
+.event-head .chip { grid-area: 1 / 3; }
+/* The picture takes both rows on the left, so the name and its tools stay
+ * lined up with each other beside it. */
+.event-head .event-icon { grid-area: 1 / 1 / 3 / 2; align-self: start; }
+/* Both event controls share the second row. They wrap on a narrow screen
+ * rather than squeezing the exercise name above them. */
+.event-head .event-tools {
+  grid-area: 2 / 2 / 3 / -1;
+  justify-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* Every chip, not just the swap: an auto margin pushes a chip that wraps onto
+ * the next line over to the right, which is worse now the row starts beside
+ * the picture rather than under it. */
+.event-head .event-tools > * { margin-left: 0; }
+
+/* Exempt is a claim about the member, not a score, so it reads as a state that
+ * is on or off rather than as another quiet tool. Off it looks like its
+ * neighbours; on it takes the gold the tool uses for a setting that is set. */
+.exempt-toggle.on {
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  color: #2a2205;
+  font-weight: 700;
+}
+
+/* Changing the event is a cadre job, so the control is quiet by design. */
+.swap,
+.verbiage-open,
+.exempt-toggle {
+  min-height: 0;
+  padding: 4px 10px;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-faint);
+  border-radius: 999px;
+  margin-left: auto;
+}
+.swap:hover,
+.verbiage-open:hover,
+.exempt-toggle:not(.on):hover { border-color: var(--cardinal); color: var(--cardinal); }
+
+.event-picker {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  background: var(--page);
+  border-radius: 9px;
+}
+.event-picker label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Sits with the component whose exercise was changed, not off on its own. */
+.alt-note {
+  border-left: 3px solid var(--gold-deep);
+  background: var(--warn-bg);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.chip {
+  font-weight: 800;
+  font-size: .95rem;
+  font-variant-numeric: tabular-nums;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--page);
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.chip.filled { background: var(--pass-bg); color: var(--pass); border-color: transparent; }
+.chip.chip-fail { background: var(--fail-bg); color: var(--fail); }
+
+/* Points bar. Scaled to the component's own maximum so a cadet can see how
+ * much of that component they have earned, with a tick where the minimum sits. */
+.meter {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--page);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: width .28s cubic-bezier(.2, .7, .3, 1), background-color .2s ease;
+}
+.meter.is-pass .meter-fill { background: var(--pass); }
+.meter.is-fail .meter-fill { background: var(--fail); }
+
+/* The minimum, drawn over the fill so it stays visible either side of it. */
+.meter-mark {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 2px;
+  background: var(--ink);
+  opacity: .45;
+  transform: translateX(-1px);
+}
+
+/* The composite is the headline number, so its bar carries real weight: a
+ * taller track, a stronger mark, and a tinted background so the empty portion
+ * reads as "still to earn" rather than as blank space. */
+.meter-composite {
+  height: 22px;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
+}
+
+.meter-composite .meter-fill {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+}
+.scoreboard.is-pass .meter-composite { border-color: var(--pass); }
+.scoreboard.is-fail .meter-composite { border-color: var(--fail); }
+
+.meter-composite .meter-mark {
+  width: 3px;
+  top: -2px;
+  bottom: -2px;
+  opacity: .7;
+  transform: translateX(-1.5px);
+}
+
+.meter-legend {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter-fill { transition: none; }
+}
+
+/* Reps: type, or nudge one at a time to explore what-ifs. */
+.stepper {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  gap: 8px;
+  align-items: stretch;
+}
+.stepper input { text-align: center; font-size: 1.15rem; font-weight: 700; }
+
+.step {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 9px;
+  font-size: 1.3rem;
+  min-height: 46px;
+  padding: 0;
+  line-height: 1;
+}
+.step:hover { border-color: var(--cardinal); color: var(--cardinal); }
+.step:active { background: var(--page); }
+
+.time-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.time-inputs input { text-align: center; font-size: 1.15rem; font-weight: 700; }
+.time-colon { font-weight: 800; color: var(--ink-faint); font-size: 1.1rem; }
+
+.measure-row { gap: 12px; }
+
+/* Chart bounds, always on show: what the minimum takes and what maxes it. */
+/* --- the slider ----------------------------------------------------------
+ *
+ * An alternative to typing, not a replacement for it: the two stay in step
+ * because dragging writes into the number field above. The left of the track
+ * is always the worst score and the right is always full marks, whichever
+ * direction the underlying number runs.
+ *
+ * --below-minimum is set per slider by renderSliders: the share of the track
+ * that scores nothing on this cadet's chart.
+ */
+.slider-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+/* Height and waist each sit in their own field, directly under the input they
+ * set, which is what says which slider is which without labelling either. */
+.field > .slider-row { margin-top: 2px; }
+
+.slider-end {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.slider {
+  /* One place to change the size. The two vendor pseudo-elements below cannot
+   * share a rule, so without tokens the thumb and its offset drift apart. */
+  --track-height: 10px;
+  --thumb-size: 28px;
+
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: calc(var(--thumb-size) + 8px);   /* the grab area, not the track */
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+  touch-action: pan-y;     /* drag the handle without scrolling the page */
+}
+
+/* A finger is not a mouse pointer. On a phone the handle has to be big enough
+ * to find and hold while walking, which is most of what this tool is used for,
+ * and there is no hover state to help. Desktop keeps the smaller one. */
+@media (pointer: coarse) {
+  .slider {
+    --thumb-size: 38px;
+    --track-height: 12px;
+  }
+  .slider-row { gap: 8px; }
+}
+
+/* The track is painted twice, once per engine, because the two pseudo-elements
+ * cannot be selected together: a rule listing both is dropped whole by both. */
+.slider::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background:
+    linear-gradient(to right,
+      var(--track-fail) 0 var(--below-minimum, 0%),
+      var(--track-pass) var(--below-minimum, 0%) 100%);
+}
+.slider::-moz-range-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background:
+    linear-gradient(to right,
+      var(--track-fail) 0 var(--below-minimum, 0%),
+      var(--track-pass) var(--below-minimum, 0%) 100%);
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  /* Chrome puts the thumb's top edge on the track's top edge; Firefox centres
+   * it for you, which is why only this one needs the offset. */
+  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+  border-radius: 50%;
+  background: var(--cardinal);
+  border: 3px solid var(--surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+}
+.slider::-moz-range-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--cardinal);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+}
+
+.slider:focus-visible { outline: none; }
+.slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--gold); }
+.slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--gold); }
+
+.range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.range-item {
+  display: grid;
+  gap: 1px;
+  background: var(--page);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.range-item.muted { opacity: .72; }
+
+.range-caption {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.range-value {
+  font-size: .95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.range-points {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.range-empty {
+  grid-column: 1 / -1;
+  font-size: .8rem;
+  color: var(--ink-faint);
+  background: var(--page);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+/* The one thing the component card has to say in words: below the chart
+ * minimum, where the red chip and red meter are the only other signal and
+ * neither of them is an explanation. Reads as the warning it is. */
+.below-minimum-note {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--fail);
+  background: var(--fail-bg);
+  border-left: 4px solid var(--fail);
+  border-radius: 7px;
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.not-done {
+  justify-self: start;
+  min-height: 0;
+  padding: 5px 12px;
+  font-size: .78rem;
+  font-weight: 600;
+  border: 1px dashed var(--line-strong);
+  background: transparent;
+  color: var(--ink-faint);
+  border-radius: 999px;
+}
+.not-done:hover { border-color: var(--fail); color: var(--fail); }
+.not-done.on {
+  border-style: solid;
+  border-color: var(--fail);
+  background: var(--fail-bg);
+  color: var(--fail);
+}
+
+.status-note { font-size: .82rem; color: var(--fail); font-weight: 600; }
+
+/* --- results ------------------------------------------------------------ */
+
+.results { display: grid; gap: var(--gutter); }
+
+.scoreboard { text-align: center; border-top: 5px solid var(--line-strong); }
+.scoreboard.is-pass { border-top-color: var(--pass); }
+.scoreboard.is-fail { border-top-color: var(--fail); }
+
+.scoreboard-label {
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.composite {
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.03em;
+  margin: 4px 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.verdict {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-size: .9rem;
+  padding: 7px 18px;
+  border-radius: 999px;
+}
+.is-pass .verdict { background: var(--pass-bg); color: var(--pass); }
+.is-fail .verdict { background: var(--fail-bg); color: var(--fail); }
+
+.band { color: var(--ink-soft); font-size: .85rem; margin-top: 2px; }
+
+/* Under the scoreboard rather than in it: the card is the result, and this is
+ * something to do with the result. Full width on a phone, where it is the only
+ * way to the printed sheet. */
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+/* Side by side where there is room, and each one wide enough to be an obvious
+ * target rather than sized to the length of its label. */
+.result-actions button { flex: 0 1 240px; max-width: 320px; }
+
+/* --- what an exempt component does to the composite ------------------------
+ *
+ * The scoreboard is centred, because a composite is one big number. This is
+ * prose about that number, so it is left aligned: three centred sentences of
+ * arithmetic are harder to read than any of them is worth.
+ *
+ * Gold rather than red or green. It qualifies the result without changing
+ * whether it passed, which is the same job the warnings card does and the same
+ * colour the form uses for "this needs your attention".
+ */
+.exempt-explainer {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--gold-deep);
+  border-radius: 8px;
+  background: var(--warn-bg);
+  text-align: left;
+}
+
+.exempt-headline {
+  margin: 0;
+  font-size: .88rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.exempt-math,
+.exempt-cap {
+  margin: 0;
+  font-size: .78rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* A composite that actually reached 90 is the case someone will argue about,
+ * so that sentence is given the weight of the headline. */
+.exempt-cap.withheld {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.failures { border-left: 4px solid var(--fail); background: var(--fail-bg); }
+.failures h2 { color: var(--fail); }
+.failures ul { margin-top: 10px; }
+
+#warnings-card { border-left: 4px solid var(--gold-deep); background: var(--warn-bg); }
+#warnings-card ul { margin-top: 10px; }
+/* --- target mode -------------------------------------------------------- */
+
+.target-row { grid-template-columns: 1fr auto; align-items: end; }
+
+.plan {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold-deep);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+.plan-kind {
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.plan ul { font-size: .9rem; }
+.plan-total { font-size: .88rem; font-weight: 700; }
+
+/* --- foldable panels ---------------------------------------------------- */
+
+/* Folded away by default: the score and the live component chips carry the
+ * everyday answer, and these panels are for checking the work. */
+.foldable summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.foldable summary::-webkit-details-marker { display: none; }
+.foldable summary h2 { font-size: 1.05rem; }
+.foldable summary::after {
+  content: "▾";
+  color: var(--ink-faint);
+  margin-left: auto;
+}
+.foldable[open] summary::after { content: "▴"; }
+.foldable[open] summary { margin-bottom: 4px; }
+
+.summary-hint { font-size: .8rem; color: var(--ink-faint); }
+
+.reference {
+  border-top: 1px solid var(--line);
+  padding: 12px 0 0;
+  margin-top: 12px;
+  font-size: .86rem;
+}
+.reference-id { font-weight: 700; display: block; margin-bottom: 3px; }
+.reference-text { color: var(--ink-soft); }
+
+/* --- footer ------------------------------------------------------------- */
+
+footer {
+  text-align: center;
+  padding: 28px var(--gutter) calc(96px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+}
+.footer-patch {
+  width: 110px;
+  height: 114px;
+  margin: 0 auto;
+  opacity: .95;
+}
+.motto {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-top: 6px;
+  font-size: .9rem;
+}
+.footer-note { font-size: .78rem; margin-top: 4px; }
+
+/* --- wider screens ------------------------------------------------------ */
+
+@media (min-width: 620px) {
+  .masthead h1 { font-size: 1.3rem; }
+  .mark { width: 44px; height: 45px; }
+  .composite { font-size: 4.2rem; }
+  .card { padding: 22px 24px; }
+}
+
+@media (max-width: 400px) {
+  .row { grid-template-columns: 1fr; }
+  .target-row { grid-template-columns: 1fr; }
+  button.secondary { width: 100%; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .results { scroll-margin-top: 12px; }
+}
+
+.created-by {
+  font-size: .78rem;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: inline-block;
+  color: var(--ink-soft);
+}
+
+/* --- running total ------------------------------------------------------ */
+
+.tally {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  z-index: 20;
+}
+
+.tally-inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  min-height: 46px;
+  padding: 0;
+}
+
+.tally-score {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.tally.is-pass .tally-score { color: var(--pass); }
+.tally.is-fail .tally-score { color: var(--fail); }
+
+.tally-text { font-size: .84rem; font-weight: 600; color: var(--ink-soft); }
+.tally-go { color: var(--ink-faint); font-size: 1.1rem; }
+
+/* --- reference documents ------------------------------------------------ */
+
+.documents { display: grid; gap: 4px; }
+
+.document { border-top: 1px solid var(--line); padding: 14px 0 4px; }
+
+.document-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px 12px;
+}
+
+/* Three buttons plus a description will not share a phone-width row without
+ * crushing the text, so below this the buttons take their own line. */
+@media (max-width: 560px) {
+  .result-actions button { flex: 1 1 100%; max-width: none; }
+
+  /* Height and waist each carry a slider now. Side by side they leave about a
+   * hundred pixels of track apiece, which is not enough to aim a finger at, so
+   * this pair splits earlier than the other two-column rows do. */
+  .measure-row { grid-template-columns: 1fr; }
+
+  .document-head { grid-template-columns: 1fr; }
+  .document-actions { flex-wrap: wrap; }
+}
+
+.document-name { font-weight: 700; font-size: .95rem; }
+.document-note { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
+
+.document-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+
+.secondary.small {
+  min-height: 36px;
+  padding: 7px 14px;
+  font-size: .82rem;
+  border-radius: 8px;
+  align-self: start;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+}
+a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal); }
+
+/* The same document block, shown inside an event rather than in the list. */
+.inline-doc {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--page);
+  padding: 10px 12px;
+}
+.inline-doc .document-name { font-size: .88rem; }
+.inline-doc .document-note { font-size: .78rem; }
+.inline-doc .viewer iframe { height: 60vh; min-height: 300px; }
+
+.viewer { margin-top: 12px; }
+.viewer iframe {
+  width: 100%;
+  height: 70vh;
+  min-height: 380px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--page);
+}
+
+/* --- motion ------------------------------------------------------------- */
+
+/* Top level on purpose: keyframes declared inside a media query only resolve
+ * while that query matches, and the band picker uses this outside one. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .results.revealed > .card {
+    animation: rise .34s cubic-bezier(.2, .7, .3, 1) both;
+  }
+  .results.revealed > .card:nth-child(2) { animation-delay: .04s; }
+  .results.revealed > .card:nth-child(3) { animation-delay: .08s; }
+  .results.revealed > .card:nth-child(4) { animation-delay: .12s; }
+}
+
+/* --- the track layout panel ------------------------------------------------
+ *
+ * Folded in beside the scoring chart, because it answers the other question
+ * the cardiorespiratory section raises: not what a time scored, but where the
+ * lines go before anyone runs it.
+ *
+ * It shares .chart-body's frame so the two panels open the same way, but not
+ * its scroll: a chart is a long table to look down, and this is one picture
+ * that has to be seen whole.
+ */
+.track-body {
+  max-height: none;
+  overflow: visible;
+  padding: 12px 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.track-pickers {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px 16px;
+}
+/* Stack sooner than the other rows. The track slider has few stops, so at
+ * half a narrow card its thumb sits on top of the end label naming the stop
+ * it is parked at, which is the one label that has to stay readable. */
+@media (max-width: 620px) {
+  .track-pickers { grid-template-columns: 1fr; }
+}
+
+/* The slider ends name the extremes; this names the stop it is actually on.
+ * It used to be set as a hint, which put the one piece of text that says what
+ * the diagram below is showing in the same small grey as the footnotes around
+ * it. A slider with three or four unlabelled stops gives no other reading of
+ * where the handle is, so this is sized like an answer rather than a caption,
+ * and takes the gold the rest of the form uses to mean "this is your choice".
+ */
+.track-picked {
+  margin: 2px 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.track-figure {
+  background: var(--page);
+  border-radius: 8px;
+  padding: 6px 4px;
+}
+
+.track-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* The running surface, drawn as one band rather than as lanes: which lane a
+ * member runs in is not what this diagram is for. Lane 1 is drawn over it,
+ * because lane 1 is the line every distance here is measured along. */
+.track-surface {
+  fill: none;
+  stroke: var(--oval-surface);
+  stroke-linejoin: round;
+}
+.track-lane {
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+.track-arrow {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 2.2;
+}
+.track-arrowhead { fill: var(--ink-soft); }
+
+/* Two colours, one per group, so a reader tracks a group round the oval
+ * rather than reading four labels. Within a group, a finish line is
+ * chequered and a start is solid, which is how they are painted. */
+.track-tick {
+  stroke-width: 3.5;
+  stroke-linecap: butt;
+}
+.track-tick.track-a-finish,
+.track-tick.track-a-start { stroke: var(--cardinal); }
+.track-tick.track-b-finish,
+.track-tick.track-b-start { stroke: var(--pass); }
+.track-tick.track-a-finish,
+.track-tick.track-b-finish { stroke-dasharray: 3.5 3; }
+
+.track-label {
+  font-size: 11px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--page);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.track-label.track-a-finish,
+.track-label.track-a-start { fill: var(--cardinal); }
+.track-label.track-b-finish,
+.track-label.track-b-start { fill: var(--pass); }
+
+.track-count {
+  fill: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+}
+.track-count-sub { fill: var(--ink); font-size: 11px; }
+.track-count-note { fill: var(--ink-soft); font-size: 10px; }
+
+.track-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+@media (max-width: 460px) {
+  .track-groups { grid-template-columns: 1fr; }
+}
+
+.track-group h3 {
+  margin: 0 0 3px;
+  font-size: .9rem;
+}
+.track-group-a h3 { color: var(--cardinal); }
+.track-group-b h3 { color: var(--pass); }
+.track-group p {
+  margin: 1px 0;
+  font-size: .8rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* Spans both columns: it is the check on the whole layout, not on one group. */
+.track-confirm {
+  grid-column: 1 / -1;
+  font-size: .82rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.track-confirm strong { color: var(--ink); }
+
+/* The printed track sheet. It has no screen life at all: renderTrackPrint()
+ * fills it, print takes it, and it is emptied again. */
+.track-sheet { display: none; }
+
+/* --- print -------------------------------------------------------------- */
+
+/* A printed page is a record that leaves the device, so this prints the result
+ * and the chart rows behind it, and drops every control. app.js opens the
+ * folded panels on beforeprint, since CSS cannot open a <details>. */
+
+.print-only { display: none; }
+
+@media print {
+  /* Dark is now the plain :root, and the light palette sits on
+   * :root[data-theme="light"] at specificity (0,2,0). Listing all three here,
+   * with the highest of them last, is what stops a page printing pale grey
+   * text onto white paper whichever palette is on screen. */
+  :root,
+  :root:not([data-theme="light"]),
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    --ink: #000;
+    --ink-soft: #222;
+    --ink-faint: #444;
+    --page: #fff;
+    --surface: #fff;
+    --line: #bbb;
+    --line-strong: #888;
+    --shadow: none;
+
+    /* Dark mode's pass and fail are light tints, chosen to sit on a dark
+     * surface. On white paper they are barely there, so print gets its own
+     * pair: dark enough to read, distinct enough to keep meaning on a colour
+     * printer, and legible in greyscale. */
+    --pass: #14643c;
+    --fail: #9c1309;
+    --pass-bg: #fff;
+    --fail-bg: #fff;
+    --warn-bg: #fff;
+  }
+
+  body { background: #fff; color: #000; font-size: 11pt; }
+
+  /* The cue is guidance for filling the form in, not part of the record. */
+  .cue { animation: none; box-shadow: none; padding: 0; margin: 0; }
+  .slider-row { display: none; }
+  .event-tools { display: none; }
+  .reset-button { display: none; }
+  /* The correction changed the score, so it belongs on the printout. */
+  .altitude-applied { border-left-color: #8a6d1f; background: #fff; }
+  /* So does the exemption: it is why a printed 100.0 reads Satisfactory, and
+   * gold at #caa042 is too pale on paper to mark the block as a caveat. */
+  .exempt-explainer { border-left-color: #8a6d1f; background: #fff; }
+  .exempt-headline, .exempt-math, .exempt-cap { color: #000; }
+
+  .masthead {
+    background: none;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding: 0 0 8pt;
+  }
+  .masthead h1 { font-size: 16pt; }
+  .tagline { display: none; }
+  .source-line {
+    color: #000;
+    border-top: none;
+    padding: 6pt 0 0;
+    font-size: 8.5pt;
+  }
+  /* On screen these sit on cardinal and are white, which is invisible on paper. */
+  .source-line strong { color: #000; }
+  .mark { width: 34pt; height: 35pt; }
+
+  main { padding: 0; gap: 10pt; max-width: none; }
+  .card {
+    border: 1px solid #999;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 8pt 10pt;
+    break-inside: avoid;
+  }
+
+  /* Everything a reader cannot act on from paper, and everything that would
+   * push the record onto a second sheet. The reference list is twenty quoted
+   * paragraphs and the proctor details a page of their own: both are worth
+   * reading once on screen and neither is part of a member's result. What a
+   * scorer needs to check the arithmetic is the component table, which is on
+   * the sheet. */
+  form#assessment,
+  .tally,
+  .swap,
+  .not-done,
+  .event-picker,
+  .documents,
+  .result-actions,
+  .breakdown,
+  #aim-card,
+  #proctor-card,
+  .foldable,
+  .footer-patch { display: none !important; }
+
+  .print-only { display: block; }
+  .print-caveat {
+    border: 1px solid #000;
+    padding: 4pt 7pt;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    font-weight: 700;
+  }
+
+  /* The scoreboard is the headline of the record. */
+  .scoreboard,
+  .scoreboard.is-pass,
+  .scoreboard.is-fail { border-top: 3px solid #000; text-align: left; }
+  .meter-composite,
+  .scoreboard.is-pass .meter-composite,
+  .scoreboard.is-fail .meter-composite { border-color: #000; }
+  .composite { font-size: 30pt; color: #000; }
+  .scoreboard-label, .band, .meter-legend, .gap-line { color: #000; }
+  .verdict {
+    background: none !important;
+    color: #000 !important;
+    border: 1.5pt solid #000;
+    padding: 2pt 8pt;
+  }
+  .meter { border: 1px solid #000; height: 10pt; }
+  .meter-fill { background: #000 !important; }
+  .meter-mark { background: #fff; width: 2pt; opacity: 1; }
+
+  .failures { border-left: 3pt solid #000; background: none; }
+  .failures h2 { color: #000; }
+
+  /* --- the component table ---------------------------------------------
+   * The scoreboard says what the assessment came to; this says how. Ruled
+   * rather than boxed, because it is read across a row.
+   */
+  .print-summary { margin-top: 8pt; }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .print-table th,
+  .print-table td {
+    padding: 3.5pt 6pt;
+    text-align: left;
+    vertical-align: baseline;
+    border-bottom: .5pt solid #999;
+  }
+  .print-table th {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    border-bottom: 1pt solid #000;
+  }
+  /* Scores line up on the right and share a digit width, so a column of them
+   * can be read down rather than one at a time. */
+  .print-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .print-table td:first-child { font-weight: 600; }
+  .print-table tfoot .print-total td {
+    border-top: 1pt solid #000;
+    border-bottom: none;
+    font-weight: 700;
+  }
+
+  .print-printed {
+    margin-top: 6pt;
+    font-size: 8pt;
+    color: #444;
+  }
+
+  /* --- the lap pace of the run ---------------------------------------------
+   * Words on the left, the drawing on the right, so it costs the height of
+   * the drawing and no more. Kept whole: a split torn from its drawing is no
+   * use at the track. The screen's brick and pale blue are too faint on
+   * paper, so the oval goes grey and the part lap goes the shield blue.
+   */
+  .print-only.print-pace {
+    --oval-surface: #e2e2e2;
+    --pace-accent: #006186;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 10pt;
+    padding-top: 4pt;
+    border-top: 1pt solid #000;
+    break-inside: avoid;
+  }
+  .print-only.print-pace:empty { display: none; }
+  .print-pace-title { font-size: 10pt; margin: 0 0 2pt; }
+  .print-pace-goal { margin: 0; font-size: 9pt; }
+  .print-pace-lap { margin: 1pt 0; font-size: 13pt; font-weight: 800; }
+  .print-pace-working { margin: 0; font-size: 8.5pt; line-height: 1.35; }
+  .print-pace .track-svg { max-height: 30mm; }
+  .print-pace .track-lane { stroke: #444; }
+  .print-pace .track-arrow { stroke: #444; }
+  .print-pace .track-arrowhead { fill: #444; }
+  .print-pace .track-label { stroke: #fff; }
+  .print-pace .track-count { fill: #000; font-size: 24px; }
+  .print-pace .pace-opening-label { font-size: 16px; }
+  .print-pace .track-label { font-size: 15px; stroke-width: 4px; }
+
+  /* One sheet.
+   *
+   * The budget is a US Letter page less its margins, which is about 965
+   * device pixels of height. The worst case is a failing assessment with a
+   * component exempt: scoreboard, exemption panel, component table, the
+   * failures list and the warnings card, all at once. Sized against that,
+   * so everything lighter fits with room over.
+   *
+   * These are the blocks that carry screen spacing into print, where the
+   * type is already smaller and the gaps no longer earn their height. */
+  main { gap: 5pt; }
+  .card { padding: 6pt 8pt; break-inside: avoid; }
+  .composite { font-size: 23pt; margin: 2pt 0 4pt; }
+  .scoreboard-label { font-size: 7.5pt; }
+  .verdict { padding: 1.5pt 7pt; font-size: 8.5pt; }
+  .band { font-size: 8.5pt; }
+  .meter { height: 7pt; margin-top: 4pt; }
+  .meter-legend { margin-top: 4pt; font-size: 8.5pt; }
+  .exempt-explainer { margin-top: 6pt; padding: 5pt 7pt; gap: 2pt; }
+  .exempt-headline { font-size: 8.5pt; line-height: 1.35; }
+  .exempt-math, .exempt-cap { font-size: 7.5pt; line-height: 1.35; }
+  .award-line, .gap-line { font-size: 8.5pt; margin-top: 5pt; padding: 4pt 7pt; }
+  .failures ul, #warnings-card ul { margin-top: 4pt; font-size: 8.5pt; }
+  .failures li, #warnings-card li { line-height: 1.35; }
+  .failures h2, #warnings-card h2 { font-size: 9.5pt; }
+  .masthead { padding: 0 0 4pt; }
+  .masthead h1 { font-size: 13pt; }
+  .mark { width: 24pt; height: 25pt; }
+
+  /* The footer keeps the provenance and drops the decoration. Which edition
+   * of the DAFMAN and which scoring charts a number was worked out against
+   * is the one thing on a printed record that cannot be re-derived from it;
+   * the motto and the byline are the page's, not the member's. */
+  .motto,
+  .created-by { display: none !important; }
+  footer { padding: 5pt 0 0; font-size: 7.5pt; }
+  .footer-note { font-size: 8pt; }
+  .source-line { font-size: 7.5pt; padding: 4pt 0 0; line-height: 1.4; }
+
+
+  footer { border-top: 1px solid #999; padding: 8pt 0 0; }
+  .motto, .footer-note, .created-by { color: #000; }
+
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8pt; word-break: break-all; }
+
+  /* 10mm rather than 12: a US Letter page at 12mm leaves about 965 device
+   * pixels, and the worst case -- a failing assessment with a component
+   * exempt, so scoreboard, exemption panel, table, failures and warnings all
+   * at once -- came to 961 of them. Four pixels is not headroom. This buys
+   * enough for a fifth failure line without shrinking type that is already
+   * at 7.5pt. Every printer here takes a 10mm margin. */
+  @page { margin: 10mm; }
+
+  /* --- the other printed document -------------------------------------
+   *
+   * Everything above prints a member's result. This prints the track
+   * layout instead, for whoever is marking the course, and the two share
+   * nothing: when body carries printing-track the result is dropped whole
+   * and the sheet takes the page.
+   */
+  body.printing-track > main > *,
+  body.printing-track > footer { display: none !important; }
+  body.printing-track #track-print { display: block !important; }
+
+  /* Ink on paper rather than the screen's brick and cardinal: a pale band
+   * with the marks drawn over it is what a person squinting at a sheet in
+   * daylight can actually read, and it is what a mono printer gives back. */
+  body.printing-track {
+    --oval-surface: #e2e2e2;
+    --cardinal: #a8102a;
+    --pass: #13603a;
+  }
+  .track-sheet .track-figure { background: none; padding: 0; }
+  .track-sheet .track-lane { stroke: #444; }
+  .track-sheet .track-arrow { stroke: #444; }
+  .track-sheet .track-arrowhead { fill: #444; }
+  .track-sheet .track-label { stroke: #fff; }
+  .track-sheet .track-count { fill: #000; }
+  .track-sheet .track-count-sub,
+  .track-sheet .track-count-note { fill: #222; }
+
+  .track-sheet-title {
+    font-size: 17pt;
+    margin: 0;
+  }
+  .track-sheet-sub {
+    margin: 2pt 0 6pt;
+    font-size: 10pt;
+    color: #222;
+  }
+  .track-sheet .track-svg { max-height: 118mm; }
+  .track-sheet .track-groups {
+    margin-top: 6pt;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6pt 16pt;
+  }
+  .track-sheet .track-group h3 { font-size: 11pt; margin: 0 0 2pt; }
+  .track-sheet .track-group p { font-size: 9.5pt; margin: 1pt 0; color: #000; }
+  .track-sheet .track-group-a h3 { color: #a8102a; }
+  .track-sheet .track-group-b h3 { color: #13603a; }
+  .track-sheet .track-confirm {
+    grid-column: 1 / -1;
+    border-top: 1pt solid #000;
+    padding-top: 5pt;
+    font-size: 10pt;
+    color: #000;
+  }
+  .track-sheet-note {
+    margin: 7pt 0 0;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    color: #222;
+  }
+  .track-sheet-printed {
+    margin: 6pt 0 0;
+    font-size: 8pt;
+    color: #444;
+  }
+}
+
+/* --- secondary body fat assessment ----------------------------------------
+ *
+ * Only on screen when the waist to height ratio reaches 0.55, so it is styled
+ * as an alert that opened rather than as another field in the card. The gold
+ * edge is the same one the form uses to mean "this needs your attention".
+ *
+ * It is the last block in the form and a sibling of the event blocks, so it
+ * takes their padding and radius: the alert colouring is what sets it apart,
+ * not a different shape from everything it is stacked with.
+ */
+.bfa {
+  display: grid;
+  gap: 10px;
+  padding: 14px var(--gutter);
+  border: 1px solid var(--gold-deep);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--warn-bg);
+}
+
+.bfa-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.bfa-trigger {
+  margin: 0;
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.bfa-body {
+  display: grid;
+  gap: 10px;
+}
+
+.bfa-methods {
+  display: flex;
+  gap: 8px;
+}
+
+.bfa-method {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bfa-method.on {
+  border-color: var(--gold);
+  background: var(--page);
+  color: var(--ink);
+}
+
+.bfa-fields {
+  gap: 10px;
+}
+
+.bfa-result {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--page);
+}
+
+.bfa-verdict {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.bfa-verdict.pass { color: var(--pass); }
+.bfa-verdict.fail { color: var(--fail); }
+
+.bfa-working {
+  margin: 0;
+  font-size: .76rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.bfa-note {
+  margin: 0;
+  font-size: .76rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.bfa-apply {
+  padding: 11px 14px;
+  border: 1px solid var(--pass);
+  border-radius: 8px;
+  background: var(--pass-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bfa-apply.on {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+/* The way into a body fat assessment that the manual does not require. Set as
+ * a quiet secondary control: it is an option, not the next step. */
+.bfa-optional {
+  justify-self: start;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bfa-optional:hover { color: var(--ink); border-color: var(--gold-deep); }
+
+/* --- lap pace -------------------------------------------------------------
+ *
+ * Sits under the layout and reads off the same distance and track. The lap
+ * split is the answer and is sized like one; the part lap is a correction to
+ * it and is deliberately quieter, because it is a detail of this distance on
+ * this track rather than the number the runner is holding in their head.
+ */
+.pace {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.pace-field label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pace-readout {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--page);
+}
+
+.pace-label {
+  margin: 0;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.pace-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.pace-working {
+  margin: 2px 0 0;
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.pace-partial {
+  margin: 6px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: .72rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* A lap the member measured, beside the three the layouts were drawn for. */
+.custom-lap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.custom-lap label {
+  margin: 0;
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.custom-lap input {
+  width: 6rem;
+  flex: 0 0 auto;
+}
+
+.custom-lap select {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 8px 10px;
+}
+
+/* The two course tools: a lap pace for the member, a layout for whoever is
+ * marking the track. Side by side because they are peers, not a thing and a
+ * detail of it. */
+.course-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.course-toggles .secondary.on {
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+/* The lap pace, full width under the run and the walk. A cadet looking for
+ * how fast to go should not have to guess that a small grey chip holds it.
+ * Blue because gold here means a setting somebody chose and cardinal means a
+ * fail or a reset. */
+.pace-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 2px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--pace-bg);
+  border: 1px solid var(--pace-accent);
+  border-left-width: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pace-bar:hover { background: color-mix(in srgb, var(--pace-accent) 22%, transparent); }
+.pace-bar:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.pace-bar-title { font-weight: 800; font-size: .95rem; }
+.pace-bar-hint { grid-column: 1; font-size: .8rem; color: var(--ink-soft); }
+.pace-bar-chevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--pace-accent);
+  font-size: 1rem;
+  transition: transform .15s ease;
+}
+.pace-bar.on .pace-bar-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) {
+  .pace-bar-chevron { transition: none; }
+}
+
+#pace-section + #track-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* Shown only when the clipboard is refused, and then it holds a whole link, so
+ * it has to be allowed to break anywhere rather than push the card wider. */
+#share-note {
+  flex: 1 1 100%;
+  word-break: break-all;
+  text-align: center;
+}
+
+/* Where the composite came from, one row per component under the number. Left
+ * aligned inside a centred card, because these are rows to read across. */
+.breakdown {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "name points" "measured points";
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 2px;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+}
+.breakdown-row:hover .breakdown-name { text-decoration: underline; }
+.breakdown-row:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.breakdown-name { grid-area: name; font-weight: 700; font-size: .9rem; }
+.breakdown-measured { grid-area: measured; font-size: .8rem; color: var(--ink-soft); }
+.breakdown-points {
+  grid-area: points;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--pass);
+}
+.breakdown-row.is-fail .breakdown-points { color: var(--fail); }
+.breakdown-row.is-exempt .breakdown-points { color: var(--ink-soft); }
+
+/* The lap pace drawing. One start and one finish, in the pace bar's blue so
+ * it reads as part of the pace rather than as the proctor's layout, and the
+ * part lap between them drawn over the lane. */
+.pace-figure { margin-top: 10px; }
+.pace-opening {
+  fill: none;
+  stroke: var(--pace-accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.track-tick.track-pace-start { stroke: var(--pace-accent); }
+.track-tick.track-pace-finish { stroke: var(--ink); stroke-dasharray: 3.5 3; }
+.track-label.track-pace-start { fill: var(--pace-accent); }
+.track-label.track-pace-finish { fill: var(--ink); }
+.pace-opening-label { fill: var(--pace-accent); font-size: 11px; font-weight: 700; }
+
+/* The drawing is scaled down to the card, so its text is set larger than the
+ * layout's to land at a readable size on a phone. There is room for it: the
+ * pace figure carries two labels where the layout carries four. */
+.pace-figure .track-count { font-size: 24px; }
+.pace-figure .pace-opening-label { font-size: 16px; }
+.pace-figure .track-label { font-size: 15px; stroke-width: 4px; }
+
+/* --- the picture beside each component -----------------------------------
+ * A tile so the four line up down the page whatever the figure's shape. The
+ * accent is the pace blue: the one part of each picture that is not a body
+ * (the band at the waist, the arrow under the HAMR) and not a score, so it
+ * borrows neither the pass green nor the setting gold. */
+.event-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--page);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.event-icon-svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.event-icon-svg .icon-head { fill: currentColor; stroke: none; }
+.event-icon-svg .icon-thin { stroke-width: 2; }
+.event-icon-svg .icon-floor { stroke-width: 1.6; opacity: .5; }
+.event-icon-svg .icon-accent { stroke: var(--pace-accent); }
+
+/* In the proctor view the picture is the way to change the exercise, so it
+ * looks like something to press: a gold corner badge with the swap arrows and
+ * a gold edge on hover. A cadet's is the same tile with none of that. */
+button.event-icon {
+  min-height: 0;
+  padding: 0;
+  font: inherit;
+  position: relative;
+}
+button.event-icon:disabled { cursor: default; opacity: 1; }
+button.event-icon.can-swap { cursor: pointer; }
+button.event-icon.can-swap::after {
+  content: "\21C4";
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #2a2205;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  border: 2px solid var(--surface);
+}
+button.event-icon.can-swap:hover,
+button.event-icon.can-swap[aria-expanded="true"] { border-color: var(--gold); }
+button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* The picker's choices, each with its picture, the current one in gold. */
+.event-options { display: grid; gap: 6px; }
+.event-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 12px 6px 6px;
+  text-align: left;
+  font-size: .9rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.event-option:hover { border-color: var(--gold); }
+.event-option[aria-pressed="true"] {
+  border-color: var(--gold);
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+.event-option-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--page);
+}
+.event-option-icon .event-icon-svg { width: 32px; height: 32px; }

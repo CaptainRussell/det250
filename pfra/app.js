@@ -1,0 +1,4118 @@
+/**
+ * UI for the Det 250 PFRA calculator.
+ *
+ * This file reads the form, hands raw values to the scoring engine, and renders
+ * what comes back. It contains no scoring rules of its own: every number on
+ * screen comes from src/engine.js and src/analysis.js, which are tested against
+ * the published charts. If you find yourself about to write a threshold here,
+ * it belongs in the engine instead.
+ *
+ * Scoring is live. A component scores the moment it has a usable number, so a
+ * cadet sees points appear as they type rather than after pressing a button.
+ * The one thing held back is the verdict: Excellent, Satisfactory and
+ * Unsatisfactory only appear once all four components are in, because telling
+ * someone they failed while they are still typing their first number is both
+ * wrong and unkind.
+ */
+
+import {
+  createScorer, COMPONENTS, COMPONENT_LABELS, EVENT_LABELS, EVENT_PHRASES,
+  DET250_EVENTS, formatTime
+} from './src/engine.js?v=c1401fb0cb';
+import { createAnalyzer, describeSeconds } from './src/analysis.js?v=c1401fb0cb';
+import { VERBIAGE, VERBIAGE_SOURCE, verbiageFor } from './src/verbiage.js?v=c1401fb0cb';
+import { eventIcon } from './src/icons.js?v=c1401fb0cb';
+import {
+  TRACK_DISTANCES, TRACK_LENGTHS, trackPlan, pointOnTrack, trackExtent, lapPace, distanceById, TRACK_LENGTH_RANGE, metresFromFeet
+} from './src/track.js?v=c1401fb0cb';
+
+const $ = (id) => document.getElementById(id);
+
+let scorer = null;
+let analyzer = null;
+let lastResult = null;
+let sex = null;
+let ageBand = null;
+
+/**
+ * Who is being assessed.
+ *
+ * The charts do not change; what changes is what the member is allowed to do.
+ * Cadets test on the three AFROTC events and are not authorised exemptions on
+ * any component (AFROTCI 36-2011 V3: the most recent PFRA "with no exemptions"
+ * is required before contracting, field training and commissioning). Cadre and
+ * staff may be on a profile, may be assessed on an alternate event, and may
+ * have a component exempted.
+ *
+ * Altitude is not gated by this. Attachment 3 is a property of where the
+ * assessment was run, not of who ran it.
+ */
+let role = null;
+
+/** Per component: a measurement, a declared non-completion, or nothing yet. */
+const statuses = {
+  body_composition: null, muscular_strength: null, core_endurance: null,
+  cardiorespiratory: null
+};
+
+/**
+ * Which event each component is being scored on.
+ *
+ * Det 250 only ever administers the three defaults. The alternates are here so
+ * cadre can check a chart, and picking one raises a warning saying so.
+ */
+const events = {
+  muscular_strength: 'hand_release_pushup',
+  core_endurance: 'situp',
+  cardiorespiratory: 'run_2mile'
+};
+
+/** Which input each event uses, and which control to show for it. */
+const CONTROLS = {
+  hand_release_pushup: { show: [], field: 'hrpu', kind: 'reps' },
+  pushup: { show: [], field: 'hrpu', kind: 'reps' },
+  situp: { show: ['core-reps'], hide: ['core-hold'], field: 'situp', kind: 'reps' },
+  cross_leg_reverse_crunch: {
+    show: ['core-reps'], hide: ['core-hold'], field: 'situp', kind: 'reps' },
+  forearm_plank: {
+    show: ['core-hold'], hide: ['core-reps'], field: ['plank-min', 'plank-sec'], kind: 'hold' },
+  run_2mile: {
+    show: ['cardio-time'], hide: ['cardio-shuttles'], field: ['run-min', 'run-sec'], kind: 'time' },
+  hamr_20m: {
+    show: ['cardio-shuttles'], hide: ['cardio-time'], field: 'hamr', kind: 'shuttles' },
+  // The same mm:ss control the run uses. What differs is what the number means:
+  // a walk time is measured against a maximum, not looked up for points.
+  walk_2km: {
+    show: ['cardio-time'], hide: ['cardio-shuttles'],
+    field: ['run-min', 'run-sec'], kind: 'walk' }
+};
+
+const MAX_POINTS = {
+  muscular_strength: 15, core_endurance: 15, cardiorespiratory: 50, body_composition: 20
+};
+
+// --- boot ------------------------------------------------------------------
+
+/**
+ * Where the scoring tables come from.
+ *
+ * Served over HTTP they are a separate file. In the single-file offline build
+ * they are already on the page as window.__PFRA_INLINE__, because file:// URLs
+ * block fetch. Keeping that fork in one function is what lets build_standalone.py
+ * bundle this exact file rather than a rewritten copy of it.
+ */
+async function loadResources() {
+  if (window.__PFRA_INLINE__) return window.__PFRA_INLINE__;
+  const data = await fetch('./pfra-scoring-data.json?v=c1401fb0cb').then((r) => r.json());
+  return { data };
+}
+
+async function boot() {
+  const { data } = await loadResources();
+  scorer = createScorer(data);
+  analyzer = createAnalyzer(data);
+
+  for (const id of ['hrpu', 'situp', 'run-min', 'run-sec', 'plank-min', 'plank-sec',
+    'hamr', 'height', 'waist']) {
+    $(id).addEventListener('input', onAnyInput);
+  }
+
+  fillBandOptions();
+  fillAltitudeOptions();
+  // Before the share link, which may name cadre instead.
+  applyRole(DEFAULT_ROLE);
+  // Before anything is typed, so a shared assessment is what loads rather than
+  // something a reader has to clear first.
+  applyShareLink();
+  for (const button of document.querySelectorAll('.segment[data-role]')) {
+    button.addEventListener('click', () => selectRole(button.dataset.role));
+  }
+  wireBfa();
+  wireTrack();
+  for (const button of document.querySelectorAll('.exempt-toggle')) {
+    button.addEventListener('click', () => {
+      const component = button.dataset.exempt;
+      setExempt(component, statuses[component] !== 'exempt');
+      update();
+    });
+  }
+  for (const button of document.querySelectorAll('.segment[data-sex]')) {
+    button.addEventListener('click', () => selectSex(button.dataset.sex));
+  }
+  for (const button of document.querySelectorAll('.segment[data-band]')) {
+    button.addEventListener('click', () => selectAgeGroup(button.dataset.band));
+  }
+  $('age-band').addEventListener('change', () => {
+    ageBand = $('age-band').value || null;
+    update();
+  });
+  for (const button of document.querySelectorAll('.step')) {
+    button.addEventListener('click', () => nudge(button.dataset.target,
+      Number(button.dataset.step)));
+  }
+  // [data-component] only: the BFA tracks are .slider for the look of them but
+  // they measure a member rather than score one, so wireBfa drives those.
+  for (const slider of document.querySelectorAll('.slider[data-component]')) {
+    slider.addEventListener('input', () => onSliderInput(slider.dataset.component));
+    // Tracked by pointer rather than by focus, so that arrowing along the track
+    // with a keyboard still re-seats the handle from the fields it writes.
+    slider.addEventListener('pointerdown', () => { dragging = slider.dataset.component; });
+  }
+  for (const event of ['pointerup', 'pointercancel']) {
+    window.addEventListener(event, () => {
+      if (dragging === null) return;
+      dragging = null;
+      update();
+    });
+  }
+  $('altitude-toggle').addEventListener('click', () => {
+    const panel = $('altitude-panel');
+    if (panel.hidden) {
+      panel.hidden = false;
+      $('altitude-toggle').setAttribute('aria-expanded', 'true');
+      $('altitude-group').focus();
+    } else {
+      closeAltitudePanel();
+    }
+  });
+  $('altitude-group').addEventListener('change', () => {
+    update();
+    closeAltitudePanel();
+  });
+
+  for (const button of document.querySelectorAll('.chart-toggle')) {
+    button.addEventListener('click', () => {
+      const component = button.dataset.chart;
+      if (chartOpen.has(component)) chartOpen.delete(component);
+      else chartOpen.add(component);
+      renderCharts(ageBand);
+    });
+  }
+  for (const button of document.querySelectorAll('.verbiage-open')) {
+    button.addEventListener('click', () => openVerbiage(button.dataset.verbiage));
+  }
+  // Clicking the backdrop is the other way people expect to dismiss a modal.
+  $('verbiage').addEventListener('click', (e) => {
+    if (e.target === $('verbiage')) $('verbiage').close();
+  });
+  for (const button of document.querySelectorAll('.not-done')) {
+    button.addEventListener('click', () => toggleNotFinished(button.dataset.statusFor));
+  }
+
+  // Typing two digits into minutes should land you in seconds without a tap.
+  advanceOnFull('run-min', 'run-sec', 2);
+  advanceOnFull('plank-min', 'plank-sec', 1);
+
+  $('plan-button').addEventListener('click', onPlan);
+  $('target').addEventListener('input', () => {
+    targetEdited = true;
+    $('target-why').hidden = true;
+  });
+  $('tally-button').addEventListener('click', () => {
+    $('scoreboard').scrollIntoView({ behavior: motion(), block: 'start' });
+  });
+  for (const button of document.querySelectorAll('[data-swap-icon]')) {
+    button.addEventListener('click', () => togglePicker(button.dataset.swapIcon));
+  }
+  buildEventOptions();
+  // Scoped to [data-component] for the same reason the swap buttons are scoped
+  // to [data-swap]: the Altitude panel reuses .event-picker for its looks, and
+  // its change event would otherwise be handled as an event swap for a
+  // component named "undefined".
+  for (const select of document.querySelectorAll('.event-picker select[data-component]')) {
+    select.addEventListener('change', () => selectEvent(select.dataset.component,
+      select.value));
+  }
+
+  $('reset-all').addEventListener('click', resetAll);
+  // A cadet reading this on a phone will not go looking through the browser
+  // menu for Print, and the result is the part worth keeping.
+  $('print-result').addEventListener('click', () => window.print());
+  $('share-result').addEventListener('click', shareResult);
+
+  setupDocuments();
+  showEventIcons();
+  showEventDocs();
+  showNotFinished();
+  showTrackPanel();
+
+  update();
+}
+
+const motion = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
+function advanceOnFull(fromId, toId, digits) {
+  $(fromId).addEventListener('input', () => {
+    if ($(fromId).value.length >= digits) $(toId).focus();
+  });
+}
+
+// --- input handling --------------------------------------------------------
+
+/**
+ * The four altitude blocks, straight from the data file.
+ *
+ * Built rather than written into the markup so that the list a cadre member
+ * picks from and the table the engine reads cannot drift apart.
+ */
+function fillAltitudeOptions() {
+  const select = $('altitude-group');
+  for (const group of scorer.data.altitude_correction.groups) {
+    const option = document.createElement('option');
+    option.value = group.id;
+    option.textContent = `${group.label} · ${group.range_label}`;
+    select.append(option);
+  }
+}
+
+/** Every band except under 25, straight from the data file. */
+function fillBandOptions() {
+  const select = $('age-band');
+  for (const band of scorer.data.age_bands) {
+    if (band === 'under25') continue;
+    const option = document.createElement('option');
+    option.value = band;
+    option.textContent = scorer.data.age_band_ranges[band];
+    select.append(option);
+  }
+}
+
+/**
+ * Nearly every cadet is under 25, so that is one tap. Everyone else picks their
+ * band from the dropdown, and until they do there is no band at all: the engine
+ * refuses to assume one, and so does this.
+ */
+function selectAgeGroup(choice) {
+  const picker = $('band-picker');
+  for (const button of document.querySelectorAll('.segment[data-band]')) {
+    const on = button.dataset.band === choice;
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-checked', String(on));
+  }
+
+  if (choice === 'under25') {
+    ageBand = 'under25';
+    picker.hidden = true;
+    $('age-band').value = '';
+  } else {
+    picker.hidden = false;
+    ageBand = $('age-band').value || null;
+    $('age-band').focus();
+  }
+  update();
+}
+
+function openPicker(component) {
+  $(`event-${component}`).hidden = false;
+  $(`icon-${component}`).setAttribute('aria-expanded', 'true');
+  const current = $(`event-${component}`).querySelector('.event-option[aria-pressed="true"]');
+  (current ?? $(`event-select-${component}`)).focus();
+}
+
+/** Tapping the picture opens the picker, and tapping it again closes it. */
+function togglePicker(component) {
+  if ($(`event-${component}`).hidden) openPicker(component);
+  else closePicker(component);
+}
+
+/** Mirrors closePicker: choosing is the end of the errand, so it folds away. */
+function closeAltitudePanel() {
+  const panel = $('altitude-panel');
+  const toggle = $('altitude-toggle');
+  panel.hidden = true;
+  toggle.setAttribute('aria-expanded', 'false');
+  // Focus would otherwise sit on a control that is no longer on screen.
+  if (panel.contains(document.activeElement)) toggle.focus();
+}
+
+function closePicker(component) {
+  $(`event-${component}`).hidden = true;
+  const icon = $(`icon-${component}`);
+  icon.setAttribute('aria-expanded', 'false');
+  // Focus would otherwise be left on a control that is no longer on screen,
+  // so it goes back to the picture that opened the picker.
+  if ($(`event-${component}`).contains(document.activeElement) && !icon.disabled) {
+    icon.focus();
+  }
+}
+
+/**
+ * Switch a component to a different authorised event.
+ *
+ * Swapping clears the old measurement rather than carrying it across: 40 sit-ups
+ * and 40 seconds of plank are not the same reading, and reusing the number would
+ * quietly produce a wrong score.
+ */
+function selectEvent(component, event) {
+  events[component] = event;
+  const control = CONTROLS[event];
+
+  // The picker has done its job, so fold it away rather than leaving it open
+  // over the inputs the cadre member now needs.
+  closePicker(component);
+
+  for (const id of control.hide ?? []) $(id).hidden = true;
+  for (const id of control.show ?? []) $(id).hidden = false;
+
+  statuses[component] = null;
+  const field = fieldOf(component);
+  if (field) setStatus(field, null);
+  for (const id of [control.field].flat()) $(id).value = '';
+
+  $(`heading-${component}`).textContent = EVENT_LABELS[event];
+  showEventIcons();
+  showEventDocs();
+  showNotFinished();
+  showTrackPanel();
+  update();
+}
+
+/**
+ * Flag an alternate exercise on the component it was chosen for.
+ *
+ * The warning sits with the exercise rather than in one banner elsewhere, so
+ * there is no doubt which component it is about when only one was changed.
+ */
+function showAltNotes() {
+  for (const component of ['muscular_strength', 'core_endurance', 'cardiorespiratory']) {
+    const note = $(`alt-${component}`);
+    const event = events[component];
+
+    if (DET250_EVENTS.includes(event)) {
+      note.hidden = true;
+      continue;
+    }
+    // "cadets are not tested on X" keeps the verb agreeing with the cadets, so
+    // the sentence stays correct whether X is singular or plural. For cadre the
+    // alternate is simply an authorised event, so the warning becomes a note.
+    note.textContent = role !== 'cadre'
+      ? `AFROTC cadets are not tested on ${EVENT_PHRASES[event]}. NOTACC CY26-092 ` +
+        'sets the cadet assessment as hand-release push-ups, sit-ups and the 2 mile ' +
+        'run, exclusively, from Academic Year 2026-2027. Cadre/Staff reference only.'
+      : `Scored on ${EVENT_PHRASES[event]}, authorised by DAFMAN 36-2905 for ` +
+        'active duty members. (For cadre/staff selection)';
+    note.hidden = false;
+  }
+}
+
+/**
+ * Reference sheets that only matter for one exercise.
+ *
+ * The HAMR tally sheet is how an administrator records shuttles, so it appears
+ * with the component the moment HAMR is chosen and goes away again otherwise.
+ */
+/**
+ * Did-not-finish is offered only where finishing is a thing you can fail to do.
+ *
+ * A member can leave a 2 mile run or a 2 kilometre walk part-way through. There
+ * is no equivalent for push-ups, sit-ups or a waist measurement: stopping early
+ * is simply a lower count, which is what the verbiage says gets recorded.
+ */
+function showNotFinished() {
+  const event = events.cardiorespiratory;
+  // Not for a cadet working out their own score: a DNF is something a proctor
+  // records on the day, not a result anyone plans for.
+  const wanted = role !== 'cadet' && (event === 'run_2mile' || event === 'walk_2km');
+  const button = $('dnf-run');
+  // Switching to the HAMR while a DNF is set would strand it out of reach.
+  if (!wanted && statuses.cardiorespiratory === 'dnf') setStatus('run', null);
+  button.hidden = !wanted;
+}
+
+/**
+ * The picture beside each component's name, following the event it is on.
+ * The markup is the module's own constants, never anything typed or shared.
+ */
+function showEventIcons() {
+  $('icon-body_composition').innerHTML = eventIcon('waist_to_height');
+  for (const [component, event] of Object.entries(events)) {
+    const icon = $(`icon-${component}`);
+    icon.innerHTML = eventIcon(event);
+    if (!icon.disabled) {
+      icon.setAttribute('aria-label', `Change exercise, now ${EVENT_LABELS[event]}`);
+    }
+    for (const option of document.querySelectorAll(`#event-${component} .event-option`)) {
+      option.setAttribute('aria-pressed', String(option.dataset.value === event));
+    }
+  }
+}
+
+/**
+ * The picker as a list of pictures and names, built from the select.
+ *
+ * A select cannot hold a picture, so its options are drawn as buttons, each
+ * with the same pictogram the component shows once it is chosen. The select
+ * stays, hidden, as the one place the choice is held: everything that reads
+ * or sets an event already goes through it, and a tap here just sets it and
+ * fires the change it would have fired itself.
+ */
+function buildEventOptions() {
+  for (const select of document.querySelectorAll('.event-picker select[data-component]')) {
+    const component = select.dataset.component;
+    const list = el('div', 'event-options');
+    list.setAttribute('role', 'group');
+    list.setAttribute('aria-label', `${COMPONENT_LABELS[component]} exercise`);
+    for (const option of select.options) {
+      const button = el('button', 'event-option');
+      button.type = 'button';
+      button.dataset.value = option.value;
+      button.setAttribute('aria-pressed', String(option.value === events[component]));
+      const picture = el('span', 'event-option-icon');
+      picture.innerHTML = eventIcon(option.value);
+      button.append(picture, el('span', 'event-option-name', EVENT_LABELS[option.value]));
+      button.addEventListener('click', () => {
+        if (select.value === option.value) {
+          closePicker(component);
+          return;
+        }
+        select.value = option.value;
+        select.dispatchEvent(new Event('change'));
+      });
+      list.append(button);
+    }
+    select.hidden = true;
+    select.previousElementSibling.hidden = true;   // its "Event" label
+    select.after(list);
+  }
+}
+
+function showEventDocs() {
+  const wanted = events.cardiorespiratory === 'hamr_20m';
+  // The tally sheet and the pacing audio both belong to the HAMR and nothing
+  // else, so they appear and disappear together.
+  for (const id of ['doc-hamr', 'doc-hamr-audio']) {
+    const doc = $(id);
+    if (!wanted && !doc.hidden) {
+      // Collapse the viewer too, or it would reopen already expanded later.
+      const toggle = doc.querySelector('.view-toggle');
+      if (toggle && toggle.getAttribute('aria-expanded') === 'true') toggle.click();
+    }
+    doc.hidden = !wanted;
+  }
+}
+
+const fieldOf = (component) => ({
+  muscular_strength: 'hrpu', core_endurance: 'situp', cardiorespiratory: 'run'
+}[component]);
+
+function selectSex(value) {
+  sex = value;
+  for (const button of document.querySelectorAll('.segment[data-sex]')) {
+    const on = button.dataset.sex === value;
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-checked', String(on));
+  }
+  update();
+}
+
+function nudge(id, delta) {
+  // A component carrying a status has no count to step. Its fields are
+  // disabled and so are these buttons, so this is the belt to that braces:
+  // reached any other way, a nudge must not quietly revoke the status.
+  //
+  // It used to, and on the wrong component. The target was mapped with
+  // `id === 'hrpu' ? 'hrpu' : 'situp'`, which sent the HAMR buttons at core
+  // endurance, and the clear went through setStatus(), which owns none of the
+  // things setExempt() puts on screen. Pressing + on the HAMR dropped an
+  // exemption from the sit-ups while the Exempt button stayed lit, and
+  // pressing + on an exempt component took its composite from 91.8 to 78.0.
+  if (statuses[componentOf(id)]) return;
+
+  const input = $(id);
+  const current = input.value.trim() === '' ? 0 : Number(input.value);
+  const next = Math.max(0, Math.round(current) + delta);
+  input.value = String(next);
+  update();
+}
+
+const componentOf = (field) => ({
+  hrpu: 'muscular_strength',
+  situp: 'core_endurance',
+  hamr: 'cardiorespiratory',
+  run: 'cardiorespiratory'
+}[field]);
+
+/**
+ * The step buttons that write into a component's fields.
+ *
+ * They are disabled alongside those fields. Leaving them live on a component
+ * whose inputs are greyed out is the inconsistency the nudge bugs grew in.
+ */
+function stepsOf(component) {
+  return [...document.querySelectorAll('.step')]
+    .filter((button) => componentOf(button.dataset.target) === component);
+}
+
+/** Cycle nothing -> did not start -> did not finish -> nothing. */
+/**
+ * Did not finish, on or off.
+ *
+ * It used to cycle through "did not start" as well. That is not a result anyone
+ * records: a member who never started an event has no score to enter, and one
+ * who stopped part-way through push-ups simply has fewer push-ups -- which is
+ * what the verbiage says is recorded. The engine can still represent DNS, so
+ * a score arriving from elsewhere does not break, but nothing here produces it.
+ */
+function toggleNotFinished(field) {
+  setStatus(field, statuses[componentOf(field)] === 'dnf' ? null : 'dnf');
+  update();
+}
+
+function setStatus(field, value) {
+  const component = componentOf(field);
+  statuses[component] = value;
+
+  // Not every component has a Did Not Finish control any more -- only the run
+  // and the walk do -- so clearing a status on one that does not is a no-op
+  // rather than a crash. selectEvent clears the status on every swap, which is
+  // how this first showed up.
+  const note = $(`status-${field}`);
+  const button = document.querySelector(`.not-done[data-status-for="${field}"]`);
+  if (!button || !note) return;
+
+  const inputs = field === 'run' ? ['run-min', 'run-sec'] : [field];
+
+  if (value) {
+    note.textContent =
+      'Recorded as did not finish. Scores 0 and fails the component.';
+    note.hidden = false;
+    button.classList.add('on');
+    for (const id of inputs) {
+      $(id).value = '';
+      $(id).disabled = true;
+    }
+  } else {
+    note.hidden = true;
+    button.classList.remove('on');
+    for (const id of inputs) $(id).disabled = false;
+  }
+  for (const step of stepsOf(component)) step.disabled = Boolean(value);
+}
+
+function onAnyInput() {
+  update();
+}
+
+/**
+ * Empty the measurements, ready for the next cadet.
+ *
+ * Age band and sex are left alone on purpose: a cadre member scoring a flight
+ * is usually working through people of the same band, and retyping it twelve
+ * times is the friction this button exists to remove. Exercises go back to the
+ * three Det 250 events, so a cadre session cannot leak an alternate chart into
+ * the next cadet's score.
+ */
+/**
+ * Put the page back to how it loads.
+ *
+ * Not a reload: nothing here is persisted, so a reload would only cost a flash
+ * and a round trip to prove it. This restores each piece of state instead.
+ *
+ * "Back to default" is the kind of claim that quietly stops being true as soon
+ * as somebody adds a control and forgets this function exists, so it was
+ * checked by snapshotting twenty-odd pieces of page state on a fresh load,
+ * dirtying every one of them, resetting, and diffing. That found exactly one
+ * leak, which is fixed in update(): the Altitude button kept its label.
+ * Re-run that check when adding a control here.
+ */
+function resetAll() {
+  // Who and what: the three answers that gate everything else.
+  role = null;
+  sex = null;
+  ageBand = null;
+  for (const button of document.querySelectorAll('.segment[data-role], ' +
+    '.segment[data-sex], .segment[data-band]')) {
+    button.classList.remove('on');
+    button.setAttribute('aria-checked', 'false');
+  }
+  $('band-picker').hidden = true;
+  $('age-band').value = '';
+
+  // Statuses before fields: clearing an exemption re-enables the inputs it
+  // disabled, and doing it the other way round leaves them disabled.
+  for (const component of COMPONENTS) {
+    if (statuses[component] === 'exempt') setExempt(component, false);
+    const field = fieldOf(component);
+    if (field) setStatus(field, null);
+    statuses[component] = null;
+  }
+
+  for (const [component, fallback] of Object.entries(CADET_EVENTS)) {
+    if (events[component] !== fallback) {
+      $(`event-select-${component}`).value = fallback;
+      selectEvent(component, fallback);
+    }
+    closePicker(component);
+  }
+
+  for (const id of ['hrpu', 'situp', 'run-min', 'run-sec', 'plank-min', 'plank-sec',
+    'hamr', 'height', 'waist']) {
+    $(id).value = '';
+    $(id).disabled = false;
+  }
+  for (const button of document.querySelectorAll('.step')) button.disabled = false;
+
+  resetBfa();
+  resetTrack();
+  // selectEvent() is what normally refreshes this, and above it only runs for
+  // a component whose event actually changed. Resetting from the run changes
+  // nothing there, which left the panel still showing the last member's picks.
+  showTrackPanel();
+  $('altitude-group').value = '';
+  closeAltitudePanel();
+
+  for (const component of COMPONENTS) chartOpen.delete(component);
+  $('verbiage').close();
+  for (const details of document.querySelectorAll('.pretest, .foldable')) {
+    details.open = false;
+  }
+
+  // Drop a shared assessment out of the address too, or Reset Everything is
+  // undone by the next refresh.
+  if (location.search) history.replaceState({}, '', location.pathname);
+  $('share-note').hidden = true;
+
+  lastResult = null;
+  $('results').hidden = true;
+  $('results').classList.remove('revealed');
+  clearPlan();
+  targetEdited = false;
+
+  // Last, after the events are back on their defaults, so applyRole() has
+  // nothing left to switch.
+  applyRole(DEFAULT_ROLE);
+  update();
+  window.scrollTo({ top: 0, behavior: motion() });
+}
+
+
+// --- reading the form ------------------------------------------------------
+
+function wholeNumber(id) {
+  const raw = $(id).value.trim();
+  if (raw === '') return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 ? n : undefined; // undefined = present but unusable
+}
+
+function decimal(id) {
+  const raw = $(id).value.trim();
+  if (raw === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+/**
+ * Build whatever the engine can score right now.
+ *
+ * Returns the input plus the set of components that are actually ready, so the
+ * renderer knows which chips to fill and whether the assessment is complete.
+ * Missing components are scored as DNS purely so the engine has something to
+ * chew on; the ready set is what decides whether a verdict is shown.
+ */
+function readForm() {
+  const ready = new Set();
+
+  // Role gates scoring the way age and sex do. It changes no number, but it
+  // decides what the page may offer, and a cue that points at a question the
+  // form will happily skip past is not a guide.
+  if (!role || !ageBand || !sex) {
+    return { input: null, ready };
+  }
+
+  const input = { ageBand, sex };
+
+  // One altitude for the whole assessment: it is a property of where the test
+  // was administered, not of any one event.
+  const group = $('altitude-group').value;
+  if (group) input.altitudeGroup = group;
+
+  // Each of the three timed or counted components reads whichever control its
+  // currently selected event uses.
+  for (const component of ['muscular_strength', 'core_endurance', 'cardiorespiratory']) {
+    const event = events[component];
+    const control = CONTROLS[event];
+
+    if (statuses[component]) {
+      input[component] = { event, status: statuses[component] };
+      ready.add(component);
+      continue;
+    }
+
+    if (control.kind === 'hold' || control.kind === 'time' || control.kind === 'walk') {
+      const [minId, secId] = control.field;
+      const minutes = wholeNumber(minId);
+      const seconds = wholeNumber(secId);
+      const usable = minutes !== null && minutes !== undefined
+        && seconds !== null && seconds !== undefined && seconds <= 59;
+      if (usable) {
+        input[component] = { event, seconds: minutes * 60 + seconds };
+        ready.add(component);
+      } else {
+        input[component] = { event, status: 'dns' };
+      }
+      continue;
+    }
+
+    const count = wholeNumber(control.field);
+    if (count === null || count === undefined) {
+      input[component] = { event, status: 'dns' };
+    } else {
+      input[component] = { event, [control.kind === 'shuttles' ? 'shuttles' : 'reps']: count };
+      ready.add(component);
+    }
+  }
+
+  const heightValue = decimal('height');
+  const waist = decimal('waist');
+  const height = heightValue === null || heightValue === undefined ? null : heightValue;
+
+  if (statuses.body_composition) {
+    input.body_composition = { event: 'whtr', status: statuses.body_composition };
+    ready.add('body_composition');
+  } else if (height && waist) {
+    input.body_composition = { event: 'whtr', waistInches: waist, heightInches: height };
+    ready.add('body_composition');
+  } else {
+    // Not measured yet. Stand it in as DNS rather than as a plausible ratio:
+    // a placeholder that scored points would put 20 unearned points into the
+    // running total, which is the exact inflation this tool exists to prevent.
+    input.body_composition = { event: 'whtr', status: 'dns' };
+  }
+
+  return { input, ready };
+}
+
+// --- the live update -------------------------------------------------------
+
+/**
+ * Glow whichever part of the form comes next, one at a time.
+ *
+ * A cadet opening this on a phone sees an empty form with four events and no
+ * indication of where to start. Exactly one cue is on screen at any moment, in
+ * the order the assessment is administered, so the form reads as a queue that
+ * empties rather than a wall to be surveyed. A section stops glowing the
+ * instant it holds a usable value, which is why `ready` drives it: that is the
+ * same set the scoring engine is given, so the cue can never disagree with the
+ * chips about what has been filled in.
+ */
+
+/**
+ * What to glow for a component that still needs a number.
+ *
+ * The slider, not the whole block. Dragging is the quickest way to put a score
+ * in, and a ring around an entire card does not say which of the three controls
+ * inside it to reach for.
+ *
+ * Body composition has two sliders and they are not interchangeable: the waist
+ * one cannot be bounded until a height is known, because the inches that earn
+ * full marks depend on it. So height leads, and the waist follows once height
+ * is in.
+ *
+ * Falls back to the whole block when there is no slider to point at: a
+ * component marked exempt or did-not-finish has its slider hidden, and a ring
+ * around nothing would be worse than a ring around the card.
+ */
+function cueTargetFor(component) {
+  const row = component === 'body_composition'
+    ? (decimal('height') == null ? $('slider-height') : $('slider-body_composition'))
+    : $(`slider-${component}`);
+  return row && !row.hidden
+    ? row
+    : document.querySelector(`.event[data-component="${component}"]`);
+}
+
+function showCue(ready) {
+  let target = null;
+
+  if (!role) {
+    // Who is being assessed comes first: it decides what the rest of the form
+    // is allowed to offer.
+    target = $('field-role');
+  } else if (!ageBand) {
+    // Tapping "25 or older" answers the age question but does not settle the
+    // band, so the cue moves to the dropdown that still has to be answered.
+    target = $('band-picker').hidden ? $('field-age') : $('band-picker');
+  } else if (!sex) {
+    target = $('field-sex');
+  } else {
+    // The cue follows COMPONENTS, which is the order the assessment is
+    // administered in. One list, so the glow cannot drift out of step with
+    // the order the sections are actually in.
+    const next = COMPONENTS.find((component) => !ready.has(component));
+    if (next) target = cueTargetFor(next);
+  }
+
+  for (const node of document.querySelectorAll('.cue')) {
+    if (node !== target) node.classList.remove('cue');
+  }
+  if (target) target.classList.add('cue');
+}
+
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
+};
+
+function update() {
+  showHeightInFeet();
+  renderRanges(ageBand);   // reads the height, so it must run after it changes
+  renderSliders(ageBand); // same bounds, same reason to run here
+  renderHeightSlider();   // fixed bounds, so it needs no band at all
+
+  const { input, ready } = readForm();
+  showCue(ready);
+
+  // These three describe the form rather than the score, so they run whether or
+  // not there is one. Leaving them below the early return meant the Altitude
+  // button kept reading "Altitude - Group 3" after a Reset had cleared the
+  // group, because clearing the role made the assessment unscoreable and this
+  // function returned before reaching them.
+  showAltitudeGroup();
+  showHamrLevel();
+  // The pace slider reads its ends off the 2 mile chart, so it only has them
+  // once a sex and an age band are set, and those can be answered after the
+  // track panel is already open. renderTrack() costs nothing while the panel
+  // is closed: it seats the pace controls and returns before drawing.
+  renderTrack();
+  // The alternate-exercise warning is worded differently for a cadet and for
+  // cadre, so it depends on the role as much as on the event. It used to be
+  // refreshed only when the event changed, which left a cadre member reading
+  // "AFROTC cadets are not tested on push-ups" after switching across.
+  showAltNotes();
+
+  if (!input) {
+    for (const component of COMPONENTS) resetChip(component);
+    lastResult = null;
+    renderCharts(ageBand);
+    showAltitudeApplied(null);
+    showRatio(null);
+    showBfa(null, false);
+    $('results').hidden = true;
+    showTally(null, ready);
+    return;
+  }
+
+  let result;
+  try {
+    result = scorer.score(input);
+  } catch (error) {
+    // readForm only builds an input it believes is scoreable, so a throw here
+    // is a bug rather than a half-typed field. Say so rather than going quiet.
+    console.error('PFRA: scoring failed for', input, error);
+    showTally(null, ready);
+    return;
+  }
+
+  lastResult = result;
+
+  // After the score, not before: the chart marks the row this result landed on,
+  // and reading lastResult first would mark the previous one.
+  renderCharts(ageBand);
+
+  const complete = ready.size === COMPONENTS.length;
+
+  for (const component of COMPONENTS) {
+    if (ready.has(component)) fillChip(component, result.components[component]);
+    else resetChip(component);
+  }
+
+  showTally(result, ready);
+  showAltitudeApplied(lastResult);
+  showRatio(lastResult);
+  showBfa(lastResult, complete);
+
+  if (!complete) {
+    $('results').hidden = true;
+    $('award-line').hidden = true;
+    clearPlan();
+    return;
+  }
+
+  renderScoreboard(result);
+  renderBreakdown(result);
+  renderPrintSummary(result);
+  renderPrintPace(result);
+  renderFailures(result);
+  renderWarnings(result);
+  renderReferences(result);
+  showAward(result);
+  suggestTarget(result);
+
+  // A link carrying a passed BFA applies it the first time the assessment is
+  // scoreable, because the panel needs a ratio before it has anything to
+  // exempt. Cleared straight away so it happens once.
+  if (sharedBfaPending && bfa.ratio != null && !bfa.applied) {
+    sharedBfaPending = false;
+    const measured = bfaMeasurements(sex);
+    if (measured) {
+      applyBfaExemption();
+      update();
+      return;
+    }
+  }
+
+  // Re-run against this score rather than leaving the last one up. onPlan()
+  // reads lastResult, which was assigned above, and calls nothing that leads
+  // back here.
+  if (planTarget !== null) onPlan();
+
+  if ($('results').hidden) {
+    $('results').hidden = false;
+    $('results').classList.add('revealed');
+  }
+}
+
+/**
+ * Echo the height back in feet and inches.
+ *
+ * The 4446 records height in inches, so that is what gets typed. Cadets think
+ * in feet and inches, so the conversion sits underneath. It shows the value
+ * after the half-inch rounding the DAFMAN requires (para 3.15.2.3), which is
+ * also the number the ratio is worked out from.
+ */
+function showHeightInFeet() {
+  const hint = $('height-hint');
+  const raw = $('height').value.trim();
+  const inches = raw === '' ? NaN : Number(raw);
+
+  if (!Number.isFinite(inches) || inches <= 0) {
+    hint.textContent = 'Nearest ½ inch, as the 4446 records it.';
+    return;
+  }
+
+  const rounded = Math.round(inches * 2) / 2;
+  const feet = Math.floor(rounded / 12);
+  const rest = rounded - feet * 12;
+  const whole = Math.floor(rest);
+  const half = rest - whole >= 0.5 ? '½' : '';
+  const shown = `${feet}′ ${whole}${half}″`;
+
+  hint.textContent = rounded === inches
+    ? `${shown}, recorded to the nearest ½ inch.`
+    : `Recorded as ${rounded} inches, which is ${shown}.`;
+}
+
+/**
+ * Show an applied altitude correction as the conversion it is.
+ *
+ * It used to be tacked onto the end of the chart-row line, in the same small
+ * monospace as everything else, which is where a number that silently changed
+ * the score is least likely to be read. It gets its own strip: the two values
+ * and an arrow between them, because "14:49 became 14:47" is the whole fact and
+ * a sentence is a slower way to say it.
+ *
+ * For the run and the HAMR the member's number moves. For the walk it does not
+ * -- the standard moves instead -- so the strip says which.
+ */
+function showAltitudeApplied(result) {
+  const strip = $('altitude-applied');
+  const scored = result?.components?.cardiorespiratory;
+  const altitude = scored?.altitude ?? null;
+
+  if (!altitude) {
+    strip.hidden = true;
+    return;
+  }
+
+  $('altitude-applied-tag').textContent =
+    `${altitude.groupLabel} · ${altitude.rangeLabel}`;
+  $('altitude-from').textContent = altitude.fromLabel;
+  $('altitude-to').textContent = altitude.toLabel;
+  $('altitude-applied-detail').textContent = altitude.kind === 'standard'
+    ? `${altitude.detail}, so the time you walked is scored against the later one.`
+    : `${altitude.detail}, and the chart is read on the corrected figure.`;
+  strip.classList.toggle('is-standard', altitude.kind === 'standard');
+  strip.hidden = false;
+}
+
+/* --- the scoring chart, in line --------------------------------------------
+ *
+ * The same table the score came from, on the same screen as the score, so a
+ * cadet can check the lookup instead of taking it on trust. It is folded away
+ * by default: it is a validation reference, not something to read every time.
+ *
+ * The row the cadet actually landed on is marked. That is the whole point --
+ * a 26 row table proves nothing on its own, and finding your own row in it is
+ * exactly the error-prone step the tool exists to remove. `chartRowIndex`
+ * comes from the engine, so the highlight cannot disagree with the score.
+ */
+const chartOpen = new Set();
+
+/** The row each open chart is currently marking, so it is only re-seated when
+ * that row actually changes. */
+const chartMarked = new Map();
+
+/**
+ * Scroll a chart's own box so the marked row sits in the middle of it.
+ *
+ * Deliberately not scrollIntoView(). That scrolls every scrollable ancestor,
+ * the page included, so with a chart open off screen one notch of the scroll
+ * wheel on a slider elsewhere would throw the viewport down to the chart and
+ * leave the control the member was adjusting somewhere above it. Moving this
+ * element's own scrollTop cannot move anything else.
+ */
+function centreInChart(host, row) {
+  const rowBox = row.getBoundingClientRect();
+  const hostBox = host.getBoundingClientRect();
+  const offset = (rowBox.top - hostBox.top) - (host.clientHeight - rowBox.height) / 2;
+  host.scrollTop += offset;
+}
+
+function renderCharts(band) {
+  for (const component of COMPONENTS) {
+    const host = $(`chart-body-${component}`);
+    const toggle = document.querySelector(`.chart-toggle[data-chart="${component}"]`);
+    const event = events[component] ?? 'whtr';
+
+    // Without a sex and a band there is no chart to show: the tables differ by
+    // both, and showing the wrong one would be worse than showing none.
+    if (!sex || !band) {
+      toggle.disabled = true;
+      toggle.textContent = 'Scoring Chart';
+      host.replaceChildren();
+      host.hidden = true;
+      chartOpen.delete(component);
+      chartMarked.delete(component);
+      toggle.setAttribute('aria-expanded', 'false');
+      continue;
+    }
+    toggle.disabled = false;
+
+    if (!chartOpen.has(component)) {
+      host.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.textContent = 'Scoring Chart';
+      continue;
+    }
+
+    const chart = scorer.chartFor({
+      component, event, sex, band,
+      heightInches: component === 'body_composition' ? (decimal('height') || null) : null
+    });
+    if (!chart) {
+      host.hidden = true;
+      continue;
+    }
+
+    const scored = lastResult?.components?.[component] ?? null;
+    const currentIndex = scored && scored.status !== 'exempt'
+      ? scored.chartRowIndex : -1;
+
+    const wasHidden = host.hidden;
+    host.replaceChildren(buildChartTable(chart, currentIndex, component));
+    host.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.textContent = 'Hide Chart';
+
+    // Bring the marked row into view inside the scrolling table, so a cadet
+    // does not have to hunt for the thing that was highlighted for them.
+    //
+    // Only when the chart has just opened or the marked row has moved. This
+    // runs on every update, which is every keystroke and every notch of a
+    // scroll wheel anywhere on the form, and re-seating a row that has not
+    // changed also takes the chart back off a reader who had scrolled it
+    // somewhere else.
+    const marked = host.querySelector('.chart-current');
+    const moved = chartMarked.get(component) !== currentIndex;
+    chartMarked.set(component, currentIndex);
+    if (marked && (wasHidden || moved)) centreInChart(host, marked);
+  }
+}
+
+function buildChartTable(chart, currentIndex, component) {
+  const table = el('table', 'chart-table');
+  const caption = el('caption', null,
+    `${EVENT_LABELS[chart.event]} · ${sex === 'M' ? 'Male' : 'Female'}, ` +
+    `${scorer.data.age_band_ranges[ageBand]}`);
+  table.append(caption);
+
+  const head = el('thead');
+  const headRow = el('tr');
+  for (const column of chart.columns) headRow.append(el('th', null, column));
+  head.append(headRow);
+  table.append(head);
+
+  const body = el('tbody');
+  for (const row of chart.rows) {
+    const tr = el('tr', row.index === currentIndex ? 'chart-current' : null);
+    if (row.index === currentIndex) tr.setAttribute('aria-current', 'true');
+    if (row.isMinimum) tr.classList.add('chart-minimum');
+
+    tr.append(el('th', 'chart-measure', row.label));
+    if (row.detail != null) tr.append(el('td', 'chart-detail', row.detail));
+    tr.append(el('td', 'chart-points',
+      row.resultLabel ?? `${row.points.toFixed(1)}`));
+    body.append(tr);
+  }
+  table.append(body);
+  return table;
+}
+
+/**
+ * Say the waist to height ratio out loud.
+ *
+ * It is the number the chart is actually read on, and it was living in the
+ * small monospace lookup line at the bottom of the card, which is the least
+ * likely place for a cadet to find the one figure their body composition score
+ * turns on.
+ *
+ * The working is shown with it because two roundings sit between what gets
+ * typed and what gets graded, and the second one is the subtlest rule in the
+ * tool: the ratio is *truncated* to two decimals, not rounded (para 3.15.4.2).
+ * Showing the undivided figure alongside the truncated one is enough to make
+ * that visible; saying what rounding would have given as well was noise on
+ * every reading where it made no difference.
+ */
+function showRatio(result) {
+  const readout = $('ratio-readout');
+  const scored = result?.components?.body_composition ?? null;
+  const measured = scored?.measured ?? null;
+
+  if (!measured || measured.ratio == null || scored.status === 'exempt') {
+    readout.hidden = true;
+    return;
+  }
+
+  $('ratio-value').textContent = measured.ratio.toFixed(2);
+
+  if (measured.waistInches == null || measured.exactRatio == null) {
+    $('ratio-working').textContent = 'Graded on this ratio.';
+    readout.hidden = false;
+    return;
+  }
+
+  $('ratio-working').textContent =
+    `${measured.waistInches.toFixed(1)} in waist ÷ ` +
+    `${measured.heightInches.toFixed(1)} in height = ` +
+    `${measured.exactRatio.toFixed(4)}, truncated to two decimals.`;
+  readout.hidden = false;
+}
+
+/**
+ * Whether this score would earn the AFROTC Fitness Award.
+ *
+ * A cadet award, so it is shown only in cadet mode. It is written as a
+ * condition rather than an announcement -- "if this is your official PFRA for
+ * the term" -- because the tool cannot know whether a given assessment is the
+ * official one, nor whether the cadet has already had the award this term or
+ * the device at this detachment. Those are detachment records.
+ */
+function showAward(result) {
+  const line = $('award-line');
+  // A cadet award, so in the proctor view it is shown only when the assessment
+  // is one a cadet could have taken: the three AFROTC events and nothing
+  // exempt. Anything else is an active duty member's PFRA, and telling them
+  // it would not earn a cadet ribbon is noise. A proctor scoring a cadet is the
+  // case this is for, and they need the line as much as the cadet does.
+  const cadetShaped = result
+    && Object.entries(CADET_EVENTS).every(([c, event]) => result.components[c].event === event)
+    && result.exemptComponents.length === 0;
+  if (!result || (role !== 'cadet' && !cadetShaped)) {
+    line.hidden = true;
+    return;
+  }
+  const whose = role === 'cadet' ? 'your' : "the cadet's";
+
+  const award = scorer.fitnessAward(result);
+  if (!award.meetsThreshold) {
+    line.hidden = true;
+    return;
+  }
+
+  if (!award.eligible) {
+    // Worth saying: the number is there but something else rules it out, and
+    // silence would read as the tool not knowing about the award.
+    line.textContent =
+      `${result.compositeText} is at or above ${award.threshold}, but it would not ` +
+      `earn the Fitness Award: ${award.blockers.join(', and ')} ` +
+      '(AFROTCI 36-2011 V3, Table 15.1).';
+    line.className = 'award-line award-blocked';
+    line.hidden = false;
+    return;
+  }
+
+  line.textContent = award.tier === 'silver_star'
+    ? `A perfect ${result.compositeText}. If this is ${whose} official PFRA for the ` +
+      'term it earns the Fitness Award, and the Silver Star device the first time ' +
+      `${role === 'cadet' ? 'you score' : 'they score'} 100 at the detachment ` +
+      '(AFROTCI 36-2011 V3, Table 15.1).'
+    : `${result.compositeText} is ${award.threshold} or above. If this is ${whose} ` +
+      'official PFRA for the term it earns the Fitness Award, which may be received ' +
+      'once per term (AFROTCI 36-2011 V3, Table 15.1).';
+  line.className = `award-line award-earned${award.tier === 'silver_star' ? ' award-star' : ''}`;
+  line.hidden = false;
+}
+
+/**
+ * Say the shuttle count the way the tally sheet says it.
+ *
+ * The chart scores a raw cumulative count. Nobody works in those: an
+ * administrator marks a grid of levels and the recording announces them. Both
+ * numbers describe the same run, so both are on screen.
+ */
+function showHamrLevel() {
+  const note = $('hamr-level');
+  if (events.cardiorespiratory !== 'hamr_20m') {
+    note.hidden = true;
+    return;
+  }
+  const count = wholeNumber('hamr');
+  const place = count == null ? null : scorer.hamrLevel(count);
+  if (!place) {
+    note.textContent = count == null
+      ? 'Recorded as a cumulative shuttle count. The tally sheet shows the level.'
+      : `${count} shuttles is past the end of the printed tally sheet.`;
+  } else {
+    note.textContent =
+      `Shuttle ${count} is level ${place.level}, shuttle ${place.shuttleInLevel} ` +
+      'on the tally sheet.';
+  }
+  note.hidden = false;
+}
+
+/**
+ * Say which altitude group the typed elevation falls in.
+ *
+ * "No correction applies" and "a correction of zero" are different things, so
+ * below 5,250 feet this says so rather than showing a group with nothing in it.
+ */
+function showAltitudeGroup() {
+  const note = $('altitude-note');
+  const toggle = $('altitude-toggle');
+  const chosen = $('altitude-group').value;
+  const group = chosen
+    ? scorer.data.altitude_correction.groups.find((g) => g.id === chosen) : null;
+
+  if (!group) {
+    note.textContent =
+      'DAFMAN 36-2905 Attachment 3. No correction applies below 5,250 feet, ' +
+      'and none applies at Field Training whatever the elevation (2023 AFROTC ' +
+      'Supplement para 5.5.7, awaiting revision). Det 250 assesses at Ames, ' +
+      'about 955 feet.';
+    note.classList.remove('altitude-on');
+    toggle.textContent = 'Altitude';
+    toggle.classList.remove('on');
+    return;
+  }
+
+  note.textContent = `${group.label}, ${group.range_label}. Attachment 3 applies ` +
+    'to the cardiorespiratory component.';
+  note.classList.add('altitude-on');
+  // The button says so too, because the panel folds away and a correction left
+  // switched on is the kind of thing that quietly changes every later score.
+  toggle.textContent = `Altitude · ${group.label}`;
+  toggle.classList.add('on');
+}
+
+/* --- who is being assessed ------------------------------------------------ */
+
+/** The line under the role picker. The cadet one is also in index.html. */
+const ROLE_HINTS = Object.freeze({
+  cadet: 'Waist to height, hand-release push-ups, sit-ups and the 2 mile run. Those ' +
+    'four are the whole cadet assessment (NOTACC CY26-092).',
+  cadre: 'Everything in the cadet view, plus what a proctor or active duty member ' +
+    'needs: alternate events, component exemptions, Did Not Finish on the run or ' +
+    'walk, the track layout for marking a course, and the proctor notes.'
+});
+
+/** The role a fresh page and Reset Everything start on. */
+const DEFAULT_ROLE = 'cadet';
+
+function selectRole(value) {
+  applyRole(value);
+  update();
+}
+
+/**
+ * Set the role and everything that follows from it, without rescoring.
+ *
+ * Split from selectRole() so start-up and Reset Everything can put the page
+ * on the default role before the rest of the page is ready to score.
+ */
+function applyRole(value) {
+  role = value;
+  for (const button of document.querySelectorAll('.segment[data-role]')) {
+    const on = button.dataset.role === value;
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-checked', String(on));
+  }
+
+  // Nothing a cadre member set up may survive a switch to cadet. An exemption
+  // would sit there scoring nothing and failing nothing for a member who is not
+  // authorised one, and an alternate event would score a cadet on a chart
+  // NOTACC CY26-092 says they are never assessed on. A DNF goes too: the button
+  // that would clear it is about to be hidden.
+  if (role === 'cadet') {
+    for (const component of COMPONENTS) {
+      if (statuses[component] === 'exempt') setExempt(component, false);
+    }
+    lockCadetEvents();
+    if (statuses.cardiorespiratory === 'dnf') setStatus('run', null);
+  }
+
+  $('role-hint').textContent = ROLE_HINTS[role] ?? '';
+
+  showRoleControls();
+}
+
+/**
+ * Show each control to the people it is for.
+ *
+ * A cadet is assessed on exactly three events and the waist to height ratio,
+ * and cannot be exempted, so the controls for anything else are noise to them:
+ * changing the exercise, exempting a component, recording a DNF, laying out a
+ * track and the proctor's notes. Hidden for a cadet, which is the default, and
+ * shown for cadre. The track layout is hidden in showCourseSections(), which
+ * owns that panel; a cadet keeps the simpler drawing in the lap pace.
+ *
+ * Altitude stays for everyone. Attachment 3 is a property of where the run
+ * was held, not of who ran it.
+ */
+function showRoleControls() {
+  const cadet = role === 'cadet';
+  for (const button of document.querySelectorAll('.exempt-toggle')) {
+    button.hidden = role !== 'cadre';
+  }
+  for (const icon of document.querySelectorAll('[data-swap-icon]')) {
+    if (cadet) closePicker(icon.dataset.swapIcon);
+    icon.disabled = cadet;
+    icon.classList.toggle('can-swap', !cadet);
+    if (cadet) {
+      icon.setAttribute('aria-hidden', 'true');
+      icon.removeAttribute('title');
+      icon.removeAttribute('aria-label');
+    } else {
+      icon.removeAttribute('aria-hidden');
+      icon.title = 'Change exercise';
+      icon.setAttribute('aria-label',
+        `Change exercise, now ${EVENT_LABELS[events[icon.dataset.swapIcon]]}`);
+    }
+  }
+  $('proctor-card').hidden = cadet;
+  // Both of these also depend on the event, so they work the role out
+  // themselves rather than being set here and overwritten on the next swap.
+  showNotFinished();
+  showCourseSections();
+}
+
+/** Put every component back on its cadet event, if it is not there already. */
+function lockCadetEvents() {
+  for (const [component, event] of Object.entries(CADET_EVENTS)) {
+    if (events[component] === event) continue;
+    $(`event-select-${component}`).value = event;
+    selectEvent(component, event);
+  }
+}
+
+/** The three events NOTACC CY26-092 sets for cadets, by component. */
+const CADET_EVENTS = Object.freeze({
+  muscular_strength: 'hand_release_pushup',
+  core_endurance: 'situp',
+  cardiorespiratory: 'run_2mile'
+});
+
+/**
+ * Mark a component exempt, or take the exemption off again.
+ *
+ * Exempt is not a score of zero: it leaves the component out of both sides of
+ * the composite, so the rest is scored over what was actually assessed. The
+ * measurement fields are cleared and disabled, the way a DNF does, because
+ * there is no number left to keep.
+ */
+function setExempt(component, on) {
+  // A DNF and an exemption are different claims about the same component, so
+  // one clears the other rather than both being held at once.
+  const field = fieldOf(component);
+  if (on && field && statuses[component] === 'dnf') setStatus(field, null);
+
+  statuses[component] = on ? 'exempt' : null;
+
+  const button = document.querySelector(`.exempt-toggle[data-exempt="${component}"]`);
+  button.classList.toggle('on', on);
+  button.setAttribute('aria-pressed', String(on));
+
+  const note = $(`exempt-note-${component}`);
+  note.textContent = on
+    ? 'Exempt. Scores no points, fails nothing, and the composite is worked out ' +
+      'over the components that were assessed.'
+    : '';
+  note.hidden = !on;
+
+  for (const id of fieldsOf(component)) {
+    if (on) $(id).value = '';
+    $(id).disabled = on;
+  }
+  for (const button of stepsOf(component)) button.disabled = on;
+}
+
+/** Every input a component collects, whichever event it is set to. */
+function fieldsOf(component) {
+  if (component === 'body_composition') return ['height', 'waist'];
+  const control = CONTROLS[events[component]];
+  return Array.isArray(control.field) ? control.field : [control.field];
+}
+
+/* --- the secondary body fat assessment ------------------------------------
+ *
+ * DAFMAN 36-2905 para 3.15.4.7 calls for a BFA when a member's waist to height
+ * ratio is 0.55 or higher and they are not meeting PFRA standards. Para 3.7.2
+ * makes it pass or fail, and a pass has body composition scored as an exempt
+ * component, which takes its 20 points out of the divisor. That is a score
+ * change and not a footnote: a member whose other three components total
+ * between 60.0 and 62.4 points fails on the ratio and passes on the BFA.
+ *
+ * The panel stays out of sight until the ratio reaches 0.55, which is the
+ * only point at which any of this applies, and then says which of the two
+ * states the member is in: already failing, so a BFA is required, or not yet
+ * finished, so one may be.
+ *
+ * Applying the pass sets the component's status the way the Exempt button
+ * does, but it leaves the height and waist fields alone, because the ratio
+ * that triggered the BFA is still worth reading. The ratio is kept here for
+ * the same reason: once the component is exempt the engine stops returning
+ * one, and the panel would otherwise close the moment it was used. Editing
+ * either measurement drops the applied state, so the kept ratio can never go
+ * stale behind a changed waist.
+ */
+
+/** The ratio at which para 3.15.4.7 starts to apply. */
+const BFA_RATIO = 0.55;
+
+/**
+ * What the BFA panel is holding, independent of the fields it came from.
+ *
+ * Tape is the default. Para 3.15.4.7 prefers the InBody where one is
+ * available, but a detachment assessment is far more often run with a tape in
+ * hand than beside a scale, so the method that is actually used is the one
+ * that costs no tap.
+ */
+const bfa = { method: 'tape', applied: false, ratio: null, opened: false };
+
+/** The measurements the chosen method needs, or null if they are not all in. */
+function bfaMeasurements(sexCode) {
+  if (bfa.method === 'scale') {
+    const percent = decimal('bfa-percent');
+    return percent === null || percent === undefined || percent < 0
+      ? null
+      : { sex: sexCode, percent };
+  }
+
+  const neckInches = decimal('bfa-neck');
+  if (!neckInches) return null;
+  if (sexCode === 'M') {
+    const abdomenInches = decimal('bfa-abdomen');
+    return abdomenInches ? { sex: sexCode, neckInches, abdomenInches } : null;
+  }
+  const waistInches = decimal('bfa-waist');
+  const buttocksInches = decimal('bfa-buttocks');
+  return waistInches && buttocksInches
+    ? { sex: sexCode, neckInches, waistInches, buttocksInches }
+    : null;
+}
+
+/**
+ * Show the BFA panel, and work the assessment if there is one to work.
+ *
+ * @param {object|null} result the current score, or null if unscoreable.
+ * @param {boolean} complete whether all four components have been entered.
+ */
+function showBfa(result, complete) {
+  const panel = $('bfa');
+  const scored = result && result.components
+    ? result.components.body_composition
+    : null;
+
+  // Keep the ratio that the engine last worked out. Once the BFA has exempted
+  // the component the engine returns no ratio at all, and the panel has to go
+  // on showing the number that put the member in front of it.
+  if (scored && scored.measured && scored.measured.ratio != null) {
+    bfa.ratio = scored.measured.ratio;
+  } else if (!bfa.applied) {
+    bfa.ratio = null;
+  }
+
+  if (bfa.ratio == null || bfa.ratio < BFA_RATIO) {
+    if (bfa.applied) clearBfaExemption();
+    bfa.opened = false;
+    panel.hidden = true;
+    $('bfa-body').hidden = true;
+    $('bfa-optional').hidden = true;
+    // workBfa owns these three and is not reached on this branch, so closing
+    // the panel would otherwise leave a verdict and an "Undo" behind it. They
+    // are rewritten before the panel is shown again and so cannot be seen
+    // stale, but a closed panel still holding the last member's answer is the
+    // kind of state that is true until someone changes how it opens.
+    $('bfa-result').hidden = true;
+    $('bfa-note').hidden = true;
+    $('bfa-apply').hidden = true;
+    return;
+  }
+
+  panel.hidden = false;
+
+  // Para 3.15.4.7 asks for two things at once: a ratio of 0.55 or higher, and
+  // an assessment that does not meet PFRA standards. The ratio alone is what
+  // opens this panel, and which of the three things it then says depends on
+  // whether the second condition is known yet and whether it holds.
+  //
+  // An applied pass is the exception. Once body composition is exempt the
+  // composite is being carried by the BFA, so a passing score is not evidence
+  // that none was needed and the fields stay where the member can see them.
+  const required = complete && result.pass === false;
+  const settled = complete && result.pass === true && !bfa.applied;
+  const ratio = bfa.ratio.toFixed(2);
+  const cadet = role === 'cadet';
+
+  $('bfa-trigger').textContent = cadet
+    ? cadetBfaLine(ratio, { required, settled })
+    : bfa.applied
+    // Said in the past tense on purpose. The composite passes *because* this
+    // was applied, so describing the requirement as open would misread the
+    // score sitting above it.
+    ? `A ratio of ${ratio} and an unsatisfactory composite called for this ` +
+      'assessment (DAFMAN 36-2905 para 3.15.4.7). It passed, so body composition ' +
+      'is exempt and the composite is earned over the other three components ' +
+      '(para 3.7.2).'
+    : required
+      ? `A ratio of ${ratio} with an unsatisfactory composite requires a secondary ` +
+        'body fat assessment (DAFMAN 36-2905 para 3.15.4.7). Passing it has body ' +
+        'composition scored as exempt; failing it is an unsatisfactory PFRA.'
+      : settled
+        ? `A ratio of ${ratio} is at or above 0.55, but this assessment meets PFRA ` +
+          'standards. Para 3.15.4.7 asks for both before a secondary body fat ' +
+          'assessment is required, so none is.'
+        : `A ratio of ${ratio} is at or above 0.55. If this assessment does not meet ` +
+          'PFRA standards, a secondary body fat assessment is required (DAFMAN ' +
+          '36-2905 para 3.15.4.7).';
+
+  // Open on its own only where the manual calls for one. Anywhere else it is
+  // a measurement nobody has asked the member to give, and a set of fields is
+  // an instruction to fill them in.
+  // An applied pass holds the panel open whatever the composite now reads:
+  // the exemption is what the score rests on, and the way to undo it is the
+  // button inside.
+  //
+  // Not for a cadet, though. The proctor takes these measurements, not the
+  // cadet, so for them the panel is the one sentence above with the numbers
+  // behind a link, to try if they want to.
+  const open = (required && !cadet) || bfa.applied || bfa.opened;
+  $('bfa-body').hidden = !open;
+
+  const optional = $('bfa-optional');
+  optional.hidden = (required && !cadet) || bfa.applied;
+  optional.textContent = bfa.opened
+    ? (cadet ? 'Hide the numbers' : 'Hide the body fat assessment')
+    : cadet
+      ? 'Try the numbers'
+      : settled
+        ? 'Work one out anyway'
+        : 'Work out a body fat assessment now';
+  optional.setAttribute('aria-expanded', String(open));
+
+  if (!open) {
+    // workBfa owns these and is not reached while the body is closed.
+    $('bfa-result').hidden = true;
+    $('bfa-note').hidden = true;
+    $('bfa-apply').hidden = true;
+    return;
+  }
+
+  showBfaFields(sex);
+  renderBfaSliders();
+  workBfa(sex);
+}
+
+/**
+ * The body fat panel for a cadet, in one sentence.
+ *
+ * The rest of the panel is written for whoever does the taping: methods,
+ * attachments, which way each site rounds. A cadet needs to know whether it
+ * applies to them and what the standard is, and nothing else.
+ */
+function cadetBfaLine(ratio, { required, settled }) {
+  const standard = scorer.data.body_fat.standards[sex];
+  if (bfa.applied) {
+    return 'Your body fat is within the standard, so body composition is left out ' +
+      'and your composite is scored on the other three components.';
+  }
+  if (required) {
+    return `Your ratio is ${ratio} and your PFRA is unsatisfactory, so the proctor ` +
+      `will check your body fat. The standard is ${standard}% or under, and passing ` +
+      'it leaves body composition out of your score.';
+  }
+  if (settled) {
+    return `Your ratio is ${ratio}, but you are passing, so no body fat check is needed.`;
+  }
+  return `Your ratio is ${ratio}. If your PFRA comes out unsatisfactory, the proctor ` +
+    `will check your body fat; the standard is ${standard}% or under.`;
+}
+
+/** Which measurement fields this member's BFA needs. */
+function showBfaFields(sexCode) {
+  const tape = bfa.method === 'tape';
+  $('bfa-fields-scale').hidden = tape;
+  $('bfa-fields-tape').hidden = !tape;
+  $('bfa-field-abdomen').hidden = sexCode !== 'M';
+  $('bfa-field-waist').hidden = sexCode === 'M';
+  $('bfa-field-buttocks').hidden = sexCode === 'M';
+
+  for (const button of document.querySelectorAll('.bfa-method')) {
+    const on = button.dataset.bfaMethod === bfa.method;
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-pressed', String(on));
+  }
+
+  // Tape is the default, so its hint carries the line about the InBody that
+  // the scale hint used to be the only place to read: a member who never taps
+  // across still learns which method para 3.15.4.7 asks for first.
+  $('bfa-method-hint').textContent = tape
+    ? (sexCode === 'M'
+      ? 'Attachment 8, two sites. The circumference value is the abdomen less the neck. '
+      : 'Attachment 8, three sites. The circumference value is the waist plus the ' +
+        'buttocks, less the neck. ') +
+      'Use an InBody scale instead where one is available (para 3.15.4.7).'
+    : 'Para 3.15.4.7 takes the BFA on an InBody bio-impedance scale where one is ' +
+      'available and by tape where one is not. Either way a same sex administrator ' +
+      'is required.';
+}
+
+/* The BFA tracks.
+ *
+ * Same affordance as the event sliders and the same look, but none of this is
+ * a score: a tape measurement is read off a member, not off a chart, so there
+ * are no chart bounds to take ends from and nothing about them depends on sex,
+ * age band or the event. The bounds below are therefore declared, chosen to
+ * cover the range a measurement actually lands in rather than the range the
+ * field will accept. The fields stay wider on purpose, exactly as the height
+ * field is wider than the height track: anything outside these ends can still
+ * be typed, and the handle pins to the end when it is.
+ *
+ * Every track runs low to high, because every one of these measures inches or
+ * percent directly. There is no mirroring to undo and no failing tip to shade:
+ * a neck is not better for being bigger, and the pass or fail comes out of the
+ * lookup below rather than off any one of these.
+ */
+const BFA_SLIDERS = Object.freeze({
+  'bfa-percent': { step: 0.1, format: (v) => `${v.toFixed(1)} percent` },
+  'bfa-neck': { step: 0.25, format: (v) => `${trimQuarter(v)} inches` },
+  'bfa-abdomen': { step: 0.25, format: (v) => `${trimQuarter(v)} inches` },
+  'bfa-waist': { step: 0.25, format: (v) => `${trimQuarter(v)} inches` },
+  'bfa-buttocks': { step: 0.25, format: (v) => `${trimQuarter(v)} inches` }
+});
+
+/**
+ * A quarter inch written the way a tape is read: 14.25, 14.5, 15, not 15.00.
+ *
+ * The step lands every value on a quarter already, so this is rounding off
+ * float noise rather than the measurement.
+ */
+const trimQuarter = (v) => String(Math.round(v * 100) / 100);
+
+/**
+ * Seat each handle where its field already is.
+ *
+ * The ends live in the markup rather than here, because unlike every other
+ * track on the page they are fixed: nothing the member selects can move them.
+ * That leaves this reading min and max back off the element it is setting.
+ */
+function renderBfaSliders() {
+  for (const [id, spec] of Object.entries(BFA_SLIDERS)) {
+    const input = $(`slide-${id}`);
+    if (dragging === `bfa:${id}`) continue;
+    const min = Number(input.min);
+    const max = Number(input.max);
+    const current = decimal(id) ?? null;
+    // Empty parks at the left, the same as every other track on the page.
+    input.value = String(current == null ? min : Math.max(min, Math.min(max, current)));
+    input.setAttribute('aria-valuetext',
+      current == null ? 'not entered' : spec.format(current));
+  }
+}
+
+/**
+ * Write a dragged measurement into the field the assessment reads.
+ *
+ * Setting `.value` fires no input event, so the exemption that the field's own
+ * listener would have dropped has to be dropped here: a BFA applied against
+ * the old measurement must not survive a new one.
+ */
+function onBfaSliderInput(id) {
+  const spec = BFA_SLIDERS[id];
+  if (!spec) return;
+  const raw = Number($(`slide-${id}`).value);
+  $(id).value = id === 'bfa-percent' ? raw.toFixed(1) : trimQuarter(raw);
+  $(`slide-${id}`).setAttribute('aria-valuetext', spec.format(raw));
+  clearBfaExemption();
+  update();
+}
+
+/** Run the assessment and say what it means for the score. */
+function workBfa(sexCode) {
+  const box = $('bfa-result');
+  const note = $('bfa-note');
+  const apply = $('bfa-apply');
+  const measurements = bfaMeasurements(sexCode);
+
+  if (!measurements) {
+    if (bfa.applied) clearBfaExemption();
+    box.hidden = true;
+    note.hidden = true;
+    apply.hidden = true;
+    return;
+  }
+
+  let assessment;
+  try {
+    assessment = scorer.bodyFatAssessment({
+      ...measurements,
+      heightInches: decimal('height')
+    });
+  } catch (error) {
+    // The fields are checked above, so a throw here is a measurement the
+    // lookup cannot use rather than a half-typed one. Say which.
+    box.hidden = false;
+    $('bfa-verdict').textContent = 'Cannot work this one out yet.';
+    $('bfa-verdict').className = 'bfa-verdict';
+    $('bfa-working').textContent = error.message;
+    note.hidden = true;
+    apply.hidden = true;
+    return;
+  }
+
+  box.hidden = false;
+  $('bfa-verdict').textContent = assessment.pass
+    ? `${assessment.percent}% body fat, within the ${assessment.standard}% standard.`
+    : `${assessment.percent}% body fat, over the ${assessment.standard}% standard.`;
+  $('bfa-verdict').className = `bfa-verdict ${assessment.pass ? 'pass' : 'fail'}`;
+  $('bfa-working').textContent = assessment.measured.method === 'tape'
+    ? `${assessment.measured.arithmetic} = ${assessment.measured.circumferenceValue}, ` +
+      `read against ${assessment.measured.heightInches} inches.`
+    : 'Taken from the scale, so there is no tape arithmetic to show.';
+
+  const notes = [...assessment.warnings];
+  if (role === 'cadet') {
+    notes.push(
+      'Cadets are assessed on body fat against the DAFMAN standard, not BMI. HQ ' +
+      'confirmed at a Check 6 on 1 October 2026 that AFROTC will not set a figure ' +
+      'tighter than DAFMAN 36-2905. The 2023 supplement on the shelf still says ' +
+      'BMI and a tighter percentage; the revision carrying this has not been ' +
+      'published.');
+  }
+  note.textContent = notes.join(' ');
+  note.hidden = notes.length === 0;
+
+  if (!assessment.pass) {
+    if (bfa.applied) clearBfaExemption();
+    apply.hidden = true;
+    return;
+  }
+
+  apply.hidden = false;
+  apply.textContent = bfa.applied
+    ? 'Body composition is exempt on this BFA. Undo'
+    : 'Apply this pass (exempts body composition)';
+  apply.classList.toggle('on', bfa.applied);
+}
+
+/** Hand the pass to the scorer as an exemption, the way para 3.7.2 reads. */
+function applyBfaExemption() {
+  bfa.applied = true;
+  statuses.body_composition = 'exempt';
+  bfaExemptionNote(true);
+}
+
+function clearBfaExemption() {
+  bfa.applied = false;
+  if (statuses.body_composition === 'exempt') statuses.body_composition = null;
+  bfaExemptionNote(false);
+}
+
+/**
+ * Body composition can be exempted by the Exempt button or by a passed BFA,
+ * and the two mean different things, so the note says which one did it and
+ * only ever clears its own words.
+ */
+function bfaExemptionNote(on) {
+  const note = $('exempt-note-body_composition');
+  if (!on) {
+    if (note.dataset.from === 'bfa') {
+      note.textContent = '';
+      note.hidden = true;
+      delete note.dataset.from;
+    }
+    return;
+  }
+  note.dataset.from = 'bfa';
+  note.textContent =
+    'Exempt because the secondary body fat assessment passed (DAFMAN 36-2905 para ' +
+    '3.7.2). It scores no points, fails nothing, and the composite is worked out ' +
+    'over the three components that were assessed.';
+  note.hidden = false;
+}
+
+function wireBfa() {
+  for (const button of document.querySelectorAll('.bfa-method')) {
+    button.addEventListener('click', () => {
+      bfa.method = button.dataset.bfaMethod;
+      clearBfaExemption();
+      update();
+    });
+  }
+  for (const id of ['bfa-percent', 'bfa-neck', 'bfa-abdomen', 'bfa-waist', 'bfa-buttocks']) {
+    $(id).addEventListener('input', () => {
+      clearBfaExemption();
+      update();
+    });
+  }
+  // The BFA tracks are held in `dragging` the same way the event tracks are,
+  // under a name no component can take, so that a handle is left alone while a
+  // finger is on it and the window's pointerup still runs a final update.
+  for (const id of Object.keys(BFA_SLIDERS)) {
+    const slider = $(`slide-${id}`);
+    slider.addEventListener('input', () => onBfaSliderInput(id));
+    slider.addEventListener('pointerdown', () => { dragging = `bfa:${id}`; });
+  }
+  // Re-measuring the member invalidates a BFA that was applied against the old
+  // ratio, so the two measurement fields drop it rather than carrying it over.
+  // These listeners are added after the general one, so by the time they run
+  // the score has already been worked out from the stale exemption. Scoring
+  // again is cheap, and the alternative is a composite that belongs to a waist
+  // the member no longer has.
+  for (const id of ['height', 'waist']) {
+    $(id).addEventListener('input', () => {
+      if (!bfa.applied) return;
+      clearBfaExemption();
+      update();
+    });
+  }
+  $('bfa-optional').addEventListener('click', () => {
+    bfa.opened = !bfa.opened;
+    // Closing it throws away anything typed, so a measurement nobody asked for
+    // cannot sit in the form unseen and come back when the score moves.
+    if (!bfa.opened) clearBfaFields();
+    update();
+  });
+  $('bfa-apply').addEventListener('click', () => {
+    if (bfa.applied) clearBfaExemption();
+    else applyBfaExemption();
+    update();
+  });
+}
+
+/** Empty the measurement fields, without touching the rest of the panel. */
+function clearBfaFields() {
+  for (const id of ['bfa-percent', 'bfa-neck', 'bfa-abdomen', 'bfa-waist', 'bfa-buttocks']) {
+    $(id).value = '';
+  }
+  if (bfa.applied) clearBfaExemption();
+}
+
+/** Put the BFA panel back to its starting state. */
+function resetBfa() {
+  bfa.method = 'tape';
+  bfa.applied = false;
+  bfa.ratio = null;
+  bfa.opened = false;
+  bfaExemptionNote(false);
+  clearBfaFields();
+  // The panel is hidden below, and showBfa would put these right before it was
+  // seen again, but a hidden panel that disagrees with `bfa.method` is a state
+  // waiting to be read wrong. Put the markup back with the object.
+  showBfaFields(sex);
+  renderBfaSliders();
+  $('bfa').hidden = true;
+  $('bfa-body').hidden = true;
+  $('bfa-optional').hidden = true;
+  $('bfa-result').hidden = true;
+  $('bfa-note').hidden = true;
+  $('bfa-apply').hidden = true;
+}
+
+/* --- sharing an assessment by link ----------------------------------------
+ *
+ * The tool keeps nothing: no storage, no account, nothing sent anywhere. That
+ * is worth keeping, and it is also why there is no way to hand a result to
+ * anyone. A link closes that without giving any of it up, because the link is
+ * the record: everything needed to rebuild the assessment travels in the
+ * address, and the only copy is the one the member chose to send.
+ *
+ * Written as named parameters rather than something packed, so a reader can
+ * see what they are about to send and a cadre member can fix a typo in it
+ * without the tool's help.
+ *
+ * It carries measurements, not a person. There is no name, unit or ID in the
+ * tool to put in it.
+ */
+
+/** Which parameter holds each component's event and value. */
+const SHARE_KEYS = Object.freeze({
+  muscular_strength: { event: 'se', value: 'sv', status: 'ss' },
+  core_endurance: { event: 'ce', value: 'cv', status: 'cs' },
+  cardiorespiratory: { event: 're', value: 'rv', status: 'rs' }
+});
+
+/** The assessment now on screen, as a link that rebuilds it. */
+function buildShareLink() {
+  const params = new URLSearchParams();
+  if (role) params.set('role', role);
+  if (sex) params.set('sex', sex);
+  if (ageBand) params.set('band', ageBand);
+
+  const height = decimal('height');
+  const waist = decimal('waist');
+  if (height) params.set('ht', String(height));
+  if (waist) params.set('wa', String(waist));
+  // Not when a passed BFA is what exempted it. That exemption is already
+  // described by the bfa parameters below, and writing it as a status too
+  // would rebuild it down the Exempt button's path instead, which clears the
+  // height and waist and so takes away the ratio the BFA needs to exist.
+  if (statuses.body_composition && !bfa.applied) {
+    params.set('bs', statuses.body_composition);
+  }
+
+  for (const [component, keys] of Object.entries(SHARE_KEYS)) {
+    params.set(keys.event, events[component]);
+    if (statuses[component]) {
+      params.set(keys.status, statuses[component]);
+      continue;
+    }
+    const measured = currentMeasurement(component);
+    if (measured != null) params.set(keys.value, String(measured));
+  }
+
+  const altitude = $('altitude-group').value;
+  if (altitude) params.set('alt', altitude);
+
+  // The lap pace goal, with the distance and track it was set on: 14:30 is a
+  // different lap on every combination of the two. The track goes even with
+  // no goal set, because the printed result works its laps out on it.
+  if (CONTROLS[events.cardiorespiratory].kind === 'time'
+      || CONTROLS[events.cardiorespiratory].kind === 'walk') {
+    const goal = paceSeconds();
+    if (goal != null) {
+      params.set('pg', String(goal));
+      params.set('pd', TRACK_DISTANCES[track.distanceIndex].id);
+    }
+    if (track.customLength != null) {
+      params.set('tlc', String(track.customEntry));
+      if (track.customUnit === 'ft') params.set('tlu', 'ft');
+    } else if (TRACK_LENGTHS[track.lengthIndex] !== 400) {
+      params.set('tl', String(TRACK_LENGTHS[track.lengthIndex]));
+    }
+  }
+
+  // A passed BFA is part of the result: it is what exempts body composition
+  // and re-bases the composite, so a link without it rebuilds a different
+  // score from the same measurements.
+  if (bfa.applied) {
+    params.set('bfa', bfa.method);
+    if (bfa.method === 'scale') {
+      params.set('bfp', $('bfa-percent').value);
+    } else {
+      params.set('bfn', $('bfa-neck').value);
+      if (sex === 'M') {
+        params.set('bfa_ab', $('bfa-abdomen').value);
+      } else {
+        params.set('bfw', $('bfa-waist').value);
+        params.set('bfb', $('bfa-buttocks').value);
+      }
+    }
+  }
+
+  return `${location.origin}${location.pathname}?${params.toString()}`;
+}
+
+/**
+ * Rebuild an assessment from the address, if there is one in it.
+ *
+ * Runs once at start-up, before anything has been typed, so it writes the
+ * fields and lets the ordinary render path do the rest rather than reaching
+ * into the score.
+ */
+function applyShareLink() {
+  const params = new URLSearchParams(location.search);
+  if (![...params.keys()].length) return false;
+
+  const roleWanted = params.get('role');
+  if (roleWanted === 'cadet' || roleWanted === 'cadre') selectRole(roleWanted);
+
+  const sexWanted = params.get('sex');
+  if (sexWanted === 'M' || sexWanted === 'F') selectSex(sexWanted);
+
+  const band = params.get('band');
+  if (band && scorer.data.age_bands.includes(band)) {
+    ageBand = band;
+    $('age-band').value = band;
+    // Seat the two age buttons so the form does not look unanswered.
+    const under = band === 'under25';
+    for (const button of document.querySelectorAll('.segment[data-band]')) {
+      const on = button.dataset.band === (under ? 'under25' : 'older');
+      button.classList.toggle('on', on);
+      button.setAttribute('aria-checked', String(on));
+    }
+    $('band-picker').hidden = under;
+  }
+
+  if (params.get('ht')) $('height').value = params.get('ht');
+  if (params.get('wa')) $('waist').value = params.get('wa');
+
+  for (const [component, keys] of Object.entries(SHARE_KEYS)) {
+    const event = params.get(keys.event);
+    // A cadet link naming another event keeps the cadet event and drops the
+    // number with it: 60 HAMR shuttles written into the run read as 1:00.
+    if (event && role === 'cadet' && CADET_EVENTS[component] !== event) continue;
+    if (event && CONTROLS[event]) {
+      $(`event-select-${component}`).value = event;
+      selectEvent(component, event);
+    }
+    const value = params.get(keys.value);
+    if (value != null && value !== '') writeMeasurement(component, Number(value));
+  }
+
+  // Statuses after the measurements, because setStatus and setExempt clear the
+  // fields they disable and would otherwise be undone by the write above.
+  if (params.get('bs')) applySharedStatus('body_composition', params.get('bs'));
+  for (const [component, keys] of Object.entries(SHARE_KEYS)) {
+    if (params.get(keys.status)) applySharedStatus(component, params.get(keys.status));
+  }
+
+  if (params.get('alt')) $('altitude-group').value = params.get('alt');
+
+  // After the events, because changing the run event re-seats the pace
+  // distance while the pace is closed.
+  applySharedPace(params);
+
+  if (params.get('bfa')) {
+    bfa.method = params.get('bfa') === 'scale' ? 'scale' : 'tape';
+    bfa.opened = true;
+    const put = (id, key) => { if (params.get(key)) $(id).value = params.get(key); };
+    put('bfa-percent', 'bfp');
+    put('bfa-neck', 'bfn');
+    put('bfa-abdomen', 'bfa_ab');
+    put('bfa-waist', 'bfw');
+    put('bfa-buttocks', 'bfb');
+    // Applied after the first render, once the panel has a ratio to open on.
+    sharedBfaPending = true;
+  }
+  return true;
+}
+
+/**
+ * The lap pace part of a shared link: the track, the distance and the goal.
+ *
+ * A link with a goal opens the lap pace on it, since the goal is what the
+ * sender wanted seen. Anything out of range is left at the default rather
+ * than drawn wrong.
+ */
+function applySharedPace(params) {
+  const length = Number(params.get('tl'));
+  if (TRACK_LENGTHS.includes(length)) track.lengthIndex = TRACK_LENGTHS.indexOf(length);
+
+  if (params.get('tlc')) {
+    const unit = params.get('tlu') === 'ft' ? 'ft' : 'm';
+    track.customUnit = unit;
+    $('custom-lap-unit').value = unit;
+    $('custom-lap').value = params.get('tlc');
+    readCustomLap();
+  }
+
+  const goal = Number(params.get('pg'));
+  if (!(goal > 0) || !Number.isInteger(goal)) return;
+  const index = TRACK_DISTANCES.findIndex((d) => d.id === params.get('pd'));
+  if (index >= 0) track.distanceIndex = index;
+  $('pace-min').value = String(Math.floor(goal / 60));
+  $('pace-sec').value = String(goal % 60).padStart(2, '0');
+  course.pace = true;
+}
+
+/** A shared link said this component was exempt or did not finish. */
+function applySharedStatus(component, value) {
+  if (role === 'cadet') return;
+  if (value === 'exempt') {
+    setExempt(component, true);
+    return;
+  }
+  const field = fieldOf(component);
+  if (field) setStatus(field, value);
+}
+
+/** Put a measurement into whichever fields its event uses. */
+function writeMeasurement(component, value) {
+  const control = CONTROLS[events[component]];
+  if (control.kind === 'hold' || control.kind === 'time' || control.kind === 'walk') {
+    const [minId, secId] = control.field;
+    $(minId).value = String(Math.floor(value / 60));
+    $(secId).value = String(value % 60).padStart(2, '0');
+    return;
+  }
+  $(control.field).value = String(value);
+}
+
+/** Set when a link carried a passed BFA, which can only be applied once scored. */
+let sharedBfaPending = false;
+
+/** Copy the link, and say so where the member can see it. */
+async function shareResult() {
+  const link = buildShareLink();
+  const note = $('share-note');
+  try {
+    await navigator.clipboard.writeText(link);
+    note.textContent = 'Link copied. It carries the measurements and nothing else.';
+  } catch {
+    // Clipboard access can be refused, and a browser that refuses it should
+    // not leave the member with nothing to send.
+    note.textContent = link;
+  }
+  note.hidden = false;
+}
+
+/* --- the verbiage dialog -------------------------------------------------
+ *
+ * Attachment 2 of DAFMAN 36-2905 is the script an assessment administrator reads
+ * out before each event. It is quoted rather than summarised, because the point
+ * of it is that the same words reach every member.
+ *
+ * The publication sets the spoken text in italics and the administrator's own
+ * directions in roman type, and that distinction is the whole reason a cadre
+ * member opens this: it tells them what to say out loud and what is an
+ * instruction to them. src/verbiage.js keeps the two in separate fields and
+ * this renders them differently, so the difference survives.
+ */
+function openVerbiage(component) {
+  const event = component === 'body_composition' ? 'whtr' : events[component];
+  const section = verbiageFor(event);
+  if (!section) return;
+
+  const dialog = $('verbiage');
+  const body = $('verbiage-body');
+  body.replaceChildren();
+
+  $('verbiage-title').textContent = `${section.ref}. ${section.title}`;
+
+  const direction = $('verbiage-direction');
+  direction.textContent = section.direction ?? '';
+  direction.hidden = !section.direction;
+
+  // A2.1 is read once at the start of the assessment rather than before an
+  // event. Body composition is the first thing measured, so it carries it.
+  if (component === 'body_composition') {
+    const general = el('div', 'verbiage-general');
+    general.append(el('p', 'verbiage-general-head',
+      'Read once, before the assessment begins'));
+    appendParts(general, VERBIAGE.general);
+    body.append(general);
+  }
+
+  appendParts(body, section);
+
+  $('verbiage-source').textContent =
+    `${VERBIAGE_SOURCE.publication}, ${VERBIAGE_SOURCE.date}, ` +
+    `${VERBIAGE_SOURCE.attachment}, pages ${VERBIAGE_SOURCE.pages}. ` +
+    'Quoted in full; spoken text in bold.';
+
+  dialog.showModal();
+}
+
+function appendParts(host, section) {
+  for (const part of section.parts) {
+    const wrap = el('div', 'verbiage-part');
+    const ref = el('p', 'verbiage-ref', part.ref);
+    wrap.append(ref);
+    // The roman-type lead is an instruction to the administrator, not something
+    // to say, so it never gets the spoken styling.
+    if (part.lead) wrap.append(el('p', 'verbiage-lead', part.lead));
+    wrap.append(el('p', 'verbiage-spoken', part.spoken));
+    host.append(wrap);
+  }
+}
+
+/* --- the sliders ---------------------------------------------------------
+ *
+ * A second way to enter the same measurement, for a cadet who wants to feel
+ * what a few more reps is worth rather than type four numbers to find out. It
+ * is not a second source of truth: dragging writes into the number fields, and
+ * everything after that reads those, exactly as it does when a cadet types.
+ *
+ * Both ends come off the chart, so the left of every track is the worst score
+ * and the right is full marks. For a run and for a waist the raw number falls
+ * as the handle moves right; `descending` mirrors the element's own value on
+ * the way in and out, so the DOM keeps an ordinary ascending range.
+ */
+const SLIDER_MEASURES = {
+  // `worst` is where the left end sits: one step short of the minimum, so the
+  // far left of every track is a fail and everything else on it scores. A
+  // track that ran down to nothing would spend half its length in territory
+  // that all scores the same zero, which is length a cadet cannot use.
+  //
+  // Anything below the left end can still be typed. The handle pins to the end
+  // in that case, and the chip beside it shows what the number really scored.
+  reps: {
+    descending: false,
+    step: 1,
+    worst: (r) => r.floor.value - 1,
+    best: (r) => r.best.value,
+    failingBelow: (r) => (r.floor.isFloor ? r.floor.value : null),
+    format: (v) => `${v}`
+  },
+  shuttles: {
+    descending: false,
+    step: 1,
+    worst: (r) => r.floor.value - 1,
+    best: (r) => r.best.value,
+    failingBelow: (r) => (r.floor.isFloor ? r.floor.value : null),
+    format: (v) => `${v}`
+  },
+  hold: {
+    descending: false,
+    step: 1,
+    worst: (r) => r.floor.value - 1,
+    best: (r) => r.best.value,
+    failingBelow: (r) => (r.floor.isFloor ? r.floor.value : null),
+    format: formatTime
+  },
+  time: {
+    descending: true,
+    step: 1,
+    // Slower is worse, so one step short of the minimum is one second past it.
+    worst: (range) => range.floor.value + 1,
+    best: (range) => range.best.value,
+    failingBelow: (range) => (range.floor.isFloor ? range.floor.value : null),
+    format: formatTime
+  },
+  walk: {
+    // The walk is pass or fail, so it has no full marks end to run to. The
+    // track still needs a right hand end, and WALK_FASTEST is that anchor: it
+    // is comfortably inside every standard on Table 3.1, so the whole of the
+    // track bar its left tip is a pass, which is the only thing the walk has
+    // to say. The left tip is one second past this member's own maximum, so
+    // dragging all the way left fails exactly as it does on every other track.
+    descending: true,
+    step: 1,
+    worst: (range) => range.standard.seconds + 1,
+    best: () => WALK_FASTEST,
+    failingBelow: (range) => range.standard.seconds,
+    format: formatTime
+  },
+  ratio: {
+    descending: true,
+    step: 0.5,
+    worst: (range) => range.floor.waistInches,
+    best: (range) => range.best.waistInches,
+    // Body composition has no minimum (DAFMAN 36-2905 para 3.7.1), so no part
+    // of its track fails on its own.
+    failingBelow: () => null,
+    format: (v) => `${v.toFixed(1)} in`
+  }
+};
+
+/** The fast end of the walk track, in seconds. */
+const WALK_FASTEST = 14 * 60;
+
+/** Bounds are kept because an input event carries only the element's value. */
+const sliderBounds = {};
+
+/** Which slider a finger is currently on, if any. */
+let dragging = null;
+
+const sliderKind = (component) =>
+  component === 'body_composition' ? 'ratio' : CONTROLS[events[component]].kind;
+
+/** Undo the mirroring: what the handle's position actually measures. */
+const toRaw = (bounds, position) =>
+  bounds.descending ? bounds.min + bounds.max - position : position;
+
+/** And back again: where on the track a measurement sits. */
+const toPosition = (bounds, raw) =>
+  bounds.descending ? bounds.min + bounds.max - raw : raw;
+
+function renderSliders(band) {
+  for (const component of COMPONENTS) {
+    const row = $(`slider-${component}`);
+    const input = $(`slide-${component}`);
+    const kind = sliderKind(component);
+    const spec = SLIDER_MEASURES[kind];
+    const event = events[component] ?? 'whtr';
+
+    if (!spec) {
+      row.hidden = true;
+      continue;
+    }
+
+    const range = (sex && band)
+      ? scorer.rangeFor({ component, event, sex, band,
+        heightInches: decimal('height') || null,
+        altitudeGroup: $('altitude-group').value || null })
+      : null;
+
+    // No chart yet, or, for the waist, no height, so there is no way to turn
+    // a ratio into the inches a slider would have to move through. A declared
+    // DNS or DNF hides it too: there is no measurement left to adjust.
+    const bestValue = range ? spec.best(range) : null;
+    const worstValue = range ? spec.worst(range) : null;
+    if (bestValue == null || worstValue == null || statuses[component]) {
+      row.hidden = true;
+      continue;
+    }
+
+    const bounds = {
+      descending: spec.descending,
+      min: Math.min(bestValue, worstValue),
+      max: Math.max(bestValue, worstValue)
+    };
+    sliderBounds[component] = bounds;
+
+    row.hidden = false;
+    input.min = String(bounds.min);
+    input.max = String(bounds.max);
+    input.step = String(spec.step);
+    input.setAttribute('aria-label',
+      kind === 'ratio' ? 'Waist in inches' : `${EVENT_LABELS[event]} slider`);
+
+    $(`slider-low-${component}`).textContent = spec.format(worstValue);
+    $(`slider-high-${component}`).textContent = spec.format(bestValue);
+
+    // Shade the failing tip of the track. It is one step wide by construction,
+    // which on a run is one second of a six minute range and would render as
+    // nothing, so it is floored at a width that can actually be seen: this is
+    // an affordance marking the failing end, not a plot of anything. Which
+    // components have such a tip is the spec's business: body composition has
+    // no minimum to fail against, and the walk fails anything slower than its
+    // own maximum.
+    const span = bounds.max - bounds.min;
+    const threshold = spec.failingBelow(range);
+    const cut = (threshold == null || span === 0)
+      ? 0
+      : Math.max(3, (toPosition(bounds, threshold) - bounds.min) / span * 100);
+    input.style.setProperty('--below-minimum', `${Math.min(100, cut)}%`);
+
+    // Leave the handle alone while a finger is on it. The value it just wrote
+    // is what update() has read back, so re-seating it would be a no-op in the
+    // ordinary case and a fight with the pointer in the awkward ones.
+    if (dragging === component) continue;
+
+    // Nothing entered yet parks the handle at the left of the track, which is
+    // the worst end for every component whichever way its numbers run.
+    const current = currentMeasurement(component);
+    const position = current == null ? bounds.min : toPosition(bounds, current);
+    input.value = String(Math.max(bounds.min, Math.min(bounds.max, position)));
+    input.setAttribute('aria-valuetext',
+      current == null ? 'not entered' : spec.format(current));
+  }
+}
+
+/**
+ * Height gets a slider too, but it is not a score.
+ *
+ * Its range is the chart's own. The waist-to-height grid runs 58.0 to 78.0
+ * inches in half inches, which is the useful travel; the field stays wider,
+ * because the ratio is arithmetic rather than a lookup and a height off the
+ * printed grid still scores. A height outside the range pins the handle to the
+ * end, the same as a rep count past full marks does.
+ *
+ * Nothing here depends on age, sex or the event, so unlike the component
+ * sliders this one is usable from the moment the page loads.
+ */
+const HEIGHT_SLIDER = Object.freeze({ min: 58, max: 78 });
+
+function renderHeightSlider() {
+  if (dragging === 'height') return;
+  const input = $('slide-height');
+  const current = decimal('height') ?? null;
+  // Empty parks at the left, as every other slider does, so five tracks that
+  // have not been set read the same way rather than one looking half answered.
+  const value = current == null
+    ? HEIGHT_SLIDER.min
+    : Math.max(HEIGHT_SLIDER.min, Math.min(HEIGHT_SLIDER.max, current));
+  input.value = String(value);
+  input.setAttribute('aria-valuetext',
+    current == null ? 'not entered' : `${current} inches`);
+}
+
+/** The measurement now in the form, in the unit its chart is read in. */
+function currentMeasurement(component) {
+  if (component === 'body_composition') return decimal('waist') ?? null;
+  const control = CONTROLS[events[component]];
+  if (control.kind === 'hold' || control.kind === 'time' || control.kind === 'walk') {
+    const [minId, secId] = control.field;
+    const minutes = wholeNumber(minId);
+    const seconds = wholeNumber(secId);
+    if (minutes == null || seconds == null) return null;
+    return minutes * 60 + seconds;
+  }
+  return wholeNumber(control.field) ?? null;
+}
+
+/**
+ * A BFA was applied against one ratio; a new height or waist is a new ratio.
+ *
+ * The height and waist fields drop an applied BFA from their own input
+ * listeners, but a slider writes `.value` directly and fires no input event,
+ * so the same drop has to be made by hand here. Without it, typing a height
+ * clears an applied BFA and dragging to that same height does not: the
+ * exemption outlives the measurement that justified it, and because an exempt
+ * component returns no ratio the panel goes on holding the old one. The waist
+ * slider is hidden while the component is exempt and so cannot reach this
+ * today, but it writes the other half of the same ratio and is not worth
+ * leaving as the one path that depends on being unreachable.
+ */
+function dropBfaOnRemeasure() {
+  if (bfa.applied) clearBfaExemption();
+}
+
+/** Write a dragged value into the fields the rest of the app reads. */
+function onSliderInput(component) {
+  if (component === 'pace') {
+    onPaceSliderInput();
+    return;
+  }
+
+  if (component === 'height') {
+    const raw = Number($('slide-height').value);
+    $('height').value = raw.toFixed(1);
+    $('slide-height').setAttribute('aria-valuetext', `${raw} inches`);
+    dropBfaOnRemeasure();
+    update();
+    return;
+  }
+
+  const bounds = sliderBounds[component];
+  if (!bounds) return;
+  const raw = toRaw(bounds, Number($(`slide-${component}`).value));
+
+  if (component === 'body_composition') {
+    $('waist').value = raw.toFixed(1);
+    dropBfaOnRemeasure();
+  } else {
+    const control = CONTROLS[events[component]];
+    if (control.kind === 'hold' || control.kind === 'time' || control.kind === 'walk') {
+      const [minId, secId] = control.field;
+      $(minId).value = String(Math.floor(raw / 60));
+      $(secId).value = String(raw % 60).padStart(2, '0');
+    } else {
+      $(control.field).value = String(raw);
+    }
+  }
+
+  $(`slide-${component}`).setAttribute('aria-valuetext',
+    SLIDER_MEASURES[sliderKind(component)].format(raw));
+  update();
+}
+
+/**
+ * The chart bounds for each component, shown whether or not anything is typed.
+ *
+ * Both numbers come from the engine, which reads them off the chart for this
+ * sex and band. Until a sex and age are set there is no chart to read, so the
+ * strip says so rather than showing a default that might be the wrong one.
+ */
+function renderRanges(band) {
+  for (const component of COMPONENTS) {
+    const host = $(`range-${component}`);
+    host.replaceChildren();
+
+    const event = events[component] ?? 'whtr';
+    const heightInches = decimal('height') || null;
+    const range = (sex && band)
+      ? scorer.rangeFor({ component, event, sex, band, heightInches,
+        altitudeGroup: $('altitude-group').value || null })
+      : null;
+
+    if (!range) {
+      // Almost always the real reason, and the only one a member can act on.
+      // Said conditionally because rangeFor also returns null when it has no
+      // table for a combination, and telling someone who has already answered
+      // both questions to answer them again would send them looking for a
+      // control that is already set.
+      host.append(el('p', 'range-empty', sex && band
+        ? 'No chart for this combination.'
+        : 'Set your age and sex to see the chart range.'));
+      continue;
+    }
+
+    // Pass or fail: one number, and it is a ceiling rather than a floor.
+    if (range.passFail) {
+      host.append(rangeItem('Maximum time', range.standard.label,
+        range.altitudeGroupLabel
+          ? `aged ${range.standard.groupLabel} · ${range.altitudeGroupLabel}`
+          : `aged ${range.standard.groupLabel}`, false));
+      host.append(rangeItem('Worth', 'No points',
+        'pass or fail · para 3.7.3', true));
+      continue;
+    }
+
+    if (range.floor.isFloor) {
+      host.append(rangeItem('Minimum', range.floor.label,
+        `${range.minimumPoints.toFixed(1)} pts`, false));
+      host.append(rangeItem('Full marks', range.best.label,
+        `${range.maxPoints.toFixed(1)} pts`, false));
+      continue;
+    }
+
+    // Waist to height. Lead with the waist in inches, which is the number a
+    // cadet can do something about, and keep the ratio underneath because that
+    // is what the scoring chart is actually read on.
+    host.append(rangeItem('Scores zero',
+      range.floor.waistLabel ?? range.floor.label,
+      range.floor.waistLabel ? `ratio ${range.floor.label}` : 'no minimum', true));
+    host.append(rangeItem('Full marks',
+      range.best.waistLabel ?? range.best.label,
+      range.best.waistLabel
+        ? `ratio ${range.best.label} · ${range.maxPoints.toFixed(1)} pts`
+        : `${range.maxPoints.toFixed(1)} pts`, false));
+  }
+}
+
+function rangeItem(caption, value, points, muted) {
+  const box = el('div', `range-item${muted ? ' muted' : ''}`);
+  box.append(el('span', 'range-caption', caption));
+  box.append(el('span', 'range-value', value));
+  box.append(el('span', 'range-points', points));
+  return box;
+}
+
+/**
+ * Draw one points bar.
+ *
+ * The bar is scaled to that component's own maximum, so 39 of 50 on the run and
+ * 11 of 15 on push-ups read as comparable effort rather than comparable points.
+ * Where a component has a minimum, a tick marks it, since clearing that line
+ * matters more than the width of the bar.
+ */
+function setMeter(id, points, maxPoints, state, threshold) {
+  const meter = $(id);
+  const fill = meter.querySelector('.meter-fill');
+  const mark = meter.querySelector('.meter-mark');
+
+  const percent = maxPoints > 0
+    ? Math.max(0, Math.min(100, (points / maxPoints) * 100))
+    : 0;
+  fill.style.width = `${percent}%`;
+  meter.className = `meter${id === 'meter-composite' ? ' meter-composite' : ''} ${state}`;
+  meter.setAttribute('aria-valuenow', points.toFixed(1));
+  meter.setAttribute('aria-valuetext', `${points.toFixed(1)} of ${maxPoints} points`);
+
+  if (threshold == null || maxPoints <= 0) {
+    mark.hidden = true;
+    return;
+  }
+  mark.style.left = `${(threshold / maxPoints) * 100}%`;
+  mark.hidden = false;
+}
+
+function resetChip(component) {
+  const chip = $(`chip-${component}`);
+  chip.textContent = `– / ${MAX_POINTS[component]}`;
+  chip.className = 'chip';
+  $(`row-${component}`).hidden = true;
+  setMeter(`meter-${component}`, 0, MAX_POINTS[component], 'is-empty', null);
+}
+
+function fillChip(component, scored) {
+  const chip = $(`chip-${component}`);
+
+  // The 2 kilometer walk has no points to show, so a "0.0 / 50" chip beside it
+  // would read as a catastrophe rather than as a pass. It says what it is.
+  if (scored.walk) {
+    chip.textContent = scored.walk.passed ? 'Pass' : 'Fail';
+    chip.className = `chip filled${scored.walk.passed ? '' : ' chip-fail'}`;
+    // A full bar for a pass, an empty one for a fail: the meter is a reading of
+    // the component, and the component is a yes or a no.
+    setMeter(`meter-${component}`, scored.walk.passed ? scored.maxPoints : 0,
+      scored.maxPoints, scored.walk.passed ? 'is-pass' : 'is-fail', null);
+    // Nothing to add underneath: the chip says Pass or Fail, the range strip
+    // says what the maximum is and that it is worth no points, and the altitude
+    // strip says when that maximum moved.
+    $(`row-${component}`).hidden = true;
+    return;
+  }
+
+  chip.textContent = `${scored.points.toFixed(1)} / ${scored.maxPoints.toFixed(0)}`;
+  const failing = scored.status !== 'scored' || !scored.meetsMinimum;
+  chip.className = `chip filled${failing ? ' chip-fail' : ''}`;
+
+  setMeter(`meter-${component}`, scored.points, scored.maxPoints,
+    failing ? 'is-fail' : 'is-pass', scored.minimumPoints);
+
+  /*
+   * This line used to restate the chart row, "40+ reps -> 9.0 points". Every
+   * part of that is now on screen in larger type: the reps in the field, the
+   * points in the chip, the thresholds in the range strip, and the row itself
+   * highlighted in the in-line chart. So it only speaks when it has something
+   * of its own to say, which is the one case with no other words attached.
+   *
+   * Below the chart minimum the chip and the meter both turn red, and that is
+   * all. A red number is not an explanation, and the failures card that would
+   * explain it does not appear until every component is in.
+   */
+  const row = $(`row-${component}`);
+  const failsMinimum = scored.status === 'below_minimum';
+  row.textContent = failsMinimum
+    ? 'Below the chart minimum: scores 0 and fails this component.'
+    : '';
+  row.hidden = !failsMinimum;
+}
+
+/** The running total pinned to the bottom of the screen. */
+function showTally(result, ready) {
+  const tally = $('tally');
+  const score = $('tally-score');
+  const text = $('tally-text');
+
+  if (!result) {
+    tally.hidden = ready.size === 0;
+    score.textContent = '–';
+    text.textContent = !role
+      ? 'Choose cadet or cadre to start'
+      : 'Add your age and sex to start scoring';
+    tally.className = 'tally';
+    return;
+  }
+
+  tally.hidden = false;
+  const remaining = COMPONENTS.length - ready.size;
+
+  if (remaining > 0) {
+    // Only count what the cadet has actually entered. Components still blank
+    // are standing in as DNS, and their zeros are not a score anyone has
+    // earned yet. There is no composite to show either, because a composite
+    // is worked out over the components that were assessed and some of them
+    // have not been.
+    const tenths = [...ready].reduce(
+      (acc, c) => acc + Math.round(result.components[c].points * 10), 0);
+    animateTo(score, tenths / 10);
+    const missing = COMPONENTS.filter((c) => !ready.has(c))
+      .map((c) => COMPONENT_LABELS[c].toLowerCase());
+    text.textContent = `so far · still need ${missing.join(', ')}`;
+    tally.className = 'tally';
+    return;
+  }
+
+  // Once everything is in, show the composite rather than the points earned.
+  // The two are the same number until something is exempt, and then they are
+  // not: a member whose body composition is exempt on a passed BFA earns 61.5
+  // points and composites 76.9, and a footer reading "61.5 - Satisfactory"
+  // beside a scoreboard reading 76.9 invites exactly the wrong conclusion.
+  animateTo(score, result.composite);
+  text.textContent = `${result.rating} · tap for the breakdown`;
+  tally.className = `tally ${result.pass ? 'is-pass' : 'is-fail'}`;
+}
+
+/**
+ * Roll the number rather than snapping it, unless motion is unwelcome.
+ *
+ * The roll is decoration. A timer backstops it so the true value always lands,
+ * because requestAnimationFrame stops firing while a tab is in the background
+ * and a half-finished count would leave a wrong score on screen.
+ */
+const DURATION = 260;
+
+function animateTo(node, value) {
+  const from = Number(node.dataset.value ?? value);
+  node.dataset.value = String(value);
+
+  const settle = () => {
+    if (node.dataset.value === String(value)) node.textContent = value.toFixed(1);
+  };
+
+  if (motion() === 'auto' || from === value) {
+    settle();
+    return;
+  }
+
+  clearTimeout(Number(node.dataset.guard));
+  node.dataset.guard = String(setTimeout(settle, DURATION + 60));
+
+  const started = performance.now();
+  const tick = (now) => {
+    if (node.dataset.value !== String(value)) return; // superseded by a newer value
+    const progress = Math.min(1, (now - started) / DURATION);
+    const eased = 1 - (1 - progress) ** 3;
+    node.textContent = (from + (value - from) * eased).toFixed(1);
+    if (progress < 1) requestAnimationFrame(tick);
+    else settle();
+  };
+  requestAnimationFrame(tick);
+}
+
+// --- rendering the breakdown ----------------------------------------------
+
+function renderScoreboard(result) {
+  const board = $('scoreboard');
+  board.classList.toggle('is-pass', result.pass);
+  board.classList.toggle('is-fail', !result.pass);
+  $('composite').textContent = result.compositeText;
+  // DAFMAN 36-2905 para 3.6.1 names the three categories. Unsatisfactory is the
+  // failing one, so the badge carries the pass or fail colour without printing
+  // the words "pass" or "fail".
+  $('verdict').textContent = result.rating;
+  $('band').textContent =
+    `${result.sex === 'M' ? 'Male' : 'Female'}, ${result.ageBandLabel} · ` +
+    `${result.passingComposite.toFixed(1)} needed to pass`;
+
+  setMeter('meter-composite', result.composite, 100,
+    result.pass ? 'is-pass' : 'is-fail', result.passingComposite);
+
+  // The legend used to read "76.9 scored over 80 assessed points", which puts
+  // the composite where the earned points belong: 76.9 is not 76.9 of 80, it
+  // is what 61.5 of 80 comes to. With a component exempt the legend now shows
+  // the fraction and its result as two different numbers, which is the whole
+  // point of printing it.
+  const exempt = result.exemptComponents ?? [];
+  $('meter-legend').textContent = exempt.length === 0
+    ? `${result.composite.toFixed(1)} of 100 · the mark is ` +
+      `${result.passingComposite.toFixed(1)}`
+    : `${result.compositeEarned.toFixed(1)} of ${result.compositeOutOf.toFixed(0)} ` +
+      `assessed points → ${result.composite.toFixed(1)} · the mark is ` +
+      `${result.passingComposite.toFixed(1)}`;
+
+  showExemptExplainer(result, exempt);
+
+  // One line of targeting, which is the point of building this over the public
+  // calculators. Only shown on a fail: a passing cadet does not need advice.
+  const line = $('gap-line');
+  if (result.pass) {
+    line.hidden = true;
+  } else {
+    line.textContent = analyzer.analyzeGap(result).summary;
+    line.hidden = false;
+  }
+}
+
+/**
+ * One row per component under the composite: what was entered and what it
+ * earned, red where it is below the minimum. Each row is a button back to its
+ * component's card, which is where the number would be changed.
+ */
+function renderBreakdown(result) {
+  const host = $('breakdown');
+  host.replaceChildren();
+  for (const component of COMPONENTS) {
+    const scored = result.components[component];
+    const item = el('li');
+    const row = el('button', 'breakdown-row');
+    row.type = 'button';
+    if (!scored.meetsMinimum) row.classList.add('is-fail');
+    if (scored.status === 'exempt') row.classList.add('is-exempt');
+
+    const measured = scored.measured && scored.measured.ratio != null
+      ? `Ratio ${scored.measured.ratio.toFixed(2)}`
+      : describeMeasured(component, scored);
+    row.append(
+      el('span', 'breakdown-name',
+        component === 'body_composition' ? 'Waist to Height' : scored.eventLabel),
+      el('span', 'breakdown-measured', measured),
+      el('span', 'breakdown-points', describeEarned(scored)));
+    row.addEventListener('click', () => {
+      document.querySelector(`.event[data-component="${component}"]`)
+        .scrollIntoView({ behavior: motion(), block: 'start' });
+    });
+    item.append(row);
+    host.append(item);
+  }
+}
+
+/**
+ * Say the two things an exempt component does to a composite.
+ *
+ * Someone reading a scoreboard sees a number and a rating. When a component is
+ * exempt, neither is quite what it looks like:
+ *
+ *   The number was divided by something other than 100. Para 3.7.1 puts 100
+ *   points on the board across four components; exempting one takes its points
+ *   out of both the earned total and the divisor, and para 3.7.3 says outright
+ *   that a passed walk is "calculated based on the assessed components in the
+ *   same way the score will be calculated if the member were exempt from the
+ *   cardiorespiratory component". So the arithmetic is printed rather than
+ *   asserted: the reader can check it.
+ *
+ *   The rating cannot be Excellent. Para 3.6.1 names the three categories
+ *   "when assessing all components" and para 3.10.1 gives Excellent to members
+ *   "without any component exemptions". A 92 that records as Satisfactory is
+ *   the single most confusing thing this tool can put on screen, so it is
+ *   spelled out whether or not the composite actually got there.
+ */
+function showExemptExplainer(result, exempt) {
+  const box = $('exempt-explainer');
+  if (exempt.length === 0) {
+    box.hidden = true;
+    return;
+  }
+
+  const names = exempt.map((c) => COMPONENT_LABELS[c].toLowerCase());
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  const assessed = COMPONENTS.length - exempt.length;
+  const sitting = exempt.length === 1 ? 'is exempt' : 'are exempt';
+
+  $('exempt-headline').textContent =
+    `${list.charAt(0).toUpperCase()}${list.slice(1)} ${sitting}, so this composite ` +
+    `was earned over ${assessed} component${assessed === 1 ? '' : 's'}, not four.`;
+
+  // Written as the division it is. The multiplication by 100 is named because
+  // without it the fraction looks like it should already be the composite.
+  $('exempt-math').textContent =
+    `${result.compositeEarned.toFixed(1)} points earned ÷ ` +
+    `${result.compositeOutOf.toFixed(0)} points available × 100 = ` +
+    `${result.composite.toFixed(1)}. An exempt component leaves the total on ` +
+    'both sides, so the remaining components are scaled back up to 100 ' +
+    '(DAFMAN 36-2905 para 3.7.1 and 3.7.3).';
+
+  const cap = $('exempt-cap');
+  cap.textContent = result.excellentWithheld
+    ? `${result.composite.toFixed(1)} would be Excellent on a full assessment. ` +
+      'It records as Satisfactory: para 3.6.1 names the three categories "when ' +
+      'assessing all components", and para 3.10.1 gives Excellent only to members ' +
+      '"without any component exemptions".'
+    : 'Excellent is not available on this assessment, whatever the composite ' +
+      'reaches. Para 3.6.1 names the three categories "when assessing all ' +
+      'components", and para 3.10.1 gives Excellent only to members "without any ' +
+      'component exemptions". Satisfactory is the best rating on offer here.';
+  cap.classList.toggle('withheld', result.excellentWithheld);
+
+  box.hidden = false;
+}
+
+/* --- where to put the marks on the track ----------------------------------
+ *
+ * The scoring half of this tool answers "what did that earn". This answers the
+ * question that comes before anyone runs: the track has one painted finish
+ * line, the assessment is not a distance the track was painted for, so where
+ * does the start go?
+ *
+ * src/track.js does the arithmetic and the geometry; everything here is
+ * drawing. The diagram is built rather than stored because there are eight
+ * combinations of distance and track size and they differ only in numbers --
+ * eight saved pictures would be eight things to keep in step with one formula.
+ *
+ * Drawn in metres and scaled once, so a length on the page is a length on the
+ * ground: the 300 m track comes out visibly smaller than the 400, which is the
+ * first thing that tells a reader which one they are looking at.
+ */
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** What the two sliders are currently on. */
+const track = {
+  distanceIndex: 0,
+  lengthIndex: TRACK_LENGTHS.indexOf(400),
+  // A lap the member measured, which wins over the slider while it is set,
+  // kept in metres whatever it was typed in.
+  customLength: null,
+  customEntry: null,
+  customUnit: 'm'
+};
+
+/**
+ * Take the measured lap off the field, in whichever unit it was given.
+ *
+ * Out of range or half typed reverts to the slider rather than drawing a lap
+ * of four metres on the way to forty. The bounds are checked in metres, so a
+ * reading in feet is converted before it is judged.
+ */
+function readCustomLap() {
+  const typed = decimal('custom-lap');
+  const unit = track.customUnit;
+  const metres = typed == null || typed === undefined
+    ? null
+    : (unit === 'ft' ? metresFromFeet(typed) : typed);
+
+  const usable = metres != null
+    && metres >= TRACK_LENGTH_RANGE.min && metres <= TRACK_LENGTH_RANGE.max;
+  track.customLength = usable ? metres : null;
+  track.customEntry = usable ? typed : null;
+
+  // The field's own bounds move with the unit, so a phone keyboard and the
+  // browser's own validation agree with what is actually accepted.
+  const field = $('custom-lap');
+  field.min = String(Math.ceil(unit === 'ft'
+    ? TRACK_LENGTH_RANGE.min * FEET_PER_METRE_UI : TRACK_LENGTH_RANGE.min));
+  field.max = String(Math.floor(unit === 'ft'
+    ? TRACK_LENGTH_RANGE.max * FEET_PER_METRE_UI : TRACK_LENGTH_RANGE.max));
+  field.placeholder = unit;
+  renderTrack();
+}
+
+/** Only for the field's own bounds; the real conversion is in src/track.js. */
+const FEET_PER_METRE_UI = 3.280839895;
+
+/**
+ * The lap now in force: a measured one if there is one, else the slider's.
+ *
+ * Only the perimeter reaches anything a runner is told, so a lap nobody has
+ * printed a layout for is as good a number as the three that have one. The
+ * drawing has to guess the proportions and says so.
+ */
+function trackLength() {
+  return track.customLength ?? TRACK_LENGTHS[track.lengthIndex];
+}
+
+const svgEl = (tag, attrs) => {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, String(value));
+  return node;
+};
+
+/**
+ * One mark across the track, with its name beside it.
+ *
+ * Everything is in page units by the time it gets here. Drawing the oval
+ * inside a scaled group was the obvious way to work in metres, but text
+ * inherits the transform: an 11px label came out at 26px and the four names
+ * sat on top of each other. So the metres-to-page scaling is done by hand,
+ * once, and nothing on the drawing is inside a transform.
+ *
+ * The tick is drawn along the outward normal so it crosses the lane rather
+ * than lying along it, which is how a line is painted and how it reads. The
+ * label sits on that same normal, which makes a mark on the bottom straight
+ * label downwards and one on the top label up, with no table of special
+ * cases. Finish labels go outside the oval and start labels inside it: on a
+ * 2 mile the two are 18.7 m apart, which is close enough that side by side
+ * they would overlap, and opposite sides of the track is a separation the
+ * geometry cannot take away.
+ */
+function trackMark(group, at, { name, kind, inside }) {
+  const half = 7;
+  const out = inside ? -13 : 13;
+
+  group.append(svgEl('line', {
+    x1: at.x - at.nx * half, y1: at.y - at.ny * half,
+    x2: at.x + at.nx * half, y2: at.y + at.ny * half,
+    class: `track-tick track-${kind}`
+  }));
+
+  const label = svgEl('text', {
+    x: at.x + at.nx * out,
+    y: at.y + at.ny * out,
+    class: `track-label track-${kind}`,
+    'text-anchor': at.nx > 0.3 ? (inside ? 'end' : 'start')
+      : at.nx < -0.3 ? (inside ? 'start' : 'end') : 'middle',
+    'dominant-baseline': at.ny > 0.3 ? (inside ? 'auto' : 'hanging')
+      : at.ny < -0.3 ? (inside ? 'hanging' : 'auto') : 'middle'
+  });
+  label.textContent = name;
+  group.append(label);
+}
+
+/**
+ * A counter, because the panel and the printed sheet each hold a drawing and
+ * each drawing carries its own arrowhead marker. Two elements with the same
+ * id make url(#id) resolve to whichever comes first in the document, so the
+ * sheet was pointing at the panel's marker -- which is inside the form that
+ * print has just hidden, and a marker in a hidden tree draws nothing. Both
+ * arrows came out as plain bars with no head on them.
+ */
+let trackFigureSerial = 0;
+
+/**
+ * The bare oval both drawings start from: surface, lane 1 and which way round.
+ * Returns the svg and a function placing a distance along the lane on it.
+ */
+function trackCanvas(plan, ariaLabel) {
+  const arrowheadId = `track-arrowhead-${trackFigureSerial += 1}`;
+  const length = plan.shape.length;
+  const extent = trackExtent(length);
+
+  // Each size is drawn to the same width rather than to its true size against
+  // the others. Holding one scale across all of them read nicely with two
+  // sizes, but a 200 is half the 400 across, which left an infield too narrow
+  // for the lap line and put it through the start marks. What the shared scale
+  // bought was a sense that one track is smaller than another, and the picked
+  // label above the figure now says which track it is outright, in a size that
+  // does that job better than a subtle difference in the drawing.
+  //
+  // The box keeps a constant height, taken from whichever size is tallest once
+  // scaled, so switching tracks does not make the card jump.
+  const scale = 360 / extent.width;
+  const tallest = Math.max(...[...TRACK_LENGTHS, length].map((m) => {
+    const e = trackExtent(m);
+    return e.height * (360 / e.width);
+  }));
+  const boxW = 360 + 150;
+  const boxH = tallest + 92;
+
+  const svg = svgEl('svg', {
+    viewBox: `${-boxW / 2} ${-boxH / 2} ${boxW} ${boxH}`,
+    class: 'track-svg',
+    role: 'img',
+    'aria-label': ariaLabel
+  });
+
+  const defs = svgEl('defs', {});
+  const marker = svgEl('marker', {
+    id: arrowheadId, viewBox: '0 0 10 10', refX: 8, refY: 5,
+    markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse'
+  });
+  marker.append(svgEl('path', { d: 'M0 0 L10 5 L0 10 z', class: 'track-arrowhead' }));
+  defs.append(marker);
+  svg.append(defs);
+
+  /** A distance along the lane, in page units with its outward normal. */
+  const at = (metres) => {
+    const p = pointOnTrack(length, metres);
+    return { x: p.x * scale, y: p.y * scale, nx: p.nx, ny: p.ny };
+  };
+
+  const r = extent.radius * scale;
+  const h = extent.halfStraight * scale;
+  const oval = `M ${-h} ${-r} H ${h} A ${r} ${r} 0 0 1 ${h} ${r} ` +
+    `H ${-h} A ${r} ${r} 0 0 1 ${-h} ${-r} Z`;
+
+  // The running surface, drawn as one band rather than as lanes: which lane a
+  // member runs in is not what this diagram is for. Lane 1 goes over it,
+  // because lane 1 is the line every distance here is measured along.
+  svg.append(svgEl('path', { d: oval, class: 'track-surface', 'stroke-width': 16 }));
+  svg.append(svgEl('path', { d: oval, class: 'track-lane' }));
+
+  // Which way round. On the straights, where a runner is going one way only,
+  // and long enough to read as an arrow on a printed sheet held at arm's
+  // length rather than as a smudge on the lane.
+  const arrow = (x, y, dir) => svg.append(svgEl('path', {
+    d: `M ${x} ${y} h ${40 * dir}`,
+    class: 'track-arrow',
+    'marker-end': `url(#${arrowheadId})`
+  }));
+  arrow(-20, r, 1);        // bottom straight, travelling right
+  arrow(20, -r, -1);       // top straight, travelling left
+
+  return { svg, at };
+}
+
+function buildTrackFigure(plan) {
+  const { svg, at } = trackCanvas(plan,
+    `${plan.shape.length} metre track marked for ${plan.distance.label}: ` +
+    `${plan.laps} laps${plan.exact ? ' exactly' : `, plus ${plan.remainder} metres`}, ` +
+    'Group A on the painted finish line and Group B half a lap around.');
+
+  const middle = svgEl('text', { x: 0, y: -10, class: 'track-count', 'text-anchor': 'middle' });
+  middle.textContent = plan.exact
+    ? `${plan.laps} laps exactly`
+    : `${plan.laps} laps + ${plan.remainderLabel} m`;
+  svg.append(middle);
+
+  const under = svgEl('text', { x: 0, y: 8, class: 'track-count-sub', 'text-anchor': 'middle' });
+  under.textContent = `= ${plan.total.metres.toLocaleString()} m (${plan.distance.label})`;
+  svg.append(under);
+
+  const crossing = svgEl('text', { x: 0, y: 25, class: 'track-count-note', 'text-anchor': 'middle' });
+  crossing.textContent = plan.exact
+    ? `Finish = ${plan.crossings}th crossing after the start`
+    : `Finish = ${plan.crossings}th crossing of own line`;
+  svg.append(crossing);
+
+  const marks = svgEl('g', {});
+  const startOffset = plan.start ? plan.start.offset : 0;
+  const b = plan.groupB.offset;
+
+  if (plan.exact) {
+    // Nothing to wheel for A, and B's line is its start and its finish both.
+    trackMark(marks, at(0), { name: 'A start / finish', kind: 'a-finish', inside: false });
+    trackMark(marks, at(b), { name: 'B start / finish', kind: 'b-finish', inside: false });
+  } else {
+    trackMark(marks, at(0), { name: 'A finish', kind: 'a-finish', inside: false });
+    trackMark(marks, at(startOffset), { name: 'A start', kind: 'a-start', inside: true });
+    trackMark(marks, at(b), { name: 'B finish', kind: 'b-finish', inside: false });
+    trackMark(marks, at(b + startOffset), { name: 'B start', kind: 'b-start', inside: true });
+  }
+  svg.append(marks);
+
+  return svg;
+}
+
+
+/**
+ * The lap pace's drawing: one start, one finish, and the part lap between
+ * them picked out, which is the piece a runner cannot see on a painted track.
+ *
+ * Deliberately less than the layout: no Group B, no wheel distances, no
+ * count of line crossings. Those are for whoever marks the course. A runner
+ * needs where they set off, where the laps are counted from, and how long the
+ * odd first stretch should take.
+ *
+ * @param pace the lapPace() for the time set, or null before one is.
+ */
+function buildPaceFigure(plan, pace) {
+  const { svg, at } = trackCanvas(plan, plan.exact
+    ? `${plan.shape.length} metre track: ${plan.laps} full laps from the finish line.`
+    : `${plan.shape.length} metre track: start ${plan.remainderLabel} metres before ` +
+      `the finish line, then ${plan.laps} full laps.`);
+
+  if (!plan.exact) {
+    // From the start to the painted line, along the running direction. The
+    // opening length is taken from the distance rather than the rounded label,
+    // so the stretch drawn is the stretch run.
+    const opening = plan.distance.metres - plan.laps * plan.shape.length;
+    const from = plan.start.offset;
+    const steps = 48;
+    const points = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const p = at(from + (opening * i) / steps);
+      points.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+    }
+    svg.append(svgEl('polyline', { points: points.join(' '), class: 'pace-opening' }));
+  }
+
+  const marks = svgEl('g', {});
+  if (plan.exact) {
+    trackMark(marks, at(0), { name: 'Start / finish', kind: 'pace-finish', inside: false });
+  } else {
+    trackMark(marks, at(0), { name: 'Finish', kind: 'pace-finish', inside: false });
+    trackMark(marks, at(plan.start.offset), { name: 'Start', kind: 'pace-start', inside: true });
+  }
+  svg.append(marks);
+
+  const middle = svgEl('text', { x: 0, y: -6, class: 'track-count', 'text-anchor': 'middle' });
+  middle.textContent = pace
+    ? `${plan.laps} laps × ${pace.lap.label}`
+    : `${plan.laps} full laps`;
+  svg.append(middle);
+
+  if (!plan.exact) {
+    const under = svgEl('text', { x: 0, y: 20, class: 'pace-opening-label', 'text-anchor': 'middle' });
+    under.textContent = pace
+      ? `after the first ${pace.opening.metresLabel} m in ${pace.opening.label}`
+      : `after the first ${plan.remainderLabel} m`;
+    svg.append(under);
+  }
+  return svg;
+}
+
+/** The same plan in words, which is what someone holding a wheel reads. */
+function buildTrackGroups(plan, host) {
+  const column = (title, kind, lines) => {
+    const box = el('div', `track-group track-group-${kind}`);
+    box.append(el('h3', null, title));
+    for (const line of lines) box.append(el('p', null, line));
+    return box;
+  };
+
+  const push = plan.start
+    ? `${plan.start.wheel.label} ${plan.start.direction === 'back'
+      ? 'back (against the running direction)'
+      : 'forward (with the running direction)'}`
+    : null;
+
+  host.append(column('Group A', 'a', plan.exact
+    ? ['Start and finish: the painted finish line', 'Nothing to wheel']
+    : ['Finish: the painted finish line', `Start: ${push} from A finish`]));
+
+  host.append(column('Group B', 'b', plan.exact
+    ? [`Start and finish: ${plan.groupB.fromA.label} from A finish`,
+      'Half a lap around, at the end of the back straight']
+    : [`Finish: ${plan.groupB.fromA.label} from A finish`,
+      `Start: ${push} from B finish`,
+      `(or ${plan.groupB.startFromA.label} from A finish)`]));
+
+  const confirm = el('div', 'track-confirm');
+  confirm.append(el('strong', null, 'Confirm one lap'));
+  confirm.append(el('span', null, ` ${plan.lap.label}`));
+  host.append(confirm);
+}
+
+/** The standing instructions, which are the same whatever is being marked. */
+function trackNote(plan) {
+  return 'Wheel in lane 1, 30 cm (12 in) out from the inside edge. Group B’s line is half ' +
+    `a lap counterclockwise from A’s. The drawing assumes ${plan.shape.straight} m ` +
+    `straights and ${plan.shape.curve} m curves; a track built to different straights ` +
+    'moves where the marks fall in the picture but not how far they are wheeled.';
+}
+
+/**
+ * Offer the layout for the two events that are run on a marked course.
+ *
+ * The HAMR is run between two lines 20 m apart, which is on the tally sheet
+ * and needs no diagram, so the panel is not offered for it -- and it closes
+ * rather than merely hiding, so switching to the HAMR and back does not
+ * reopen a panel the member never opened.
+ */
+/**
+ * Which of the two course tools are open.
+ *
+ * They were one panel, with the pace underneath the layout, and the pace is
+ * the half a member wants: what to run each lap in. Marking a track is the
+ * half the person administering the assessment wants. Putting the member's
+ * tool behind a button named for the administrator's hid it, so they open
+ * separately and share the distance and lap above them.
+ */
+const course = { pace: false, layout: false };
+
+function showTrackPanel() {
+  const event = events.cardiorespiratory;
+  const wanted = event === 'run_2mile' || event === 'walk_2km';
+  const host = $('track-inline');
+  if (!wanted) {
+    host.hidden = true;
+    closeTrackPanel();
+    return;
+  }
+  host.hidden = false;
+
+  // Follow the event the first time it is shown for it: the walk is 2 km and
+  // the run is 2 miles, so the useful distance is the one being assessed.
+  // Only while both are closed, so it never moves under a reader.
+  if (!course.pace && !course.layout) {
+    const wants = event === 'walk_2km' ? 'km2' : 'mile2';
+    const index = TRACK_DISTANCES.findIndex((d) => d.id === wants);
+    if (index >= 0) track.distanceIndex = index;
+  }
+  renderTrack();
+}
+
+/** Show whichever of the two is open, and the pickers if either is. */
+function showCourseSections() {
+  // The layout is for whoever marks the track. A cadet has the lap pace, which
+  // draws the start, the finish and the part lap between them, and that is the
+  // part of the layout a runner needs.
+  const toggle = $('track-toggle');
+  toggle.hidden = role === 'cadet';
+  if (toggle.hidden) course.layout = false;
+  $('course-body').hidden = !(course.pace || course.layout);
+  $('pace-section').hidden = !course.pace;
+  $('track-section').hidden = !course.layout;
+  $('pace-toggle').setAttribute('aria-expanded', String(course.pace));
+  $('pace-toggle').classList.toggle('on', course.pace);
+  $('track-toggle').setAttribute('aria-expanded', String(course.layout));
+  $('track-toggle').classList.toggle('on', course.layout);
+}
+
+function closeTrackPanel() {
+  course.pace = false;
+  course.layout = false;
+  showCourseSections();
+}
+
+/**
+ * Put the track panel back to how it loads.
+ *
+ * Only the track size, because the distance is not really the member's
+ * choice: showTrackPanel() picks it from the event whenever the panel is
+ * closed, and resetAll() calls that straight after this, so setting one here
+ * would be overwritten a line later and reading it would be a lie.
+ */
+function resetTrack() {
+  track.customLength = null;
+  track.customEntry = null;
+  track.customUnit = 'm';
+  $('custom-lap').value = '';
+  $('custom-lap-unit').value = 'm';
+  $('pace-min').value = '';
+  $('pace-sec').value = '';
+  $('pace-readout').hidden = true;
+  $('slider-pace').hidden = true;
+  paceBounds = null;
+  track.lengthIndex = TRACK_LENGTHS.indexOf(400);
+  closeTrackPanel();
+}
+
+/**
+ * How fast each lap has to be to finish in the time the member is aiming at.
+ *
+ * Reads the distance and track already picked above, because a lap split means
+ * nothing without them: 1:51.8 is a 2 mile in 15:00 on a 400, and a different
+ * number on every other combination.
+ */
+function renderPace(distance, length) {
+  const readout = $('pace-readout');
+  renderPaceSlider(distance);
+  const figure = $('pace-figure');
+
+  // Nothing aimed at yet is the resting state, not an error. A part-entered or
+  // out-of-range time shows nothing rather than a pace worked out from half of
+  // it.
+  const target = paceSeconds();
+  const plan = trackPlan({ distanceId: distance.id, trackLength: length });
+  if (target == null) {
+    readout.hidden = true;
+    if (course.pace) figure.replaceChildren(buildPaceFigure(plan, null));
+    return;
+  }
+
+  const pace = lapPace({
+    distanceId: distance.id,
+    trackLength: length,
+    seconds: target
+  });
+
+  if (course.pace) figure.replaceChildren(buildPaceFigure(plan, pace));
+  $('pace-lap').textContent = pace.lap.label;
+  $('pace-working').textContent =
+    `${pace.laps} ${pace.laps === 1 ? 'lap' : 'laps'} of ${length} m ` +
+    `for ${distance.label} in ${pace.totalLabel}.`;
+
+  const partial = $('pace-partial');
+  if (pace.opening) {
+    // The part lap is run first: the start is wheeled off the finish line so
+    // that it is covered before the first crossing. Laps alone at the right
+    // pace still miss the time if this piece is run at a different one.
+    partial.textContent =
+      `Plus the opening ${pace.opening.metresLabel} m, from the start line to ` +
+      `the painted finish, in ${pace.opening.label}. That part lap comes first, ` +
+      `so run it at this pace too or the laps will not add up to ${pace.totalLabel}.`;
+    partial.hidden = false;
+  } else {
+    partial.hidden = true;
+  }
+  readout.hidden = false;
+}
+
+/**
+ * The lap pace of the run on the printed result.
+ *
+ * Worked out from the time actually run, not from a goal typed into the lap
+ * pace: the sheet is a record of this assessment, and "1:56 a lap" says how it
+ * was run in a way a cadet can take back to the track. The time is the one
+ * recorded, before any altitude correction, because that is what the laps took.
+ *
+ * Read as an average: nobody runs even laps, so it is the pace that would have
+ * given this time. On whichever track is picked in the lap pace, 400 m unless
+ * changed. Empty, and so not printed, for the HAMR, a DNF or an exemption.
+ */
+function renderPrintPace(result) {
+  const host = $('print-pace');
+  const scored = result?.components?.cardiorespiratory;
+  const distanceId = { run_2mile: 'mile2', walk_2km: 'km2' }[scored?.event];
+  const seconds = scored?.measured?.seconds;
+  if (!distanceId || !(seconds > 0)) {
+    host.replaceChildren();
+    return;
+  }
+
+  const length = trackLength();
+  const pace = lapPace({ distanceId, trackLength: length, seconds });
+  const plan = pace.plan;
+  const words = el('div', 'print-pace-words');
+  words.append(el('h2', 'print-pace-title', 'Lap Pace'));
+  words.append(el('p', 'print-pace-goal',
+    `${plan.distance.label} ${distanceId === 'km2' ? 'walked' : 'run'} in ` +
+    `${pace.totalLabel}, on a ${length} m track`));
+  words.append(el('p', 'print-pace-lap', `${pace.lap.label} a lap`));
+  // Said without "before" or "after" the line: on a 300 the start sits past
+  // the finish and the first stretch is most of a lap.
+  words.append(el('p', 'print-pace-working', pace.opening
+    ? `On average. At that pace the first ${pace.opening.metresLabel} m, from the ` +
+      `start to the finish line, took ${pace.opening.label}, then ${plan.laps} laps.`
+    : `On average, over ${plan.laps} laps from the finish line.`));
+  host.replaceChildren(words, buildPaceFigure(plan, pace));
+}
+
+/**
+ * The two ends of the pace slider, in seconds, or null when there is no chart
+ * to read them off yet.
+ *
+ * The 2 km is the walk's distance, and nobody runs a PFRA over it, so it takes
+ * the walk slider's ends: the slow end is this member's walk standard and the
+ * fast end is WALK_FASTEST, 14:00. Run paces would put the whole slider at a
+ * jog no walker reaches.
+ *
+ * Every other distance is anchored on the 2 mile run, with the same right hand
+ * end as the run's own slider: the time that earns full marks for this
+ * member's sex and age band. The slow end is the slowest time that still
+ * passes. Both are paces rather than times, so they carry over to the 1.5 and
+ * 3 mile, which have no standard of their own. A faster goal can still be
+ * typed in; the handle pins at the end, as it does on the run.
+ *
+ * The slow end is the passing time itself rather than a second past it, which
+ * is where the scoring sliders put their left hand end. Those record what
+ * happened and a fail is a real thing to record. This one sets a goal, and a
+ * goal of missing the standard is not one.
+ */
+function paceEnds(distance) {
+  if (!sex || !ageBand) return null;
+
+  if (distance.id === 'km2') {
+    const walk = scorer.rangeFor({
+      component: 'cardiorespiratory', event: 'walk_2km', sex, band: ageBand
+    });
+    if (!walk || !walk.standard || walk.standard.seconds == null) return null;
+    return { slow: walk.standard.seconds, fast: WALK_FASTEST };
+  }
+
+  const run = scorer.rangeFor({
+    component: 'cardiorespiratory', event: 'run_2mile', sex, band: ageBand
+  });
+  if (!run || !run.floor || run.floor.value == null || !run.best) return null;
+
+  const mile2 = distanceById('mile2');
+  const factor = distance.metres / mile2.metres;
+  return {
+    slow: Math.round(run.floor.value * factor),
+    // SLIDER_MEASURES.time.best, so the two run tracks end in the same place.
+    fast: Math.round(SLIDER_MEASURES.time.best(run) * factor)
+  };
+}
+
+/** Where the pace slider's ends currently sit, for reading a dragged value. */
+let paceBounds = null;
+
+/**
+ * Draw the pace slider for the distance now picked.
+ *
+ * Slower on the left and faster on the right, which is worst to best as every
+ * other track on the page runs, so the handle moves the same way here as it
+ * does on the run.
+ */
+function renderPaceSlider(distance) {
+  const row = $('slider-pace');
+  const input = $('slide-pace');
+  const ends = paceEnds(distance);
+  paceBounds = ends;
+
+  if (!ends) {
+    row.hidden = true;
+    return;
+  }
+
+  row.hidden = false;
+  input.min = String(ends.fast);
+  input.max = String(ends.slow);
+  input.step = '1';
+  $('pace-low').textContent = formatTime(ends.slow);
+  $('pace-high').textContent = formatTime(ends.fast);
+
+  if (dragging === 'pace') return;
+
+  const current = paceSeconds();
+  // Nothing aimed at yet parks at the left, the slowest end, the way an
+  // unentered score parks at the worst end of its own track.
+  const seated = current == null
+    ? ends.slow
+    : Math.max(ends.fast, Math.min(ends.slow, current));
+  input.value = String(ends.fast + ends.slow - seated);
+  input.setAttribute('aria-valuetext',
+    current == null ? 'not set' : formatTime(current));
+}
+
+/** The target time now in the two fields, in seconds, or null. */
+function paceSeconds() {
+  const minutes = wholeNumber('pace-min');
+  const seconds = wholeNumber('pace-sec');
+  if (minutes == null || minutes === undefined) return null;
+  if (seconds == null || seconds === undefined || seconds > 59) return null;
+  const total = minutes * 60 + seconds;
+  return total > 0 ? total : null;
+}
+
+/** Write a dragged pace back into the fields the readout is worked out from. */
+function onPaceSliderInput() {
+  if (!paceBounds) return;
+  const position = Number($('slide-pace').value);
+  const seconds = paceBounds.fast + paceBounds.slow - position;
+  $('pace-min').value = String(Math.floor(seconds / 60));
+  $('pace-sec').value = String(seconds % 60).padStart(2, '0');
+  $('slide-pace').setAttribute('aria-valuetext', formatTime(seconds));
+  renderTrack();
+}
+
+function renderTrack() {
+  const distance = TRACK_DISTANCES[track.distanceIndex];
+  const length = trackLength();
+
+  $('slide-track-distance').max = String(TRACK_DISTANCES.length - 1);
+  $('slide-track-distance').value = String(track.distanceIndex);
+  $('slide-track-distance').setAttribute('aria-valuetext', distance.label);
+  $('slide-track-length').max = String(TRACK_LENGTHS.length - 1);
+  $('slide-track-length').value = String(track.lengthIndex);
+  $('slide-track-length').setAttribute('aria-valuetext', `${length} metre track`);
+  $('track-distance-low').textContent = TRACK_DISTANCES[0].label;
+  $('track-distance-high').textContent = TRACK_DISTANCES[TRACK_DISTANCES.length - 1].label;
+  $('track-length-low').textContent = `${TRACK_LENGTHS[0]} m`;
+  $('track-length-high').textContent = `${TRACK_LENGTHS[TRACK_LENGTHS.length - 1]} m`;
+
+  // Both sliders have more stops than they have end labels, so the stop the
+  // handle is actually parked on is the only part of the row that says what
+  // is being drawn. It is set in the same size as the figure's own headline
+  // rather than as a caption under the track.
+  $('track-distance-picked').textContent = distance.label;
+  $('track-length-picked').textContent = track.customLength == null
+    ? `${length} m track`
+    : track.customUnit === 'ft'
+      // Both, because the reading came off a wheel in feet and every distance
+      // under the figure is given in metres first.
+      ? `${track.customEntry} ft lap, measured (${length.toFixed(1)} m)`
+      : `${length} m lap, measured`;
+
+  renderPace(distance, length);
+  renderPrintPace(lastResult);
+
+  showCourseSections();
+  if (!course.layout) return;   // no figure to draw into
+
+  const plan = trackPlan({ distanceId: distance.id, trackLength: length });
+  $('track-figure').replaceChildren(buildTrackFigure(plan));
+  $('track-groups').replaceChildren();
+  buildTrackGroups(plan, $('track-groups'));
+  $('track-note').textContent = trackNote(plan);
+}
+
+/* --- the track layout as a printed sheet -----------------------------------
+ *
+ * The page can print two entirely different documents. One is the member's
+ * result, which is what the print rules were written for and what the Print
+ * Result button sends. The other is this: a sheet for whoever is walking the
+ * track with a measuring wheel, who is outside and not at a screen.
+ *
+ * They share no content, so rather than bend one layout into the other, the
+ * sheet is built into its own section outside the form and a class on <body>
+ * says which of the two this print run is for. The class goes on immediately
+ * before window.print() and comes off after, so nothing about it is visible
+ * on screen at any point.
+ */
+
+/** Fill the printed sheet from the same plan the panel is drawn from. */
+function renderTrackPrint(plan) {
+  const host = $('track-print');
+  host.replaceChildren();
+
+  host.append(el('h2', 'track-sheet-title',
+    `${plan.distance.label} on a ${plan.shape.length} m track`));
+  host.append(el('p', 'track-sheet-sub',
+    plan.exact
+      ? `${plan.laps} laps exactly. Two groups, both counterclockwise, each ` +
+        'finishing on its own line.'
+      : `${plan.laps} laps + ${plan.remainderLabel} m. Two groups, both ` +
+        'counterclockwise, each finishing on its own line.'));
+
+  const figure = el('div', 'track-figure');
+  figure.append(buildTrackFigure(plan));
+  host.append(figure);
+
+  const groups = el('div', 'track-groups');
+  buildTrackGroups(plan, groups);
+  host.append(groups);
+
+  host.append(el('p', 'track-sheet-note', trackNote(plan)));
+
+  // A marked track is marked on a day. Printed rather than entered, for the
+  // same reason the result sheet says so: this is when the sheet was made.
+  host.append(el('p', 'track-sheet-printed',
+    `Printed ${new Date().toLocaleDateString(undefined, {
+      year: 'numeric', month: 'long', day: 'numeric'
+    })} · AFROTC Detachment 250`));
+
+  host.hidden = false;
+}
+
+function printTrackLayout() {
+  const distance = TRACK_DISTANCES[track.distanceIndex];
+  const length = trackLength();
+  renderTrackPrint(trackPlan({ distanceId: distance.id, trackLength: length }));
+
+  document.body.classList.add('printing-track');
+  const done = () => {
+    document.body.classList.remove('printing-track');
+    $('track-print').hidden = true;
+    $('track-print').replaceChildren();
+  };
+  // afterprint is the reliable signal, but a browser that never fires it
+  // would leave the page in printing-track for ever, and the next ordinary
+  // print would silently send the wrong document. So the line after print()
+  // clears it too: on every engine here print() blocks until the dialog is
+  // done, and clearing twice costs nothing.
+  window.addEventListener('afterprint', done, { once: true });
+  window.print();
+  done();
+}
+
+function wireTrack() {
+  $('pace-toggle').addEventListener('click', () => {
+    course.pace = !course.pace;
+    showCourseSections();
+    renderTrack();
+  });
+  $('track-toggle').addEventListener('click', () => {
+    course.layout = !course.layout;
+    showCourseSections();
+    renderTrack();
+  });
+  $('slide-track-distance').addEventListener('input', () => {
+    track.distanceIndex = Number($('slide-track-distance').value);
+    renderTrack();
+  });
+  $('slide-track-length').addEventListener('input', () => {
+    track.lengthIndex = Number($('slide-track-length').value);
+    // Reaching for a printed size is a choice of that size, so it takes the
+    // lap back off a measured one rather than being quietly overruled by it.
+    track.customLength = null;
+    track.customEntry = null;
+    $('custom-lap').value = '';
+    renderTrack();
+  });
+  $('custom-lap').addEventListener('input', readCustomLap);
+  $('custom-lap-unit').addEventListener('change', () => {
+    track.customUnit = $('custom-lap-unit').value;
+    // What is typed is re-read in the new unit rather than converted. The
+    // selector says which unit the number is in; changing someone's number
+    // underneath them would be a different, and surprising, thing to do.
+    readCustomLap();
+  });
+  for (const id of ['pace-min', 'pace-sec']) {
+    $(id).addEventListener('input', () => renderTrack());
+  }
+  $('print-track').addEventListener('click', printTrackLayout);
+}
+
+/* --- the printed component table ------------------------------------------
+ *
+ * On screen the assessment reads itself: each measurement sits in the field it
+ * was typed into and each score in the chip beside it. Print drops the whole
+ * form, because a form is a thing to fill in and paper is not, which left the
+ * printed page carrying a composite and nothing that made it.
+ *
+ * This is what the form was saying, in four rows: what the member did, and
+ * what it earned. It is built here rather than written in the markup because
+ * every cell of it depends on the result, down to which events were assessed.
+ */
+
+/** What the member actually did, in the unit the event is recorded in. */
+function describeMeasured(component, scored) {
+  if (scored.status === 'dns') return 'Did not start';
+  if (scored.status === 'dnf') return 'Did not finish';
+
+  const measured = scored.measured;
+  if (!measured) return scored.status === 'exempt' ? 'Not assessed' : '--';
+
+  // The walk is a time against a maximum rather than a time worth points, so
+  // the maximum goes beside it: the number alone says nothing on paper.
+  if (scored.walk) return `${measured.time} of ${scored.walk.maxTime} allowed`;
+
+  if (measured.ratio != null) {
+    return measured.waistInches == null
+      ? `Ratio ${measured.ratio.toFixed(2)}`
+      : `${measured.waistInches.toFixed(1)} in waist, ` +
+        `${measured.heightInches.toFixed(1)} in height, ratio ${measured.ratio.toFixed(2)}`;
+  }
+  if (measured.reps != null) return `${measured.reps} reps`;
+  if (measured.shuttles != null) {
+    // The count is what scores; the level is what the tally sheet is read in,
+    // and a scorer checking this against the sheet needs both.
+    const place = measured.hamrLevel;
+    return place
+      ? `${measured.shuttles} shuttles (level ${place.level}, shuttle ${place.shuttleInLevel})`
+      : `${measured.shuttles} shuttles`;
+  }
+  if (measured.time != null) return measured.time;
+  return '--';
+}
+
+/** What it was worth, in the terms that component is scored in. */
+function describeEarned(scored) {
+  if (scored.status === 'exempt' && !scored.walk) return 'Exempt';
+  if (scored.walk) return scored.walk.passed ? 'Pass' : 'Fail';
+  return `${scored.points.toFixed(1)} / ${scored.maxPoints.toFixed(0)}`;
+}
+
+function renderPrintSummary(result) {
+  const host = $('print-summary');
+  host.replaceChildren();
+
+  const table = el('table', 'print-table');
+  const head = el('tr');
+  for (const [label, className] of [['Component', null], ['Event', null],
+    ['Measured', null], ['Score', 'num']]) {
+    head.append(el('th', className, label));
+  }
+  const thead = el('thead');
+  thead.append(head);
+  table.append(thead);
+
+  const body = el('tbody');
+  for (const component of COMPONENTS) {
+    const scored = result.components[component];
+    const row = el('tr');
+    row.append(el('td', null, COMPONENT_LABELS[component]));
+    row.append(el('td', null, scored.eventLabel));
+    row.append(el('td', null, describeMeasured(component, scored)));
+    row.append(el('td', 'num', describeEarned(scored)));
+    body.append(row);
+  }
+  table.append(body);
+
+  // The same two numbers the meter legend carries, on the row that adds the
+  // column up. With a component exempt these are not the composite, which is
+  // why the composite is printed above rather than in this column.
+  const foot = el('tr', 'print-total');
+  foot.append(el('td', null, 'Composite'));
+  foot.append(el('td', null, ''));
+  foot.append(el('td', null, result.exemptComponents.length === 0
+    ? `${result.compositeEarned.toFixed(1)} of 100 points`
+    : `${result.compositeEarned.toFixed(1)} of ${result.compositeOutOf.toFixed(0)} ` +
+      'assessed points'));
+  foot.append(el('td', 'num', `${result.compositeText} · ${result.rating}`));
+  const tfoot = el('tfoot');
+  tfoot.append(foot);
+  table.append(tfoot);
+
+  host.append(table);
+
+  // A record leaving the device wants a date on it. Printed rather than
+  // entered: this is when the sheet was made, not when the member was tested,
+  // and saying so stops it being read as the assessment date.
+  host.append(el('p', 'print-printed',
+    `Printed ${new Date().toLocaleDateString(undefined, {
+      year: 'numeric', month: 'long', day: 'numeric'
+    })}.`));
+}
+
+function renderFailures(result) {
+  const card = $('failures');
+  const list = $('failure-list');
+  list.replaceChildren();
+  if (result.pass) {
+    card.hidden = true;
+    return;
+  }
+  for (const failure of result.failures) list.append(el('li', null, failure.message));
+  card.hidden = false;
+}
+
+function renderWarnings(result) {
+  const card = $('warnings-card');
+  const list = $('warning-list');
+  list.replaceChildren();
+  // The body fat panel says this already, in more detail and nearer the
+  // ratio it is about, so while it is on screen the warning is a repeat.
+  // showBfa() runs before this, so the panel's state is current.
+  const warnings = $('bfa').hidden
+    ? result.warnings
+    : result.warnings.filter((warning) => !warning.includes('3.15.4.7'));
+  if (warnings.length === 0) {
+    card.hidden = true;
+    return;
+  }
+  for (const warning of warnings) list.append(el('li', null, warning));
+  card.hidden = false;
+}
+
+function describeReach(rung) {
+  if (rung.reach.reps != null) return `${rung.reach.reps} reps`;
+  if (rung.reach.time != null) return `${rung.reach.time} or faster`;
+  if (rung.reach.waistInches != null) {
+    return `a ${rung.reach.waistInches.toFixed(1)} inch waist`;
+  }
+  return `a ratio of ${rung.reach.ratio.toFixed(2)}`;
+}
+
+function describeEffort(rung) {
+  if (rung.distance.reps != null) {
+    return `${rung.distance.reps} more rep${rung.distance.reps === 1 ? '' : 's'}`;
+  }
+  if (rung.distance.seconds != null) {
+    return `${describeSeconds(rung.distance.seconds)} ${rung.direction ?? 'faster'}`;
+  }
+  const hundredths = Math.round(rung.distance.ratio * 100);
+  return `${hundredths} hundredth${hundredths === 1 ? '' : 's'} off the ratio`;
+}
+
+/**
+ * The target a plan is currently showing for, or null when none is.
+ *
+ * A plan is only true of the score it was worked out from. It used to be
+ * rendered once and left there: plan a route to 75 from a composite of 57.5,
+ * then take five minutes off the run, and the same list sat on screen telling
+ * the member to cut a run they had already cut. Keeping the target means the
+ * plan can be worked out again against the score now on screen.
+ */
+let planTarget = null;
+
+/** Take the plan down, for when there is no longer a score behind it. */
+function clearPlan() {
+  planTarget = null;
+  $('target-plans').replaceChildren();
+  $('target-error').hidden = true;
+}
+
+function onPlan() {
+  if (!lastResult) return;
+  const errorNode = $('target-error');
+  errorNode.hidden = true;
+
+  const target = Number($('target').value);
+  if (!Number.isFinite(target) || target < 0 || target > 100) {
+    errorNode.textContent = 'Pick a target composite between 0 and 100.';
+    errorNode.hidden = false;
+    return;
+  }
+
+  const host = $('target-plans');
+  host.replaceChildren();
+
+  let plan;
+  try {
+    plan = analyzer.planForTarget(lastResult, target);
+  } catch (error) {
+    errorNode.textContent = error.message;
+    errorNode.hidden = false;
+    planTarget = null;
+    return;
+  }
+  planTarget = target;
+
+  if (!plan.reachable) {
+    host.append(el('p', 'card-intro',
+      plan.note ?? `${target.toFixed(1)} is out of reach from this assessment.`));
+    return;
+  }
+
+  for (const entry of plan.plans) {
+    const box = el('div', 'plan');
+    box.append(el('div', 'plan-kind', {
+      already_there: 'Already there',
+      single_component: 'One component does it',
+      spread: 'Shared across components'
+    }[entry.kind] ?? entry.kind));
+
+    if (entry.steps.length === 0) {
+      box.append(el('p', null, entry.label));
+    } else {
+      const list = el('ul');
+      for (const step of entry.steps) {
+        const item = el('li', null,
+          `${step.eventLabel}: ${describeEffort(step.rung)} ` +
+          `to reach ${describeReach(step.rung)} for ${step.rung.points.toFixed(1)} points`);
+        const pace = planPace(step);
+        if (pace) item.append(pace);
+        list.append(item);
+      }
+      box.append(list);
+      box.append(el('p', 'plan-total', `Reaches ${entry.total.toFixed(1)}.`));
+    }
+    host.append(box);
+  }
+}
+
+/**
+ * The lap time a run target comes to, with a way into the lap pace for it.
+ *
+ * "13:44 or faster" is a goal; "1:43 a lap" is something to run on the day.
+ * The two features answer halves of the same question, so a run step in a
+ * plan says the second half and opens the pace calculator already set to it.
+ */
+function planPace(step) {
+  if (step.component !== 'cardiorespiratory' || events.cardiorespiratory !== 'run_2mile') {
+    return null;
+  }
+  const seconds = step.rung.reach.seconds;
+  if (seconds == null) return null;
+
+  const length = trackLength();
+  const pace = lapPace({ distanceId: 'mile2', trackLength: length, seconds });
+  const line = el('span', 'plan-pace',
+    ` That is ${pace.lap.label} a lap on a ${length} m track. `);
+  const open = el('button', 'plan-pace-open', 'Open Lap Pace');
+  open.type = 'button';
+  open.addEventListener('click', () => openPaceFor(seconds));
+  line.append(open);
+  return line;
+}
+
+/** Open the lap pace on the 2 mile, set to a finishing time, and go to it. */
+function openPaceFor(seconds) {
+  const index = TRACK_DISTANCES.findIndex((d) => d.id === 'mile2');
+  if (index >= 0) track.distanceIndex = index;
+  $('pace-min').value = String(Math.floor(seconds / 60));
+  $('pace-sec').value = String(seconds % 60).padStart(2, '0');
+  course.pace = true;
+  renderTrack();
+  $('pace-toggle').scrollIntoView({ behavior: motion(), block: 'start' });
+}
+
+/**
+ * The next composite worth aiming at from this one, and why.
+ *
+ * The box used to hold 75 whatever the score, so a cadet on 82 asking how to
+ * get to 75 was told they were already there. Below the mark it is the mark.
+ * Above it, Excellent at 90, then for a cadet the Fitness Award at 95
+ * (AFROTCI 36-2011 V3, Table 15.1), then 100.
+ */
+function nextGoal(result) {
+  if (!result.pass) {
+    return { value: result.passingComposite, why: 'The passing mark for your age and sex.' };
+  }
+  const goals = [{ value: 90, why: 'Excellent.' }];
+  if (role === 'cadet') goals.push({ value: 95, why: 'The cadet Fitness Award.' });
+  goals.push({ value: 100, why: 'A perfect score.' });
+  return goals.find((goal) => result.composite < goal.value) ?? goals[goals.length - 1];
+}
+
+/** Whether the member has typed their own target, which is then left alone. */
+let targetEdited = false;
+
+/** Fill the target box with the next goal, unless the member chose one. */
+function suggestTarget(result) {
+  const why = $('target-why');
+  if (targetEdited) {
+    why.hidden = true;
+    return;
+  }
+  const goal = nextGoal(result);
+  $('target').value = String(goal.value);
+  why.textContent = `Suggested: ${goal.why}`;
+  why.hidden = false;
+}
+
+function renderReferences(result) {
+  const host = $('reference-list');
+  host.replaceChildren();
+
+  for (const reference of result.references) {
+    const box = el('div', 'reference');
+    const sourceName = {
+      'pfra-charts': 'PFRA Scoring charts',
+      'notacc-cy26-092': 'NOTACC CY26-092',
+      'afrotci36-2011v3': 'AFROTCI 36-2011 V3',
+      'dafman36-2905-afrotcsup': 'DAFMAN 36-2905 AFROTC Sup'
+    }[reference.source] ?? 'DAFMAN 36-2905';
+    box.append(el('span', 'reference-id', `${sourceName} · ${reference.paragraph}`));
+    box.append(el('span', 'reference-text', reference.text));
+    host.append(box);
+  }
+
+  const pub = el('div', 'reference');
+  pub.append(el('span', 'reference-id', result.publication.title));
+  const link = document.createElement('a');
+  link.href = result.publication.url;
+  link.textContent = 'Read it on e-Publishing';
+  link.rel = 'noopener noreferrer';
+  link.target = '_blank';
+  pub.append(link);
+  host.append(pub);
+}
+
+/*
+ * There was a setupPrinting() here that opened the folded reference list on
+ * beforeprint, so a scorer could check a lookup against the paragraph it came
+ * from. The printed page is now one sheet, and twenty quoted paragraphs is
+ * four of them; the reference list is hidden in print instead, and the working
+ * a scorer actually needs -- what was measured and what it scored -- is in the
+ * component table, which is on the sheet rather than folded anywhere.
+ */
+
+// --- reference documents ---------------------------------------------------
+
+/**
+ * Wire up the document list.
+ *
+ * A PDF only gets an inline viewer if a browser can actually render it. The
+ * scoring charts can. The two AF forms are XFA (Adobe LiveCycle) documents,
+ * which no browser renders: they show only their own "requires Adobe Reader"
+ * placeholder, so they are download-only until a flattened copy exists.
+ *
+ * If one does, `data-flat` points at it and this picks it up: the download
+ * switches to the flattened file and the View button appears. Nothing here
+ * needs changing when that happens; just drop the file into references/.
+ */
+async function setupDocuments() {
+  for (const doc of document.querySelectorAll('.document')) {
+    const link = doc.querySelector('.doc-link');
+    const flat = doc.querySelector('.doc-flat');
+    const toggle = doc.querySelector('.view-toggle');
+    const viewer = doc.querySelector('.viewer');
+    const note = doc.querySelector('.document-note');
+
+    // A row with no View button is download-only by design: see the comment on
+    // the manual in index.html. Nothing below applies to it.
+    if (!toggle) continue;
+
+    // The scoring charts have no flattened twin; they render as published.
+    if (!flat) {
+      toggle.hidden = false;
+      toggle.addEventListener('click', () => toggleViewer(toggle, viewer, link.href));
+      continue;
+    }
+
+    if (await exists(flat.getAttribute('href'))) {
+      flat.hidden = false;
+      toggle.hidden = false;
+      note.textContent += ' Fillable opens in Adobe Reader; the flat copy reads ' +
+        'in any browser but cannot be filled in.';
+      toggle.addEventListener('click', () => toggleViewer(toggle, viewer, flat.href));
+    } else {
+      note.textContent += ' Opens in Adobe Reader, not in a browser.';
+    }
+  }
+}
+
+/**
+ * Is there a file at this URL?
+ *
+ * A HEAD request is enough for a served file. A data: URI is the file, so it
+ * is answered without asking: fetch only honours GET on a data: URL and
+ * rejects a HEAD outright, which would have the single-file build decide its
+ * own embedded forms were missing and hide the View button on both of them.
+ */
+async function exists(url) {
+  if (url.startsWith('data:')) return true;
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Object URLs handed out for the inline viewer, so they can be handed back.
+ *
+ * Keyed by the viewer they were put in, because that is what closes.
+ */
+const viewerObjectUrls = new WeakMap();
+
+/**
+ * A src an iframe will actually render a PDF from.
+ *
+ * Chrome will not run its PDF viewer on a data: URL, so in the single-file
+ * build every View button opened a blank frame. The bytes are already here;
+ * they just need an address the viewer will accept, and a blob: URL is one.
+ * A served URL is left alone: it is already fine and making a blob of it
+ * would download the file twice.
+ */
+async function viewerSource(viewer, src) {
+  if (!src.startsWith('data:')) return src;
+  const blob = await fetch(src).then((response) => response.blob());
+  const url = URL.createObjectURL(blob);
+  viewerObjectUrls.set(viewer, url);
+  return url;
+}
+
+function releaseViewer(viewer) {
+  const url = viewerObjectUrls.get(viewer);
+  if (!url) return;
+  URL.revokeObjectURL(url);
+  viewerObjectUrls.delete(viewer);
+}
+
+async function toggleViewer(toggle, viewer, src) {
+  const open = toggle.getAttribute('aria-expanded') === 'true';
+  if (open) {
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.textContent = 'View';
+    viewer.hidden = true;
+    viewer.replaceChildren();
+    releaseViewer(viewer);
+    return;
+  }
+
+  // Said before the await, not after: on the offline build the blob is made
+  // from a 40 MB data: URL and the button would otherwise sit unchanged long
+  // enough to be pressed again.
+  toggle.setAttribute('aria-expanded', 'true');
+  toggle.textContent = 'Hide';
+
+  releaseViewer(viewer);
+  const frame = document.createElement('iframe');
+  frame.src = await viewerSource(viewer, src);
+  frame.title = 'Reference document';
+  frame.loading = 'lazy';
+  viewer.replaceChildren(frame);
+  viewer.hidden = false;
+}
+
+boot().catch((error) => {
+  document.body.prepend(Object.assign(document.createElement('p'), {
+    className: 'error',
+    style: 'padding:16px',
+    textContent: `The calculator could not load its scoring tables: ${error.message}`
+  }));
+});

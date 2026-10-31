@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AFROTC PFRA Calculator, Det 250</title>
+<meta name="description" content="Unofficial PFRA score calculator for AFROTC Detachment 250 cadets at Iowa State University.">
+<!-- Dark first so the browser paints scrollbars, form controls and the
+     page background dark before the stylesheet arrives. -->
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="assets/afrotc-shield-icon.png" type="image/png" sizes="96x96">
+<link rel="stylesheet" href="styles.css?v=c1401fb0cb">
+<link rel="stylesheet" href="../shared/det250.css">
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="mark shield" role="img" aria-label="Air Force ROTC shield"></div>
+    <h1>AFROTC PFRA Calculator</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- ---------------------------------------------------------------- -->
+  <form id="assessment" class="card" novalidate autocomplete="off">
+
+    <!-- Above age and sex because it frames them: the same charts, but a
+         different set of things a member is allowed to do.
+
+         No visible heading. It was "Assessing", which read wrongly once the
+         second choice became Proctor / Cadre: a proctor runs the assessment
+         rather than taking it. The two buttons and the line under them say
+         what the switch is; the name is kept for screen readers. -->
+    <div class="field" id="field-role">
+      <div class="segmented" role="radiogroup" aria-label="Which view of the calculator">
+        <button type="button" class="segment on" role="radio" aria-checked="true"
+                data-role="cadet">AFROTC Cadet</button>
+        <button type="button" class="segment" role="radio" aria-checked="false"
+                data-role="cadre">Proctor / Cadre</button>
+      </div>
+      <!-- Cadet is the default, on load and on Reset Everything, because most
+           people opening this are cadets checking their own score. Kept in step
+           with ROLE_HINTS.cadet in app.js, which rewrites it on a switch. -->
+      <p class="hint" id="role-hint">
+        Waist to height, hand-release push-ups, sit-ups and the 2 mile run. Those
+        four are the whole cadet assessment (NOTACC CY26-092).
+      </p>
+    </div>
+
+    <div class="row about-row">
+      <div class="field" id="field-age">
+        <span class="label-text" id="age-label">Age</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="age-label">
+          <button type="button" class="segment" role="radio" aria-checked="false"
+                  data-band="under25">Under 25</button>
+          <button type="button" class="segment" role="radio" aria-checked="false"
+                  data-band="older">25 or older</button>
+        </div>
+        <p class="hint">Charts differ by age band.</p>
+      </div>
+      <div class="field" id="field-sex">
+        <span class="label-text" id="sex-label">Sex</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="sex-label">
+          <button type="button" class="segment" role="radio" aria-checked="false"
+                  data-sex="M"><span class="sex-glyph" aria-hidden="true">♂</span> Male</button>
+          <button type="button" class="segment" role="radio" aria-checked="false"
+                  data-sex="F"><span class="sex-glyph" aria-hidden="true">♀</span> Female</button>
+        </div>
+        <p class="hint">Charts differ by sex.</p>
+      </div>
+    </div>
+
+    <div class="field band-picker" id="band-picker" hidden>
+      <label for="age-band">Which band?</label>
+      <select id="age-band">
+        <option value="">Choose your age band</option>
+      </select>
+    </div>
+
+    <!-- Body composition, measured first ----------------------------- -->
+    <section class="event" data-component="body_composition">
+      <div class="event-head">
+        <span class="event-icon" id="icon-body_composition" aria-hidden="true"></span>
+        <h2>Waist to Height (WHtR)</h2>
+        <div class="event-tools">
+          <button type="button" class="verbiage-open" data-verbiage="body_composition"
+                title="What the assessment administrator reads out">How It's Measured</button>
+          <button type="button" class="exempt-toggle" data-exempt="body_composition"
+                  title="Cadre and staff on profile. Not authorised for cadets."
+                  hidden>Exempt</button>
+        </div>
+        <output class="chip" id="chip-body_composition" aria-live="polite">&ndash; / 20</output>
+      </div>
+      <div class="meter" id="meter-body_composition" role="progressbar"
+           aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"
+           aria-label="Body composition points">
+        <div class="meter-fill"></div>
+        <div class="meter-mark" hidden></div>
+      </div>
+      <div class="row measure-row">
+        <div class="field">
+          <label for="height">Height (inches)</label>
+          <input type="number" id="height" inputmode="decimal" min="36" max="90" step="0.5"
+                 placeholder="in" enterkeyhint="next">
+          <!-- 58 to 78 is the height axis of the waist-to-height grid on page 9
+               of the scoring charts. The field itself is left wider: the ratio
+               is arithmetic, not a lookup, so a height off the printed grid
+               still scores. -->
+          <div class="slider-row" id="slider-height">
+            <span class="slider-end low">58</span>
+            <input type="range" class="slider" id="slide-height" data-component="height"
+                   min="58" max="78" step="0.5" value="58" aria-label="Height in inches">
+            <span class="slider-end high">78</span>
+          </div>
+          <p class="hint" id="height-hint">Nearest &frac12; inch, as the 4446 records it.</p>
+        </div>
+        <div class="field">
+          <label for="waist">Waist</label>
+          <input type="number" id="waist" inputmode="decimal" min="16" max="70" step="0.5"
+                 placeholder="in" enterkeyhint="done">
+          <div class="slider-row" id="slider-body_composition" hidden>
+            <span class="slider-end low" id="slider-low-body_composition"></span>
+            <input type="range" class="slider" id="slide-body_composition"
+                   data-component="body_composition" min="0" max="1" step="1" value="0"
+                   aria-label="Waist in inches">
+            <span class="slider-end high" id="slider-high-body_composition"></span>
+          </div>
+          <p class="hint">Rounded <em>down</em> to &frac12; inch.</p>
+        </div>
+      </div>
+      <!-- The ratio is what the chart is read on, so it gets said out loud
+           rather than left in the lookup line underneath. -->
+      <div class="ratio-readout" id="ratio-readout" aria-live="polite" hidden>
+        <p class="ratio-label">Waist to height ratio</p>
+        <p class="ratio-value" id="ratio-value"></p>
+        <p class="ratio-working" id="ratio-working"></p>
+      </div>
+      <p class="status-note" id="exempt-note-body_composition" hidden></p>
+      <div class="range" id="range-body_composition" aria-label="Chart range"></div>
+      <p class="below-minimum-note" id="row-body_composition" hidden></p>
+      <div class="chart-inline" id="chart-body_composition">
+        <button type="button" class="secondary small chart-toggle"
+                data-chart="body_composition" aria-expanded="false"
+                aria-controls="chart-body-body_composition">Scoring Chart</button>
+        <div class="chart-body" id="chart-body-body_composition" hidden></div>
+      </div>
+    </section>
+
+    <!-- Muscular strength --------------------------------------------- -->
+    <section class="event" data-component="muscular_strength">
+      <div class="event-head">
+        <!-- A button in the proctor view, and the only way to change the
+             exercise: tapping the picture opens the list of choices. A
+             plain picture for a cadet, who has no choice to make. -->
+        <button type="button" class="event-icon" id="icon-muscular_strength"
+                data-swap-icon="muscular_strength" aria-controls="event-muscular_strength"
+                aria-expanded="false" title="Change exercise"></button>
+        <h2 id="heading-muscular_strength">Hand Release Push-Ups</h2>
+        <div class="event-tools">
+          <button type="button" class="verbiage-open" data-verbiage="muscular_strength"
+                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="exempt-toggle" data-exempt="muscular_strength"
+                  title="Cadre and staff on profile. Not authorised for cadets."
+                  hidden>Exempt</button>
+        </div>
+        <output class="chip" id="chip-muscular_strength" aria-live="polite">&ndash; / 15</output>
+      </div>
+      <div class="meter" id="meter-muscular_strength" role="progressbar"
+           aria-valuemin="0" aria-valuemax="15" aria-valuenow="0"
+           aria-label="Muscular strength points">
+        <div class="meter-fill"></div>
+        <div class="meter-mark" hidden></div>
+      </div>
+      <p class="alt-note" id="alt-muscular_strength" hidden></p>
+      <div class="event-picker" id="event-muscular_strength" hidden>
+        <label for="event-select-muscular_strength">Event</label>
+        <select id="event-select-muscular_strength" data-component="muscular_strength">
+            <option value="hand_release_pushup">Hand release push-ups</option>
+            <option value="pushup">Push-ups</option>
+        </select>
+      </div>
+      <div class="stepper">
+        <button type="button" class="step" data-step="-1" data-target="hrpu"
+                aria-label="One fewer push-up">&minus;</button>
+        <input type="number" id="hrpu" inputmode="numeric" min="0" max="200" step="1"
+               placeholder="reps" aria-label="Hand release push-up reps" enterkeyhint="next">
+        <button type="button" class="step" data-step="1" data-target="hrpu"
+                aria-label="One more push-up">+</button>
+      </div>
+      <div class="slider-row" id="slider-muscular_strength" hidden>
+        <span class="slider-end low" id="slider-low-muscular_strength"></span>
+        <input type="range" class="slider" id="slide-muscular_strength"
+               data-component="muscular_strength" min="0" max="1" step="1" value="0"
+               aria-label="Push-up reps">
+        <span class="slider-end high" id="slider-high-muscular_strength"></span>
+      </div>
+      <p class="status-note" id="exempt-note-muscular_strength" hidden></p>
+      <div class="range" id="range-muscular_strength" aria-label="Chart range"></div>
+      <p class="below-minimum-note" id="row-muscular_strength" hidden></p>
+      <div class="chart-inline" id="chart-muscular_strength">
+        <button type="button" class="secondary small chart-toggle"
+                data-chart="muscular_strength" aria-expanded="false"
+                aria-controls="chart-body-muscular_strength">Scoring Chart</button>
+        <div class="chart-body" id="chart-body-muscular_strength" hidden></div>
+      </div>
+    </section>
+
+    <!-- Core endurance ------------------------------------------------ -->
+    <section class="event" data-component="core_endurance">
+      <div class="event-head">
+        <!-- A button in the proctor view, and the only way to change the
+             exercise: tapping the picture opens the list of choices. A
+             plain picture for a cadet, who has no choice to make. -->
+        <button type="button" class="event-icon" id="icon-core_endurance"
+                data-swap-icon="core_endurance" aria-controls="event-core_endurance"
+                aria-expanded="false" title="Change exercise"></button>
+        <h2 id="heading-core_endurance">Sit-Ups</h2>
+        <div class="event-tools">
+          <button type="button" class="verbiage-open" data-verbiage="core_endurance"
+                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="exempt-toggle" data-exempt="core_endurance"
+                  title="Cadre and staff on profile. Not authorised for cadets."
+                  hidden>Exempt</button>
+        </div>
+        <output class="chip" id="chip-core_endurance" aria-live="polite">&ndash; / 15</output>
+      </div>
+      <div class="meter" id="meter-core_endurance" role="progressbar"
+           aria-valuemin="0" aria-valuemax="15" aria-valuenow="0"
+           aria-label="Core endurance points">
+        <div class="meter-fill"></div>
+        <div class="meter-mark" hidden></div>
+      </div>
+      <p class="alt-note" id="alt-core_endurance" hidden></p>
+      <div class="event-picker" id="event-core_endurance" hidden>
+        <label for="event-select-core_endurance">Event</label>
+        <select id="event-select-core_endurance" data-component="core_endurance">
+            <option value="situp">Sit-ups</option>
+            <option value="cross_leg_reverse_crunch">Cross-leg reverse crunch</option>
+            <option value="forearm_plank">Forearm plank</option>
+        </select>
+      </div>
+      <div class="stepper" id="core-reps">
+        <button type="button" class="step" data-step="-1" data-target="situp"
+                aria-label="One fewer rep">&minus;</button>
+        <input type="number" id="situp" inputmode="numeric" min="0" max="200" step="1"
+               placeholder="reps" aria-label="Core endurance reps" enterkeyhint="next">
+        <button type="button" class="step" data-step="1" data-target="situp"
+                aria-label="One more rep">+</button>
+      </div>
+      <div class="time-inputs" id="core-hold" hidden>
+        <input type="number" id="plank-min" inputmode="numeric" min="0" max="59" step="1"
+               placeholder="mm" aria-label="Plank minutes" enterkeyhint="next">
+        <span class="time-colon" aria-hidden="true">:</span>
+        <input type="number" id="plank-sec" inputmode="numeric" min="0" max="59" step="1"
+               placeholder="ss" aria-label="Plank seconds" enterkeyhint="next">
+      </div>
+      <div class="slider-row" id="slider-core_endurance" hidden>
+        <span class="slider-end low" id="slider-low-core_endurance"></span>
+        <input type="range" class="slider" id="slide-core_endurance"
+               data-component="core_endurance" min="0" max="1" step="1" value="0"
+               aria-label="Core endurance reps">
+        <span class="slider-end high" id="slider-high-core_endurance"></span>
+      </div>
+      <p class="status-note" id="exempt-note-core_endurance" hidden></p>
+      <div class="range" id="range-core_endurance" aria-label="Chart range"></div>
+      <p class="below-minimum-note" id="row-core_endurance" hidden></p>
+      <div class="chart-inline" id="chart-core_endurance">
+        <button type="button" class="secondary small chart-toggle"
+                data-chart="core_endurance" aria-expanded="false"
+                aria-controls="chart-body-core_endurance">Scoring Chart</button>
+        <div class="chart-body" id="chart-body-core_endurance" hidden></div>
+      </div>
+    </section>
+
+    <!-- Cardiorespiratory --------------------------------------------- -->
+    <section class="event" data-component="cardiorespiratory">
+      <div class="event-head">
+        <!-- A button in the proctor view, and the only way to change the
+             exercise: tapping the picture opens the list of choices. A
+             plain picture for a cadet, who has no choice to make. -->
+        <button type="button" class="event-icon" id="icon-cardiorespiratory"
+                data-swap-icon="cardiorespiratory" aria-controls="event-cardiorespiratory"
+                aria-expanded="false" title="Change exercise"></button>
+        <h2 id="heading-cardiorespiratory">2 Mile Run</h2>
+        <div class="event-tools">
+          <button type="button" class="verbiage-open" data-verbiage="cardiorespiratory"
+                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="exempt-toggle" data-exempt="cardiorespiratory"
+                  title="Cadre and staff on profile. Not authorised for cadets."
+                  hidden>Exempt</button>
+          <button type="button" class="swap" id="altitude-toggle"
+                  aria-expanded="false" aria-controls="altitude-panel"
+                  title="Altitude time correction">Altitude</button>
+        </div>
+        <output class="chip" id="chip-cardiorespiratory" aria-live="polite">&ndash; / 50</output>
+      </div>
+      <div class="meter" id="meter-cardiorespiratory" role="progressbar"
+           aria-valuemin="0" aria-valuemax="50" aria-valuenow="0"
+           aria-label="Cardiorespiratory points">
+        <div class="meter-fill"></div>
+        <div class="meter-mark" hidden></div>
+      </div>
+      <p class="alt-note" id="alt-cardiorespiratory" hidden></p>
+      <!-- A group rather than an elevation: the four blocks are what Attachment 3
+           is printed as, so a cadre member picks the row they are reading. It
+           also sidesteps the printed ranges overlapping at their ends. The
+           options are filled from the data file so the table and this list
+           cannot drift apart. -->
+      <div class="event-picker" id="altitude-panel" hidden>
+        <label for="altitude-group">Test altitude</label>
+        <select id="altitude-group">
+          <option value="">Below 5,250 ft: no correction</option>
+        </select>
+        <p class="hint" id="altitude-note">
+          DAFMAN 36-2905 Attachment 3. No correction applies below 5,250 feet,
+          and none applies at Field Training whatever the elevation (2023 AFROTC
+          Supplement para 5.5.7, awaiting revision). Det 250 assesses at Ames,
+          about 955 feet.
+        </p>
+      </div>
+      <div class="event-picker" id="event-cardiorespiratory" hidden>
+        <label for="event-select-cardiorespiratory">Event</label>
+        <select id="event-select-cardiorespiratory" data-component="cardiorespiratory">
+            <option value="run_2mile">2 mile run</option>
+            <option value="hamr_20m">20 meter HAMR</option>
+            <option value="walk_2km">2 kilometer walk</option>
+        </select>
+      </div>
+      <div class="time-inputs" id="cardio-time">
+        <input type="number" id="run-min" inputmode="numeric" min="0" max="59" step="1"
+               placeholder="mm" aria-label="Run minutes" enterkeyhint="next">
+        <span class="time-colon" aria-hidden="true">:</span>
+        <input type="number" id="run-sec" inputmode="numeric" min="0" max="59" step="1"
+               placeholder="ss" aria-label="Run seconds" enterkeyhint="next">
+      </div>
+      <div class="stepper" id="cardio-shuttles" hidden>
+        <button type="button" class="step" data-step="-1" data-target="hamr"
+                aria-label="One fewer shuttle">&minus;</button>
+        <input type="number" id="hamr" inputmode="numeric" min="0" max="300" step="1"
+               placeholder="shuttles" aria-label="HAMR shuttles" enterkeyhint="next">
+        <button type="button" class="step" data-step="1" data-target="hamr"
+                aria-label="One more shuttle">+</button>
+      </div>
+      <!-- The count is what the chart scores; the level is what the tally sheet
+           records and what the beep track calls out. -->
+      <p class="hint" id="hamr-level" hidden></p>
+      <div class="slider-row" id="slider-cardiorespiratory" hidden>
+        <span class="slider-end low" id="slider-low-cardiorespiratory"></span>
+        <input type="range" class="slider" id="slide-cardiorespiratory"
+               data-component="cardiorespiratory" min="0" max="1" step="1" value="0"
+               aria-label="Run time">
+        <span class="slider-end high" id="slider-high-cardiorespiratory"></span>
+      </div>
+      <div class="altitude-applied" id="altitude-applied" aria-live="polite" hidden>
+        <p class="altitude-applied-tag" id="altitude-applied-tag"></p>
+        <p class="altitude-applied-change">
+          <span id="altitude-from"></span>
+          <span class="altitude-arrow" aria-hidden="true">&rarr;</span>
+          <span class="altitude-to" id="altitude-to"></span>
+        </p>
+        <p class="altitude-applied-detail" id="altitude-applied-detail"></p>
+      </div>
+      <p class="status-note" id="exempt-note-cardiorespiratory" hidden></p>
+      <div class="range" id="range-cardiorespiratory" aria-label="Chart range"></div>
+      <div class="document inline-doc" id="doc-hamr" hidden>
+        <div class="document-head">
+          <div>
+            <p class="document-name">HAMR shuttle tally sheet</p>
+            <p class="document-note">
+              Mark an O for each shuttle completed, an X for each missed. Three
+              consecutive misses ends the test.
+            </p>
+          </div>
+          <div class="document-actions">
+            <button type="button" class="secondary small view-toggle"
+                    aria-expanded="false">View</button>
+            <a class="secondary small doc-link" href="references/hamr-shuttle-tally.pdf"
+               download>Save</a>
+          </div>
+        </div>
+        <div class="viewer" hidden></div>
+      </div>
+
+      <!-- No View button: 9 MB of audio is a download, not something to open
+           inline on a phone on cellular. -->
+      <div class="document inline-doc" id="doc-hamr-audio" hidden>
+        <div class="document-head">
+          <div>
+            <p class="document-name">HAMR pacing audio</p>
+            <p class="document-note">
+              The official beep track the shuttle run is paced to. 9 MB, so
+              download it before test day rather than streaming it on the field.
+            </p>
+          </div>
+          <div class="document-actions">
+            <a class="secondary small doc-link" href="references/hamr-audio.m4a"
+               download>Save</a>
+          </div>
+        </div>
+        <div class="viewer" hidden></div>
+      </div>
+      <p class="below-minimum-note" id="row-cardiorespiratory" hidden></p>
+      <div class="chart-inline" id="chart-cardiorespiratory">
+        <button type="button" class="secondary small chart-toggle"
+                data-chart="cardiorespiratory" aria-expanded="false"
+                aria-controls="chart-body-cardiorespiratory">Scoring Chart</button>
+        <div class="chart-body" id="chart-body-cardiorespiratory" hidden></div>
+      </div>
+
+      <!-- Where to put the marks ----------------------------------------
+           A track is painted for the events it was built for, and a PFRA is
+           not one of them: 2 miles is eight laps and 18.7 m over on a 400,
+           and the 2 km walk is six laps and 200 m on a 300. Someone has to
+           wheel that out before anyone runs, which is a job done at the
+           track rather than at a desk, so it sits in the same section as the
+           event it is for and folds away like the scoring chart.
+
+           Shown for the run and the walk, which are the two events assessed
+           on a marked course. The HAMR is run between two lines 20 m apart
+           and has nothing to lay out. -->
+      <div class="chart-inline" id="track-inline" hidden>
+        <div class="course-toggles">
+          <button type="button" class="secondary small" id="track-toggle"
+                  aria-expanded="false" aria-controls="course-body">Track Layout</button>
+        </div>
+        <!-- The lap pace is for every member who runs, so it is a bar of its
+             own rather than one more chip beside the proctor's layout. Last
+             before the body, so what it opens appears directly under it. -->
+        <button type="button" class="pace-bar" id="pace-toggle"
+                aria-expanded="false" aria-controls="course-body">
+          <span class="pace-bar-title">Lap Pace</span>
+          <span class="pace-bar-hint">How fast each lap needs to be for your goal time</span>
+          <span class="pace-bar-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="chart-body track-body" id="course-body" hidden>
+          <div class="track-pickers">
+            <div class="field">
+              <label for="slide-track-distance">Distance</label>
+              <div class="slider-row">
+                <span class="slider-end low" id="track-distance-low"></span>
+                <input type="range" class="slider" id="slide-track-distance"
+                       min="0" max="3" step="1" value="0"
+                       aria-label="Distance being run">
+                <span class="slider-end high" id="track-distance-high"></span>
+              </div>
+              <p class="track-picked" id="track-distance-picked" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="slide-track-length">Track</label>
+              <div class="slider-row">
+                <!-- The end labels and the range are filled from TRACK_LENGTHS,
+                     so adding a track size is a change to that list alone. -->
+                <span class="slider-end low" id="track-length-low"></span>
+                <input type="range" class="slider" id="slide-track-length"
+                       min="0" max="2" step="1" value="2"
+                       aria-label="Track size">
+                <span class="slider-end high" id="track-length-high"></span>
+              </div>
+              <!-- A lap somebody measured themselves. Filling it takes over
+                   from the slider; moving the slider hands control back. -->
+              <div class="custom-lap">
+                <label for="custom-lap">or a measured lap</label>
+                <input type="number" id="custom-lap" inputmode="decimal" min="50" max="1000"
+                       step="1" placeholder="m" aria-label="Measured lap length">
+                <!-- A measuring wheel counts in feet, so the reading often
+                     arrives that way. The unit says what the number means; it
+                     does not convert what is already typed. -->
+                <select id="custom-lap-unit" aria-label="Units of the measured lap">
+                  <option value="m">m</option>
+                  <option value="ft">ft</option>
+                </select>
+              </div>
+              <p class="track-picked" id="track-length-picked" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div id="pace-section" hidden>
+          <!-- Lap pace: what a member wants. Marking the track is what the
+               person running the assessment wants. They share the distance
+               and the lap above, because a split is only a number once you
+               know how long a lap is and how many of them there are, but they
+               are opened separately because they are for different people. -->
+          <div class="pace">
+            <div class="field pace-field">
+              <label for="pace-min">Pace for a finishing time of</label>
+              <div class="time-inputs">
+                <input type="number" id="pace-min" inputmode="numeric" min="0" max="59"
+                       step="1" placeholder="mm" aria-label="Target minutes">
+                <span class="time-colon" aria-hidden="true">:</span>
+                <input type="number" id="pace-sec" inputmode="numeric" min="0" max="59"
+                       step="1" placeholder="ss" aria-label="Target seconds">
+              </div>
+              <!-- Ends come from the chart, so the track has to know the sex
+                   and age band before it can draw them. A time outside them
+                   is still typed in: the handle pins and the pace is worked
+                   out from what was typed, as the scoring sliders do. -->
+              <div class="slider-row" id="slider-pace" hidden>
+                <span class="slider-end low" id="pace-low"></span>
+                <input type="range" class="slider" id="slide-pace" data-component="pace"
+                       min="0" max="1" step="1" value="0"
+                       aria-label="Target finishing time">
+                <span class="slider-end high" id="pace-high"></span>
+              </div>
+            </div>
+            <div class="pace-readout" id="pace-readout" hidden>
+              <p class="pace-label">Every lap</p>
+              <p class="pace-value" id="pace-lap"></p>
+              <p class="pace-working" id="pace-working"></p>
+              <p class="pace-partial" id="pace-partial" hidden></p>
+            </div>
+            <!-- Where the odd first stretch is. Simpler than the layout below:
+                 one start, one finish, and the part lap between them. -->
+            <div class="track-figure pace-figure" id="pace-figure"></div>
+          </div>
+          </div>
+          <div id="track-section" hidden>
+          <div class="track-figure" id="track-figure"></div>
+          <div class="track-groups" id="track-groups"></div>
+          <p class="hint" id="track-note"></p>
+
+          <!-- The person marking the track is outside with a wheel, not at a
+               screen. This prints the layout on its own sheet: the result
+               record and this are two different documents and only one of them
+               goes out at a time, which is what body.printing-track decides. -->
+          <button type="button" class="secondary small" id="print-track">Print Layout</button>
+          </div>
+        </div>
+      </div>
+      <!-- Only the run and the walk: those are the events a member can leave
+           part-way through. Stopping early on push-ups or sit-ups is just a
+           lower count, which is what the verbiage says happens. -->
+      <button type="button" class="not-done" id="dnf-run"
+              data-status-for="run" hidden>Did Not Finish</button>
+      <p class="status-note" id="status-run" hidden></p>
+    </section>
+
+    <!-- Secondary body fat assessment ---------------------------------------
+         Last, because it is the last thing that happens. DAFMAN 36-2905 para
+         3.15.4.7 calls for a BFA only when the waist to height ratio is 0.55
+         or higher AND the member is not meeting PFRA standards, and whether
+         they are meeting them is not known until all four components have been
+         assessed. Sitting under the waist field it read as a fifth measurement
+         of body composition; sitting here it reads as what it is, a step taken
+         after the assessment on the strength of the whole result.
+
+         Para 3.7.2 makes passing it exempt the body composition component,
+         which changes the composite, so it belongs in the calculator rather
+         than in a footnote. The panel stays out of the way until the ratio
+         reaches 0.55, which is the earliest point at which any of it applies. -->
+    <div class="bfa" id="bfa" hidden>
+      <!-- Every other block in the form is titled, and this one now sits
+           among them rather than inside one, so it is titled too. -->
+      <h2 class="bfa-title">Secondary Body Fat Assessment</h2>
+      <p class="bfa-trigger" id="bfa-trigger"></p>
+      <!-- Para 3.15.4.7 needs both a ratio of 0.55 or higher and an assessment
+           that does not meet standards, so the measurement fields only open
+           when both hold. This is the way in for anyone who wants the number
+           anyway: a cadre member counselling a cadet who passed this time, or
+           a diagnostic run. -->
+      <button type="button" class="bfa-optional" id="bfa-optional" hidden></button>
+      <div class="bfa-body" id="bfa-body" hidden>
+        <!-- Tape first and tape by default: para 3.15.4.7 prefers the InBody
+             where one is available, but a detachment assessment is run with a
+             tape in hand far more often than beside a scale, so the method
+             that is actually used is the one that does not need selecting. -->
+        <div class="bfa-methods" role="group" aria-label="Body fat assessment method">
+          <button type="button" class="bfa-method on" data-bfa-method="tape">Tape</button>
+          <button type="button" class="bfa-method" data-bfa-method="scale">InBody Scale</button>
+        </div>
+        <p class="hint" id="bfa-method-hint"></p>
+
+        <div class="row bfa-fields" id="bfa-fields-scale" hidden>
+          <div class="field">
+            <label for="bfa-percent">Body Fat (percent)</label>
+            <input type="number" id="bfa-percent" inputmode="decimal" min="0" max="75"
+                   step="0.1" placeholder="%">
+            <!-- The field runs 0 to 75 because a scale will report whatever it
+                 reports; the track is narrowed to the range a reading actually
+                 falls in, the same way the height track is narrowed to the
+                 chart's own grid. A reading outside it pins the handle. -->
+            <div class="slider-row">
+              <span class="slider-end low">5</span>
+              <input type="range" class="slider" id="slide-bfa-percent"
+                     data-bfa-slider="bfa-percent" min="5" max="50" step="0.1" value="5"
+                     aria-label="Body fat percent">
+              <span class="slider-end high">50</span>
+            </div>
+            <p class="hint">As the scale reports it.</p>
+          </div>
+        </div>
+
+        <div class="row bfa-fields" id="bfa-fields-tape">
+          <div class="field">
+            <label for="bfa-neck">Neck</label>
+            <input type="number" id="bfa-neck" inputmode="decimal" min="8" max="30"
+                   step="0.25" placeholder="in">
+            <div class="slider-row">
+              <span class="slider-end low">11</span>
+              <input type="range" class="slider" id="slide-bfa-neck"
+                     data-bfa-slider="bfa-neck" min="11" max="23" step="0.25" value="11"
+                     aria-label="Neck in inches">
+              <span class="slider-end high">23</span>
+            </div>
+            <p class="hint">Rounded <em>up</em> to &frac14; inch.</p>
+          </div>
+          <div class="field" id="bfa-field-abdomen">
+            <label for="bfa-abdomen">Abdomen</label>
+            <input type="number" id="bfa-abdomen" inputmode="decimal" min="16" max="80"
+                   step="0.25" placeholder="in">
+            <div class="slider-row">
+              <span class="slider-end low">26</span>
+              <input type="range" class="slider" id="slide-bfa-abdomen"
+                     data-bfa-slider="bfa-abdomen" min="26" max="54" step="0.25" value="26"
+                     aria-label="Abdomen in inches">
+              <span class="slider-end high">54</span>
+            </div>
+            <p class="hint">At the navel. Rounded <em>down</em>.</p>
+          </div>
+          <div class="field" id="bfa-field-waist" hidden>
+            <label for="bfa-waist">Natural Waist</label>
+            <input type="number" id="bfa-waist" inputmode="decimal" min="16" max="80"
+                   step="0.25" placeholder="in">
+            <div class="slider-row">
+              <span class="slider-end low">22</span>
+              <input type="range" class="slider" id="slide-bfa-waist"
+                     data-bfa-slider="bfa-waist" min="22" max="50" step="0.25" value="22"
+                     aria-label="Natural waist in inches">
+              <span class="slider-end high">50</span>
+            </div>
+            <p class="hint">Narrowest point. Rounded <em>down</em>.</p>
+          </div>
+          <div class="field" id="bfa-field-buttocks" hidden>
+            <label for="bfa-buttocks">Buttocks</label>
+            <input type="number" id="bfa-buttocks" inputmode="decimal" min="20" max="90"
+                   step="0.25" placeholder="in">
+            <div class="slider-row">
+              <span class="slider-end low">30</span>
+              <input type="range" class="slider" id="slide-bfa-buttocks"
+                     data-bfa-slider="bfa-buttocks" min="30" max="58" step="0.25" value="30"
+                     aria-label="Buttocks in inches">
+              <span class="slider-end high">58</span>
+            </div>
+            <p class="hint">Widest point. Rounded <em>down</em>.</p>
+          </div>
+        </div>
+
+        <div class="bfa-result" id="bfa-result" hidden>
+          <p class="bfa-verdict" id="bfa-verdict"></p>
+          <p class="bfa-working" id="bfa-working"></p>
+        </div>
+        <p class="bfa-note" id="bfa-note" hidden></p>
+        <button type="button" class="bfa-apply" id="bfa-apply" hidden></button>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="reset-button" id="reset-all"
+              title="Puts the whole page back to how it loads.">Reset Everything</button>
+    </div>
+  </form>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section id="results" class="results" hidden>
+
+    <p class="print-only print-caveat">
+      Official scores come from the Fitness Assessment Cell and the UFPM or MFL who
+      administers the assessment.
+    </p>
+
+    <div class="card scoreboard" id="scoreboard">
+      <p class="scoreboard-label">Composite</p>
+      <p class="composite" id="composite">&ndash;</p>
+      <p class="verdict" id="verdict"></p>
+      <p class="band" id="band"></p>
+      <div class="meter meter-composite" id="meter-composite" role="progressbar"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+           aria-label="Composite score">
+        <div class="meter-fill"></div>
+        <div class="meter-mark" hidden></div>
+      </div>
+      <p class="meter-legend" id="meter-legend"></p>
+      <!-- Where the composite came from, under the number it adds up to. Each
+           component's points are also on its own card, but on a phone those
+           cards are several screens above this one. A row takes you back to
+           its card. Screen only: the printed sheet has its own table. -->
+      <ul class="breakdown" id="breakdown" aria-label="Points by component"></ul>
+      <!-- Only on an assessment with a component exempt. Two things about such
+           a composite are not readable off the number: it was divided by
+           something other than 100, and it cannot be rated Excellent. Both are
+           said here, next to the number, rather than left to the reference
+           list at the bottom of the page. -->
+      <div class="exempt-explainer" id="exempt-explainer" hidden>
+        <p class="exempt-headline" id="exempt-headline"></p>
+        <p class="exempt-math" id="exempt-math"></p>
+        <p class="exempt-cap" id="exempt-cap"></p>
+      </div>
+      <p class="award-line" id="award-line" hidden></p>
+      <p class="gap-line" id="gap-line" hidden></p>
+    </div>
+
+    <!-- Screen only. The printed page is reached through this rather than
+         through the browser's own menu, because a cadet on a phone will not
+         find that menu and the result is the thing worth keeping. -->
+    <div class="result-actions">
+      <button type="button" class="secondary" id="print-result">Print Result</button>
+      <!-- The tool keeps nothing, so a link is the only way to hand a result to
+           anyone. Everything needed to rebuild it travels in the address; the
+           only copy is the one the member chooses to send. -->
+      <button type="button" class="secondary" id="share-result">Copy Link</button>
+      <p class="hint" id="share-note" hidden></p>
+    </div>
+
+    <!-- Paper only, and built by renderPrintSummary().
+         On screen each component's measurement is in its own field and its
+         score in its own chip, spread down a form that print drops. On paper
+         there is no form, so the scoreboard would be a composite with nothing
+         behind it. This is that: what was entered and what it earned, four
+         rows, in the order the components are assessed. -->
+    <div class="print-only print-summary" id="print-summary"></div>
+
+    <div class="card failures" id="failures" hidden>
+      <h2>Why This Is Unsatisfactory</h2>
+      <ul id="failure-list"></ul>
+    </div>
+
+    <div class="card" id="warnings-card" hidden>
+      <h2>Worth Knowing</h2>
+      <ul id="warning-list"></ul>
+    </div>
+
+    <!-- Paper only, and built by renderPrintPace(): the average lap of the
+         run or walk that was recorded, so the split goes back to the track.
+         After the failures and warnings rather than under the component
+         table: why a result failed belongs next to it, and a pace is the
+         thing that can go over onto a second sheet if anything has to. -->
+    <div class="print-only print-pace" id="print-pace"></div>
+
+    <div class="card" id="aim-card">
+      <h2>Aim for a Score</h2>
+      <p class="card-intro">Enter a composite you want and see what reaches it.</p>
+      <div class="row target-row">
+        <div class="field">
+          <label for="target">Target composite</label>
+          <input type="number" id="target" inputmode="decimal" min="0" max="100" step="0.5"
+                 value="75">
+          <!-- Says why the box holds the number it does, until the member types
+               their own. -->
+          <p class="hint" id="target-why" hidden></p>
+        </div>
+        <button type="button" class="secondary" id="plan-button">Show me how</button>
+      </div>
+      <p class="error" id="target-error" hidden></p>
+      <div id="target-plans"></div>
+    </div>
+
+    <details class="card foldable">
+      <summary>
+        <h2>The Rules Behind These Numbers</h2>
+        <span class="summary-hint">DAFMAN 36-2905 and NOTACC CY26-092</span>
+      </summary>
+      <div id="reference-list"></div>
+    </details>
+
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- The track layout as its own printed sheet. Never on screen: it is a
+       second copy of what the panel in the form already shows, and it exists
+       out here because print drops that form whole. renderTrackPrint() fills
+       it from the same plan the panel is drawn from. -->
+  <section class="track-sheet" id="track-print" hidden aria-hidden="true"></section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Folded away by default. It is worth knowing once, not reading every
+       time a score is worked out, and none of it changes the arithmetic. -->
+  <section class="card" id="proctor-card">
+    <details class="pretest">
+      <summary>
+        <span class="pretest-title">PFRA Proctor Details</span>
+      </summary>
+
+      <div class="pretest-item">
+        <h3>An AED has to be there</h3>
+        <p>
+          Official assessments and PT are run with an automated external
+          defibrillator present, inside the building or within 100 feet,
+          and it stays on site until everyone has left the area. If there is no
+          AED, the assessment does not run.
+        </p>
+        <p class="pretest-cite">AFROTCI 36-2011 V3, para 10.6.2, citing DAFMAN 36-2905</p>
+      </div>
+
+      <div class="pretest-item">
+        <h3>How the day runs</h3>
+        <p>
+          The Fitness Screening Questionnaire is completed before anything else,
+          and may be re-accomplished if something has changed since. On a cadet's
+          FSQ, questions 2 and 3 do not apply: cadets are not sickle cell tested
+          until their first duty station. All three physical components are done
+          inside a <strong>3 hour window</strong> on the same day. Up to a
+          <strong>3 minute warm-up</strong> is allowed before the run, the HAMR
+          or the walk.
+        </p>
+        <p>
+          Body composition may be measured separately from the rest, by
+          <strong>no more than 5 duty days</strong>. Outside that window the
+          assessment counts as a did-not-finish and has to be done again.
+        </p>
+        <p class="pretest-cite">
+          DAFMAN 36-2905 paras 3.15.9, 3.4.3 and Attachment 2. The 2023 AFROTC
+          Supplement says 3 days, but it predates this assessment and HQ AFROTC
+          has said it will be revised.
+        </p>
+      </div>
+
+      <div class="pretest-item">
+        <h3>If you are on a medical restriction</h3>
+        <p>
+          Cadets are deferred from the assessment while on Medical Restriction
+          Status. On release there is a <strong>42 day reconditioning
+          period</strong>, and you cannot be made to test during it, though
+          you may choose to, in which case the assessment counts. The
+          requirement is to pass no later than the <strong>60th calendar
+          day</strong> after removal from MRS.
+        </p>
+        <p class="pretest-cite">AFROTCI 36-2011 V3, paras 8.7.2 and 8.7.2.1</p>
+      </div>
+
+      <div class="pretest-item">
+        <h3>Before the assessment can be official</h3>
+        <p>
+          The 2 mile run course has to be measured and certified with a
+          measuring wheel first, or in coordination with the university. A
+          sports physical is valid for <strong>one calendar year</strong> from
+          the date of examination.
+        </p>
+        <p class="pretest-cite">NOTACC CY26-092, AY2026-2027 Fitness Guidance</p>
+      </div>
+
+      <div class="pretest-item">
+        <h3>After an Unsatisfactory</h3>
+        <p>
+          A cadet has <strong>42 days</strong> before being required to test
+          again. You may choose to retest inside that window, but cadre must
+          counsel you first that it counts as an official assessment and that
+          you are giving up the 42 days.
+        </p>
+        <p class="pretest-cite">
+          AFROTC Supplement para 5.5.1.4, from the 2023 supplement, which is
+          awaiting revision. Nothing newer replaces it.
+        </p>
+      </div>
+
+      <p class="pretest-footer">
+        A summary, not a substitute. In order: NOTACC CY26-092, then AFROTCI
+        36-2011 V3, then DAFMAN 36-2905. The 2023 AFROTC Supplement is awaiting
+        revision and is last, not first. All of them are below.
+      </p>
+    </details>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section class="card documents">
+    <h2>Reference Documents</h2>
+    <p class="card-intro">The official paperwork behind the assessment.</p>
+
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">PFRA Scoring Charts</p>
+          <p class="document-note">
+            Effective 1 March 2026, current as of 17 March 2026. Every point value
+            this tool uses.
+          </p>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="secondary small view-toggle"
+                  aria-expanded="false">View</button>
+          <a class="secondary small doc-link" href="references/pfra-scoring-charts.pdf"
+             download>Save</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">AF Form 4446 - Scorecard</p>
+          <p class="document-note">The scorecard you sign.</p>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="secondary small view-toggle" aria-expanded="false"
+                  hidden>View</button>
+          <a class="secondary small doc-flat" href="references/af-form-4446-flat.pdf"
+             download hidden>Save Flat</a>
+          <a class="secondary small doc-link" href="references/af-form-4446.pdf"
+             download>Save Fillable</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">AF Form 4446A - FSQ</p>
+          <p class="document-note">Fitness Screening Questionnaire.</p>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="secondary small view-toggle" aria-expanded="false"
+                  hidden>View</button>
+          <a class="secondary small doc-flat" href="references/af-form-4446a-fsq-flat.pdf"
+             download hidden>Save Flat</a>
+          <a class="secondary small doc-link" href="references/af-form-4446a-fsq.pdf"
+             download>Save Fillable</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">DAFMAN 36-2905 - AFROTC Supplement</p>
+          <p class="document-note">
+            28 April 2023, and <strong>awaiting revision</strong>. NOTACC
+            CY26-092 states HQ AFROTC will rewrite it for the new assessment. It
+            still describes a 1.5 mile run and BMI; HQ confirmed at a Check 6 on
+            1 October 2026 that BMI is gone and cadets are assessed on body fat
+            to the DAFMAN standard. Read it for AFROTC administration nothing
+            newer covers, not for what is tested.
+          </p>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="secondary small view-toggle"
+                  aria-expanded="false">View</button>
+          <a class="secondary small doc-link" href="references/dafman-36-2905-afrotcsup.pdf"
+             download>Save</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">AFROTCI 36-2011 Volume 3 - Cadet Operations</p>
+          <p class="document-note">
+            24 June 2026, 179 pages. The AFROTC side of the assessment: what a
+            PFRA is worth, what failing one costs, and the Fitness Award in
+            Table 15.1.
+          </p>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="secondary small view-toggle"
+                  aria-expanded="false">View</button>
+          <a class="secondary small doc-link" href="references/afrotci-36-2011v3.pdf"
+             download>Save</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+
+    <!-- No View button: this is a 116 page scan with no text layer, and the
+         file is not linearised, so a browser has to pull all 40 MB before it
+         can draw page one. On a phone on cellular that is a trap, so the only
+         action is a deliberate download. -->
+    <div class="document">
+      <div class="document-head">
+        <div>
+          <p class="document-name">DAFMAN 36-2905</p>
+          <p class="document-note">
+            Air Force Physical Fitness Readiness Program, 24 March 2026. The manual
+            every scoring rule in this tool comes from. Large scanned file (40 MB);
+            the text cannot be searched.
+          </p>
+        </div>
+        <div class="document-actions">
+          <a class="secondary small doc-link" href="references/dafman-36-2905.pdf"
+             download>Save</a>
+        </div>
+      </div>
+      <div class="viewer" hidden></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Filled by app.js when a Verbiage button is pressed. A native <dialog> so
+     Escape closes it, focus is trapped, and the page behind it is inert without
+     any of that being written here. -->
+<dialog id="verbiage" class="verbiage" aria-labelledby="verbiage-title">
+  <form method="dialog" class="verbiage-head">
+    <h2 id="verbiage-title"></h2>
+    <button class="secondary small" value="close" autofocus>Close</button>
+  </form>
+  <p class="verbiage-direction" id="verbiage-direction" hidden></p>
+  <div id="verbiage-body"></div>
+  <p class="verbiage-source" id="verbiage-source"></p>
+</dialog>
+
+<!-- Running total, always in reach on a phone -------------------------- -->
+<div class="tally" id="tally" hidden>
+  <button type="button" class="tally-inner" id="tally-button">
+    <span class="tally-score" id="tally-score">&ndash;</span>
+    <span class="tally-text" id="tally-text">Fill in your numbers</span>
+    <span class="tally-go" aria-hidden="true">&#8595;</span>
+  </button>
+</div>
+
+<footer>
+  <div class="footer-patch patch" aria-hidden="true"></div>
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+
+  <p class="source-line">
+    Scored against <strong>DAFMAN 36-2905</strong> (24 March 2026) and the Final USAF PFRA
+    Scoring charts, <strong>effective 1 March 2026</strong>, as published by AFPC
+    current as of 17 March 2026. AFROTC events are set by
+    <strong>NOTACC CY26-092</strong>, AY2026-2027 Fitness Guidance.
+  </p>
+
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script type="module" src="app.js?v=c1401fb0cb"></script>
+</body>
+</html>

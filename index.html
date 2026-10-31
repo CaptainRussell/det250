@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Det 250 Cadet Hub</title>
+<meta name="description" content="One stop for AFROTC Detachment 250 cadet tools at Iowa State University.">
+<link rel="icon" type="image/png" href="shared/det250-patch-icon.png">
+<link rel="stylesheet" href="shared/det250.css">
+<style>
+:root{
+  --page:#f4f4f6; --surface:#ffffff; --surface-2:#eeeef1; --ink:#1b1b1d; --soft:#55565c; --faint:#7a7b82;
+  --line:#d9d9de; --line-strong:#c2c2c9;
+  --cardinal:#c8102e; --gold:#a06f00; --gold-bg:#fbf1d6; --blue:#1f4e9c;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --shadow-lg:0 16px 34px rgba(16,24,40,.16),0 3px 8px rgba(16,24,40,.08);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#16161a; --surface:#1f1f25; --surface-2:#26262e; --ink:#ececee; --soft:#b2b3b8; --faint:#8b8c92;
+    --line:#34343c; --line-strong:#46464f;
+    --cardinal:#ef4054; --gold:#f1be48; --gold-bg:#2e2611; --blue:#6f9ee8;
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 16px 34px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#16161a; --surface:#1f1f25; --surface-2:#26262e; --ink:#ececee; --soft:#b2b3b8; --faint:#8b8c92;
+  --line:#34343c; --line-strong:#46464f;
+  --cardinal:#ef4054; --gold:#f1be48; --gold-bg:#2e2611; --blue:#6f9ee8;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 16px 34px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;text-align:center;padding:44px 0 26px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-40% -10% auto;height:420px;background:radial-gradient(closest-side,color-mix(in srgb,var(--cardinal) 22%,transparent),transparent 70%);opacity:.55;pointer-events:none}
+.hero>*{position:relative}
+.patch{width:132px;height:auto;filter:drop-shadow(0 8px 18px rgba(0,0,0,.25));animation:patchIn .8s var(--ease) both}
+@keyframes patchIn{from{opacity:0;transform:translateY(10px) scale(.92) rotate(-6deg)}}
+.eyebrow{margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{margin:4px 0 6px;font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.01em}
+.lede{margin:0 auto;max-width:560px;color:var(--soft)}
+.hero .eyebrow,.hero h1,.hero .lede{animation:up .6s var(--ease) both}
+.hero h1{animation-delay:.06s} .hero .lede{animation-delay:.12s}
+@keyframes up{from{opacity:0;transform:translateY(10px)}}
+
+/* ---------- tools ---------- */
+section{margin-top:26px}
+.sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+.sechead span{font-size:12px;color:var(--faint)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
+  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 70ms + .15s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease);pointer-events:none}
+.tool:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
+.tool:hover::after{transform:translateX(100%)}
+.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--ease)}
+.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.body{min-width:0;flex:1}
+.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
+.blurb{margin:4px 0 10px;color:var(--soft);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.tool{--tone-ink:var(--tone)}
+.tag{font-size:11px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--tone) 18%,var(--surface));color:var(--tone-ink)}
+.lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
+.go{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--tone-ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
+:root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
+.go svg{transition:transform .28s var(--ease)}
+.tool:hover .go svg{transform:translateX(4px)}
+
+/* ---------- footer ---------- */
+footer{margin-top:44px;padding:30px 0 40px;border-top:1px solid var(--line);text-align:center;color:var(--soft);font-size:13px}
+footer p{margin:0}
+.motto{font-style:italic;color:var(--ink);opacity:.85;font-size:15px}
+.tagline{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px!important}
+.note{font-size:12.5px;margin-top:6px!important}
+.created-by{display:inline-block;margin-top:14px!important;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink);opacity:.85}
+
+@media (max-width:640px){
+  .hero{padding:30px 0 18px}
+  .patch{width:104px}
+  .grid{grid-template-columns:1fr}
+  .tool{padding:16px 14px 14px;gap:14px}
+  .icon{width:48px;height:48px;border-radius:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="./" aria-label="Det 250 Cadet Hub"><img src="shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span></a>
+
+<header class="hero wrap">
+  <img class="patch" src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="132" height="137">
+  <div class="eyebrow">AFROTC Detachment 250 · Iowa State University</div>
+  <h1>Det 250 Cadet Hub</h1>
+  <p class="lede">Every Det 250 tool in one place. Bookmark this page; new tools show up here as they're added.</p>
+</header>
+
+<main class="wrap" id="tools"></main>
+
+<footer>
+  <div class="wrap">
+    <p class="motto">Optimi In Medio Patrae</p>
+    <p class="tagline">We Are The Storm</p>
+    <p class="note">AFROTC Detachment 250 &middot; Iowa State University</p>
+    <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   TOOLS: add a new tool by dropping its folder in the repo and adding
+   one entry here. section: "cadets" or "evaluators". tone: card color.
+   icon: one of the keys in ICONS below.
+   ===================================================================== */
+const TOOLS = [
+  {href:"pfra/", name:"PFRA Calculator", tag:"Fitness", tone:"#c8102e", icon:"stopwatch", section:"cadets",
+   blurb:"Score a Physical Fitness Readiness Assessment against DAFMAN 36-2905 and the 2026 USAF scoring charts."},
+  {href:"whos-that-cadet/", name:"Who's That Cadet!", tag:"Wing", tone:"#1f4e9c", icon:"faces", section:"cadets",
+   blurb:"Learn every face in the wing with flashcard drills, shadow mode and printable cards."},
+  {href:"org-chart/", name:"Org Chart", tag:"Wing", tone:"#2f7d32", icon:"tree", section:"cadets",
+   blurb:"Fall 2026 250th Cadet Wing: cadre, wing staff, flights and the Flip Week view."},
+  {href:"gmc-strats/", name:"GMC Stratification", tag:"Evaluators", tone:"#a06f00", icon:"chart", section:"evaluators", locked:true,
+   blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."}
+];
+const SECTIONS = {cadets:["Cadet tools", "Open to everyone"], evaluators:["Evaluator tools", "Password required"]};
+
+const ICONS = {
+  stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/>',
+  faces:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/>',
+  tree:'<rect x="9" y="2.5" width="6" height="5" rx="1.2"/><rect x="2.5" y="16.5" width="6" height="5" rx="1.2"/><rect x="15.5" y="16.5" width="6" height="5" rx="1.2"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
+};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let i = 0;
+document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, [title, note]]) => {
+  const list = TOOLS.filter(t => t.section === key);
+  if(!list.length) return "";
+  return `<section aria-labelledby="h-${key}"><div class="sechead"><h2 id="h-${key}">${title}</h2><span>${note}</span></div><div class="grid">${
+    list.map(t => `<a class="tool" href="${esc(t.href)}" style="--tone:${t.tone};--i:${i++}">
+      <span class="icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg></span>
+      <span class="body"><span class="name">${esc(t.name)}</span><p class="blurb">${esc(t.blurb)}</p>
+      <span class="meta"><span class="tag">${esc(t.tag)}</span>${t.locked ? `<span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span>` : ""}
+      <span class="go">Open<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></span></a>`).join("")
+  }</div></section>`;
+}).join("");
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>GMC Stratification</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<style>
+:root{--page:#f4f4f6;--surface:#fff;--ink:#1b1b1d;--soft:#55565c;--line:#d9d9de;--cardinal:#c8102e;--gold:#a06f00;--bad:#c62828;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--page:#16161a;--surface:#1f1f25;--ink:#ececee;--soft:#b2b3b8;--line:#34343c;--cardinal:#ef4054;--gold:#f1be48;--bad:#ff8a80;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{min-height:calc(100vh - 42px);display:grid;place-items:center;padding:32px 16px}
+.lock{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 24px 24px;text-align:center;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:pop .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.lock img{width:84px;height:auto}
+h1{font-size:20px;margin:12px 0 4px}
+p{margin:0;color:var(--soft);font-size:14px}
+form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+input{font:inherit;color:inherit;background:var(--page);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+input:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;min-height:46px;background:var(--cardinal);color:#fff;cursor:pointer}
+button:disabled{opacity:.6;cursor:progress}
+.err{min-height:20px;color:var(--bad);font-size:13px;font-weight:600}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@media (prefers-reduced-motion:reduce){.lock,.shake{animation:none}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<main>
+  <div class="lock" id="lock">
+    <img src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch">
+    <h1>GMC Stratification</h1>
+    <p>Evaluator tool. Enter the password to continue.</p>
+    <form id="f" autocomplete="off">
+      <label for="pw">Password</label>
+      <input id="pw" type="password" required autofocus autocomplete="current-password">
+      <div class="err" id="err" role="alert"></div>
+      <button id="go" type="submit">Unlock</button>
+    </form>
+  </div>
+</main>
+<script>
+/* The page below is encrypted (AES-GCM, key derived from the password with PBKDF2).
+   Without the password the content cannot be read, even in the page source. */
+const P = /*__PAYLOAD__*/null;
+const KEY = "d250-gmc-pass";
+const bytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+async function unlock(pw){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:bytes(P.salt), iterations:P.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:bytes(P.iv)}, key, bytes(P.data));
+  return new TextDecoder().decode(plain);
+}
+function show(html){ document.open(); document.write(html); document.close(); }
+const f = document.getElementById("f"), pw = document.getElementById("pw"), err = document.getElementById("err"), go = document.getElementById("go"), lock = document.getElementById("lock");
+f.addEventListener("submit", async e => {
+  e.preventDefault(); err.textContent = ""; go.disabled = true; go.textContent = "Unlocking…";
+  try {
+    const html = await unlock(pw.value);
+    try { sessionStorage.setItem(KEY, pw.value); } catch(_){}
+    show(html);
+  } catch(_){
+    go.disabled = false; go.textContent = "Unlock";
+    err.textContent = "That password didn't work. Try again.";
+    lock.classList.remove("shake"); void lock.offsetWidth; lock.classList.add("shake");
+    pw.select();
+  }
+});
+/* Stay unlocked for this browser tab */
+(async () => {
+  let saved = null; try { saved = sessionStorage.getItem(KEY); } catch(_){}
+  if(saved){ try { show(await unlock(saved)); } catch(_){ try { sessionStorage.removeItem(KEY); } catch(__){} } }
+})();
+</script>
+</body>
+</html>

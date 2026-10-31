@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Det 250 Org Chart</title>
+<link rel="icon" type="image/png" href="assets/det250-patch-icon.png">
+<meta name="description" content="250th Cadet Wing, Det 250 Iowa State University: Fall 2026 organization chart with a Flip Week view.">
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eef1f5; --border:#d8dde4; --border-strong:#b9c1cc;
+  --text:#18212e; --muted:#5b6676; --accent:#1f4e9c; --accent-weak:#e4ecf9; --accent-text:#ffffff;
+  --as100:#2b67ad; --as100-weak:#e3eefa; --as200:#8f3a7c; --as200-weak:#f6e6f2;
+  --poc:#1b2f57; --poc-weak:#e6e9f0;
+  --as250:#0f7b7b; --as300:#2f7d32; --as400:#b45309; --as500:#b42318; --gb:#1b2f57;
+  --flip:#9a5b00; --flip-weak:#fdf1dc;
+  --cadre:#5f6b7a; --cadre-weak:#e9ecf0;
+  --line:#b9c1cc; --lit:#1f4e9c;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --shadow-lg:0 12px 28px rgba(16,24,40,.18),0 2px 6px rgba(16,24,40,.1);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141b; --surface:#171e28; --surface-2:#1e2733; --border:#2b3644; --border-strong:#3d4a5b;
+    --text:#e6ebf2; --muted:#9aa6b6; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
+    --as100:#7fb1ea; --as100-weak:#1a2a40; --as200:#d68cc4; --as200-weak:#341d30;
+    --poc:#c3cfe6; --poc-weak:#232c3b;
+    --as250:#5cc8c8; --as300:#74c77a; --as400:#f0a35b; --as500:#f0776b; --gb:#c3cfe6;
+    --flip:#e3a64b; --flip-weak:#33260f;
+    --cadre:#aab4c2; --cadre-weak:#252d39;
+    --line:#3d4a5b; --lit:#6f9ee8;
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 28px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#171e28; --surface-2:#1e2733; --border:#2b3644; --border-strong:#3d4a5b;
+  --text:#e6ebf2; --muted:#9aa6b6; --accent:#6f9ee8; --accent-weak:#1c2c45; --accent-text:#0b1220;
+  --as100:#7fb1ea; --as100-weak:#1a2a40; --as200:#d68cc4; --as200-weak:#341d30;
+  --poc:#c3cfe6; --poc-weak:#232c3b;
+  --as250:#5cc8c8; --as300:#74c77a; --as400:#f0a35b; --as500:#f0776b; --gb:#c3cfe6;
+  --flip:#e3a64b; --flip-weak:#33260f;
+  --cadre:#aab4c2; --cadre-weak:#252d39;
+  --line:#3d4a5b; --lit:#6f9ee8;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 28px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+html{scroll-padding-top:96px}
+body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+
+/* ---------- header ---------- */
+header.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;padding:12px 0}
+.h1sub{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:6px}
+.toolbar .legend{margin:0}
+.toolbar .search{order:2}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{margin:0;font-size:22px;line-height:1.15}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{position:relative;display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));flex:none;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px;padding:4px;min-width:340px}
+.seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:10px;background:var(--accent);box-shadow:var(--shadow);transition:transform .35s var(--ease),background .35s}
+[data-mode="flip"] .seg::before{transform:translateX(100%);background:var(--flip)}
+.seg button{position:relative;z-index:1;border:0;background:transparent;padding:10px 22px;border-radius:10px;font-weight:700;font-size:16px;white-space:nowrap;color:var(--muted);transition:color .25s;min-height:48px}
+.seg button:hover{color:var(--text)}
+.seg button[aria-pressed="true"]{color:var(--accent-text)}
+[data-mode="flip"] .seg button[aria-pressed="true"]{color:#fff}
+.navrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:0 0 10px}
+.jump{display:flex;gap:6px;flex-wrap:wrap}
+.jump a{display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;font-size:13px;transition:background .2s,border-color .2s}
+.jump a:hover{border-color:var(--accent);background:var(--accent-weak)}
+.search{position:relative;flex:1 1 220px;max-width:320px}
+.search input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px 8px 34px;min-height:38px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.results{position:absolute;left:0;right:0;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);max-height:320px;overflow:auto}
+.results button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:6px 8px;min-height:44px}
+.results button:hover,.results button.on{background:var(--accent-weak)}
+.results img{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:none}
+.results .r2{font-size:12px;color:var(--muted)}
+.results .none{padding:10px;color:var(--muted)}
+
+/* ---------- page ---------- */
+main{padding:18px 0 60px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;color:var(--muted);font-size:13px;margin-bottom:6px}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;border:3px solid currentColor;display:inline-block}
+.modeline{font-size:13px;color:var(--muted);min-height:20px}
+.modeline b{color:var(--text)}
+[data-mode="flip"] .modeline b{color:var(--flip)}
+section.band{margin-top:26px}
+.bandhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:6px}
+.bandhead h2{margin:0;font-size:18px}
+.bandhead .rt{font-size:12px;color:var(--muted);font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px 12px 22px;overflow-x:auto}
+
+/* ---------- cards ---------- */
+.card{position:relative;display:block;border:0;padding:0;background:transparent;text-align:center;perspective:900px;border-radius:14px;transition:transform .25s var(--ease),opacity .25s}
+.flip{position:relative;display:block;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.45,.05,.2,1);transition-delay:calc(var(--o,0) * 20ms)}
+[data-mode="flip"] .flip{transform:rotateY(180deg)}
+.face{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 10px 11px;box-shadow:var(--shadow);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:box-shadow .25s,border-color .25s}
+.face.back{position:absolute;inset:0;transform:rotateY(180deg);border-color:color-mix(in srgb,var(--flip) 45%,var(--border));background:linear-gradient(180deg,var(--flip-weak),var(--surface) 55%)}
+.tcard{width:182px}
+.av{display:block;flex:none;width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--surface-2);box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ring,var(--border-strong))}
+.r100{--ring:var(--as100)} .r200{--ring:var(--as200)} .r250{--ring:var(--as250)} .r300{--ring:var(--as300)} .r400{--ring:var(--as400)} .r500{--ring:var(--as500)} .rgb{--ring:var(--gb)} .rpoc{--ring:var(--poc)} .rcadre{--ring:var(--cadre)}
+.txt{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.tags{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:2px}
+.des{font-size:11px;font-weight:700;letter-spacing:.03em;padding:1px 7px;border-radius:999px;background:var(--accent-weak);color:var(--accent);white-space:nowrap}
+.back .des{background:var(--flip-weak);color:var(--flip)}
+.cls{font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.cls[class*=" r"]{background:color-mix(in srgb,var(--ring) 14%,var(--surface));color:var(--ring)}
+.des:empty{display:none}
+[data-mode="flip"] .static .flip{transform:none}
+.nm{font-weight:700;font-size:14px;line-height:1.2}
+.ttl{font-size:12px;color:var(--muted);line-height:1.25}
+
+/* row cards (staff + mobile) */
+.rcard{width:100%;text-align:left}
+.rcard .face{flex-direction:row;align-items:center;gap:12px;padding:9px 12px}
+.rcard .av{width:46px;height:46px;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ring,var(--border-strong))}
+.rcard .txt{align-items:flex-start}
+.rcard .tags{justify-content:flex-start;flex-wrap:nowrap;margin:0 0 1px}
+.rcard.lead .av{width:56px;height:56px}
+.rcard.lead .nm{font-size:15px}
+
+@media (hover:hover){
+  .card:hover{transform:translateY(-3px)}
+  .card:hover .face{box-shadow:var(--shadow-lg);border-color:var(--accent)}
+}
+.card:focus-visible{outline:none}
+.card:focus-visible .face{outline:3px solid var(--accent);outline-offset:2px}
+
+/* chain-of-command trace */
+.tracing .card{opacity:.32}
+.tracing .card.lit{opacity:1}
+.tracing .card.lit .face{border-color:var(--lit)}
+.tracing .card.self .face{box-shadow:var(--shadow-lg)}
+
+/* search pulse */
+.card.pulse .face{animation:pulse 1.4s var(--ease) 2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}70%{box-shadow:0 0 0 14px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+/* ---------- POC-only seats (hidden during Flip Week) ---------- */
+[data-mode="flip"] .po{display:none !important}
+.po.leaving{opacity:0 !important;transform:scale(.9);transition:opacity .25s ease,transform .25s ease}
+.po.entering>.card,.po.entering>.olist,.po.entering>ul{animation:rise .5s var(--ease) both;animation-delay:.35s}
+
+/* ---------- top-down tree (desktop) ---------- */
+.tree{--gap:24px;min-width:max-content;margin:0 auto}
+.tree ul{display:flex;justify-content:center;margin:0;padding:var(--gap) 0 0;position:relative;list-style:none}
+.tree>ul{padding-top:0}
+.tree li{position:relative;display:flex;flex-direction:column;align-items:center;padding:var(--gap) 7px 0}
+.tree>ul>li{padding-top:0}
+.tree li::before,.tree li::after{content:"";position:absolute;top:0;right:50%;width:50%;height:var(--gap);border-top:2px solid var(--line)}
+.tree li::after{right:auto;left:50%;border-left:2px solid var(--line)}
+.tree li:only-child::before{display:none}
+.tree li:only-child::after{border-top:0}
+.tree li:first-child::before,.tree li:last-child::after{border-color:transparent}
+.tree li:last-child::before{border-right:2px solid var(--line);border-top-right-radius:8px}
+.tree li:first-child::after{border-top-left-radius:8px}
+.tree>ul>li::before,.tree>ul>li::after{display:none}
+.tree ul ul::before{content:"";position:absolute;top:0;left:50%;height:var(--gap);border-left:2px solid var(--line)}
+.tree .rcard{display:none}
+
+/* ---------- flight rosters ---------- */
+.roster{width:182px;margin-top:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:8px;text-align:left}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;border:0;background:transparent;padding:2px 2px 4px;font-weight:700;font-size:13px;text-align:left;cursor:default}
+.rhead .cnt{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.rgrp{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:8px 2px 2px}
+.mcard{width:100%;text-align:left;margin-top:4px}
+.mcard .face{flex-direction:row;align-items:center;gap:8px;padding:5px 8px;border-radius:10px}
+.mcard .av{width:30px;height:30px;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ring,var(--border-strong))}
+.mcard .txt{align-items:flex-start;gap:0}
+.mcard .nm{font-size:12.5px}
+.mcard .ttl{font-size:11px}
+
+/* flight button (opens the flight window) */
+.flightbtn{width:182px;margin-top:14px;display:flex;flex-direction:column;gap:8px;border:1px dashed var(--border-strong);background:var(--surface-2);border-radius:14px;padding:10px 10px 9px;text-align:left;transition:transform .25s var(--ease),border-color .2s,background .2s,box-shadow .25s}
+.flightbtn:hover{border-style:solid;border-color:var(--accent);background:var(--accent-weak);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.flightbtn .ft{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.flightbtn .fn{font-weight:700;font-size:13px}
+.flightbtn .fc{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.stack{display:flex;padding-left:6px}
+.stack img,.stack .more{width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-6px;box-shadow:0 0 0 2px var(--surface-2);flex:none}
+.stack .more{display:grid;place-items:center;background:var(--border);color:var(--text);font-size:11px;font-weight:700}
+.flightbtn .split{display:flex;gap:4px}
+.flightbtn .fv{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--accent)}
+.flightbtn:hover .stack img,.flightbtn:hover .stack .more{box-shadow:0 0 0 2px var(--accent-weak)}
+
+/* flight window */
+.fscrim{position:fixed;inset:0;z-index:54;background:rgba(10,14,20,.5);opacity:0;pointer-events:none;transition:opacity .3s}
+.fscrim.open{opacity:1;pointer-events:auto}
+.fmodal{position:fixed;inset:0;z-index:55;display:grid;place-items:center;padding:24px;pointer-events:none;visibility:hidden}
+.fmodal.open{visibility:visible}
+.fpanel{pointer-events:auto;width:min(1040px,100%);max-height:calc(100vh - 48px);overflow:auto;overscroll-behavior:contain;background:var(--bg);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(16px) scale(.97);transition:opacity .3s var(--ease),transform .35s var(--ease)}
+.fmodal.open .fpanel{opacity:1;transform:none}
+.fhead{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.fhead h2{margin:0;font-size:20px}
+.fhead .sub{margin:2px 0 0}
+.fbody{padding:16px 20px 26px}
+.flead{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:6px}
+.fgh{display:flex;align-items:baseline;gap:8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 10px}
+.fgh b{color:var(--text)}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.gcard{width:100%;height:100%}
+.gcard .flip,.gcard .face{height:100%}
+.gcard .face{justify-content:flex-start}
+.gcard .face{gap:6px;padding:14px 10px 12px}
+.gcard .av{width:76px;height:76px}
+.gcard .first{font-size:12px;color:var(--muted);margin-top:-2px}
+.gcard .role{margin-top:4px}
+.gcard .tags{margin-top:4px}
+.fmodal.open .gcard,.fmodal.open .flead .card{animation:rise .45s var(--ease) both;animation-delay:calc(var(--i,0) * 22ms + 80ms)}
+.tracing .fmodal .card{opacity:1}
+.flightbtn{transition:transform .25s var(--ease),border-color .2s,background .2s,box-shadow .25s,opacity .25s}
+.tracing .flightbtn:not(.wide){opacity:.32}
+.tracing .flightbtn.lit{opacity:1;border-style:solid;border-color:var(--lit);background:var(--accent-weak);box-shadow:var(--shadow-lg)}
+.ftabs{position:relative;display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:520px;margin:20px 0 4px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:4px}
+.ftabs::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:9px;background:var(--accent);box-shadow:var(--shadow);transition:transform .3s var(--ease)}
+.ftabs[data-tab="poc"]::before{transform:translateX(100%);background:var(--poc)}
+.ftabs button{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;padding:10px 14px;font-size:15px;color:var(--muted);border-radius:9px;min-height:48px;transition:color .2s}
+.ftabs button:hover{color:var(--text)}
+.ftabs button span{font-weight:700;font-size:12px;min-width:24px;padding:1px 7px;border-radius:999px;background:var(--border);color:var(--text)}
+.ftabs button[aria-selected="true"]{color:#fff}
+.ftabs button[aria-selected="true"] span{background:rgba(255,255,255,.25);color:#fff}
+[data-theme="dark"] .ftabs button[aria-selected="true"],[data-theme="dark"] .ftabs button[aria-selected="true"] span{color:var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ftabs button[aria-selected="true"],:root:not([data-theme="light"]) .ftabs button[aria-selected="true"] span{color:var(--bg)}}
+.fpane.swap .gcard{animation:rise .4s var(--ease) both;animation-delay:calc(var(--i,0) * 18ms)}
+.fwchip{border-style:dashed;border-color:color-mix(in srgb,var(--flip) 55%,var(--border));background:var(--flip-weak)}
+.fwchip .c1{color:var(--flip)}
+.linkbtn{border:0;background:none;padding:0;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.flightbtn.wide{width:100%;margin:0 0 4px;flex-direction:row;justify-content:space-between;align-items:center}
+.flightbtn.wide .ft{flex-direction:column;align-items:flex-start;gap:0}
+@media (max-width:760px){
+  .flightbtn{width:calc(100% - 16px);margin:10px 0 0 16px}
+  .fhead .sub{display:block;font-size:12px}
+  .fmodal{padding:0;place-items:end stretch}
+  .fpanel{width:100%;max-height:92vh;border-radius:18px 18px 0 0;transform:translateY(40px)}
+  .fhead{padding:12px 16px}
+  .fbody{padding:12px 16px 24px}
+  .flead{grid-template-columns:1fr}
+  .ggrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .gcard .av{width:64px;height:64px}
+}
+
+/* hover peek: a card's supervisors and subordinates */
+.peek{position:fixed;z-index:40;top:0;left:0;width:max-content;min-width:220px;max-width:min(500px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--border-strong);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px 12px 12px;opacity:0;visibility:hidden;transform:translateY(8px) scale(.97);transform-origin:var(--ax,50%) top;transition:opacity .18s ease,transform .24s var(--ease),visibility 0s .24s;pointer-events:none}
+.peek.above{transform:translateY(-8px) scale(.97);transform-origin:var(--ax,50%) bottom}
+.peek.show{opacity:1;visibility:visible;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .24s var(--ease),visibility 0s}
+.peek::before{content:"";position:absolute;left:calc(var(--ax,50%) - 7px);top:-7px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:rotate(45deg)}
+.peek.above::before{top:auto;bottom:-7px;transform:rotate(225deg)}
+.peek-h{display:flex;align-items:baseline;gap:6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:8px 2px 6px}
+.peek-h b{color:var(--text);font-size:12px}
+.peek-h em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+.peek-grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,152px));gap:6px}
+.pk{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:5px 8px;text-align:left;transition:border-color .15s,background .15s}
+.pk:hover{border-color:var(--accent);background:var(--accent-weak)}
+.pk img{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px var(--ring,var(--border-strong))}
+.pk span{display:flex;flex-direction:column;min-width:0}
+.pk b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.peek.show .pk{animation:rise .32s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms + 40ms)}
+@media (hover:none){.peek{display:none}}
+
+/* cadre: collapsed by default so cadet leadership leads the page */
+.cadrebar{display:flex;align-items:center;gap:14px;width:100%;border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);text-align:left;transition:border-color .2s,background .2s,border-radius .3s}
+.cadrebar:hover{border-color:var(--accent);background:var(--accent-weak)}
+.cadrebar .stack img{width:34px;height:34px;box-shadow:0 0 0 2px var(--surface)}
+.cadrebar:hover .stack img{box-shadow:0 0 0 2px var(--accent-weak)}
+.cb-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.cb-txt b{font-size:14px;white-space:nowrap}
+.cb-txt span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-act{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;color:var(--accent);white-space:nowrap}
+.cb-act svg{transition:transform .35s var(--ease)}
+.cadrebar[aria-expanded="true"]{border-radius:14px 14px 14px 14px;margin-bottom:10px}
+.cadrebar[aria-expanded="true"] .cb-act svg{transform:rotate(180deg)}
+.collapser{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+.collapser[data-open="true"]{grid-template-rows:1fr}
+.collapser>div{overflow:hidden;min-height:0}
+.collapser[data-open="false"]>div{visibility:hidden;transition:visibility 0s .45s}
+@media (max-width:760px){.cb-txt span{display:none}.cadrebar .stack img{width:28px;height:28px}}
+
+/* ---------- directorates ---------- */
+.dirs{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;align-items:start}
+.dir{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:8px}
+.dirhead{display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;background:transparent;width:100%;padding:2px 2px 0;text-align:left;cursor:default}
+.dirhead .code{font-weight:800;font-size:13px;color:var(--accent);letter-spacing:.04em}
+.dirhead .dname{font-weight:700;font-size:15px}
+.dirhead .cnt{font-size:12px;color:var(--muted);white-space:nowrap}
+.chev{display:none;transition:transform .3s var(--ease);color:var(--muted)}
+.subs{display:grid;grid-template-rows:1fr;transition:grid-template-rows .4s var(--ease)}
+.subs>div{overflow:hidden;min-height:0;padding:0 3px 4px 0;margin-bottom:-4px}
+.olist{list-style:none;margin:0;padding:2px 0 2px 16px;position:relative}
+.olist li{position:relative;padding:6px 0 0 16px}
+.olist li::before{content:"";position:absolute;left:0;top:0;bottom:0;border-left:2px solid var(--line)}
+.olist li.lv::before{bottom:auto;height:34px}
+.olist li::after{content:"";position:absolute;left:0;top:34px;width:14px;border-top:2px solid var(--line)}
+.olist .olist{padding-left:10px}
+.olist .olist li{padding-left:12px}
+.olist .olist li::after{width:10px}
+
+/* ---------- mobile outline ---------- */
+@media (max-width:760px){
+  html{scroll-padding-top:120px}
+  h1{font-size:18px;margin:0}
+  .hrow{padding:10px 0;flex-direction:column;align-items:stretch;gap:8px}
+  .h1sub{display:inline;margin-left:8px;font-size:10.5px}
+  .seg{min-width:0;width:100%}
+  .toolbar .search{flex:1 1 100%;order:-1}
+  .seg button{padding:8px 10px;font-size:15px;min-height:46px}
+  .hrow>div:first-child{min-width:0;flex:1}
+  .controls{flex:none}
+  .navrow{gap:8px}
+  .jump{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;max-width:calc(100% + 32px)}
+  .jump::-webkit-scrollbar{display:none}
+  .jump a{min-height:32px;padding:0 10px;white-space:nowrap;flex:none}
+  .search{flex-basis:100%;max-width:none}
+  .panel{padding:12px;overflow:visible}
+  .tree{min-width:0}
+  .tree ul{display:block;padding:0 0 0 16px}
+  .tree>ul{padding:0}
+  .tree li{display:block;padding:8px 0 0 16px}
+  .tree>ul>li{padding:0}
+  .tree li::before{top:0;bottom:0;left:0;right:auto;width:0;height:auto;border:0;border-left:2px solid var(--line);border-radius:0;display:block}
+  .tree li:last-child::before{bottom:auto;height:38px;border-right:0;border-color:var(--line)}
+  .tree li::after{top:38px;left:0;width:14px;height:0;border:0;border-top:2px solid var(--line);border-radius:0}
+  .tree li:first-child::before{border-color:var(--line)}
+  .tree li:only-child::before{display:block}
+  .tree li:only-child::after{border-top:2px solid var(--line)}
+  .tree ul ul::before{display:none}
+  .tree>ul>li::before,.tree>ul>li::after{display:none !important}
+  .tree .tcard{display:none}
+  .tree .rcard{display:block}
+  .dirs{grid-template-columns:1fr}
+  .dirhead{cursor:pointer;min-height:44px}
+  .chev{display:block}
+  .dir[data-open="false"] .subs{grid-template-rows:0fr}
+  .dir[data-open="false"] .chev{transform:rotate(-90deg)}
+  .roster{width:auto;margin:10px 0 0 16px}
+  .rhead{cursor:pointer;min-height:40px}
+  .roster[data-open="false"] .subs{grid-template-rows:0fr}
+  .roster[data-open="false"] .chev{transform:rotate(-90deg)}
+}
+
+/* ---------- entrance ---------- */
+.js .band .card,.js .band .dir{opacity:0}
+.js .band.in .card{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms)}
+.js .band.in .dir{animation:fade .45s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms)}
+.js .band .tree li::before,.js .band .tree li::after,.js .band .tree ul ul::before,.js .band .olist li::before,.js .band .olist li::after{opacity:0}
+.js .band.in .tree li::before,.js .band.in .tree li::after,.js .band.in .tree ul ul::before,.js .band.in .olist li::before,.js .band.in .olist li::after{animation:fade .5s ease both;animation-delay:calc(var(--i,0) * 40ms + 220ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- detail drawer ---------- */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(10,14,20,.45);opacity:0;pointer-events:none;transition:opacity .3s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;z-index:60;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);transform:translateX(105%);transition:transform .38s var(--ease);display:flex;flex-direction:column;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.dtop{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 0}
+.grab{display:none}
+.xbtn{border:1px solid var(--border);background:var(--surface-2);border-radius:10px;width:40px;height:40px;display:grid;place-items:center;font-size:18px;line-height:1}
+.dbody{padding:6px 20px 28px;overflow-y:auto;overscroll-behavior:contain}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:4px 0 14px}
+.hero img{width:150px;height:150px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px var(--surface),0 0 0 7px var(--ring,var(--border-strong))}
+.hero .big{font-size:20px;font-weight:800;line-height:1.2}
+.hero .seat{color:var(--muted)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:6px 0 16px;font-size:13px;background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.facts dt{color:var(--muted);font-weight:600}
+.facts dd{margin:0;font-weight:600}
+.dh{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:16px 0 8px}
+.chips{display:flex;flex-direction:column;gap:6px}
+.chip{display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:6px 10px;text-align:left;min-height:48px;transition:border-color .2s,background .2s}
+.chip:hover{border-color:var(--accent);background:var(--accent-weak)}
+.chip img{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px var(--ring,var(--border-strong))}
+.chip .c1{font-weight:700}
+.chip .c2{font-size:12px;color:var(--muted)}
+.counter{border:1px dashed color-mix(in srgb,var(--flip) 55%,var(--border));background:var(--flip-weak);border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center}
+.counter img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none}
+.counter .c2{font-size:12px;color:var(--muted)}
+[data-mode="flip"] .counter{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));background:var(--accent-weak)}
+@media (max-width:760px){
+  .drawer{top:auto;left:0;width:100%;max-height:88vh;border-left:0;border-top:1px solid var(--border);border-radius:18px 18px 0 0;transform:translateY(105%)}
+  .grab{display:block;width:44px;height:5px;border-radius:3px;background:var(--border-strong);margin:0 auto}
+  .dtop{padding-top:10px}
+  .hero img{width:120px;height:120px}
+}
+
+.site-footer{margin-top:34px;padding:30px 0 40px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:13px}
+.site-footer p{margin:0}
+.footer-patch{display:block;width:110px;height:auto;margin:0 auto;opacity:.95;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+.motto{font-style:italic;color:var(--text);opacity:.8;margin-top:10px !important;font-size:15px}
+.tagline{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px !important}
+.footer-note{font-size:12.5px;margin-top:6px !important}
+.source-line{max-width:620px;margin:16px auto 0 !important;padding-top:14px;border-top:1px solid var(--border);line-height:1.6;color:var(--text);opacity:.85}
+.created-by{display:inline-block;margin-top:14px !important;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text);opacity:.85}
+.also{font-size:12px;margin-top:8px !important}
+.also a{color:var(--accent);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0ms !important;transition-duration:.01ms !important;transition-delay:0ms !important;scroll-behavior:auto !important}
+}
+</style>
+<link rel="stylesheet" href="../shared/det250.css">
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<script>document.documentElement.classList.add('js');document.documentElement.dataset.mode=new URLSearchParams(location.search).get('view')==='flip'?'flip':'poc';</script>
+<header class="top">
+  <div class="wrap">
+    <div class="hrow">
+      <h1>Fall 2026 Org Chart<span class="h1sub">Det 250 · 250th Cadet Wing</span></h1>
+      <div class="seg" role="group" aria-label="Which chart to show">
+        <button type="button" data-set-mode="poc" aria-pressed="true">POC Chart</button>
+        <button type="button" data-set-mode="flip" aria-pressed="false">Flip Week</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="toolbar">
+  <div class="legend" aria-label="Legend">
+    <span class="k" style="color:var(--as100)"><span class="dot"></span><span style="color:var(--muted)">AS100</span></span>
+    <span class="k" style="color:var(--as200)"><span class="dot"></span><span style="color:var(--muted)">AS200</span></span>
+    <span class="k" style="color:var(--as250)"><span class="dot"></span><span style="color:var(--muted)">AS250</span></span>
+    <span class="k" style="color:var(--as300)"><span class="dot"></span><span style="color:var(--muted)">AS300</span></span>
+    <span class="k" style="color:var(--as400)"><span class="dot"></span><span style="color:var(--muted)">AS400</span></span>
+    <span class="k" style="color:var(--as500)"><span class="dot"></span><span style="color:var(--muted)">AS500</span></span>
+    <span class="k" style="color:var(--gb)"><span class="dot"></span><span style="color:var(--muted)">Graybeard</span></span>
+    <span class="k" style="color:var(--cadre)"><span class="dot"></span><span style="color:var(--muted)">Cadre</span></span>
+  </div>
+    <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <label class="sr" for="q">Find a cadet or position</label>
+        <input id="q" type="search" placeholder="Find a cadet or position" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+        <ul class="results" id="results" role="listbox" aria-label="Search results" hidden></ul>
+    </div>
+  </div>
+  <p class="modeline" id="modeline" aria-live="polite"></p>
+
+  <section class="band" id="cadre" aria-labelledby="h-cadre">
+    <div class="bandhead"><h2 id="h-cadre">Cadre</h2><span class="rt">Detachment 250 staff</span></div>
+    <button type="button" class="cadrebar" id="cadre-toggle" aria-expanded="false" aria-controls="cadre-body">
+      <span class="stack" id="cadre-faces" aria-hidden="true"></span>
+      <span class="cb-txt"><b>7 cadre</b><span id="cadre-names"></span></span>
+      <span class="cb-act"><span class="cb-label">Show cadre</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+    </button>
+    <div class="collapser" id="cadre-body" data-open="false"><div><div class="panel"><div class="tree" id="tree-cadre"></div></div></div></div>
+  </section>
+
+  <section class="band" id="command" aria-labelledby="h-command">
+    <div class="bandhead"><h2 id="h-command">Wing Command Team</h2><span class="rt">WG/CC reports to Capt Russell</span></div>
+    <div class="panel"><div class="tree" id="tree-command"></div></div>
+  </section>
+
+  <section class="band" id="staff" aria-labelledby="h-staff">
+    <div class="bandhead"><h2 id="h-staff">A-Staff Directorates</h2><span class="rt">Directors report to the WG/COS</span></div>
+    <div class="dirs" id="dirs"></div>
+  </section>
+
+  <section class="band" id="group" aria-labelledby="h-group">
+    <div class="bandhead"><h2 id="h-group">Group Staff</h2><span class="rt">GP/CC reports to the WG/CC · GMC are assigned under each FLT/CC</span></div>
+    <div class="panel"><div class="tree" id="tree-group"></div></div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <img class="footer-patch" src="assets/det250-patch.png" alt="AFROTC Detachment 250 patch" width="110" height="114" loading="lazy">
+    <p class="motto">Optimi In Medio Patrae</p>
+    <p class="tagline">We Are The Storm</p>
+    <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+    <p class="source-line">
+      Positions reflect the <strong>Fall 2026</strong> 250th Cadet Wing organization chart, the
+      <strong>Flip Week</strong> construct, and current flight assignments. Tap or click anyone for details;
+      use the toggle at the top to switch between the POC chart and Flip Week.
+    </p>
+    <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+    <p class="also"><a href="../">All Det 250 tools</a></p>
+  </div>
+</footer>
+
+<div class="peek" id="peek" role="tooltip" aria-hidden="true"></div>
+<div class="fscrim" id="fscrim"></div>
+<div class="fmodal" id="fmodal" role="dialog" aria-modal="true" aria-labelledby="f-title">
+  <div class="fpanel" id="fpanel">
+    <div class="fhead"><div><h2 id="f-title"></h2><p class="sub" id="f-sub"></p></div><button type="button" class="xbtn" id="fclose" aria-label="Close flight">✕</button></div>
+    <div class="fbody" id="fbody"></div>
+  </div>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d-name" tabindex="-1">
+  <div class="dtop"><span class="grab" aria-hidden="true"></span><span></span><button type="button" class="xbtn" id="dclose" aria-label="Close details">✕</button></div>
+  <div class="dbody" id="dbody"></div>
+</aside>
+
+<script>
+/* =====================================================================
+   DATA: edit names here.
+   PEOPLE: photo key -> [last name, first name, AS class]   (photo file: photos/<key>.jpg)
+   SEATS: one row per position on the POC chart.
+     des / title : POC chart designator and title
+     poc         : [person key, rank] who holds it on the POC chart
+     flip        : person key during Flip Week (rank is automatic: AS100 = C/4C, others C/3C).
+                   Leave flip out and the seat is hidden during Flip Week.
+     flipDes / flipTitle : only if the seat is labeled differently during Flip Week
+     parent      : seat id this position reports to
+   CADRE seats and FLIGHTS (GMC flight rosters) are listed further down.
+   ===================================================================== */
+const PEOPLE = {
+  /* POC */
+  CerfogliCeliaA:["Cerfogli","Celia","AS400"], LuhringBlayneD:["Luhring","Blayne","AS400"], AltTyceW:["Alt","Tyce","AS400"],
+  PlassmanSimonE:["Plassman","Simon","Graybeard"], MetzBakerA:["Metz","Baker","Graybeard"], HymanNathanT:["Hyman","Nathan","AS400"],
+  KingeryAlexL:["Kingery","Alex","Graybeard"], HelleNicolasD:["Helle","Nicolas","AS300"], BourekAkrynJ:["Bourek","Akryn","AS300"],
+  BarszczCadenN:["Barszcz","Caden","AS300"], MarschangAllissaA:["Marschang","Allissa","AS300"], GrossDylanG:["Gross","Dylan","AS400"],
+  JalodiaAnika:["Jalodia","Anika","AS300"], DavilaJoaquinD:["Davila","Joaquin","AS300"], AshbackerMiloK:["Ashbacker","Milo","AS300"],
+  AlbertJosephI:["Albert","Joseph","AS400"], BradleeColinR:["Bradlee","Colin","AS300"], SalasAlfredoE:["Salas","Alfredo","AS400"],
+  HumistonVictoriaR:["Humiston","Victoria","AS300"], CurtisRobertT:["Curtis","Robert","AS300"], TuMicahJ:["Tu","Micah","AS300"],
+  GaulStephenJ:["Gaul","Stephen","AS300"], FigueroaBacaAngel:["Figueroa-Baca","Angel","Graybeard"], CoulthardNikalo:["Coulthard","Nikalo","AS300"],
+  DonahoeWilliamJ:["Donahoe","William","Graybeard"], CooperTylerL:["Cooper","Tyler","AS300"], HaderAshtenM:["Hader","Ashten","AS300"],
+  CollierJonathanG:["Collier","Jonathan","AS300"], ChienJohnJ:["Chien","John","AS400"], EdwardsonClaytonM:["Edwardson","Clayton","AS400"],
+  WarnerNicole:["Warner","Nicole","Graybeard"], DavisMartiG:["Davis","Marti","AS300"], VanDevanderDonC:["Van Devander","Don","AS300"],
+  /* AS500 */
+  BradyLoraleiD:["Brady","Loralei","AS500"], EstesIsellaM:["Estes","Isella","AS500"], MartinezToddM:["Martinez","Todd","AS500"],
+  CondonMatzkeIsabella:["Condon-Matzke","Isabella","AS500"],
+  /* GMC */
+  ReidElijahB:["Reid","Elijah","AS250"], HemauerJulia:["Hemauer","Julia","AS200"], SandersonWyattE:["Sanderson","Wyatt","AS200"],
+  FennelHarperR:["Fennel","Harper","AS200"], MuellerCyR:["Mueller","Cy","AS200"], BuddeCashJ:["Budde","Cash","AS200"],
+  JordanCooperS:["Jordan","Cooper","AS200"], StatesEricD:["States","Eric","AS200"], WheelerAndrewT:["Wheeler","Andrew","AS100"],
+  GeorgeWilliamD:["George","William","AS100"], RuehleMayIsaiahH:["Ruehle-May","Isaiah","AS100"], GardnerLaceyI:["Gardner","Lacey","AS100"],
+  PeterJulia:["Peter","Julia","AS250"], CallTysonD:["Call","Tyson","AS250"], JonsErickL:["Jons","Erick","AS200"],
+  WentholdAddisonE:["Wenthold","Addison","AS200"], TjadenAndrewJ:["Tjaden","Andrew","AS200"], McJannetMiloG:["McJannet","Milo","AS100"],
+  BennettLiamB:["Bennett","Liam","AS200"], SheldonElijahD:["Sheldon","Elijah","AS100"], SchnuteIanW:["Schnute","Ian","AS200"],
+  NelsenOliverU:["Nelsen","Oliver","AS100"], UtterbackChristopherD:["Utterback","Christopher","AS250"], HoangLinhY:["Hoang","Linh","AS200"],
+  ReedMaxC:["Reed","Max","AS250"], MorenoRyanA:["Moreno","Ryan","AS200"], HutchinsonScottC:["Hutchinson","Scott","AS200"],
+  KasparekCamdenL:["Kasparek","Camden","AS200"], RamseyKyleT:["Ramsey","Kyle","AS200"], PetersonMadelineM:["Peterson","Madeline","AS100"],
+  BendingerMatthewS:["Bendinger","Matthew","AS200"], McNamaraZacharyA:["McNamara","Zachary","AS200"], UrbanowiczCharlesL:["Urbanowicz","Charles","AS200"],
+  ChandlerAmeliaM:["Chandler","Amelia","AS100"], OTooleFinnP:["O'Toole","Finn","AS100"],
+  AldanaCastroGeorgioF:["Aldana Castro","Georgio","AS100"], JohnsonZionJ:["Johnson","Zion","AS100"], McCarthyCalumJ:["McCarthy","Calum","AS100"],
+  AndersenSamuelE:["Andersen","Samuel","AS100"], KluesnerAidenC:["Kluesner","Aiden","AS100"], MafnasMaxC:["Mafnas","Max","AS100"],
+  MalinLanceA:["Malin","Lance","AS100"], TidgewellCharlesA:["Tidgewell","Charles","AS100"], BurdickNathanielB:["Burdick","Nathaniel","AS100"],
+  DobbsPaxtonJ:["Dobbs","Paxton","AS100"], GoodinEleanorK:["Goodin","Eleanor","AS100"], McConnellLaurenL:["McConnell","Liam","AS100"],
+  PhanTaraT:["Phan","Tara","AS100"], TheisJakeA:["Theis","Jake","AS100"], JohnsonZariahA:["Johnson","Zariah","AS100"],
+  KilkerSamuelJ:["Kilker","Samuel","AS100"], MillerMasonD:["Miller","Mason","AS100"], SinclairHaydenH:["Sinclair","Hayden","AS100"],
+  /* Cadre (photo files: photos/<key>.jpg; initials show until a photo is added) */
+  CacicJohn:["Cacic","John","Cadre"], RussellScott:["Russell","Scott","Cadre"], OrrTy:["Orr","Ty","Cadre"],
+  MatthewsJordan:["Matthews","Jordan","Cadre"], TinaMs:["Tina","","Cadre"], CabralMatthew:["Cabral","Matthew","Cadre"],
+  MooreGabrielle:["Moore","Gabrielle","Cadre"]
+};
+
+const SEATS = [
+  /* Wing Command Team + Advisory Staff */
+  {id:"wgcc",  des:"WG/CC",   title:"Wing Commander",        poc:["CerfogliCeliaA","C/Col"],  flip:"ReidElijahB",     parent:"russell"},
+  {id:"wgcd",  des:"WG/CD",   title:"Deputy Wing Commander", poc:["LuhringBlayneD","C/Col"],  flip:"HemauerJulia",    parent:"wgcc"},
+  {id:"wgcos", des:"WG/COS",  title:"Chief of Staff",        poc:["AltTyceW","C/Lt Col"],     flip:"SandersonWyattE", parent:"wgcc"},
+  {id:"poca",  des:"WG/POCA", title:"POC Advisor",           poc:["PlassmanSimonE","C/Maj"],  flip:"MuellerCyR",      parent:"wgcd", flipDes:"POCA"},
+  {id:"gmca",  des:"WG/GMCA", title:"GMC Advisor",           poc:["FennelHarperR","C/3C"],    flip:"FennelHarperR",   parent:"wgcd", flipDes:"GMCIC", flipTitle:"LLab GMC In Charge"},
+  /* Group */
+  {id:"gpcc",  des:"GP/CC",   title:"Group Commander",          poc:["MetzBakerA","C/Lt Col"],   flip:"BuddeCashJ",       parent:"wgcc"},
+  {id:"sq1",   des:"1 SQ/CC", title:"Squadron 1 Commander",     poc:["HymanNathanT","C/Maj"],    flip:"JordanCooperS",    parent:"gpcc"},
+  {id:"sq2",   des:"2 SQ/CC", title:"Squadron 2 Commander",     poc:["KingeryAlexL","C/Maj"],    flip:"StatesEricD",      parent:"gpcc"},
+  {id:"afl",   des:"Alpha FLT/CC",   title:"Alpha Flight Commander",   poc:["HelleNicolasD","C/Capt"],     flip:"WheelerAndrewT",   parent:"sq1", flipDes:"A FLT/CC"},
+  {id:"afd",   des:"Alpha FLT/CD",   title:"Alpha Flight Deputy",      poc:["BradyLoraleiD","C/3C"],       parent:"afl"},
+  {id:"bfl",   des:"Bravo FLT/CC",   title:"Bravo Flight Commander",   poc:["BourekAkrynJ","C/Capt"],      flip:"GeorgeWilliamD",   parent:"sq1", flipDes:"B FLT/CC"},
+  {id:"bfd",   des:"Bravo FLT/CD",   title:"Bravo Flight Deputy",      poc:["EstesIsellaM","C/3C"],        parent:"bfl"},
+  {id:"cfl",   des:"Charlie FLT/CC", title:"Charlie Flight Commander", poc:["BarszczCadenN","C/Capt"],     flip:"RuehleMayIsaiahH", parent:"sq2", flipDes:"C FLT/CC"},
+  {id:"cfd",   des:"Charlie FLT/CD", title:"Charlie Flight Deputy",    poc:["MartinezToddM","C/3C"],       parent:"cfl"},
+  {id:"dfl",   des:"Delta FLT/CC",   title:"Delta Flight Commander",   poc:["MarschangAllissaA","C/Capt"], flip:"GardnerLaceyI",    parent:"sq2", flipDes:"D FLT/CC"},
+  {id:"dfd",   des:"Delta FLT/CD",   title:"Delta Flight Deputy",      poc:["CondonMatzkeIsabella","C/3C"],parent:"dfl"},
+  /* A1 */
+  {id:"a1",    des:"A1/DT",     title:"Personnel Director",                  poc:["GrossDylanG","C/Maj"],      flip:"PeterJulia",        parent:"wgcos", dir:"A1"},
+  {id:"a11",   des:"A11/ACDO",  title:"Academic Officer",                    poc:["JalodiaAnika","C/Capt"],    flip:"CallTysonD",        parent:"a1"},
+  {id:"a12",   des:"A12/PARO",  title:"Public Affairs & Recruiting Officer", poc:["DavilaJoaquinD","C/Capt"],  flip:"JonsErickL",        parent:"a1"},
+  {id:"dparo1",des:"Dep PARO",  title:"Deputy PARO",                         poc:["JordanCooperS","C/3C"],                               parent:"a12"},
+  {id:"dparo2",des:"Dep PARO",  title:"Deputy PARO",                         poc:["UrbanowiczCharlesL","C/3C"],                          parent:"a12"},
+  {id:"a13",   des:"A13/DEVO",  title:"Development Officer",                 poc:["AshbackerMiloK","C/Capt"],  flip:"WentholdAddisonE",  parent:"a1"},
+  /* A2 */
+  {id:"a2",    des:"A2/DT",     title:"Intelligence Director",               poc:["AlbertJosephI","C/Maj"],    flip:"TjadenAndrewJ",     parent:"wgcos", dir:"A2"},
+  {id:"a22",   des:"A22/HISTO", title:"Historical Officer",                  poc:["BradleeColinR","C/Capt"],   flip:"McJannetMiloG",     parent:"a2"},
+  {id:"dhisto",des:"Dep HISTO", title:"Deputy Historical Officer",           poc:["McNamaraZacharyA","C/3C"],                            parent:"a22"},
+  {id:"a23",   des:"A23/FLI",   title:"FLI Officer",                         poc:["BuddeCashJ","C/3C"],                                  parent:"a2"},
+  /* A3 */
+  {id:"a3",    des:"A3/DT",     title:"Operations Director",                 poc:["SalasAlfredoE","C/Maj"],    flip:"BennettLiamB",      parent:"wgcos", dir:"A3"},
+  {id:"a31",   des:"A31/SPO",   title:"Special Projects Officer",            poc:["HumistonVictoriaR","C/Capt"], flip:"SheldonElijahD",  parent:"a3"},
+  {id:"a32",   des:"A32 D&C/CC",title:"Drill and Ceremony Commander",        poc:["CurtisRobertT","C/Capt"],   flip:"SchnuteIanW",       parent:"a3", flipDes:"A32/D&C", flipTitle:"Drill and Ceremony Officer"},
+  {id:"ddc",   des:"Dep D&C/CC",title:"Deputy D&C Commander",                poc:["MorenoRyanA","C/3C"],                                 parent:"a32"},
+  {id:"a33",   des:"A33/TSO",   title:"Tri-Service Officer",                 poc:["TuMicahJ","C/Capt"],        flip:"NelsenOliverU",     parent:"a3"},
+  {id:"a34",   des:"A34/SEO",   title:"Special Events Officer",              poc:["GaulStephenJ","C/Capt"],    flip:"UtterbackChristopherD", parent:"a3"},
+  {id:"dseo",  des:"Dep SEO",   title:"Deputy Special Events Officer",       poc:["StatesEricD","C/3C"],                                 parent:"a34"},
+  /* A4 */
+  {id:"a4",    des:"A4/DT",     title:"Logistics Director",                  poc:["FigueroaBacaAngel","C/Maj"], flip:"HoangLinhY",       parent:"wgcos", dir:"A4"},
+  {id:"a41",   des:"A41/FUNO",  title:"Fundraising Officer",                 poc:["CoulthardNikalo","C/Capt"], flip:"ReedMaxC",          parent:"a4"},
+  /* A5 */
+  {id:"a5",    des:"A5/DT",     title:"Planning Director",                   poc:["DonahoeWilliamJ","C/Maj"],  flip:"MorenoRyanA",       parent:"wgcos", dir:"A5"},
+  {id:"a5d",   des:"Dep A5/DT", title:"Deputy Planning Director",            poc:["CooperTylerL","C/Capt"],    flip:"HutchinsonScottC",  parent:"a5", flipDes:"A5/DPT", flipTitle:"Planning Director Deputy"},
+  {id:"a51",   des:"A51/CTO",   title:"Chief of Training Officer",           poc:["HaderAshtenM","C/Capt"],    flip:"KasparekCamdenL",   parent:"a5"},
+  {id:"a52",   des:"A52/PFO",   title:"Physical Fitness Officer",            poc:["CollierJonathanG","C/Capt"], flip:"RamseyKyleT",      parent:"a5"},
+  {id:"pfod",  des:"Dep PFO",   title:"Deputy Physical Fitness Officer",     poc:["HutchinsonScottC","C/3C"],  flip:"PetersonMadelineM", parent:"a52", flipDes:"PFOD", flipTitle:"Physical Fitness Officer Deputy"},
+  {id:"a53",   des:"A53/CONO",  title:"CONOPS Officer",                      poc:["ChienJohnJ","C/Capt"],      flip:"BendingerMatthewS", parent:"a5"},
+  /* A6 */
+  {id:"a6",    des:"A6/DT",     title:"Communications Director",             poc:["EdwardsonClaytonM","C/Maj"], flip:"McNamaraZacharyA", parent:"wgcos", dir:"A6"},
+  /* A9 */
+  {id:"a9",    des:"A9/DT",     title:"Assessment and Improvement Director", poc:["WarnerNicole","C/Maj"],     flip:"UrbanowiczCharlesL",parent:"wgcos", dir:"A9"},
+  {id:"da9",   des:"Dep A9/DT", title:"Deputy Assessment and Improvement Director", poc:["PeterJulia","C/3C"],                           parent:"a9"},
+  {id:"a91",   des:"A91/INVO",  title:"Innovation Officer",                  poc:["DavisMartiG","C/Capt"],     flip:"ChandlerAmeliaM",   parent:"a9"},
+  {id:"a92",   des:"A92/WELLO", title:"Wellness Officer",                    poc:["VanDevanderDonC","C/Capt"], flip:"OTooleFinnP",       parent:"a9"}
+];
+/* Cadre: shown above the Wing Command Team in both views */
+SEATS.push(
+  {id:"cacic",    cadre:true, des:"DET 250/CC", title:"Detachment Commander",        poc:["CacicJohn","Lt Col"],     parent:null},
+  {id:"matthews", cadre:true, des:"DET 250/EO",       title:"Education Officer",                       poc:["MatthewsJordan","Maj"],   parent:"cacic"},
+  {id:"russell",  cadre:true, des:"DET 250/OFC",       title:"Operations Flight Commander", poc:["RussellScott","Capt"],    parent:"cacic"},
+  {id:"orr",      cadre:true, des:"DET 250/RO",       title:"Recruiting Officer",                       poc:["OrrTy","Capt"],           parent:"cacic"},
+  {id:"tina",     cadre:true, des:"",       title:"Detachment Secretary", fullName:"Tina Schmalzried",                       poc:["TinaMs","Ms."],           parent:"cacic"},
+  {id:"cabral",   cadre:true, des:"DET 250/OAI",       title:"Officer Accessions Instructor",                       poc:["CabralMatthew","TSgt"],   parent:"orr"},
+  {id:"moore",    cadre:true, des:"DET 250/HRA",       title:"NCOIC, Administration",       poc:["MooreGabrielle","SSgt"],  parent:"cabral"}
+);
+
+/* GMC flight assignments (POC chart only): listed under each FLT/CC */
+const FLIGHTS = {
+  afl:["BendingerMatthewS","HutchinsonScottC","JordanCooperS","McNamaraZacharyA","RamseyKyleT","ReedMaxC","ReidElijahB","SchnuteIanW",
+       "AldanaCastroGeorgioF","ChandlerAmeliaM","JohnsonZionJ","McCarthyCalumJ","NelsenOliverU","PetersonMadelineM","WheelerAndrewT"],
+  bfl:["BuddeCashJ","FennelHarperR","MorenoRyanA","MuellerCyR","SandersonWyattE","UrbanowiczCharlesL","UtterbackChristopherD",
+       "AndersenSamuelE","GeorgeWilliamD","KluesnerAidenC","MafnasMaxC","MalinLanceA","TidgewellCharlesA"],
+  cfl:["HemauerJulia","HoangLinhY","KasparekCamdenL","WentholdAddisonE",
+       "BurdickNathanielB","DobbsPaxtonJ","GoodinEleanorK","McConnellLaurenL","PhanTaraT","RuehleMayIsaiahH","SheldonElijahD","TheisJakeA"],
+  dfl:["BennettLiamB","CallTysonD","JonsErickL","PeterJulia","StatesEricD","TjadenAndrewJ",
+       "GardnerLaceyI","JohnsonZariahA","KilkerSamuelJ","McJannetMiloG","MillerMasonD","OTooleFinnP","SinclairHaydenH"]
+};
+/* POC flight assignments (shown on the POC tab of each flight window) */
+const FLIGHTS_POC = {
+  afl:["DonahoeWilliamJ","LuhringBlayneD","HymanNathanT","AshbackerMiloK","CooperTylerL","CoulthardNikalo","DavisMartiG"],
+  bfl:["FigueroaBacaAngel","MetzBakerA","PlassmanSimonE","AltTyceW","CollierJonathanG","GaulStephenJ","VanDevanderDonC"],
+  cfl:["KingeryAlexL","AlbertJosephI","CerfogliCeliaA","ChienJohnJ","EdwardsonClaytonM","SalasAlfredoE","HaderAshtenM","TuMicahJ"],
+  dfl:["WarnerNicole","GrossDylanG","BradleeColinR","CurtisRobertT","DavilaJoaquinD","HumistonVictoriaR","JalodiaAnika"]
+};
+for(const [fl, keys] of Object.entries(FLIGHTS)){
+  const name = SEATS.find(x => x.id === fl).title.split(" ")[0];
+  keys.forEach(k => SEATS.push({id:`m-${fl}-${k}`, member:true, des:`${name} FLT`, title:`${name} Flight Member`,
+    poc:[k, PEOPLE[k][2] === "AS100" ? "C/4C" : "C/3C"], parent:fl}));
+}
+
+const DIRNAMES = {A1:"Personnel",A2:"Intelligence",A3:"Operations",A4:"Logistics",A5:"Planning",A6:"Communications",A9:"Assessment and Improvement"};
+
+/* ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const byId = Object.fromEntries(SEATS.map(s => [s.id, s]));
+const inMode = (s, m = MODE) => m === "poc" || !!s.flip || !!s.cadre;
+const kids = (id, m) => SEATS.filter(s => s.parent === id && (!m || inMode(s, m)));
+/* one color per AS level (plus Graybeard and Cadre) */
+const RINGS = {AS100:"r100", AS200:"r200", AS250:"r250", AS300:"r300", AS400:"r400", AS500:"r500", Graybeard:"rgb", Cadre:"rcadre"};
+const ringOf = cls => RINGS[cls] || "rpoc";
+const fullName = h => [h.rank, h.first, h.last].filter(Boolean).join(" ");
+function initials(key){ const p = PEOPLE[key]; return ((p[1] || "")[0] || "") + (p[0][0] || ""); }
+/* photo with an initials fallback when the file is missing */
+function img(key, cls = "", alt = ""){ return `<img class="${cls}" src="${photo(key)}" alt="${esc(alt)}" loading="lazy" decoding="async" data-ini="${esc(initials(key))}" onerror="noPhoto(this)">`; }
+function noPhoto(el){
+  el.onerror = null;
+  el.src = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='#dfe5ee'/><text x='50' y='50' dy='.35em' text-anchor='middle' font-family='system-ui,Segoe UI,sans-serif' font-size='38' font-weight='700' fill='#4a5565'>${el.dataset.ini}</text></svg>`);
+}
+const flipRank = cls => cls === "AS100" ? "C/4C" : "C/3C";
+const photo = key => `photos/${key}.jpg`;
+let MODE = document.documentElement.dataset.mode || "poc", order = 0;
+
+/* who sits in a seat in the current (or given) mode */
+function holder(seat, mode = MODE){
+  let key, rank, des, title;
+  if(mode === "flip" && !seat.cadre){ if(!seat.flip) return null; key = seat.flip; rank = flipRank(PEOPLE[key][2]); des = seat.flipDes || seat.des; title = seat.flipTitle || seat.title; }
+  else { key = seat.poc[0]; rank = seat.poc[1]; des = seat.des; title = seat.title; }
+  const p = PEOPLE[key];
+  return {key, last:p[0], first:p[1], cls:p[2], rank, des, title, ring:ringOf(p[2])};
+}
+
+function face(seat, mode){
+  const h = holder(seat, mode);
+  if(!h) return "";
+  return `<span class="face ${mode === "poc" ? "front" : "back"}" aria-hidden="true">
+    ${img(h.key, "av " + h.ring)}
+    <span class="txt">
+      <span class="tags"><span class="des">${esc(h.des)}</span><span class="cls ${h.ring}">${esc(h.cls)}</span></span>
+      <span class="nm">${esc(h.rank)} ${esc(h.last)}</span>
+      <span class="ttl">${esc(h.title)}</span>
+    </span></span>`;
+}
+function card(seat, kind, i, o){
+  const still = seat.cadre;
+  return `<button type="button" class="card ${kind}${still ? " static" : ""}" data-seat="${seat.id}" style="--i:${i};--o:${o}">
+    <span class="flip">${face(seat, "poc")}${still ? "" : face(seat, "flip")}</span></button>`;
+}
+const po = s => (s.flip || s.cadre) ? "" : "po";
+/* a <ul> whose children are all POC-only disappears during Flip Week */
+const ulClass = list => list.every(c => !c.flip && !c.cadre) ? "po" : "";
+
+/* tree node: both card styles; CSS shows the right one per screen size */
+function node(seat, depth, idx){
+  const i = depth * 2 + idx, o = order++;
+  const ch = kids(seat.id).filter(c => !c.dir && !c.member && !!c.cadre === !!seat.cadre);
+  let html = `<li class="${po(seat)}">${card(seat, "tcard", i, o)}${card(seat, "rcard" + (depth === 0 ? " lead" : ""), i, o)}`;
+  if(ch.length) html += `<ul class="${ulClass(ch)}">${ch.map((c, j) => node(c, depth + 1, j)).join("")}</ul>`;
+  return html + roster(seat) + "</li>";
+}
+const CHEV = `<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+const flightName = fl => byId[fl].title.split(" ")[0];
+/* person -> flight id (GMC, POC, and each flight's CC/CD) */
+const FLIGHT_OF = {};
+for(const fl of ["afl","bfl","cfl","dfl"]){
+  [...FLIGHTS[fl], ...FLIGHTS_POC[fl], byId[fl].poc[0], ...kids(fl).filter(c => !c.member).map(c => c.poc[0])].forEach(k => FLIGHT_OF[k] = fl);
+}
+const cdOf = fl => kids(fl).find(c => !c.member);
+const flightGMC = fl => [...(cdOf(fl) ? [cdOf(fl).poc[0]] : []), ...(FLIGHTS[fl] || [])];
+const flightPOC = fl => [byId[fl].poc[0], ...(FLIGHTS_POC[fl] || [])];
+/* a person's main seat on the POC chart; GMC without a position fall back to their flight-member entry */
+function primaryOf(key){
+  return SEATS.find(x => !x.member && !x.cadre && x.poc && x.poc[0] === key) || SEATS.find(x => x.member && x.poc[0] === key);
+}
+const membersOf = fl => kids(fl).filter(c => c.member);
+/* compact button under each FLT/CC; the full roster opens in a larger window */
+function roster(seat){
+  if(!FLIGHTS[seat.id]) return "";
+  const gmc = flightGMC(seat.id), poc = flightPOC(seat.id), all = [...poc.slice(0, 2), ...gmc.slice(0, 3)], total = gmc.length + poc.length;
+  if(!total) return "";
+  return `<button type="button" class="flightbtn po" data-flight="${seat.id}" aria-haspopup="dialog" aria-label="View ${esc(flightName(seat.id))} Flight: ${gmc.length} GMC and ${poc.length} POC">
+    <span class="ft"><span class="fn">${esc(flightName(seat.id))} Flight</span><span class="fc">${total} total</span></span>
+    <span class="stack" aria-hidden="true">${all.map(k => img(k)).join("")}${total > all.length ? `<span class="more">+${total - all.length}</span>` : ""}</span>
+    <span class="split" aria-hidden="true"><span class="cls r200">${gmc.length} GMC</span><span class="cls rpoc">${poc.length} POC</span></span>
+    <span class="fv" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>View flight</span>
+  </button>`;
+}
+function gcard(key, j){
+  /* shows their POC-chart position; GMC without one show "<Flight> Flight Member" */
+  const s = primaryOf(key), h = holder(s, "poc");
+  const role = s.member ? "" : `<span class="des">${esc(s.des)}</span>`;
+  const roleText = s.title;
+  return `<button type="button" class="card gcard" data-seat="${s.id}" style="--i:${j}" aria-label="${esc(fullName(h))}, ${esc(h.cls)}, ${esc(roleText)}. Open details">
+    <span class="flip"><span class="face front" aria-hidden="true">${img(h.key, "av " + h.ring)}
+    <span class="txt"><span class="nm">${esc(h.rank)} ${esc(h.last)}</span><span class="first">${esc(h.first)}</span>
+    <span class="tags"><span class="cls ${h.ring}">${esc(h.cls)}</span>${role}</span><span class="ttl role">${esc(roleText)}</span></span></span></span></button>`;
+}
+let flightOpen = null, flightFocus = null;
+function openFlight(fl, pulseId, tab = "gmc"){
+  const gmc = flightGMC(fl), poc = flightPOC(fl), cc = byId[fl], cd = cdOf(fl), ccH = holder(cc, "poc");
+  const upper = gmc.filter(k => PEOPLE[k][2] !== "AS100"), lower = gmc.filter(k => PEOPLE[k][2] === "AS100");
+  let n = 0;
+  const grp = (label, list) => list.length ? `<div class="fgh"><b>${label}</b> ${list.length}</div><div class="ggrid">${list.map(k => gcard(k, n++)).join("")}</div>` : "";
+  $("#f-title").textContent = `${flightName(fl)} Flight`;
+  $("#f-sub").textContent = `${gmc.length} GMC · ${poc.length} POC · led by ${fullName(ccH)}`;
+  const gmcHTML = grp("AS200 / AS250 / AS500", upper) + grp("AS100", lower);
+  n = 0;
+  const pocHTML = grp("POC", poc);
+  $("#fbody").innerHTML = `<div class="flead">${card(cc, "rcard lead", 0, 0)}${cd ? card(cd, "rcard lead", 1, 0) : ""}</div>
+    <div class="ftabs" role="tablist" aria-label="${esc(flightName(fl))} Flight members" data-tab="${tab}">
+      <button type="button" role="tab" id="tab-gmc" aria-controls="pane-gmc" data-tab="gmc"><b>GMC Cadets</b><span>${gmc.length}</span></button>
+      <button type="button" role="tab" id="tab-poc" aria-controls="pane-poc" data-tab="poc"><b>POC Cadets</b><span>${poc.length}</span></button>
+    </div>
+    <div class="fpane" role="tabpanel" id="pane-gmc" aria-labelledby="tab-gmc">${gmcHTML}</div>
+    <div class="fpane" role="tabpanel" id="pane-poc" aria-labelledby="tab-poc">${pocHTML}</div>`;
+  setTab(tab, true);
+  if(!flightOpen) flightFocus = document.activeElement;
+  flightOpen = fl;
+  $("#fmodal").classList.add("open"); $("#fscrim").classList.add("open");
+  document.body.style.overflow = "hidden";
+  $("#fpanel").scrollTop = 0;
+  refreshMode();
+  setTimeout(() => {
+    const target = pulseId && $(`#fbody .card[data-seat="${pulseId}"]`);
+    if(target){ target.scrollIntoView({block:"center", behavior:reduce() ? "auto" : "smooth"}); target.classList.add("pulse"); target.focus({preventScroll:true}); setTimeout(() => target.classList.remove("pulse"), 3000); }
+    else $("#fclose").focus({preventScroll:true});
+  }, 120);
+}
+function setTab(tab, quiet){
+  const bar = $("#fbody .ftabs"); if(!bar) return;
+  bar.dataset.tab = tab;
+  bar.querySelectorAll("[role=tab]").forEach(b => { const on = b.dataset.tab === tab; b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; });
+  $("#fbody").querySelectorAll(".fpane").forEach(p => {
+    const on = p.id === "pane-" + tab; p.hidden = !on;
+    if(on && !quiet){ p.classList.remove("swap"); void p.offsetWidth; p.classList.add("swap"); }
+  });
+}
+function closeFlight(){
+  if(!flightOpen) return;
+  $("#fmodal").classList.remove("open"); $("#fscrim").classList.remove("open");
+  flightOpen = null;
+  if(!drawerSeat) document.body.style.overflow = "";
+  if(flightFocus && document.contains(flightFocus) && flightFocus.offsetParent) flightFocus.focus({preventScroll:true});
+}
+function olist(seat, depth){
+  const ch = kids(seat.id);
+  if(!ch.length) return "";
+  return `<ul class="olist ${ulClass(ch)}">${ch.map((c, j) => `<li class="${po(c)}" style="--i:${depth + j + 1}">${card(c, "rcard", depth + j + 1, order++)}${olist(c, depth + j + 1)}</li>`).join("")}</ul>`;
+}
+function countUnder(id, m){ return kids(id, m).reduce((a, c) => a + 1 + countUnder(c.id, m), 0); }
+
+function build(){
+  $("#tree-cadre").innerHTML = `<ul>${node(byId.cacic, 0, 0)}</ul>`;
+  const cmd = byId.wgcc, o = order++;
+  const cmdKids = kids("wgcc").filter(s => s.id !== "gpcc");
+  $("#tree-command").innerHTML = `<ul><li>${card(cmd, "tcard", 0, o)}${card(cmd, "rcard lead", 0, o)}<ul>${cmdKids.map((c, j) => node(c, 1, j)).join("")}</ul></li></ul>`;
+  const small = matchMedia("(max-width:760px)").matches;
+  $("#dirs").innerHTML = SEATS.filter(s => s.dir).map((d, k) => {
+    const n = countUnder(d.id), open = !small || n === 0;
+    return `<article class="dir" style="--i:${k}" data-open="${open}" data-dir="${d.id}">
+      <button type="button" class="dirhead" aria-expanded="${open}" aria-controls="sub-${d.id}">
+        <span><span class="code">${d.dir}</span> <span class="dname">${esc(DIRNAMES[d.dir])}</span></span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="cnt"></span>
+        ${n ? `<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>` : ""}</span>
+      </button>
+      ${card(d, "rcard lead", k, order++)}
+      ${n ? `<div class="subs" id="sub-${d.id}"><div>${olist(d, k)}</div></div>` : ""}
+    </article>`;
+  }).join("");
+  $("#tree-group").innerHTML = `<ul>${node(byId.gpcc, 0, 0)}</ul>`;
+}
+
+/* things that depend on the mode: labels, counts, last-visible connector */
+function refreshMode(){
+  document.querySelectorAll(".card:not(.gcard)").forEach(b => {
+    const s = byId[b.dataset.seat], h = holder(s) || holder(s, "poc");
+    b.setAttribute("aria-label", `${h.des ? h.des + ", " : ""}${h.title}: ${fullName(h)}, ${h.cls}. Open details`);
+  });
+  document.querySelectorAll(".dir").forEach(a => {
+    const n = countUnder(a.dataset.dir, MODE), hd = a.querySelector(".dirhead");
+    a.querySelector(".cnt").textContent = n ? n + (n > 1 ? " people" : " person") : "Director only";
+    hd.disabled = !n;
+  });
+  document.querySelectorAll(".olist").forEach(ul => {
+    const vis = [...ul.children].filter(li => inMode(byId[li.querySelector(".card").dataset.seat]));
+    [...ul.children].forEach(li => li.classList.toggle("lv", li === vis[vis.length - 1]));
+  });
+  const shown = SEATS.filter(s => inMode(s) && !s.cadre && !s.member);
+  const n100 = shown.filter(s => holder(s).cls === "AS100").length;
+  const nMembers = SEATS.filter(s => s.member).length;
+  $("#modeline").innerHTML = MODE === "flip"
+    ? `Showing <b>Flip Week</b>: ${shown.length} GMC cadets in command (${n100} AS100, ${shown.length - n100} AS200/AS250). Deputy, FLT/CD and flight roster seats are not used.`
+    : `Showing the <b>Fall 2026 POC chart</b>: ${shown.length} cadet positions and ${nMembers} GMC across four flights.`;
+  document.querySelectorAll("[data-set-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.setMode === MODE)));
+}
+
+/* ---------- mode switch with animation ---------- */
+const reduce = () => matchMedia("(prefers-reduced-motion:reduce)").matches;
+let switching = null;
+function setMode(m){
+  if(m === MODE) return;
+  clearTimeout(switching);
+  const root = document.documentElement, pos = document.querySelectorAll(".po");
+  const apply = () => {
+    MODE = m; root.dataset.mode = m; if(m === "flip") closeFlight(); refreshMode();
+    if(drawerSeat){ inMode(byId[drawerSeat]) ? openSeat(drawerSeat, true) : closeDrawer(); }
+    const u = new URL(location); m === "flip" ? u.searchParams.set("view", "flip") : u.searchParams.delete("view"); history.replaceState(null, "", u);
+  };
+  if(m === "flip" && !reduce()){
+    // POC-only seats fade out first, then everyone flips
+    pos.forEach(e => e.classList.add("leaving"));
+    switching = setTimeout(() => { pos.forEach(e => e.classList.remove("leaving")); apply(); }, 260);
+  } else {
+    apply();
+    if(m === "poc"){ pos.forEach(e => e.classList.add("entering")); switching = setTimeout(() => pos.forEach(e => e.classList.remove("entering")), 1100); }
+  }
+}
+
+/* ---------- chain-of-command trace ---------- */
+function chain(id){ const out = []; for(let s = byId[id]; s; s = byId[s.parent]) out.push(s.id); return out; }
+function trace(id){
+  const ids = new Set(chain(id)); kids(id, MODE).forEach(k => ids.add(k.id));
+  document.body.classList.add("tracing");
+  document.querySelectorAll(".card").forEach(c => {
+    c.classList.toggle("lit", ids.has(c.dataset.seat));
+    c.classList.toggle("self", c.dataset.seat === id);
+  });
+  const fl = FLIGHTS[id] ? id : (byId[id] && FLIGHTS[byId[id].parent] && !byId[id].member ? byId[id].parent : null);
+  document.querySelectorAll(".flightbtn:not(.wide)").forEach(b => b.classList.toggle("lit", b.dataset.flight === fl));
+}
+function untrace(){ document.body.classList.remove("tracing"); }
+const canHover = matchMedia("(hover:hover)").matches;
+document.addEventListener("pointerover", e => {
+  if(!canHover) return;
+  const c = e.target.closest(".card"); if(c && !c.closest(".fmodal")){ trace(c.dataset.seat); return; }
+  const f = e.target.closest(".flightbtn:not(.wide)"); if(f) trace(f.dataset.flight);
+});
+document.addEventListener("pointerout", e => { const f = e.target.closest(".flightbtn:not(.wide)"); if(f && !f.contains(e.relatedTarget)) untrace(); });
+document.addEventListener("pointerout", e => { const c = e.target.closest(".card"); if(c && !c.contains(e.relatedTarget)) untrace(); });
+document.addEventListener("focusin", e => { const c = e.target.closest(".card"); if(c && c.matches(":focus-visible")) trace(c.dataset.seat); else untrace(); });
+
+/* ---------- hover peek ---------- */
+const blockOf = el => el.closest(".dir, .tree");
+const shownCard = id => [...document.querySelectorAll(`.card[data-seat="${id}"]`)].find(c => c.offsetParent && !c.closest(".fmodal"));
+const sectionName = el => { const sec = el && el.closest("section"); return sec ? sec.querySelector("h2").textContent : ""; };
+let peekTimer = null, peekCard = null;
+function pkItem(seat, i){
+  const h = holder(seat);
+  return `<button type="button" class="pk ${h.ring}" data-go="${seat.id}" style="--i:${i}">${img(h.key)}<span><b>${esc(h.rank)} ${esc(h.last)}</b><small>${esc(h.des || h.title)}</small></span></button>`;
+}
+function showPeek(card){
+  const seat = byId[card.dataset.seat]; if(!seat) return;
+  const ups = supervisorsOf(seat);
+  const downs = kids(seat.id, MODE).filter(k => !k.member);
+  if(!ups.length && !downs.length){ hidePeek(); return; }
+  let i = 0;
+  const part = (label, list) => {
+    if(!list.length) return "";
+    const where = [...new Set(list.map(s => sectionName(shownCard(s.id))).filter(Boolean))].join(", ");
+    return `<div class="peek-h"><span>${label}</span><b>${list.length}</b>${where ? `<em>in ${esc(where)}</em>` : ""}</div><div class="peek-grid" style="--cols:${Math.min(list.length, 3)}">${list.map(s => pkItem(s, i++)).join("")}</div>`;
+  };
+  const pk = $("#peek");
+  pk.innerHTML = part("Reports to", ups) + part("Leads", downs);
+  pk.classList.remove("show", "above");
+  // place below the card, or above if there is no room
+  const r = card.getBoundingClientRect(), pw = pk.offsetWidth, ph = pk.offsetHeight;
+  let top = r.bottom + 12, above = false;
+  if(top + ph > innerHeight - 8 && r.top - ph - 12 > 150){ top = r.top - ph - 12; above = true; }
+  const left = Math.min(Math.max(8, r.left + r.width / 2 - pw / 2), innerWidth - pw - 8);
+  pk.style.top = top + "px"; pk.style.left = left + "px";
+  pk.style.setProperty("--ax", Math.min(Math.max(18, r.left + r.width / 2 - left), pw - 18) + "px");
+  pk.classList.toggle("above", above);
+  void pk.offsetWidth; pk.classList.add("show");
+  peekCard = card;
+}
+function hidePeek(){ clearTimeout(peekTimer); peekCard = null; $("#peek").classList.remove("show"); }
+document.addEventListener("pointerover", e => {
+  if(!canHover) return;
+  if(e.target.closest("#peek")){ clearTimeout(peekTimer); return; }
+  const c = e.target.closest(".card");
+  if(c && !c.closest(".fmodal") && c !== peekCard){ clearTimeout(peekTimer); peekTimer = setTimeout(() => showPeek(c), 280); }
+});
+document.addEventListener("pointerout", e => {
+  const from = e.target.closest(".card, #peek"), to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".card, #peek");
+  if(from && from !== to && !(to && to.id === "peek") && !(from.id === "peek" && to === peekCard)){ clearTimeout(peekTimer); peekTimer = setTimeout(hidePeek, 160); }
+});
+document.addEventListener("focusin", e => { const c = e.target.closest(".card"); if(c && c.matches(":focus-visible") && !c.closest(".fmodal")) showPeek(c); else if(!e.target.closest("#peek")) hidePeek(); });
+addEventListener("scroll", hidePeek, {passive:true});
+addEventListener("resize", hidePeek);
+document.addEventListener("click", hidePeek, true);
+
+/* ---------- cadre collapse ---------- */
+function setCadre(open){
+  const body = $("#cadre-body"), btn = $("#cadre-toggle");
+  if((body.dataset.open === "true") === open) return;
+  body.dataset.open = open; btn.setAttribute("aria-expanded", open);
+  btn.querySelector(".cb-label").textContent = open ? "Hide cadre" : "Show cadre";
+  if(open){ const band = $("#cadre"); band.classList.remove("in"); void band.offsetWidth; band.classList.add("in"); }
+}
+function initCadreBar(){
+  const cadre = SEATS.filter(s => s.cadre);
+  $("#cadre-faces").innerHTML = cadre.map(s => img(s.poc[0])).join("");
+  $("#cadre-names").textContent = cadre.map(s => fullName(holder(s, "poc")).replace(/ [A-Z][a-z]+ (?=\S+$)/, " ")).join(" · ");
+  $("#cadre-toggle").querySelector("b").textContent = `${cadre.length} cadre`;
+}
+document.addEventListener("click", e => {
+  if(e.target.closest("#cadre-toggle")){ setCadre($("#cadre-body").dataset.open !== "true"); return; }
+  if(e.target.closest('a[href="#cadre"]')) setCadre(true);
+});
+
+/* ---------- drawer ---------- */
+let drawerSeat = null, lastFocus = null;
+function flightRow(key){
+  const fl = FLIGHT_OF[key]; if(!fl) return "";
+  const label = `${esc(flightName(fl))} Flight`;
+  return `<dt>Flight</dt><dd>${MODE === "poc" ? `<button type="button" class="linkbtn" data-flight="${fl}">${label}</button>` : label}</dd>`;
+}
+/* who a seat reports to; GMC with a wing position also report to their flight commander */
+function supervisorsOf(seat){
+  const h = holder(seat) || holder(seat, "poc"), up = byId[seat.parent], flt = FLIGHT_OF[h.key];
+  const fltCC = MODE === "poc" && flt && !seat.member && !seat.cadre && /AS(100|200|250|500)/.test(h.cls) && seat.parent !== flt ? byId[flt] : null;
+  return [up, fltCC].filter(s => s && inMode(s));
+}
+function personChip(seat){
+  const h = holder(seat);
+  const go = seat.member ? primaryOf(h.key).id : seat.id;
+  return `<button type="button" class="chip ${h.ring}" data-go="${go}">${img(h.key)}<span><span class="c1">${esc(h.rank)} ${esc(h.last)}</span><br><span class="c2">${esc([h.des, h.title].filter(Boolean).join(" · "))}</span></span></button>`;
+}
+function openSeat(id, refresh){
+  if(byId[id] && byId[id].member) id = primaryOf(byId[id].poc[0]).id;
+  const seat = byId[id]; if(!seat || !inMode(seat)) return;
+  const h = holder(seat), other = holder(seat, MODE === "flip" ? "poc" : "flip");
+  const up = byId[seat.parent], down = kids(id, MODE);
+  let html = `<div class="hero ${h.ring}">${img(h.key, "", "Photo of " + fullName(h))}
+      <div class="big" id="d-name">${esc(fullName(h))}</div>
+      <div class="seat">${esc(h.title)}</div></div>
+      <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${flightRow(h.key)}<dt>Chart</dt><dd>${MODE === "flip" ? "Flip Week" : "Fall 2026 POC"}</dd></dl>`;
+  if(MODE === "flip" && other && !seat.cadre){
+    html += `<div class="dh">Normally held by</div>
+      <div class="counter">${img(other.key)}<div><b>${esc(fullName(other))}</b><br><span class="c2">${esc(other.des)} · ${esc(other.cls)}</span></div></div>`;
+  }
+  /* FLT/CC and FLT/CD get a shortcut to their whole flight */
+  const ledFlight = FLIGHTS[id] ? id : (FLIGHTS[seat.parent] && !seat.member ? seat.parent : null);
+  if(MODE === "poc" && ledFlight)
+    html += `<button type="button" class="flightbtn wide" data-flight="${ledFlight}"><span class="ft"><span class="fn">${esc(flightName(ledFlight))} Flight</span><span class="fc">${flightGMC(ledFlight).length} GMC · ${flightPOC(ledFlight).length} POC</span></span><span class="fv">View flight</span></button>`;
+  /* GMC: the seat they hold during Flip Week (opens the Flip Week view) */
+  if(MODE === "poc" && !seat.cadre){
+    const fw = SEATS.filter(x => x.flip === h.key);
+    if(fw.length) html += `<div class="dh">Flip Week position</div><div class="chips">${fw.map(x => {
+      const f = holder(x, "flip");
+      return `<button type="button" class="chip fwchip" data-flipgo="${x.id}">${img(f.key)}<span><span class="c1">${esc(f.rank)} ${esc(f.last)} · ${esc(f.des)}</span><br><span class="c2">${esc(f.title)} · tap to view in Flip Week</span></span></button>`;
+    }).join("")}</div>`;
+  }
+  const bosses = supervisorsOf(seat);
+  if(bosses.length) html += `<div class="dh">Reports to</div><div class="chips">${bosses.map(personChip).join("")}</div>`;
+  if(down.length) html += `<div class="dh">Leads (${down.length})</div><div class="chips">${down.map(personChip).join("")}</div>`;
+  $("#dbody").innerHTML = html;
+  drawerSeat = id;
+  if(refresh) return;
+  if(!$("#drawer").classList.contains("open")) lastFocus = document.activeElement;
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("open");
+  document.body.style.overflow = "hidden";
+  $("#dbody").scrollTop = 0;
+  history.replaceState(null, "", location.pathname + location.search + "#" + id);
+  setTimeout(() => $("#dclose").focus({preventScroll:true}), 60);
+}
+function closeDrawer(){
+  if(!drawerSeat) return;
+  $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open");
+  document.body.style.overflow = "";
+  drawerSeat = null;
+  if(flightOpen) document.body.style.overflow = "hidden";
+  history.replaceState(null, "", location.pathname + location.search);
+  if(lastFocus && document.contains(lastFocus) && lastFocus.offsetParent) lastFocus.focus({preventScroll:true});
+}
+document.addEventListener("click", e => {
+  const m = e.target.closest("[data-set-mode]"); if(m){ setMode(m.dataset.setMode); return; }
+  const c = e.target.closest(".card"); if(c){ openSeat(c.dataset.seat); return; }
+  const g = e.target.closest("[data-go]"); if(g){ openSeat(g.dataset.go); return; }
+  const fg = e.target.closest("[data-flipgo]"); if(fg){ const id = fg.dataset.flipgo; closeFlight(); setMode("flip"); setTimeout(() => openSeat(id), 420); return; }
+  const f = e.target.closest("[data-flight]"); if(f){ closeDrawer(); openFlight(f.dataset.flight); return; }
+  const t = e.target.closest(".ftabs [role=tab]"); if(t){ setTab(t.dataset.tab); return; }
+  const d = e.target.closest(".dirhead,.rhead"); if(d && !d.disabled && matchMedia("(max-width:760px)").matches){
+    const art = d.closest(".dir,.roster"), open = art.dataset.open !== "true";
+    art.dataset.open = open; d.setAttribute("aria-expanded", open); return;
+  }
+});
+$("#scrim").addEventListener("click", closeDrawer);
+$("#fscrim").addEventListener("click", closeFlight);
+$("#fclose").addEventListener("click", closeFlight);
+$("#fmodal").addEventListener("click", e => { if(e.target.id === "fmodal") closeFlight(); });
+$("#dclose").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => {
+  const tb = e.target.closest && e.target.closest(".ftabs [role=tab]");
+  if(tb && (e.key === "ArrowRight" || e.key === "ArrowLeft")){
+    const next = tb.dataset.tab === "gmc" ? "poc" : "gmc"; setTab(next); $(`#tab-${next}`).focus(); e.preventDefault(); return;
+  }
+  if(e.key === "Escape"){ if(!$("#results").hidden) hideResults(); else if(drawerSeat) closeDrawer(); else closeFlight(); }
+  if(e.key === "Tab" && (drawerSeat || flightOpen)){
+    const f = [...(drawerSeat ? $("#drawer") : $("#fmodal")).querySelectorAll("button")]; if(!f.length) return;
+    if(e.shiftKey && document.activeElement === f[0]){ e.preventDefault(); f[f.length - 1].focus(); }
+    else if(!e.shiftKey && document.activeElement === f[f.length - 1]){ e.preventDefault(); f[0].focus(); }
+  }
+});
+(() => { let y0 = null; const dr = $("#drawer");
+  dr.addEventListener("touchstart", e => { y0 = $("#dbody").scrollTop <= 0 ? e.touches[0].clientY : null; }, {passive:true});
+  dr.addEventListener("touchend", e => { if(y0 !== null && e.changedTouches[0].clientY - y0 > 90) closeDrawer(); y0 = null; }, {passive:true});
+})();
+
+/* ---------- search ---------- */
+const q = $("#q"), res = $("#results"); let hits = [], sel = 0;
+function hideResults(){ res.hidden = true; q.setAttribute("aria-expanded", "false"); }
+function search(){
+  const t = q.value.trim().toLowerCase();
+  if(!t){ hideResults(); return; }
+  hits = SEATS.filter(s => inMode(s) && !(s.member && !primaryOf(s.poc[0]).member)).map(s => ({s, h:holder(s)})).filter(({h}) =>
+    [h.des, h.title, h.last, h.first, h.first + " " + h.last].some(x => x.toLowerCase().includes(t))).slice(0, 8);
+  sel = 0;
+  res.innerHTML = hits.length ? hits.map(({s, h}, i) => `<li role="option" aria-selected="${i === 0}"><button type="button" tabindex="-1" class="${i === 0 ? "on" : ""}" data-hit="${s.id}">
+      ${img(h.key)}<span><b>${esc(h.rank + " " + h.last + (s.member ? ", " + h.first : ""))}</b><br><span class="r2">${esc([h.des, h.title].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")
+    : `<li class="none">No match</li>`;
+  res.hidden = false; q.setAttribute("aria-expanded", "true");
+}
+function go(id){
+  hideResults(); q.blur();
+  if(byId[id].member){ closeDrawer(); openFlight(byId[id].parent, id); return; }
+  closeFlight();
+  const vis = [...document.querySelectorAll(`.card[data-seat="${id}"]`)].find(c => c.offsetParent);
+  if(!vis) return;
+  if(vis.closest("#cadre-body") && $("#cadre-body").dataset.open !== "true"){ setCadre(true); setTimeout(() => go(id), 480); return; }
+  const art = vis.closest(".dir,.roster"), sub = vis.closest(".subs");
+  if(sub && art.dataset.open === "false"){ art.dataset.open = "true"; art.querySelector(".dirhead,.rhead").setAttribute("aria-expanded", "true"); }
+  setTimeout(() => {
+    vis.scrollIntoView({behavior:reduce() ? "auto" : "smooth", block:"center", inline:"center"});
+    vis.classList.remove("pulse"); void vis.offsetWidth; vis.classList.add("pulse");
+    vis.focus({preventScroll:true});
+    setTimeout(() => vis.classList.remove("pulse"), 3000);
+  }, sub ? 320 : 0);
+}
+q.addEventListener("input", search);
+q.addEventListener("keydown", e => {
+  if(res.hidden || !hits.length) return;
+  if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+    e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : hits.length - 1)) % hits.length;
+    res.querySelectorAll("button").forEach((b, i) => { b.classList.toggle("on", i === sel); b.parentElement.setAttribute("aria-selected", i === sel); });
+  }
+  if(e.key === "Enter"){ e.preventDefault(); go(hits[sel].s.id); }
+});
+res.addEventListener("click", e => { const b = e.target.closest("[data-hit]"); if(b) go(b.dataset.hit); });
+document.addEventListener("pointerdown", e => { if(!e.target.closest(".search")) hideResults(); });
+
+/* ---------- start ---------- */
+build();
+initCadreBar();
+refreshMode();
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } }), {threshold:.08}) : null;
+document.querySelectorAll(".band").forEach(b => io ? io.observe(b) : b.classList.add("in"));
+if(location.hash && byId[location.hash.slice(1)]) setTimeout(() => openSeat(location.hash.slice(1)), 400);
+</script>
+</body>
+</html>
