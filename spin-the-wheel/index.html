@@ -22,6 +22,8 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
   border-top: 17px solid var(--d250-gold); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35));
 }
 .readout { margin: 12px 0 12px; text-align: center; min-height: 52px; display: grid; align-content: center; gap: 2px; }
+.roface { display: grid; place-items: center; margin-bottom: 8px; }
+.readout.landed .roface { animation: pop .5s var(--d250-ease); }
 .readout .who { font-size: 24px; font-weight: 800; letter-spacing: -.01em; line-height: 1.1; }
 .readout .where { font-size: 13px; color: var(--d250-soft); }
 .readout.live .who { color: var(--d250-gold); }
@@ -70,6 +72,7 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 @media (max-width: 620px) {
   .aisle { flex-basis: 10px; } .rowno { display: none; } .srow { gap: 8px; } .block { gap: 5px; }
   .seat { min-height: 50px; padding: 14px 3px 5px; }
+  .seat .d250-face { --sz: 26px !important; }
   .seat .nm { font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
@@ -81,6 +84,10 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 }
 .seat:hover { border-color: var(--d250-line-strong); }
 .seat .no { position: absolute; top: 3px; left: 6px; font-size: 11px; font-weight: 700; color: var(--d250-faint); font-variant-numeric: tabular-nums; }
+.seat { flex-direction: column; gap: 5px; }
+.seat .d250-face { box-shadow: 0 0 0 2px var(--d250-surface-2), 0 0 0 3.5px var(--ring); }
+.seat.out .d250-face { opacity: .4; filter: grayscale(1); }
+.seat.chase .d250-face { box-shadow: 0 0 0 2px var(--d250-gold), 0 0 0 3.5px var(--d250-page); }
 .seat .nm { font-size: 14px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
 .seat.taken { background: color-mix(in srgb, var(--d250-blue) 14%, var(--d250-surface)); border-color: color-mix(in srgb, var(--d250-blue) 60%, var(--d250-line)); }
 .seat.taken .no { color: var(--d250-blue); }
@@ -182,6 +189,7 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
             <canvas id="wheel" width="544" height="544" role="img" aria-label="Name wheel"></canvas>
           </div>
           <div class="readout" id="readout" aria-live="polite">
+            <div class="roface" id="roFace" hidden></div>
             <div class="who" id="roWho">Ready</div>
             <div class="where" id="roWhere">Spin to call on a student</div>
           </div>
@@ -362,13 +370,13 @@ function render(){
 
   const dl = state.roster.filter(p => p.dl);
   $("dlstrip").hidden = !dl.length;
-  $("dlstrip").innerHTML = dl.length ? '<span class="label">Distance learning</span>' + dl.map(p => '<span class="chip">' + esc(p.name) + '</span>').join("") : "";
+  $("dlstrip").innerHTML = dl.length ? '<span class="label">Distance learning</span>' + dl.map(p => '<span class="chip">' + D250Face.html(p.name, 22) + esc(p.name) + '</span>').join("") : "";
 
   $("rlist").innerHTML = state.roster.map((p, i) => {
     const sid = seatOfName(p.name), isCalled = state.called.includes(p.name);
     const cls = ["rname", sid ? "seated" : "", p.dl ? "dl" : "", isCalled ? "called" : "", p.out ? "out" : ""].join(" ");
     const tag = p.dl ? "DL" : p.out ? "ABSENT" : sid ? "#" + seatNo[sid] + (isCalled ? " ✓" : "") : "NO SEAT";
-    return '<li><button class="' + cls + '" data-i="' + i + '"><span class="dot"></span><span class="nm">' + esc(p.name) + '</span><span class="tag">' + tag + '</span></button></li>';
+    return '<li><button class="' + cls + '" data-i="' + i + '"><span class="dot"></span>' + D250Face.html(p.name, 26) + '<span class="nm">' + esc(p.name) + '</span><span class="tag">' + tag + '</span></button></li>';
   }).join("");
   $("rCount").textContent = state.roster.length ? "· " + state.roster.length : "";
 
@@ -399,9 +407,15 @@ function seatHTML(r, s){
   const id = "r" + r + "s" + s, who = state.seats[id], p = who && person(who);
   const cls = ["seat", who ? "taken" : "", p && p.out ? "out" : "", who && state.called.includes(who) ? "called" : "", pick === id ? "pick" : ""].join(" ");
   return '<button class="' + cls + '" data-seat="' + id + '" aria-label="' + seatLabel(id) + (who ? ", " + esc(who) + (p.out ? ", absent" : "") : ", open") + '">' +
-         '<span class="no">' + seatNo[id] + '</span><span class="nm"' + (who ? ' title="' + esc(who) + '"' : '') + '>' + (who ? esc(shortName(who)) : "") + '</span></button>';
+         '<span class="no">' + seatNo[id] + '</span>' + (who ? D250Face.html(who, 34) : '') + '<span class="nm"' + (who ? ' title="' + esc(who) + '"' : '') + '>' + (who ? esc(shortName(who)) : "") + '</span></button>';
 }
-function say(who, where){ $("roWho").textContent = who; $("roWhere").textContent = where; }
+/* face: the student the readout is about (the org chart photo when there is one) */
+function say(who, where, face){
+  $("roWho").textContent = who; $("roWhere").textContent = where;
+  $("roFace").hidden = !face;
+  if (face && $("roFace").dataset.n !== face){ $("roFace").dataset.n = face; $("roFace").innerHTML = D250Face.html(face, 84); }
+  if (!face) delete $("roFace").dataset.n;
+}
 const idleWhere = () => !state.roster.length ? "Add your roster to start" : drawPool().length ? "Spin to call on a student" : "Everyone has been called. Reset calls to go again.";
 
 /* ----------------------------------------------------------------- wheel */
@@ -473,7 +487,7 @@ function spin(){
       shown = i; clearChase();
       const el = document.querySelector('[data-seat="' + slots[i].seat + '"]');
       if (el) el.classList.add("chase");
-      say(shortName(slots[i].name).toUpperCase(), "Seat " + seatNo[slots[i].seat]);
+      say(shortName(slots[i].name).toUpperCase(), "Seat " + seatNo[slots[i].seat], slots[i].name);
     }
     if (t < 1) requestAnimationFrame(frame); else land(chosen);
   })(start);
@@ -485,7 +499,7 @@ function land(chosen){
   if (!state.called.includes(chosen.name)) state.called.push(chosen.name);
   state.history.push({ name: chosen.name });
   render();
-  say(shortName(chosen.name).toUpperCase(), "→ " + seatLabel(chosen.seat));
+  say(shortName(chosen.name).toUpperCase(), "→ " + seatLabel(chosen.seat), chosen.name);
   const ro = $("readout"); ro.classList.remove("live"); void ro.offsetWidth; ro.classList.add("landed");
   const el = document.querySelector('[data-seat="' + chosen.seat + '"]');
   if (el){ el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650); }

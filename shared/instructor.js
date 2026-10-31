@@ -128,6 +128,27 @@
     return { value, set, dirty, save, fill: t => { ta.value = t; changed(); }, refresh: () => set(opts.text ? opts.text() : "") };
   }
 
+  /* ------------------------------------------------------------ faces
+     Org Chart style photo: round, ringed in the cadet's AS class color.
+     Names on the org chart ("Last, First", markers ignored) get their photo
+     from ../org-chart/photos; anyone else gets their initials.
+     D250Face.html(name, size) -> markup; D250Face.find(name) -> { key, cls } or null. */
+  const RING = { AS100: "r100", AS200: "r200", AS250: "r250", AS300: "r300", AS400: "r400", AS500: "r500", Graybeard: "rgb" };
+  function find(name) {
+    const m = (window.D250Cadets || {})[base(name).toLowerCase()];
+    return m ? { key: m[0], cls: m[1] } : null;
+  }
+  function initials(name) {
+    const [l = "", f = ""] = base(name).split(",").map(x => x.trim());
+    return ((f[0] || "") + (l[0] || "")).toUpperCase() || "?";
+  }
+  function faceHTML(name, size) {
+    const c = find(name);
+    return `<span class="d250-face ${c ? RING[c.cls] || "" : ""}" style="--sz:${size || 32}px" aria-hidden="true"><b>${esc(initials(name))}</b>${
+      c && c.key ? `<img src="../org-chart/photos/${esc(c.key)}.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+  }
+
   window.D250Steps = { mount: mountSteps };
+  window.D250Face = { html: faceHTML, find };
   window.D250Roster = { mount: mountRoster, base, lines };
 })();

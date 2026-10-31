@@ -121,6 +121,29 @@ nav.d250-steps button[aria-current] .live { color: #fff; }
 .d250-next { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 18px; }
 .d250-next .hint { margin: 0 auto 0 0; }
 
+/* Org Chart style face (D250Face.html): photo in a ring of the cadet's AS class color, initials if no photo */
+:root {
+  --as100: #2b67ad; --as200: #8f3a7c; --as250: #0f7b7b; --as300: #2f7d32; --as400: #b45309; --as500: #b42318; --gb: #1b2f57;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --as100: #7fb1ea; --as200: #d68cc4; --as250: #5cc8c8; --as300: #74c77a; --as400: #f0a35b; --as500: #f0776b; --gb: #c3cfe6;
+} }
+:root[data-theme="dark"] {
+  --as100: #7fb1ea; --as200: #d68cc4; --as250: #5cc8c8; --as300: #74c77a; --as400: #f0a35b; --as500: #f0776b; --gb: #c3cfe6;
+}
+.d250-face {
+  --ring: var(--d250-line-strong); position: relative; flex: none; display: inline-grid; place-items: center;
+  width: var(--sz, 32px); height: var(--sz, 32px); border-radius: 50%; overflow: hidden; vertical-align: middle;
+  background: var(--d250-surface-2); color: var(--d250-soft);
+  box-shadow: 0 0 0 2px var(--d250-surface), 0 0 0 calc(2px + max(1.5px, var(--sz, 32px) / 22)) var(--ring);
+}
+.d250-face b { font-size: calc(var(--sz, 32px) * .36); font-weight: 800; letter-spacing: .02em; }
+.d250-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.d250-face.r100 { --ring: var(--as100); } .d250-face.r200 { --ring: var(--as200); } .d250-face.r250 { --ring: var(--as250); }
+.d250-face.r300 { --ring: var(--as300); } .d250-face.r400 { --ring: var(--as400); } .d250-face.r500 { --ring: var(--as500); }
+.d250-face.rgb { --ring: var(--gb); }
+.chip .d250-face { margin-left: -6px; }
+
 /* roster panel */
 .d250-roster .r-presets-hd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; }
 .d250-roster .r-presets-hd .hint { margin: 0; }
