@@ -43,7 +43,14 @@ h2.sec { font-size: 18px; font-weight: 800; }
 .opts label { display: inline-flex; gap: 6px; align-items: center; }
 details.qs { margin-top: 4px; }
 details.qs summary { cursor: pointer; font-weight: 700; color: var(--d250-soft); }
-details.qs textarea { min-height: 260px; margin-top: 10px; }
+.qlist { list-style: none; margin: 10px 0 12px; padding: 0; border: 1px solid var(--d250-line); border-radius: 12px; overflow: hidden; counter-reset: q; }
+.qlist li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; background: var(--d250-surface); }
+.qlist li + li { border-top: 1px solid var(--d250-line); }
+.qlist li:nth-child(even) { background: var(--d250-surface-2); }
+.qlist .qn { counter-increment: q; display: grid; place-items: center; width: 28px; height: 28px; margin-top: 3px; border-radius: 50%; background: var(--d250-gold-bg); color: var(--d250-gold); font-weight: 800; font-size: 13px; }
+.qlist .qn::before { content: counter(q); }
+.qlist textarea { min-height: 0; height: auto; resize: none; overflow: hidden; line-height: 1.45; padding: 7px 10px; }
+.qlist .qdel { margin-top: 3px; width: 32px; height: 32px; padding: 0; font-size: 18px; line-height: 1; }
 
 /* round */
 .statement { padding: 20px 22px; }
@@ -56,6 +63,13 @@ details.qs textarea { min-height: 260px; margin-top: 10px; }
 .chip.cad { border-left: 4px solid var(--c); border-radius: 8px; cursor: pointer; padding: 5px 11px 5px 14px; margin: 3px; transition: transform .2s var(--d250-ease), border-color .2s; }
 .chip.cad:hover:not(:disabled) { border-color: var(--d250-gold); border-left-color: var(--c); transform: translateY(-1px); }
 .chip.cad:disabled { cursor: default; }
+#sRound .chip.cad:not(:disabled) { touch-action: none; cursor: grab; user-select: none; }
+.chip.cad.dragging { opacity: .35; }
+.chip.cad.ghost { position: fixed; left: 0; top: 0; z-index: 90; margin: 0; pointer-events: none; cursor: grabbing; box-shadow: 0 12px 28px rgba(0,0,0,.45); border-color: var(--d250-gold); }
+body.dnd, body.dnd * { cursor: grabbing !important; }
+.dropzone { transition: box-shadow .15s, background .15s; }
+body.dnd .dropzone { box-shadow: 0 0 0 1px var(--d250-line-strong); }
+body.dnd .dropzone.over { box-shadow: 0 0 0 3px var(--d250-gold); background: color-mix(in srgb, var(--d250-gold) 8%, var(--d250-surface)); }
 .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .col { background: var(--d250-surface); border: 1px solid var(--d250-line); border-top: 5px solid var(--k); border-radius: 12px; min-height: 220px; padding: 12px 14px; transition: box-shadow .25s, transform .25s var(--d250-ease); min-width: 0; }
 .col h2 { font-size: 26px; font-weight: 800; color: var(--k); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -155,10 +169,13 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
               <label>Board size <input type="number" id="boardIn" value="4" min="1"></label>
             </div>
             <details class="qs" style="margin-top:12px">
-              <summary>Statements (<span id="qCount">20</span>)</summary>
-              <p class="hint">One statement per line. They run in this order.</p>
-              <textarea id="qText" spellcheck="false"></textarea>
-              <div class="row"><button type="button" class="btn small quiet" id="qDefault">Restore the default statements</button></div>
+              <summary>Statements (<span id="qCount">10</span>)</summary>
+              <p class="hint">They run in this order, one per round.</p>
+              <ol class="qlist" id="qList"></ol>
+              <div class="row">
+                <button type="button" class="btn small" id="qAdd">+ Add statement</button>
+                <button type="button" class="btn small quiet" id="qDefault">Restore the default statements</button>
+              </div>
             </details>
           </div>
         </section>
@@ -193,7 +210,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
       <button class="btn quiet" id="clockStop">Stop</button>
     </div>
 
-    <div class="panel panel-bd" style="--i:1;border-top:4px solid var(--t2)">
+    <div class="panel panel-bd dropzone" data-drop="board" style="--i:1;border-top:4px solid var(--t2)">
       <div class="row" style="justify-content:space-between">
         <h2 class="sec">The Board <span class="hint" style="font-weight:400">evaluators this round, no points</span></h2>
         <button class="btn small" id="drawBoard">Draw new board</button>
@@ -202,9 +219,9 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
     </div>
 
     <div>
-      <p class="hint" style="margin:0 0 6px">Click a cadet to move them: Unplaced &rarr; Agree &rarr; Neutral &rarr; Disagree. Positions lock once prep starts.
+      <p class="hint" style="margin:0 0 6px">Drag a cadet into Agree, Neutral or Disagree, or between the Board and the field. Clicking a cadet also moves them: Unplaced &rarr; Agree &rarr; Neutral &rarr; Disagree. Positions lock once prep starts.
         <button class="linkbtn" id="randAll" style="margin-left:6px">(test: random)</button></p>
-      <div class="panel panel-bd" style="--i:2"><span class="label">Unplaced</span> <span id="unplaced" class="tray"></span></div>
+      <div class="panel panel-bd dropzone" data-drop="U" style="--i:2"><span class="label">Unplaced</span> <span id="unplaced" class="tray"></span></div>
     </div>
 
     <div class="cols" id="cols"></div>
@@ -273,25 +290,15 @@ const POS = [{ k: "A", n: "AGREE", c: "var(--agree)" }, { k: "N", n: "NEUTRAL", 
 
 const DEFAULT_Q = [
  "A leader should prioritize the team's success over an individual member's needs.",
- "Someone who delivers excellent results deserves more flexibility with the rules than someone who consistently underperforms.",
  "When a team makes a decision, every member should publicly support it, even those who strongly disagree.",
- "Giving everyone an equal opportunity is more important than ensuring everyone has an equal chance of success.",
  "A leader should share uncomfortable information with the team, even when the team cannot do anything about it.",
- "When someone makes an honest mistake, the consequences should depend more on the harm caused than on their intentions.",
  "The most qualified person should get the leadership position, even if someone else would benefit more from the experience.",
  "It is acceptable to let a teammate fail when stepping in would prevent them from learning an important lesson.",
- "A team should choose a reliable plan with average results over a risky plan with potentially exceptional results.",
- "A leader who inherits an unrealistic deadline should push the team to meet it before asking for an extension.",
  "A leader should enforce a rule they believe is unfair while working to change it.",
- "Team members should have a say in choosing their leader.",
- "An individual who contributes the most should receive the most credit, even when that recognition weakens team unity.",
  "It is better to make a timely decision with incomplete information than to delay until you are confident.",
  "Leaders should hold their strongest performers to a higher standard than everyone else.",
- "A team should address a member's poor performance internally before bringing it to the leader's attention.",
  "Maintaining a professional relationship with a teammate is more important than telling them exactly what you think.",
- "A leader should give people responsibilities before they have demonstrated that they are ready.",
- "A team member who identifies a serious problem has a responsibility to propose a solution.",
- "When resources are limited, a leader should invest more in struggling members than in those already excelling."
+ "A team member who identifies a serious problem has a responsibility to propose a solution."
 ];
 
 const KEY = "d250-make-the-call-v1";
@@ -308,6 +315,8 @@ function load(){
     s.teamNames = s.teamNames || ["Team 1", "Team 2", "Team 3", "Team 4"];
     s.teamCount = Math.min(4, Math.max(2, +s.teamCount || 4));
     s.questions = Array.isArray(s.questions) && s.questions.length ? s.questions : DEFAULT_Q.slice();
+    /* the default list went from 20 to 10 statements: move untouched old defaults to the new list */
+    if (!s.started && s.questions.length === 20 && DEFAULT_Q.every(q => s.questions.includes(q))) s.questions = DEFAULT_Q.slice();
     return s;
   }catch(e){ return null; }
 }
@@ -358,11 +367,30 @@ const roster = D250Roster.mount($("rosterPanel"), {
 });
 $("teamsIn").addEventListener("change", () => { S.teamCount = +$("teamsIn").value; save(); renderTeams(parseRoster(false)); renderScore(); });
 $("shuffleBtn").onclick = () => { if (S.started) return; const l = parseRoster(true); roster.fill(l.map(c => `${c.name}, ${c.team + 1}`).join("\n")); renderTeams(l); };
-$("qText").addEventListener("input", () => {
-  const qs = $("qText").value.split("\n").map(s => s.trim()).filter(Boolean);
-  S.questions = qs.length ? qs : DEFAULT_Q.slice(); $("qCount").textContent = S.questions.length; save();
-});
-$("qDefault").onclick = () => { S.questions = DEFAULT_Q.slice(); $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length; save(); };
+/* Statement editor: one numbered row per statement, add and remove. Empty rows
+   are kept while editing but never played. */
+let qDraft = null;
+const fit = ta => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; };
+function saveQs(){
+  const qs = qDraft.map(q => q.trim()).filter(Boolean);
+  S.questions = qs.length ? qs : DEFAULT_Q.slice();
+  $("qCount").textContent = S.questions.length; save();
+}
+function renderQs(focusLast){
+  if (!qDraft) qDraft = S.questions.slice();
+  $("qList").innerHTML = qDraft.map((q, i) => `<li><span class="qn" aria-hidden="true"></span>
+    <textarea rows="2" data-qi="${i}" aria-label="Statement ${i + 1}" placeholder="Type a statement">${esc(q)}</textarea>
+    <button type="button" class="btn quiet qdel" data-qdel="${i}" aria-label="Remove statement ${i + 1}" title="Remove" ${qDraft.length < 2 ? "disabled" : ""}>&times;</button></li>`).join("");
+  document.querySelectorAll("[data-qi]").forEach(ta => {
+    fit(ta);
+    ta.addEventListener("input", () => { qDraft[+ta.dataset.qi] = ta.value.replace(/\s*\n\s*/g, " "); fit(ta); saveQs(); });
+  });
+  document.querySelectorAll("[data-qdel]").forEach(b => b.onclick = () => { qDraft.splice(+b.dataset.qdel, 1); saveQs(); renderQs(); });
+  if (focusLast){ const all = document.querySelectorAll("[data-qi]"); all[all.length - 1].focus(); }
+}
+$("qAdd").onclick = () => { qDraft.push(""); renderQs(true); };
+$("qDefault").onclick = () => { S.questions = DEFAULT_Q.slice(); qDraft = S.questions.slice(); saveQs(); renderQs(); };
+document.querySelector("details.qs").addEventListener("toggle", () => document.querySelectorAll("[data-qi]").forEach(fit));
 /* Leaving step 1 for the rounds locks the roster and starts the game (once). */
 function start(){
   if (roster.dirty() && !roster.save()) return false;
@@ -404,12 +432,12 @@ function renderQ(){
   st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
 }
 function renderRound(){
-  $("boardList").innerHTML = S.board.map(n => chip(n, "disabled")).join("") || '<span class="muted">none</span>';
+  $("boardList").innerHTML = S.board.map(n => chip(n, S.awarded ? "disabled" : 'data-board="1"')).join("") || '<span class="muted">none</span>';
   const players = S.cadets.filter(c => !S.board.includes(c.name));
   $("unplaced").innerHTML = players.filter(c => !S.pos[c.name]).map(c => chip(c.name)).join("") || '<span class="muted">everyone is placed</span>';
   $("cols").innerHTML = POS.map(p => {
     const inn = players.filter(c => S.pos[c.name] === p.k), share = inn.length ? S.pool / inn.length : 0;
-    return `<div class="col ${S.winners.includes(p.k) ? "win" : ""}" style="--k:${p.c}">
+    return `<div class="col dropzone ${S.winners.includes(p.k) ? "win" : ""}" data-drop="${p.k}" style="--k:${p.c}">
       <h2>${p.n}<small>${inn.length} cadet${inn.length === 1 ? "" : "s"}${inn.length ? ` · ${fmt(share)} pts each if they win` : ""}</small></h2>
       <button class="pick" data-w="${p.k}">${S.winners.includes(p.k) ? "WINNER" : "Board picks this"}</button>
       <div class="tray">${inn.map(c => chip(c.name)).join("")}</div></div>`;
@@ -417,6 +445,7 @@ function renderRound(){
   $("awardBtn").disabled = !S.winners.length || !!S.awarded;
   if (!spinning) drawWheel();
   document.querySelectorAll("#unplaced .chip, #cols .chip").forEach(b => b.onclick = () => {
+    if (S.awarded || dropped) return;
     const order = [undefined, "A", "N", "D"], cur = S.pos[b.dataset.n];
     const nx = order[(order.indexOf(cur) + 1) % 4]; nx ? S.pos[b.dataset.n] = nx : delete S.pos[b.dataset.n]; save(); renderRound();
   });
@@ -456,6 +485,56 @@ $("undoBtn").onclick = () => {
 };
 $("endBtn").onclick = () => { if (!S.started || !confirm("End the game now and reveal the final results?")) return; S.finished = true; save(); showFinal(); };
 $("randAll").onclick = () => { S.cadets.filter(c => !S.board.includes(c.name)).forEach(c => S.pos[c.name] = "AND"[Math.floor(Math.random() * 3)]); save(); renderRound(); };
+
+/* ---------- drag and drop (mouse, touch and pen) ----------
+   Drag a cadet chip onto Agree, Neutral, Disagree, Unplaced or the Board.
+   Dropping a field cadet on the Board makes them an evaluator this round;
+   dragging a Board member into the field takes them off the Board. */
+let drag = null, dropped = false;
+function moveCadet(n, to){
+  if (S.awarded || !S.cadets.some(c => c.name === n)) return;
+  const onBoard = S.board.includes(n);
+  if (to === "board"){ if (onBoard) return; S.board.push(n); delete S.pos[n]; }
+  else {
+    if (onBoard) S.board = S.board.filter(x => x !== n);
+    if (to === "U") delete S.pos[n]; else S.pos[n] = to;
+  }
+  save(); renderRound();
+}
+function zoneAt(x, y){ const el = document.elementFromPoint(x, y); return el && el.closest("#sRound [data-drop]"); }
+function endDrag(e, cancel){
+  if (!drag) return;
+  if (drag.on){
+    const z = cancel ? null : zoneAt(e.clientX, e.clientY);
+    drag.ghost.remove(); drag.el.classList.remove("dragging"); document.body.classList.remove("dnd");
+    document.querySelectorAll(".dropzone.over").forEach(z => z.classList.remove("over"));
+    dropped = true; setTimeout(() => { dropped = false; }, 0);
+    if (z) moveCadet(drag.n, z.dataset.drop);
+  }
+  drag = null;
+}
+document.addEventListener("pointerdown", e => {
+  const el = e.target.closest("#sRound .chip.cad[data-n]");
+  if (!el || el.disabled || e.button > 0 || S.awarded || el.closest("#result")) return;
+  drag = { n: el.dataset.n, el, x: e.clientX, y: e.clientY, on: false, id: e.pointerId };
+});
+document.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.on){
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    const r = drag.el.getBoundingClientRect();
+    drag.on = true; drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+    drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost"); drag.ghost.style.width = r.width + "px";
+    document.body.appendChild(drag.ghost); drag.el.classList.add("dragging"); document.body.classList.add("dnd");
+  }
+  e.preventDefault();
+  drag.ghost.style.transform = `translate(${e.clientX - drag.dx}px, ${e.clientY - drag.dy}px) rotate(-2deg)`;
+  const z = zoneAt(e.clientX, e.clientY);
+  document.querySelectorAll(".dropzone").forEach(d => d.classList.toggle("over", d === z));
+  if (e.clientY < 60) scrollBy(0, -14); else if (e.clientY > innerHeight - 60) scrollBy(0, 14);
+});
+document.addEventListener("pointerup", e => endDrag(e, false));
+document.addEventListener("pointercancel", e => endDrag(e, true));
 
 /* ---------- speaker wheel ---------- */
 let spinPos = "A", angle = 0, spinning = false;
@@ -572,7 +651,7 @@ function show(){
   $("poolIn").value = S.pool; $("boardIn").value = S.boardSize; $("teamsIn").value = String(T());
   $("teamsIn").disabled = S.started; $("shuffleBtn").disabled = S.started;
   $("startBtn").innerHTML = S.started ? "Back to the rounds &rarr;" : "Lock roster and start &rarr;";
-  $("qText").value = S.questions.join("\n"); $("qCount").textContent = S.questions.length;
+  qDraft = S.questions.slice(); renderQs(); $("qCount").textContent = S.questions.length;
   renderScore();
   renderTeams(S.started ? S.cadets : parseRoster(false));
   $("sRound").hidden = !S.started; $("notStarted").hidden = S.started;
