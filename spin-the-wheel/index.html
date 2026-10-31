@@ -108,6 +108,14 @@ label.label { cursor: pointer; }
 .seat.called::after { content: "\2713"; position: absolute; top: 2px; right: 6px; font-size: 11px; color: var(--d250-gold); font-weight: 800; }
 .seat.pick { outline: 3px solid var(--d250-gold); outline-offset: 1px; }
 .arranging .seat { border-style: dashed; }
+/* drag and drop: drag a student onto another seat to swap (or onto an open seat to move) */
+.seat.taken { user-select: none; -webkit-user-select: none; }
+.arranging .seat { touch-action: none; }
+.arranging .seat.taken { cursor: grab; }
+.seat.dragging { opacity: .35; }
+.seat.ghost { position: fixed; left: 0; top: 0; z-index: 90; margin: 0; pointer-events: none; box-shadow: 0 12px 28px rgba(0,0,0,.45); border-color: var(--d250-gold); border-style: solid; }
+body.dnd, body.dnd * { cursor: grabbing !important; }
+.seat.over { outline: 3px solid var(--d250-gold); outline-offset: 1px; background: var(--d250-gold-bg); }
 .seat.chase { background: var(--d250-gold); border-color: var(--d250-gold); transition: none; transform: scale(1.05); }
 .seat.chase .nm, .seat.chase .no { color: var(--d250-page); }
 .seat.pending { background: var(--d250-surface-2); border-color: var(--d250-line); border-style: dashed; }
@@ -241,7 +249,7 @@ label.label { cursor: pointer; }
       <div class="panel-hd noprint">
         <span class="label">Room &middot; <span id="seatCount"></span> seats</span>
         <div class="modebar">
-          <button class="btn small" id="arrange" aria-pressed="false" title="Click two seats to swap them">Move seats</button>
+          <button class="btn small" id="arrange" aria-pressed="false" title="Drag a student to another seat, or click two seats to swap them">Move seats</button>
           <button class="btn small" id="shuffle">Reroll all seat assignments</button>
           <button class="btn small" id="saveChart" title="Remember this seating as the assigned chart">Save chart</button>
           <button class="btn small" id="restore" title="Put everyone back in the saved chart">Restore chart</button>
@@ -353,9 +361,8 @@ function reconcile(){
 let unseatedCount = reconcile();
 
 const seatOfName = name => seatIds.find(id => state.seats[id] === name);
-/* The wheel carries every seated student in seat order, so the highlight sweeps
-   the room. Absent or already-called students keep their slot, greyed out, but
-   cannot be landed on. */
+/* Every seated student in seat order, so the highlight sweeps the room.
+   ok: present and not called yet (can be landed on). */
 function wheelOrder(){
   return seatIds.filter(id => state.seats[id]).map(id => {
     const p = person(state.seats[id]);
@@ -363,6 +370,10 @@ function wheelOrder(){
   });
 }
 const drawPool = () => wheelOrder().filter(s => s.ok);
+/* What the wheel shows. With Don't Repeat Students on, only the students who can
+   still be called are on it: called and absent students come off the wheel.
+   With it off, everyone seated is on it and absent students are greyed out. */
+const wheelSlots = () => state.noRepeat ? drawPool() : wheelOrder().map(s => Object.assign(s, { ok: !person(s.name).out }));
 /* everyone seated and present, called or not */
 const present = () => wheelOrder().filter(s => !person(s.name).out);
 const shortName = n => { const [last, first] = n.split(",").map(s => s.trim()); return first ? last + " " + first[0] + "." : last; };
@@ -408,7 +419,7 @@ function render(){
   $("undo").disabled = !state.history.length;
   $("noRepeat").setAttribute("aria-checked", String(state.noRepeat));
   $("repeatHint").textContent = state.noRepeat
-    ? "Each student comes up once. When everyone has been called, the next spin starts a new round."
+    ? "Each student comes up once and comes off the wheel once called. When everyone has been called, the next spin starts a new round."
     : "Anyone can come up on any spin, even twice in a row.";
   $("undo").hidden = !state.noRepeat;
   $("restore").disabled = !state.chart;
@@ -419,7 +430,7 @@ function render(){
   $("legendCalled").hidden = !state.noRepeat;
   $("arrange").setAttribute("aria-pressed", String(arranging));
   $("arrange").textContent = arranging ? "Done moving" : "Move seats";
-  $("modeHint").textContent = arranging ? "Click a seat, then another, to swap them" : "Click a seat to mark that student absent";
+  $("modeHint").textContent = arranging ? "Drag a student to another seat, or click two seats to swap them" : "Click a seat to mark that student absent";
   const ms = clampSpin(state.spinMs);
   $("spinDur").textContent = (ms / 1000).toFixed(1) + "s";
   $("spinShorter").disabled = ms <= SPIN_MIN;
@@ -450,7 +461,7 @@ const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).
 const FONT = getComputedStyle(document.body).fontFamily;
 
 function drawWheel(rot, list){
-  const slots = list || wheelOrder();
+  const slots = list || wheelSlots();
   const R = cv.width / 2;
   cx.clearRect(0, 0, cv.width, cv.height);
   const line = css("--d250-line-strong"), surf = css("--d250-surface"), surf2 = css("--d250-surface-2");
@@ -459,7 +470,7 @@ function drawWheel(rot, list){
     cx.beginPath(); cx.arc(R, R, R - 8, 0, Math.PI * 2);
     cx.fillStyle = surf2; cx.fill(); cx.strokeStyle = line; cx.lineWidth = 3; cx.stroke();
     cx.fillStyle = faint; cx.font = "700 30px " + FONT; cx.textAlign = "center"; cx.textBaseline = "middle";
-    cx.fillText(state.roster.length ? "NO ONE SEATED" : "ADD YOUR CLASS", R, R);
+    cx.fillText(!state.roster.length ? "ADD YOUR CLASS" : state.noRepeat && present().length ? "ROUND COMPLETE" : "NO ONE SEATED", R, R);
     return;
   }
   const seg = (Math.PI * 2) / slots.length, small = slots.length > 20;
@@ -493,7 +504,7 @@ function spin(){
   if (spinning) return;
   /* Don't repeat students: once everyone has been called, start a new round */
   if (state.noRepeat && !drawPool().length && present().length){ state.called = []; state.history = []; render(); }
-  const slots = wheelOrder().map(s => state.noRepeat ? s : Object.assign(s, { ok: !person(s.name).out }));
+  const slots = wheelSlots();
   const live = slots.map((s, i) => s.ok ? i : -1).filter(i => i >= 0);
   if (!live.length) return;
   if (arranging){ arranging = false; pick = null; render(); }
@@ -502,16 +513,29 @@ function spin(){
   $("readout").classList.add("live"); $("readout").classList.remove("landed");
   if (reduced()){ land(chosen); return; }
   spinning = true; $("spin").disabled = true;
-  /* Stop anywhere inside the winner's slice, not dead center, and spend the
-     last part of the spin crawling (quintic ease-out) so the finish is close. */
+  /* Stop anywhere inside the winner's slice, not dead center. The spin has two
+     parts: a fast spin that slows down, then a slow crawl over the last slice or
+     two that keeps creeping before it stops. The two parts join at the same
+     speed, so there is no jerk. */
   const turns = Math.max(2, Math.round(dur / 560));
   const offset = (Math.random() - .5) * seg * .86;
   const target = -(Math.PI * 2 * turns) - pickI * seg + offset;
   const start = performance.now(), from = angle % (Math.PI * 2);
+  const total = from - target;                                   /* radians to travel */
+  const crawlMs = Math.min(2600, Math.max(400, dur * .45)), fastMs = dur - crawlMs;
+  const crawl = Math.min(total * .25, seg * (1 + Math.random() * .8));  /* radians in the crawl */
+  const fast = total - crawl;
+  let lin = 3 * crawl * fastMs / crawlMs;                        /* matches the crawl's starting speed */
+  if (lin > fast) lin = fast;
+  const dist = t => {                                            /* t in ms since start */
+    if (t < fastMs){ const u = t / fastMs; return lin * u + (fast - lin) * (1 - Math.pow(1 - u, 4)); }
+    const u = Math.min(1, (t - fastMs) / crawlMs);
+    return fast + crawl * (1 - Math.pow(1 - u, 3));
+  };
   let shown = -1;
   (function frame(now){
-    const t = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - t, 5);
-    angle = from + (target - from) * e;
+    const t = Math.min(1, (now - start) / dur);
+    angle = from - dist(now - start);
     drawWheel(angle, slots);
     const i = t < 1 ? (Math.round(-angle / seg) % n + n) % n : pickI;
     if (i !== shown){
@@ -629,7 +653,7 @@ function setLayout(){
 
 $("rows").addEventListener("click", e => {
   const btn = e.target.closest("[data-seat]");
-  if (!btn || spinning) return;
+  if (!btn || spinning || dropped) return;
   const id = btn.dataset.seat;
   if (arranging){
     if (!pick){ pick = id; render(); return; }
@@ -639,6 +663,54 @@ $("rows").addEventListener("click", e => {
   const p = state.seats[id] && person(state.seats[id]);
   if (p) toggleOut(p);
 });
+/* Drag and drop: drag a seated student onto another seat. A taken seat swaps,
+   an open seat just moves them. Works with a mouse any time; with touch it works
+   in Move seats mode (outside it, a finger on a seat still scrolls the page). */
+let drag = null, dropped = false;
+function seatAt(x, y){ const el = document.elementFromPoint(x, y); return el && el.closest("#rows [data-seat]"); }
+function endDrag(e, cancel){
+  if (!drag) return;
+  if (drag.on){
+    const t = cancel ? null : seatAt(e.clientX, e.clientY);
+    drag.ghost.remove(); drag.el.classList.remove("dragging"); document.body.classList.remove("dnd");
+    document.querySelectorAll("#rows .seat.over").forEach(el => el.classList.remove("over"));
+    dropped = true; setTimeout(() => { dropped = false; }, 0);
+    if (t && t.dataset.seat !== drag.id){
+      const a = drag.id, b = t.dataset.seat, who = state.seats[a];
+      state.seats[a] = state.seats[b]; state.seats[b] = who;
+      if (!state.seats[a]) delete state.seats[a];
+      pick = null;
+      say("Ready", shortName(who) + " moved to " + seatLabel(b) + (state.seats[a] ? ", swapped with " + shortName(state.seats[a]) : ""), who);
+      render();
+      const el = document.querySelector('#rows [data-seat="' + b + '"]');
+      if (el){ el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650); }
+    }
+  }
+  drag = null;
+}
+document.addEventListener("pointerdown", e => {
+  const el = e.target.closest("#rows .seat.taken[data-seat]");
+  if (!el || spinning || e.button > 0) return;
+  drag = { id: el.dataset.seat, el, x: e.clientX, y: e.clientY, on: false, pid: e.pointerId };
+});
+document.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.pid) return;
+  if (!drag.on){
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    const r = drag.el.getBoundingClientRect();
+    drag.on = true; drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+    drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost"); drag.ghost.removeAttribute("data-seat");
+    drag.ghost.style.width = r.width + "px"; drag.ghost.style.height = r.height + "px";
+    document.body.appendChild(drag.ghost); drag.el.classList.add("dragging"); document.body.classList.add("dnd");
+  }
+  e.preventDefault();
+  drag.ghost.style.transform = `translate(${e.clientX - drag.dx}px, ${e.clientY - drag.dy}px) rotate(-2deg)`;
+  const t = seatAt(e.clientX, e.clientY);
+  document.querySelectorAll("#rows .seat").forEach(el => el.classList.toggle("over", el === t && el !== drag.el));
+  if (e.clientY < 60) scrollBy(0, -14); else if (e.clientY > innerHeight - 60) scrollBy(0, 14);
+});
+document.addEventListener("pointerup", e => endDrag(e, false));
+document.addEventListener("pointercancel", e => endDrag(e, true));
 $("rlist").addEventListener("click", e => {
   const btn = e.target.closest("[data-i]");
   if (!btn || spinning) return;

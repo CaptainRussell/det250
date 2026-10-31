@@ -138,7 +138,7 @@ nav.d250-steps button[aria-current] .live { color: #fff; }
   box-shadow: 0 0 0 2px var(--d250-surface), 0 0 0 calc(2px + max(1.5px, var(--sz, 32px) / 22)) var(--ring);
 }
 .d250-face b { font-size: calc(var(--sz, 32px) * .36); font-weight: 800; letter-spacing: .02em; }
-.d250-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.d250-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; user-select: none; }
 .d250-face.r100 { --ring: var(--as100); } .d250-face.r200 { --ring: var(--as200); } .d250-face.r250 { --ring: var(--as250); }
 .d250-face.r300 { --ring: var(--as300); } .d250-face.r400 { --ring: var(--as400); } .d250-face.r500 { --ring: var(--as500); }
 .d250-face.rgb { --ring: var(--gb); }
