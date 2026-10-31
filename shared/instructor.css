@@ -90,6 +90,11 @@ textarea:focus, input:focus, select:focus { outline: 2px solid var(--d250-gold);
 /* ---------- shared class roster picker ---------- */
 .roster-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 
+/* ---------- class / course name ---------- */
+.classname { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--d250-soft); font-weight: 600; }
+.classname input { width: 170px; padding: 6px 10px; }
+.class-tag { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--d250-gold-bg); color: var(--d250-gold); font-weight: 700; font-size: 12.5px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }

@@ -107,7 +107,7 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
 @media (prefers-reduced-motion: reduce) { .pbar { transition: none; } }
 </style>
 </head>
-<body>
+<body data-d250-title="Make the Call">
 <a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
 <header class="d250-head" style="--tone:#0f766e;--d250-measure:1280px">
@@ -116,9 +116,10 @@ details.rules ul { margin: 10px 0 0; padding-left: 1.2em; }
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
       <h1>Make the Call</h1>
-      <p class="d250-head-sub">Agree, Neutral or Disagree. Cadets take a position, argue it to a board, and split the pool.</p>
+      <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>Agree, Neutral or Disagree. Cadets take a position, argue it to a board, and split the pool.</p>
     </div>
     <div class="tools">
+      <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
       <button class="btn small" id="setupBtn">Roster and teams</button>
       <button class="btn small" id="undoBtn">Undo last award</button>
       <button class="btn small" id="endBtn">End early</button>

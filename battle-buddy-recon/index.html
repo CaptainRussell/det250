@@ -152,7 +152,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
 @media (prefers-reduced-motion: reduce) { .ring.over .time { animation: none; } }
 </style>
 </head>
-<body>
+<body data-d250-title="Battle Buddy Recon">
 <a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
 <header class="d250-head" style="--tone:#4a5a36;--d250-measure:1180px">
@@ -161,9 +161,10 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
       <h1>Battle Buddy Recon</h1>
-      <p class="d250-head-sub">OPSEC practical exercise: pair up, run open-source recon on your partner, brief out.</p>
+      <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>OPSEC practical exercise: pair up, run open-source recon on your partner, brief out.</p>
     </div>
     <div class="headctl">
+      <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
       <nav class="tabs" aria-label="Exercise phases">
         <button data-view="brief"><span class="n">1</span>Brief</button>
         <button data-view="pair"><span class="n">2</span>Pairing</button>

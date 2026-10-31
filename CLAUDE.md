@@ -26,7 +26,7 @@
 | `battle-buddy-recon/` | Instructor tool: OPSEC exercise (brief, pairing wheel, recon clock, brief-out queue). |
 | `practicum-adventure/` | Instructor tool: Practicum Adventure classroom RPG, copied from the `CaptainRussell/practicum-adventure` repo (that repo still has its own dev tools, tests and docs). GM console + Field Guide use the hub look (`hub-skin.css`); projector (`#player`) and phones (`join.html`) keep the 8-bit look. `settings.js` holds the Game settings card (instructor name `GM_NAME`, course, IG name, the four NPC rosters), saved in `d250-practicum-settings-v1`. |
 | `shared/instructor.css` | Common panels, buttons, fields for instructor tools (load after `det250.css`). |
-| `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) shared by the instructor tools. |
+| `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) and class name (`d250-class-name-v1`, `D250Class.name()`) shared by the instructor tools. Practicum Adventure uses the class name as its course unless its Game settings set one. |
 | `tools/encrypt.mjs`, `tools/locked-template.html` | Re-encrypt a password-protected page. |
 | `README.md` | Short how-to. |
 
@@ -35,7 +35,7 @@
 2. Add the shared bar: `<link rel="stylesheet" href="../shared/det250.css">` in `<head>`, and copy the `<a class="d250-bar" ...>` line from the top of `org-chart/index.html` to just after `<body>`.
 3. Add the standard tool header (`<header class="d250-head" style="--tone:...">`) and footer (`<footer class="d250-foot">`). Markup for both is in the comments in `shared/det250.css`; copy from `org-chart/index.html`. Use the tool's hub card `tone`, and the `--d250-*` tokens for colors.
 4. Add one entry to `TOOLS` in the root `index.html`.
-5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock), `d250-class-roster-v1` (shared class roster), `d250-spin-wheel-v1`, `d250-make-the-call-v1`, `d250-battle-buddy-v1`, `d250-practicum-settings-v1`, and Practicum Adventure's own `sq_*` keys.
+5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock), `d250-class-roster-v1` (shared class roster), `d250-class-name-v1` (shared class or course name, set in the "Class" box on each instructor tool), `d250-spin-wheel-v1`, `d250-make-the-call-v1`, `d250-battle-buddy-v1`, `d250-practicum-settings-v1`, and Practicum Adventure's own `sq_*` keys.
 6. Instructor tools never ship a built-in roster: names are entered on the page and kept in the browser.
 
 ## Password-protected page (Flight Staff Evaluation)

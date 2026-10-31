@@ -120,7 +120,7 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
 }
 </style>
 </head>
-<body>
+<body data-d250-title="Spin the Wheel">
 <a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
 <header class="d250-head" style="--tone:#b45309;--d250-measure:1180px">
@@ -129,8 +129,9 @@ canvas#wheel { width: 100%; max-width: 272px; height: auto; display: block; }
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
       <h1>Spin the Wheel</h1>
-      <p class="d250-head-sub">Seating chart and cold-call wheel. Add your class, set up the room, spin.</p>
+      <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>Seating chart and cold-call wheel. Add your class, set up the room, spin.</p>
     </div>
+    <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
     <div class="tally" aria-live="polite">
       <div><div class="label">To call</div><div class="n gold" id="tPool">0</div></div>
       <div><div class="label">Seated</div><div class="n" id="tSeated">0</div></div>

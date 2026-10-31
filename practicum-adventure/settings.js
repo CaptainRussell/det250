@@ -7,7 +7,7 @@
    instructor's name from the join link (?gm=) and from the game state.
    ===================================================================== */
 const PA_SETTINGS_KEY = 'd250-practicum-settings-v1';
-const PA_DEFAULTS = { gm: 'Captain Russell', course: 'AFAS 3410 (Fall 2026)', bossRank: 'Lt Col', bossName: 'Cacic' };
+const PA_DEFAULTS = { gm: 'Captain Russell', course: '', bossRank: 'Lt Col', bossName: 'Cacic' };
 const PA = (() => {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(PA_SETTINGS_KEY) || 'null'); } catch (e) { }
@@ -17,6 +17,8 @@ const PA = (() => {
   try { urlGm = (new URLSearchParams(location.search).get('gm') || '').trim().slice(0, 40); } catch (e) { }
   if (urlGm) { s.gm = urlGm; try { localStorage.setItem('sq_gm_name', urlGm); } catch (e) { } }
   else if (!saved) { try { s.gm = localStorage.getItem('sq_gm_name') || s.gm; } catch (e) { } }
+  // no course of its own: use the class name shared by the other instructor tools
+  if (!s.course) { try { s.course = (localStorage.getItem('d250-class-name-v1') || '').trim(); } catch (e) { } }
   s.saved = !!saved;
   return s;
 })();
@@ -42,10 +44,10 @@ function paNamesText(r) {
 function paSettingsCard() {
   const pin = typeof rosterPin === 'function' ? rosterPin : () => '';
   return `<div class="gcard pa-settings"><h3>Game settings</h3>
-    <p class="note">Make the game yours: your name (what cadets see, as in "Waiting for ${paEsc(GM_NAME)}"), your course, the Inspector General at the end, and the four name rosters the team picks from for NPCs. Saved in this browser.</p>
+    <p class="note">Make the game yours: your name (what cadets see, as in "Waiting for ${paEsc(GM_NAME)}"), your course (shown on the title screen, Field Guide and team report), the Inspector General at the end, and the four name rosters the team picks from for NPCs. Saved in this browser.</p>
     <div class="pa-grid">
       <label>Instructor name<input type="text" id="paGm" maxlength="40" value="${paEsc(PA.gm)}"></label>
-      <label>Course (title screen)<input type="text" id="paCourse" maxlength="40" value="${paEsc(PA.course)}"></label>
+      <label>Course (title screen)<input type="text" id="paCourse" maxlength="40" placeholder="e.g. AFAS 3410" value="${paEsc(PA.course)}"></label>
       <label>IG rank<input type="text" id="paBossRank" maxlength="12" value="${paEsc(PA.bossRank)}"></label>
       <label>IG last name<input type="text" id="paBossName" maxlength="24" value="${paEsc(PA.bossName)}"></label>
     </div>
