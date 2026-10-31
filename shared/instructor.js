@@ -159,9 +159,11 @@
        labels: slice text; rot: wheel angle; color(i): a CSS color for slice i
        (default: the four wheel colors in turn); dim(i): greyed out; hi: index
        to light up; empty: text when there are no slices.
-     D250Wheel.spin({ n, pick, from, dur, onFrame(rot, i), onDone(rot) })
+     D250Wheel.spin({ n, pick, from, dur, onFrame(rot, i), onDone(rot), win })
        Turns six to eight times, slows down, then creeps over the last slice
        or two before it stops on slice `pick`. i is the slice under the needle.
+       win: the window that drives the animation (a pop-out window keeps
+       animating even when the main window is covered by slides).
      D250Wheel.at(rot, n): the slice under the needle. */
   const TAU = Math.PI * 2;
   const cssv = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -215,12 +217,12 @@
       if (t < fastMs) { const u = t / fastMs; return lin * u + (fast - lin) * (1 - Math.pow(1 - u, 4)); }
       const u = Math.min(1, (t - fastMs) / crawlMs); return fast + crawl * (1 - Math.pow(1 - u, 3));
     };
-    const t0 = performance.now();
-    (function frame(now) {
-      const t = Math.min(dur, now - t0), rot = from - dist(t);
+    const t0 = performance.now(), raf = cb => (o.win || window).requestAnimationFrame(cb);
+    (function frame() {
+      const t = Math.min(dur, performance.now() - t0), rot = from - dist(t);
       if (o.onFrame) o.onFrame(rot, t < dur ? wheelAt(rot, n) : o.pick);
-      if (t < dur) requestAnimationFrame(frame); else o.onDone(end);
-    })(t0);
+      if (t < dur) raf(frame); else o.onDone(end);
+    })();
   }
 
   /* Photos are never dragged on their own: grabbing a seat or chip by its photo
