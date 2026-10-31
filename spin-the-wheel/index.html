@@ -110,6 +110,10 @@ label.label { cursor: pointer; }
 .arranging .seat { border-style: dashed; }
 .seat.chase { background: var(--d250-gold); border-color: var(--d250-gold); transition: none; transform: scale(1.05); }
 .seat.chase .nm, .seat.chase .no { color: var(--d250-page); }
+.seat.pending { background: var(--d250-surface-2); border-color: var(--d250-line); border-style: dashed; }
+.seat.pending .no { color: var(--d250-faint); }
+.seat.rolling { background: var(--d250-gold-bg); border-color: var(--d250-gold); }
+.seat.rolling .nm { color: var(--d250-gold); }
 .seat.flash { animation: land .6s var(--d250-ease); }
 @keyframes land { 0% { transform: scale(.88); background: var(--d250-gold); border-color: var(--d250-gold); } 100% { transform: scale(1); } }
 
@@ -173,7 +177,7 @@ label.label { cursor: pointer; }
           <label>Seats right of aisle <input type="number" id="nRight" min="0" max="8"></label>
         </div>
         <div class="panel-bd">
-          <p class="hint" style="margin:0">Set the room to match your classroom. Everyone is seated from the front automatically; on step 2 you can move or shuffle seats and save the chart.</p>
+          <p class="hint" style="margin:0">Set the room to match your classroom. Everyone is seated from the front automatically; on step 2 you can move seats, reroll all seat assignments and save the chart.</p>
         </div>
       </section>
     </div>
@@ -238,7 +242,7 @@ label.label { cursor: pointer; }
         <span class="label">Room &middot; <span id="seatCount"></span> seats</span>
         <div class="modebar">
           <button class="btn small" id="arrange" aria-pressed="false" title="Click two seats to swap them">Move seats</button>
-          <button class="btn small" id="shuffle">Shuffle seats</button>
+          <button class="btn small" id="shuffle">Reroll all seat assignments</button>
           <button class="btn small" id="saveChart" title="Remember this seating as the assigned chart">Save chart</button>
           <button class="btn small" id="restore" title="Put everyone back in the saved chart">Restore chart</button>
           <button class="btn small" id="print">Print</button>
@@ -553,13 +557,52 @@ $("spinLonger").addEventListener("click", () => nudgeSpin(SPIN_STEP));
 $("print").addEventListener("click", () => window.print());
 
 $("arrange").addEventListener("click", () => { if (spinning) return; arranging = !arranging; pick = null; render(); });
+/* Reroll all seat assignments: deal everyone a new random seat, then reveal
+   it seat by seat (#1 first). Each seat flickers through names like a slot
+   reel and locks on its new student. Reduced motion shows the result at once. */
 $("shuffle").addEventListener("click", () => {
-  if (spinning) return;
+  if (spinning || !inClass().length) return;
+  if (arranging){ arranging = false; pick = null; }
   const names = inClass().map(p => p.name);
   for (let i = names.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
   state.seats = {}; seatIds.forEach((id, i) => { state.seats[id] = names[i] || null; });
   unseatedCount = reconcile();
-  say("Ready", "Seats shuffled. Save chart to keep it."); render();
+  render();
+  const done = () => say("Ready", "New seats assigned. Save chart to keep them.");
+  const order = seatIds.filter(id => state.seats[id]);
+  if (reduced() || order.length < 2){ done(); return; }
+  spinning = true; $("spin").disabled = true;
+  document.querySelectorAll(".modebar .btn").forEach(b => { b.dataset.wasDisabled = b.disabled ? "1" : ""; b.disabled = true; });
+  say("Rerolling…", "Assigning new seats", null);
+  const ROLL = 750, STEP = Math.max(45, Math.min(150, 2600 / order.length)), FLICK = 75;
+  const reel = (el, n) => {
+    el.querySelector(".nm").textContent = shortName(n);
+    const f = el.querySelector(".d250-face");
+    if (f) f.outerHTML = D250Face.html(n, 34); else el.querySelector(".no").insertAdjacentHTML("afterend", D250Face.html(n, 34));
+  };
+  /* hide the new seats until their turn, so the reveal is not spoiled */
+  const els = order.map(id => document.querySelector('[data-seat="' + id + '"]'));
+  els.forEach(el => { if (!el) return; el.classList.add("pending"); el.querySelector(".nm").textContent = ""; const f = el.querySelector(".d250-face"); if (f) f.remove(); });
+  const t0 = performance.now(), locked = new Set(), lastFlick = {};
+  (function frame(now){
+    order.forEach((id, k) => {
+      const el = els[k]; if (!el || locked.has(k)) return;
+      const start = t0 + k * STEP;
+      if (now >= start + ROLL){
+        locked.add(k); el.classList.remove("rolling"); reel(el, state.seats[id]);
+        el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 650);
+        say(shortName(state.seats[id]).toUpperCase(), "Seat " + seatNo[id], state.seats[id]);
+      } else if (now >= start && (!lastFlick[k] || now - lastFlick[k] >= FLICK)){
+        if (!lastFlick[k]){ el.classList.remove("pending"); el.classList.add("rolling"); }
+        lastFlick[k] = now; reel(el, names[Math.floor(Math.random() * names.length)]);
+      }
+    });
+    if (locked.size < order.length) return requestAnimationFrame(frame);
+    spinning = false;
+    document.querySelectorAll(".modebar .btn").forEach(b => { b.disabled = b.dataset.wasDisabled === "1"; });
+    $("spin").disabled = present().length === 0;
+    done();
+  })(t0);
 });
 $("saveChart").addEventListener("click", () => {
   state.chart = Object.assign({}, state.seats);
