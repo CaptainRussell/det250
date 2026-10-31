@@ -16,22 +16,10 @@ h2 { font-size: 1.6rem; font-weight: 800; line-height: 1.15; letter-spacing: -.0
 h3 { font-size: 1.1rem; font-weight: 800; }
 ul, ol { margin: 0; padding-left: 1.2em; }
 
-/* phase tabs (in the tool header) */
-nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
-nav.tabs button {
-  font-weight: 700; font-size: 14px; background: transparent; color: var(--d250-soft);
-  border: 1px solid transparent; border-radius: 9px; padding: 6px 12px; cursor: pointer;
-  display: inline-flex; gap: 8px; align-items: baseline; transition: background .2s, color .2s, border-color .2s;
-}
-nav.tabs button .n { font-size: 12px; opacity: .8; font-variant-numeric: tabular-nums; }
-nav.tabs button:hover { color: var(--d250-ink); border-color: var(--d250-line); }
-nav.tabs button[aria-current="page"] { background: var(--d250-cardinal); color: #fff; }
-nav.tabs .live { font-size: 12px; color: var(--signal); font-variant-numeric: tabular-nums; }
-nav.tabs button[aria-current="page"] .live { color: #fff; }
-.headctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-
 section.view { padding-top: 4px; display: grid; gap: 26px; animation: ins-rise .45s var(--d250-ease) both; }
 .panel { padding: 20px; }
+.panel.d250-roster { padding: 0; }
+.d250-roster textarea { margin: 0; }
 .stack { display: grid; gap: 16px; }
 
 /* View 1: brief */
@@ -163,24 +151,42 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
       <h1>Battle Buddy Recon</h1>
       <p class="d250-head-sub"><span class="class-tag" data-d250-class-show hidden></span>OPSEC practical exercise: pair up, run open-source recon on your partner, brief out.</p>
     </div>
-    <div class="headctl">
-      <label class="classname noprint">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
-      <nav class="tabs" aria-label="Exercise phases">
-        <button data-view="brief"><span class="n">1</span>Brief</button>
-        <button data-view="pair"><span class="n">2</span>Pairing</button>
-        <button data-view="recon"><span class="n">3</span>Recon <span class="live" id="tab-live"></span></button>
-        <button data-view="report"><span class="n">4</span>Brief-out</button>
+    <div class="d250-head-ctl noprint">
+      <label class="classname">Class <input type="text" data-d250-class maxlength="40" placeholder="e.g. AFAS 3410"></label>
+      <nav class="d250-steps" aria-label="Steps">
+        <button type="button" data-step="roster"><span class="n">1</span>Roster</button>
+        <button type="button" data-step="brief"><span class="n">2</span>Brief</button>
+        <button type="button" data-step="pair"><span class="n">3</span>Pairing</button>
+        <button type="button" data-step="recon"><span class="n">4</span>Recon <span class="live" id="tab-live"></span></button>
+        <button type="button" data-step="report"><span class="n">5</span>Brief-out</button>
       </nav>
-      <button class="btn small quiet sound" id="sound" aria-pressed="true">Sound on</button>
+      <button type="button" class="btn small quiet sound" id="sound" aria-pressed="true">Sound on</button>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <!-- 1. BRIEF -->
-  <section class="view" id="view-brief">
+  <!-- 1. ROSTER -->
+  <section class="view d250-step" id="view-roster" data-step-view="roster">
+    <div class="d250-step-hd" style="margin:0"><span class="label">Step 1</span><h2>Roster</h2></div>
+    <div class="d250-setup">
+      <section id="rosterPanel" style="--i:0"></section>
+      <section class="panel" style="--i:1;padding:0">
+        <div class="panel-hd"><span class="label">On the wheel</span><span class="label" id="roster-count">0 cadets</span></div>
+        <div class="panel-bd">
+          <div class="rostergrid" id="roster-chips" style="margin-top:0"></div>
+          <p class="empty" id="roster-empty" hidden><b>No roster yet.</b> Tick a class or paste your names, then <b>Save roster</b>.</p>
+          <p class="hint">Leave out anyone absent or opting out. Saving a changed roster clears the current pairings.</p>
+        </div>
+      </section>
+    </div>
+    <div class="d250-next" style="margin-top:0"><button type="button" class="btn primary big" data-step-go="brief">Next: Brief &rarr;</button></div>
+  </section>
+
+  <!-- 2. BRIEF -->
+  <section class="view d250-step" id="view-brief" data-step-view="brief" hidden>
     <div class="hero">
-      <span class="label">Phase 1 · Expectations</span>
+      <span class="label">Step 2 · Expectations</span>
       <h2>Find what an adversary would find.</h2>
       <p class="lede">The wheel will pair you with a random cadet. You get <span class="recon-mins">30</span> minutes to find everything you can about them using open sources only. Then you brief what you found. Your partner is doing the same to you.</p>
     </div>
@@ -265,32 +271,11 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
       </div>
     </div>
 
-    <div class="panel">
-      <div class="row" style="justify-content: space-between;">
-        <div>
-          <span class="label">Roster</span>
-          <h3 id="roster-count">0 cadets</h3>
-        </div>
-        <button class="btn primary big" data-goto="pair">Start pairing →</button>
-      </div>
-      <div class="rostergrid" id="roster-chips"></div>
-      <p class="empty" id="roster-empty" hidden style="margin-top:12px"><b>No roster yet.</b> Open <b>Edit roster</b> below and paste your class, or load your saved class.</p>
-      <details id="roster-details">
-        <summary>Edit roster (absences, opt-outs)</summary>
-        <p class="muted" style="margin-top:10px">One name per line. Anything after a comma is ignored, so <b>Smith, Jordan</b> shows as Smith. Applying a new roster clears the current pairings.</p>
-        <label class="label" for="roster-input" hidden>Roster</label>
-        <textarea id="roster-input" spellcheck="false" placeholder="Smith&#10;Jones&#10;Garcia"></textarea>
-        <div class="row">
-          <button class="btn primary" id="roster-apply">Apply roster</button>
-          <button class="btn quiet" id="roster-default">Load saved class</button>
-          <span class="muted" id="roster-msg" aria-live="polite"></span>
-        </div>
-      </details>
-    </div>
+    <div class="d250-next" style="margin-top:0"><button type="button" class="btn primary big" data-step-go="pair">Next: Pairing &rarr;</button></div>
   </section>
 
-  <!-- 2. PAIRING -->
-  <section class="view" id="view-pair" hidden>
+  <!-- 3. PAIRING -->
+  <section class="view d250-step" id="view-pair" data-step-view="pair" hidden>
     <div class="pairing">
       <div class="wheelbox">
         <canvas id="wheel" aria-label="Pairing wheel showing cadets not yet paired" role="img"></canvas>
@@ -298,7 +283,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
       </div>
       <div class="stack">
         <div>
-          <span class="label">Phase 2 · Pairing</span>
+          <span class="label">Step 3 · Pairing</span>
           <h2>Draw partners</h2>
         </div>
         <div class="draw">
@@ -313,7 +298,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
         </div>
         <div class="done-banner" id="done-banner" hidden>
           <b>All cadets paired</b>
-          <button class="btn primary" data-goto="recon"><span>Start <span class="recon-mins">30</span>-min recon →</span></button>
+          <button class="btn primary" data-step-go="recon"><span>Start <span class="recon-mins">30</span>-min recon →</span></button>
         </div>
         <ol class="pairs" id="pairs"></ol>
         <div class="row">
@@ -326,10 +311,10 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   </section>
 
   <!-- 3. RECON -->
-  <section class="view" id="view-recon" hidden>
+  <section class="view d250-step" id="view-recon" data-step-view="recon" hidden>
     <div class="recon">
       <div class="panel clock">
-        <span class="label">Phase 3 · Recon window</span>
+        <span class="label">Step 4 · Recon window</span>
         <div class="ring" id="ring">
           <svg viewBox="0 0 200 200" aria-hidden="true">
             <circle class="track" cx="100" cy="100" r="90" fill="none" stroke-width="10"></circle>
@@ -366,7 +351,8 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   </section>
 
   <!-- 4. BRIEF-OUT -->
-  <section class="view" id="view-report" hidden>
+  <section class="view d250-step" id="view-report" data-step-view="report" hidden>
+    <div class="d250-step-hd" style="margin:0"><span class="label">Step 5</span><h2>Brief-out</h2></div>
     <div class="report">
       <div class="stack">
         <div class="panel now">
@@ -444,6 +430,8 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
 </footer>
 
 <script src="../shared/class-roster.js"></script>
+<script src="../shared/cadet-groups.js"></script>
+<script src="../shared/instructor.js"></script>
 <script>
 (() => {
     const KEY = "d250-battle-buddy-v1";
@@ -460,7 +448,7 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   }
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-  if (!state || !Array.isArray(state.roster) || !Array.isArray(state.pairs)) state = fresh(D250Class.load().map(D250Class.last));
+  if (!state || !Array.isArray(state.roster) || !Array.isArray(state.pairs)) { const t = D250Class.load().join("\n"); state = Object.assign(fresh(parseRoster(t)), { rosterText: t }); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   /* ---------- Timers ---------- */
@@ -503,58 +491,53 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   soundBtn.addEventListener("click", () => { state.sound = !state.sound; save(); renderSound(); });
 
   /* ---------- Views ---------- */
-  const VIEWS = ["brief", "pair", "recon", "report"];
-  let view = "brief";
-  function show(v) {
-    if (!VIEWS.includes(v)) v = "brief";
-    view = v;
-    VIEWS.forEach(x => { $("#view-" + x).hidden = x !== v; });
-    document.querySelectorAll("nav.tabs button").forEach(b => {
-      if (b.dataset.view === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
-    });
-    try { history.replaceState(null, "", "#" + v); } catch (e) {}
-    if (v === "pair") sizeWheel();
-    renderAll();
-    window.scrollTo(0, 0);
-  }
-  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
-  document.addEventListener("click", e => { const g = e.target.closest("[data-goto]"); if (g) show(g.dataset.goto); });
-
+  const VIEWS = ["roster", "brief", "pair", "recon", "report"];
+  let view = "roster";
   /* ---------- Roster ---------- */
+  /* Names show as last names. Two cadets with the same last name get a first
+     initial ("Reid E."), or the first name if the initials match too ("Johnson Zion"). */
   function parseRoster(text) {
-    const seen = new Set(), out = [];
-    text.split(/\r?\n/).forEach(line => {
-      const n = line.split(",")[0].trim();
-      if (n && !seen.has(n.toLowerCase())) { seen.add(n.toLowerCase()); out.push(n); }
+    const rows = [], seen = new Set();
+    D250Roster.lines(text).forEach(line => {
+      const [last, first = ""] = D250Roster.base(line).split(",").map(x => x.trim());
+      const k = (last + "," + first).toLowerCase();
+      if (last && !seen.has(k)) { seen.add(k); rows.push({ last, first }); }
     });
-    return out;
+    const count = (f) => { const n = {}; rows.forEach(r => { const k = f(r).toLowerCase(); n[k] = (n[k] || 0) + 1; }); return n; };
+    const byLast = count(r => r.last), byInit = count(r => r.last + " " + (r.first[0] || ""));
+    const used = new Set();
+    return rows.map(r => {
+      let name = r.last;
+      if (byLast[r.last.toLowerCase()] > 1 && r.first) name = byInit[(r.last + " " + r.first[0]).toLowerCase()] > 1 ? r.last + " " + r.first : r.last + " " + r.first[0] + ".";
+      for (let i = 2; used.has(name.toLowerCase()); i++) name = name.replace(/ \d+$/, "") + " " + i;
+      used.add(name.toLowerCase()); return name;
+    });
   }
   function renderRoster() {
     $("#roster-count").textContent = state.roster.length + (state.roster.length === 1 ? " cadet" : " cadets");
     $("#roster-empty").hidden = state.roster.length > 0;
     document.querySelectorAll(".recon-mins").forEach(el => { el.textContent = state.reconMin; });
     $("#roster-chips").innerHTML = state.roster.map(n => `<span class="chip">${esc(n)}</span>`).join("");
-    const ta = $("#roster-input");
-    if (document.activeElement !== ta && !ta.dataset.dirty) ta.value = state.roster.join("\n");
     const briefs = state.roster.length, mins = Math.round(briefs * (state.briefLen + 30) / 60);
     $("#brief-total").textContent = "~" + mins + " min";
     $("#brief-each").textContent = fmt(state.briefLen) + " per cadet, plus 30 seconds for your partner to confirm or correct.";
   }
-  $("#roster-apply").addEventListener("click", () => {
-    const list = parseRoster($("#roster-input").value);
-    if (list.length < 2) { $("#roster-msg").textContent = "Enter at least 2 names."; return; }
-    const keep = { sound: state.sound, briefLen: state.briefLen, reconMin: state.reconMin };
-    D250Class.save($("#roster-input").value.split(/\r?\n/).map(s => s.trim()).filter(Boolean));
-    state = Object.assign(fresh(list), keep);
-    recon.reset(reconSecs()); saveRecon();
-    rot = 0; hi = -1; lastFresh = -1;
-    save(); renderAll(); drawWheel();
-    $("#roster-msg").textContent = "Roster updated: " + list.length + " cadets. Pairings cleared.";
-  });
-  $("#roster-default").addEventListener("click", () => {
-    const names = D250Class.load();
-    if (!names.length) { $("#roster-msg").textContent = "No saved class yet. Type your names and apply."; return; }
-    $("#roster-input").value = names.join("\n"); $("#roster-msg").textContent = "Loaded " + names.length + " names. Click Apply roster to use them.";
+  if (typeof state.rosterText !== "string") state.rosterText = state.roster.join("\n");
+  const roster = D250Roster.mount($("#rosterPanel"), {
+    text: () => state.rosterText,
+    placeholder: "Last, First\nLast, First\nLast, First",
+    hint: "Names show by last name. Cadets who share a last name also get a first initial or first name.",
+    apply(text) {
+      const list = parseRoster(text);
+      if (list.length < 2) return { error: "Enter at least 2 names." };
+      if (list.join("\n") === state.roster.join("\n")) { state.rosterText = text; save(); return "Roster saved: " + list.length + " cadets."; }
+      const keep = { sound: state.sound, briefLen: state.briefLen, reconMin: state.reconMin };
+      state = Object.assign(fresh(list), keep, { rosterText: text });
+      recon.reset(reconSecs()); saveRecon();
+      rot = 0; hi = -1; lastFresh = -1;
+      save(); renderAll(); drawWheel();
+      return "Roster saved: " + list.length + " cadets. Pairings cleared.";
+    }
   });
 
   /* ---------- Groups ---------- */
@@ -830,11 +813,12 @@ ol.queue button.cur { border-color: var(--d250-gold); box-shadow: inset 4px 0 0 
   new MutationObserver(drawWheel).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawWheel);
 
-  $("#roster-input").addEventListener("input", e => { e.target.dataset.dirty = "1"; });
-  $("#roster-apply").addEventListener("click", () => { delete $("#roster-input").dataset.dirty; });
   renderSound();
-  if (!state.roster.length) $("#roster-details").open = true;
-  show((location.hash || "").replace("#", ""));
+  D250Steps.mount({
+    steps: VIEWS, initial: state.roster.length ? "brief" : "roster",
+    beforeLeave(from) { if (from === "roster" && roster.dirty()) return roster.save(); },
+    onShow(v) { view = v; if (v === "roster") roster.refresh(); if (v === "pair") sizeWheel(); renderAll(); }
+  });
 })();
 </script>
 </body>

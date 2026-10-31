@@ -62,8 +62,7 @@ button{cursor:pointer}
 /* ---------- header ---------- */
 header.top{--d250-measure:1240px;position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
 header.top .d250-head-in{padding-top:12px;padding-bottom:12px}
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:6px}
-.toolbar .legend{margin:0}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 20px;margin-bottom:6px}
 .toolbar .search{order:2}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 h1{margin:0;font-size:22px;line-height:1.15}
@@ -92,12 +91,7 @@ h1{margin:0;font-size:22px;line-height:1.15}
 
 /* ---------- page ---------- */
 main{padding:18px 0 60px}
-.legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;color:var(--muted);font-size:13px;margin-bottom:6px}
-.legend .k{display:inline-flex;align-items:center;gap:6px}
 .dot{width:12px;height:12px;border-radius:50%;border:3px solid currentColor;display:inline-block}
-.modeline{font-size:13px;color:var(--muted);min-height:20px}
-.modeline b{color:var(--text)}
-[data-mode="flip"] .modeline b{color:var(--flip)}
 section.band{margin-top:26px}
 .bandhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:6px}
 .bandhead h2{margin:0;font-size:18px}
@@ -429,16 +423,6 @@ section.band{margin-top:26px}
 
 <main class="wrap" id="main">
   <div class="toolbar">
-  <div class="legend" aria-label="Legend">
-    <span class="k" style="color:var(--as100)"><span class="dot"></span><span style="color:var(--muted)">AS100</span></span>
-    <span class="k" style="color:var(--as200)"><span class="dot"></span><span style="color:var(--muted)">AS200</span></span>
-    <span class="k" style="color:var(--as250)"><span class="dot"></span><span style="color:var(--muted)">AS250</span></span>
-    <span class="k" style="color:var(--as300)"><span class="dot"></span><span style="color:var(--muted)">AS300</span></span>
-    <span class="k" style="color:var(--as400)"><span class="dot"></span><span style="color:var(--muted)">AS400</span></span>
-    <span class="k" style="color:var(--as500)"><span class="dot"></span><span style="color:var(--muted)">AS500</span></span>
-    <span class="k" style="color:var(--gb)"><span class="dot"></span><span style="color:var(--muted)">Graybeard</span></span>
-    <span class="k" style="color:var(--cadre)"><span class="dot"></span><span style="color:var(--muted)">Cadre</span></span>
-  </div>
     <div class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <label class="sr" for="q">Find a cadet or position</label>
@@ -446,7 +430,6 @@ section.band{margin-top:26px}
         <ul class="results" id="results" role="listbox" aria-label="Search results" hidden></ul>
     </div>
   </div>
-  <p class="modeline" id="modeline" aria-live="polite"></p>
 
   <section class="band" id="cadre" aria-labelledby="h-cadre">
     <div class="bandhead"><h2 id="h-cadre">Cadre</h2><span class="rt">Detachment 250 staff</span></div>
@@ -841,12 +824,6 @@ function refreshMode(){
     const vis = [...ul.children].filter(li => inMode(byId[li.querySelector(".card").dataset.seat]));
     [...ul.children].forEach(li => li.classList.toggle("lv", li === vis[vis.length - 1]));
   });
-  const shown = SEATS.filter(s => inMode(s) && !s.cadre && !s.member);
-  const n100 = shown.filter(s => holder(s).cls === "AS100").length;
-  const nMembers = SEATS.filter(s => s.member).length;
-  $("#modeline").innerHTML = MODE === "flip"
-    ? `Showing <b>Flip Week</b>: ${shown.length} GMC cadets in command (${n100} AS100, ${shown.length - n100} AS200/AS250). Deputy, FLT/CD and flight roster seats are not used.`
-    : `Showing the <b>Fall 2026 POC chart</b>: ${shown.length} cadet positions and ${nMembers} GMC across four flights.`;
   document.querySelectorAll("[data-set-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.setMode === MODE)));
 }
 
@@ -991,7 +968,7 @@ function openSeat(id, refresh){
   let html = `<div class="hero ${h.ring}">${img(h.key, "", "Photo of " + fullName(h))}
       <div class="big" id="d-name">${esc(fullName(h))}</div>
       <div class="seat">${esc(h.title)}</div></div>
-      <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${flightRow(h.key)}<dt>Chart</dt><dd>${MODE === "flip" ? "Flip Week" : "Fall 2026 POC"}</dd></dl>`;
+      <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${flightRow(h.key)}</dl>`;
   if(MODE === "flip" && other && !seat.cadre){
     html += `<div class="dh">Normally held by</div>
       <div class="counter">${img(other.key)}<div><b>${esc(fullName(other))}</b><br><span class="c2">${esc(other.des)} · ${esc(other.cls)}</span></div></div>`;

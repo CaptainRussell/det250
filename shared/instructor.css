@@ -95,6 +95,59 @@ textarea:focus, input:focus, select:focus { outline: 2px solid var(--d250-gold);
 .classname input { width: 170px; padding: 6px 10px; }
 .class-tag { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--d250-gold-bg); color: var(--d250-gold); font-weight: 700; font-size: 12.5px; }
 
+/* ---------- standard instructor screen (shared/instructor.js) ----------
+   Header:  icon, title, then .d250-head-ctl on the right: Class box, step tabs, tool switches.
+   Step 1 is always "Roster": .d250-setup puts the roster panel on the left and the
+   tool's own setup on the right. Every step ends with a .d250-next row (Next button, bottom right). */
+.d250-head-ctl { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+nav.d250-steps { display: flex; flex-wrap: wrap; gap: 4px; }
+nav.d250-steps button {
+  font-weight: 700; font-size: 14px; background: transparent; color: var(--d250-soft);
+  border: 1px solid transparent; border-radius: 9px; padding: 6px 12px; cursor: pointer;
+  display: inline-flex; gap: 8px; align-items: baseline; transition: background .2s, color .2s, border-color .2s;
+}
+nav.d250-steps button .n { font-size: 12px; opacity: .8; font-variant-numeric: tabular-nums; }
+nav.d250-steps button:hover { color: var(--d250-ink); border-color: var(--d250-line); }
+nav.d250-steps button[aria-current] { background: var(--d250-cardinal); color: #fff; }
+nav.d250-steps .live { font-size: 12px; color: var(--d250-gold); font-variant-numeric: tabular-nums; }
+nav.d250-steps button[aria-current] .live { color: #fff; }
+
+.d250-step { animation: ins-rise .45s var(--d250-ease) both; }
+.d250-step-hd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 14px; }
+.d250-step-hd h2 { font-size: 20px; font-weight: 800; }
+.d250-step-hd .label { color: var(--d250-gold); }
+.d250-setup { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .d250-setup { grid-template-columns: 1fr; } }
+.d250-next { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 18px; }
+.d250-next .hint { margin: 0 auto 0 0; }
+
+/* roster panel */
+.d250-roster .r-presets-hd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; }
+.d250-roster .r-presets-hd .hint { margin: 0; }
+.r-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+.r-preset {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1px solid var(--d250-line-strong); background: var(--d250-surface-2); color: var(--d250-ink);
+  border-radius: 999px; padding: 5px 11px 5px 8px; font-size: 13.5px; font-weight: 700;
+  transition: background .18s, border-color .18s, color .18s;
+}
+.r-preset:hover { border-color: var(--d250-gold); }
+.r-preset .r-box {
+  width: 15px; height: 15px; border-radius: 4px; border: 2px solid var(--d250-line-strong); flex: none;
+  display: grid; place-items: center; font-size: 11px; line-height: 1; color: var(--d250-page);
+}
+.r-preset .r-n { font-size: 12px; font-weight: 600; color: var(--d250-faint); font-variant-numeric: tabular-nums; }
+.r-preset[aria-pressed="true"] { background: var(--d250-gold-bg); border-color: var(--d250-gold); color: var(--d250-gold); }
+.r-preset[aria-pressed="true"] .r-box { background: var(--d250-gold); border-color: var(--d250-gold); }
+.r-preset[aria-pressed="true"] .r-box::before { content: "\2713"; font-weight: 900; }
+.r-preset[aria-pressed="mixed"] .r-box { border-color: var(--d250-gold); }
+.r-preset[aria-pressed="mixed"] .r-box::before { content: ""; width: 7px; height: 2px; background: var(--d250-gold); }
+.r-preset[aria-pressed="true"] .r-n, .r-preset[aria-pressed="mixed"] .r-n { color: inherit; }
+.d250-roster .r-paste { display: block; margin-bottom: 6px; }
+.d250-roster textarea { min-height: 240px; }
+.d250-roster .r-state { margin: 0; color: var(--d250-gold); }
+.d250-roster .r-msg:empty { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }

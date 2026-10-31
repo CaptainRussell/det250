@@ -14,7 +14,7 @@
 ## Repo layout
 | Path | What |
 |---|---|
-| `index.html` | Hub page. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tag, tone, icon, section `cadets`, `evaluators` or `instructors`, locked, blurb). Hub sections: Cadet tools, Evaluator tools, Instructor tools. |
+| `index.html` | Hub page. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tone, icon, section `cadets`, `evaluators` or `instructors`, locked, blurb). Hub sections: Cadet tools, Evaluator tools, Instructor tools. Cards show only icon, name and blurb (no tags, no "Open" arrow, no section subtitles). |
 | `shared/det250.css` | Det 250 bar styles and cross-page view transitions. |
 | `shared/det250-patch.png`, `det250-patch-icon.png` | Det 250 patch (transparent background) and favicon. |
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
@@ -26,6 +26,8 @@
 | `battle-buddy-recon/` | Instructor tool: OPSEC exercise (brief, pairing wheel, recon clock, brief-out queue). |
 | `practicum-adventure/` | Instructor tool: Practicum Adventure classroom RPG, copied from the `CaptainRussell/practicum-adventure` repo (that repo still has its own dev tools, tests and docs). GM console + Field Guide use the hub look (`hub-skin.css`); projector (`#player`) and phones (`join.html`) keep the 8-bit look. The leaderboard is local to each browser (`sq_leaderboard`); the Firebase sync (`cloud.js`) was removed in Oct 2026 at Captain Russell's request. `settings.js` holds the Game settings card (instructor name `GM_NAME`, course, IG name, the four NPC rosters), saved in `d250-practicum-settings-v1`. |
 | `shared/instructor.css` | Common panels, buttons, fields for instructor tools (load after `det250.css`). |
+| `shared/instructor.js` | `D250Steps` (numbered step tabs in the header, step 1 is always Roster, Next button bottom right) and `D250Roster` (the common roster panel: preset group toggles, paste box, Load saved class, Clear, Save roster). Used by Spin the Wheel, Make the Call and Battle Buddy Recon. |
+| `shared/cadet-groups.js` | Preset roster groups (AS 100's, AS 200/250/500's, AS 300's, AS 400's, Graybeards). GENERATED from `PEOPLE` in `org-chart/index.html` by `node tools/build-cadet-groups.mjs`; rerun it after roster changes. |
 | `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) and class name (`d250-class-name-v1`, `D250Class.name()`) shared by the instructor tools. Practicum Adventure uses the class name as its course unless its Game settings set one. |
 | `tools/encrypt.mjs`, `tools/locked-template.html` | Encrypt a page behind a password (not used by any page right now). |
 | `README.md` | Short how-to. |
@@ -36,7 +38,7 @@
 3. Add the standard tool header (`<header class="d250-head" style="--tone:...">`) and footer (`<footer class="d250-foot">`). Markup for both is in the comments in `shared/det250.css`; copy from `org-chart/index.html`. Use the tool's hub card `tone`, and the `--d250-*` tokens for colors.
 4. Add one entry to `TOOLS` in the root `index.html`.
 5. Avoid localStorage key collisions (all tools share one origin). Existing keys: `det250-wing-memory-v1` (Who's That Cadet), `gmc-strat-v3` (Flight Staff Evaluation, old key name kept so saved work carries over), `d250-gmc-pass` (sessionStorage, GMC unlock), `d250-class-roster-v1` (shared class roster), `d250-class-name-v1` (shared class or course name, set in the "Class" box on each instructor tool), `d250-spin-wheel-v1`, `d250-make-the-call-v1`, `d250-battle-buddy-v1`, `d250-practicum-settings-v1`, and Practicum Adventure's own `sq_*` keys.
-6. Instructor tools never ship a built-in roster: names are entered on the page and kept in the browser.
+6. Instructor tools use the standard screen from `shared/instructor.js`: Class box + step tabs in the header, step 1 Roster (roster panel left, tool setup right), a Next button at the bottom right of each step, tool controls on the right of each step heading. Rosters start empty; the only built-in names are the optional org chart preset groups in `shared/cadet-groups.js` (added Oct 2026 at Captain Russell's request).
 
 ## Flight Staff Evaluation
 - Plain HTML in `flight-staff-eval/index.html` (the password lock was removed at Captain Russell's request, Oct 2026). Roster, evaluator roles, photos and the submit settings live in `CONFIG` near the bottom.
@@ -59,6 +61,7 @@ All data is in the script near the bottom:
 - Views: POC Chart (default) and Flip Week (toggle, `?view=flip`). Deep link to a seat with `#<seat id>`.
 - Ranks during Flip Week are automatic: AS100 = C/4C, AS200/AS250/AS500 = C/3C.
 - AS colors (`RINGS`): AS100 blue, AS200 purple, AS250 teal, AS300 green, AS400 orange, AS500 red, Graybeard (AS700/AS800) navy, Cadre slate.
+- No class-color legend row, no "Showing the ... chart" line, and no "Chart" row in the details pane (removed Oct 2026).
 - Features: Cadre section collapsed by default; Wing Command Team, A-Staff Directorates, Group Staff; "View flight" window per FLT/CC with GMC and POC tabs; details drawer (flight, reports to, leads, Flip Week position); hover pop-out of supervisors and subordinates; search.
 - GMC with a wing position report to both their wing supervisor and their FLT/CC.
 
