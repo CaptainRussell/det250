@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Ribbon Rack Builder · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
-<meta name="description" content="Build an AFROTC cadet ribbon rack in the correct order of precedence, with devices, from DAFI 36-2903 and the AFROTC supplement.">
+<meta name="description" content="Build an AFROTC cadet ribbon rack in the correct order of precedence, with devices, from DAFI36-2903_AFROTCSUP and DAFI 36-2903.">
 <link rel="stylesheet" href="../shared/det250.css">
 <style>
 :root{
@@ -112,7 +112,7 @@ button,input,select{font:inherit;color:inherit}
 .notes ul{margin:0;padding-left:20px}
 .notes li{margin:6px 0}
 .notes b{color:var(--ink)}
-.cite{font-size:12px;color:var(--faint);white-space:nowrap}
+.cite{font-size:12px;color:var(--faint);overflow-wrap:anywhere}
 .doc{display:flex;gap:12px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
 .doc:first-child{border-top:0;padding-top:0}
 .doc>div:first-child{flex:1 1 320px;min-width:0}
@@ -182,15 +182,15 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <button class="btn" id="startOwn" type="button">Start my own rack</button>
   </div>
 
-  <button class="chartcta" type="button" data-chart aria-haspopup="dialog"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160"><span class="ct"><b>View the official AFROTC Ribbon Chart</b><small>Every ribbon in order of precedence (AFROTC Sup Figure 10.4)</small></span><svg class="go" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  <button class="chartcta" type="button" data-chart aria-haspopup="dialog"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160"><span class="ct"><b>View the official AFROTC Ribbon Chart</b><small>Every ribbon in order of precedence, from DAFI36-2903_AFROTCSUP Figure 10.4</small></span><svg class="go" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   <div class="layout">
     <section class="panel pickcol" aria-labelledby="h-pick">
       <h2 class="ph" id="h-pick">Your ribbons<span class="rt" id="pickCount">0 selected</span></h2>
       <div class="search">
         <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
       </div>
-      <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">AFROTC Sup 10.8.1.8</span></p>
-      <p class="gnote psnote"><b>CAP, JROTC or another service's ROTC?</b> Awards earned there may also be worn. They aren't built here; ask your cadre where they go in your rack. Valor awards from those programs go right below the AFROTC valor awards. <span class="cite">AFROTC Sup 10.8.1; AFROTCI 36-2011V3 15.4.1</span></p>
+      <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span></p>
+      <p class="gnote psnote"><b>CAP, JROTC or another service's ROTC?</b> Awards earned there may also be worn. They aren't built here; ask your cadre where they go in your rack. Valor awards from those programs go right below the AFROTC valor awards. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1; AFROTCI 36-2011V3 15.4.1</span></p>
       <div id="groups"></div>
     </section>
 
@@ -232,18 +232,18 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <h2 class="ph" id="h-notes">How to wear it</h2>
     <div class="body">
       <ul>
-        <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">AFROTC Sup 10.8.1.1, Fig 10.4</span></li>
-        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> Awards earned in CAP or in any service's ROTC or JROTC program may also be worn. They are not on the AFROTC ribbon chart, so the tool doesn't build them. <span class="cite">AFROTC Sup 10.8.1</span></li>
+        <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.1, Fig 10.4</span></li>
+        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span> Awards earned in CAP or in any service's ROTC or JROTC program may also be worn. They are not on the AFROTC ribbon chart, so the tool doesn't build them. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1</span></li>
         <li><b>Valor awards:</b> active duty valor awards go above all AFROTC awards. An AFJROTC valor award counts as the AFROTC award; CAP, Army ROTC and Navy ROTC valor awards go below the AFROTC valor awards and above everything else. If several valor awards are given for the same act, wear only one. <span class="cite">AFROTCI 36-2011V3 15.4, 15.4.1</span></li>
-        <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">Fig 10.4</span></li>
+        <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">DAFI36-2903_AFROTCSUP Fig 10.4</span></li>
         <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
         <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
         <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
-        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
-        <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
-        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. Your first 100, at the detachment or at Field Training, adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTC Sup 10.8.1.4; AFROTCI 36-2011V3 Table 15.1</span></li>
-        <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; AFROTC Sup 10.8.1.4</span></li>
-        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, Sons of the American Revolution, MOWW) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (gold, silver or bronze by AS class). <span class="cite">AFROTC Sup 10.8.1.7</span> ROA and MOWW work the same way: one gold, silver or bronze medal device, no oak leaf clusters. <span class="cite">AFROTC Sup 10.8.1.7</span></li>
+        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
+        <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.3, 10.8.1.4</span></li>
+        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. Your first 100, at the detachment or at Field Training, adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.4; AFROTCI 36-2011V3 Table 15.1</span></li>
+        <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; DAFI36-2903_AFROTCSUP 10.8.1.4</span></li>
+        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, Sons of the American Revolution, MOWW) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (gold, silver or bronze by AS class). <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span> ROA and MOWW work the same way: one gold, silver or bronze medal device, no oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span></li>
         <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
       </ul>
     </div>
@@ -255,11 +255,11 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
       <div class="doc">
         <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160" loading="lazy"></button>
         <div><p class="dn">AFROTC Ribbon Chart</p>
-          <p class="dd">The full order of precedence, as printed in the AFROTC Supplement, Figure 10.4 (AFROTCVA 36-2001, Aug 2021). Read left to right, top to bottom, highest first.</p></div>
+          <p class="dd">Figure 10.4 of DAFI36-2903_AFROTCSUP (18 November 2021), the full order of precedence. Read it left to right, top to bottom, highest first.</p></div>
         <div class="da"><button class="btn" type="button" data-chart aria-haspopup="dialog">View</button><a class="btn" href="references/afrotc-ribbon-chart.jpg" download>Save</a></div>
       </div>
       <div class="doc">
-        <div><p class="dn">DAFI 36-2903, AFROTC Supplement</p>
+        <div><p class="dn">DAFI36-2903_AFROTCSUP, AFROTC Supplement to DAFI 36-2903</p>
           <p class="dd">18 November 2021. Figure 10.4 (AFROTC Ribbon Chart) sets the ribbons and their order. Paragraphs 10.8.1.3 to 10.8.1.8 cover stars, oak leaf clusters, organizational devices and prior service ribbons.</p></div>
         <div class="da"><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" download>Save</a></div>
       </div>
@@ -283,8 +283,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
       </div>
       <div class="doc">
         <div><p class="dn">AASMAN-1, Arnold Air Society Manual</p>
-          <p class="dd">1 September 2017: outstanding squadron awards (15.5), LBJ Cup (15.8), National, Area and Squadron Level medals (15.23) and membership ribbon wear (18.3). The Hagan Trophy (16.4.2.2) and Eagle Award (16.5) come from the 1 September 2011 edition. Not posted here; Open goes to the AAS-SW site.</p></div>
-        <div class="da"><a class="btn" href="https://aas-sw.org/arnold-air-society" target="_blank" rel="noopener">Open</a></div>
+          <p class="dd">1 September 2017: outstanding squadron awards (15.5), LBJ Cup (15.8), National, Area and Squadron Level medals (15.23) and membership ribbon wear (18.3). The Hagan Trophy (16.4.2.2) and Eagle Award (16.5) come from the 1 September 2011 edition. Not posted online; ask your AAS squadron for a copy.</p></div>
       </div>
       <div class="doc">
         <div><p class="dn">AAS Candidate Training Manual</p>
@@ -293,7 +292,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
       </div>
       <div class="doc">
         <div><p class="dn">Civil Air Patrol cadet ranks and awards</p>
-          <p class="dd">Requirements for the Billy Mitchell, Amelia Earhart and Carl A. Spaatz awards. AFROTCI 36-2011V3 Table 3.3 gives the GMC accreditation for each. Opens on the CAP site.</p></div>
+          <p class="dd">CAP's cadet program page, which lists the Billy Mitchell, Amelia Earhart and Carl A. Spaatz milestone awards. AFROTCI 36-2011V3 Table 3.3 gives the GMC accreditation for each. Opens on the CAP site.</p></div>
         <div class="da"><a class="btn" href="https://www.gocivilairpatrol.com/programs/cadets/stripes-to-diamonds/" target="_blank" rel="noopener">Open</a></div>
       </div>
       <div class="doc">
@@ -303,7 +302,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
       </div>
       <div class="doc">
         <div><p class="dn">Society of American Military Engineers ROTC Award</p>
-          <p class="dd">VMI news story (2021) describing the regional SAME award for AFROTC engineering cadets. SAME has not published its own criteria.</p></div>
+          <p class="dd">VMI news story (2 March 2021) on the SAME Southeast Region ROTC Award, which goes to the top five engineering cadets in each AFROTC region. No SAME criteria sheet was found.</p></div>
         <div class="da"><a class="btn" href="https://vmi.edu/news/headlines/2020-2021/two-cadets-receive-military-engineering-award.php" target="_blank" rel="noopener">Open</a></div>
       </div>
     </div>
@@ -316,7 +315,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
   <p class="source-line">
-    Ribbons and order of precedence from the <strong>DAFI 36-2903 AFROTC Supplement</strong> (18 Nov 2021), Figure 10.4
+    Ribbons and order of precedence from the <strong>DAFI36-2903_AFROTCSUP</strong> (18 Nov 2021), Figure 10.4
     (AFROTC Ribbon Chart, Aug 2021). Award criteria from <strong>AFROTCI 36-2011 V3</strong> (24 Jun 2026), the HQ AFROTC cadet award criteria (Sep 2026), <strong>AASMAN-1</strong> and the sponsor organizations listed under References. Wear rules from <strong>DAFI 36-2903</strong> (29 Feb 2024). Ribbon colors are drawn
     to match the chart; check your rack against the regulation before inspection.
   </p>
@@ -326,8 +325,8 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 <div id="printSheet" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="chart" id="chartDlg" aria-labelledby="chartTitle">
-  <div class="ch"><h2 id="chartTitle">AFROTC Ribbon Chart <span class="cite">AFROTC Sup Figure 10.4</span></h2><button class="iconbtn" type="button" id="chartClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="cb"><img id="chartImg" alt="AFROTC Ribbon Chart, Figure 10.4 of the DAFI 36-2903 AFROTC Supplement: every AFROTC ribbon in order of precedence, read left to right and top to bottom, from the Gold Valor Award to the Scabbard and Blade Membership Ribbon." width="1500" height="2000"></div>
+  <div class="ch"><h2 id="chartTitle">AFROTC Ribbon Chart <span class="cite">DAFI36-2903_AFROTCSUP Figure 10.4</span></h2><button class="iconbtn" type="button" id="chartClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="cb"><img id="chartImg" alt="AFROTC Ribbon Chart, Figure 10.4 of DAFI36-2903_AFROTCSUP: every AFROTC ribbon in order of precedence, read left to right and top to bottom, from the Gold Valor Award to the Scabbard and Blade Membership Ribbon." width="1500" height="2000"></div>
   <p class="cf">Order of precedence: left to right, top to bottom, highest first. Tap the chart to zoom. * Only your highest CAP award is worn.</p>
 </dialog>
 <button class="jump off" id="jumpBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg><span id="jumpTxt">View rack</span></button>
@@ -869,7 +868,7 @@ function buildPrint(){
     <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row, top row ${state.align === "right" ? "to the outside" : "centered"}. Check that your printer is set to 100% scale.</p>
     <div class="rk">${rackSVG(items, state.per, {inches:true, align: state.align})}</div>
     <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : ""}</li>`).join("")}</ol>
-    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons earned on active duty precede all AFROTC ribbons (AFROTC Sup 10.8.1.8). Storm HQ, Ribbon Rack Builder.</p>` : "";
+    <p class="fine">Order of precedence: DAFI36-2903_AFROTCSUP, Figure 10.4. Prior service ribbons earned on active duty precede all AFROTC ribbons (DAFI36-2903_AFROTCSUP 10.8.1.8). Storm HQ, Ribbon Rack Builder.</p>` : "";
 }
 function savePNG(){
   const items = rack(); if (!items.length) return;
