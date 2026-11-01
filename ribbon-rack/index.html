@@ -167,6 +167,7 @@ button,input,select{font:inherit;color:inherit}
         <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
       </div>
       <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">AFROTC Sup 10.8.1.8</span></p>
+      <p class="gnote psnote"><b>CAP, JROTC or another service's ROTC?</b> Awards earned there may also be worn. They aren't built here; ask your cadre where they go in your rack. Valor awards from those programs go right below the AFROTC valor awards. <span class="cite">AFROTC Sup 10.8.1; AFROTCI 36-2011V3 15.4.1</span></p>
       <div id="groups"></div>
     </section>
 
@@ -209,7 +210,7 @@ button,input,select{font:inherit;color:inherit}
     <div class="body">
       <ul>
         <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">AFROTC Sup 10.8.1.1, Fig 10.4</span></li>
-        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> Ribbons from JROTC, other services' ROTC and CAP (other than the CAP awards on the chart) are not on the AFROTC ribbon chart, and only awards in AFROTCI 36-2011V3 are authorized on the cadet uniform. <span class="cite">AFROTCI 36-2011V3 15.3.2</span></li>
+        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> Awards earned in CAP or in any service's ROTC or JROTC program may also be worn. They are not on the AFROTC ribbon chart, so the tool doesn't build them. <span class="cite">AFROTC Sup 10.8.1</span></li>
         <li><b>Valor awards:</b> active duty valor awards go above all AFROTC awards. An AFJROTC valor award counts as the AFROTC award; CAP, Army ROTC and Navy ROTC valor awards go below the AFROTC valor awards and above everything else. If several valor awards are given for the same act, wear only one. <span class="cite">AFROTCI 36-2011V3 15.4, 15.4.1</span></li>
         <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">Fig 10.4</span></li>
         <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
@@ -217,9 +218,9 @@ button,input,select{font:inherit;color:inherit}
         <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
         <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
         <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
-        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. A first 100 adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTCI 36-2011V3 Table 15.1</span></li>
+        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. Your first 100, at the detachment or at Field Training, adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTC Sup 10.8.1.4; AFROTCI 36-2011V3 Table 15.1</span></li>
         <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; AFROTC Sup 10.8.1.4</span></li>
-        <li><b>Organizational awards</b> (Legion of Valor, American Legion, Sons of the American Revolution) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (American Legion: gold for AS300 and AS400, silver for AS200, bronze for AS100). <span class="cite">AFROTC Sup 10.8.1.7</span> The HQ ROA and MOWW criteria sheets add a bronze oak leaf cluster for each added award. <span class="cite">HQ AFROTC cadet award criteria</span></li>
+        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, Sons of the American Revolution, MOWW) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (gold, silver or bronze by AS class). <span class="cite">AFROTC Sup 10.8.1.7</span> ROA and MOWW work the same way: one gold, silver or bronze medal device, no oak leaf clusters. <span class="cite">AFROTC Sup 10.8.1.7</span></li>
         <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
       </ul>
     </div>
@@ -276,7 +277,7 @@ const GROUPS = [
   {id:"afrotc", title:"AFROTC awards"},
   {id:"ft", title:"Field Training"},
   {id:"aas", title:"Arnold Air Society and Silver Wings"},
-  {id:"org", title:"Organizational awards (AFA, American Legion, ROA and others)", note:"Only one device is worn on an organizational award, even if earned more than once (ROA and MOWW add a bronze oak leaf cluster for each added award)."},
+  {id:"org", title:"Organizational awards (AFA, American Legion, ROA and others)", note:"Only one device is worn on an organizational award, even if earned more than once. If you earned more than one level, wear only the highest."},
   {id:"cap", title:"Civil Air Patrol", note:"Only your highest CAP award is worn. Checking one clears the others."},
   {id:"mem", title:"Membership ribbons"}
 ];
@@ -358,7 +359,7 @@ function devicesFor(r, s){
     const d = r.opt.type === "check" ? (s.o ? r.opt.dev : "") : s.o;
     if (d) stars.push(d);
   }
-  if (r.kind === "award" || r.olc){
+  if (r.kind === "award"){
     // n awards = n - 1 clusters; the scholarship ribbon counts completed years instead (one cluster each)
     const k = Math.max(0, minN(r) === 0 ? (s.n || 0) : (s.n || 1) - 1);
     for (let i = 0; i < Math.floor(k / 5); i++) olc.push("so");
@@ -504,6 +505,11 @@ function orgDevice(kind, p, metal){
       <path d="M13 25.2L25.2 22.8" stroke="#2e3238" stroke-width="3.6"/>
       <circle cx="12" cy="25.4" r="2.6" fill="#3a3f46" stroke="#22262b" stroke-width=".5"/></g>`;
   }
+  if (kind === "disc"){ // ROA and MOWW: a plain round medal in the level's metal (Sup 10.8.1.7)
+    return `<g transform="translate(${cx} ${cy})"><circle r="10.5" transform="translate(.8 1)" fill="#000" fill-opacity=".35"/>
+      <circle r="10.5" fill="url(#${m.disc}${p})" stroke="${m.edge}" stroke-width=".8"/><circle r="8" fill="none" stroke="${m.ring}" stroke-width=".7"/>
+      <circle r="4.2" fill="none" stroke="${m.ray}" stroke-width=".6" opacity=".8"/></g>`;
+  }
   return "";
 }
 function fixedArt(r){
@@ -563,16 +569,15 @@ function optsHTML(r){
   if (r.kind === "award"){
     h += `<span>${esc(r.count ? r.count.label : "Times awarded")}</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">${minN(r)}</output><button type="button" data-act="inc" aria-label="One more award">+</button></span><span class="dv" data-role="dv"></span>`;
   }
-  if (r.olc) h += `<span>Times awarded</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">1</output><button type="button" data-act="inc" aria-label="One more award">+</button></span><span class="dv" data-role="dv"></span>`;
   if (r.opt && r.opt.type === "check") h += `<label><input type="checkbox" data-role="o"> ${esc(r.opt.label)}</label>`;
   if (r.opt && r.opt.type === "select") h += `<label>${esc(r.opt.label)} <select data-role="o">${r.opt.choices.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select></label>`;
   if (r.orgdev) h += `<label><input type="checkbox" data-role="d"> Wear the ${esc(ORGDEV[r.orgdev])}</label>`;
-  if (r.lvl) h += `<label>Highest level <select data-role="lv"><option value="g">Gold (AS300, AS400)</option><option value="s">Silver (AS200)</option><option value="b">Bronze (AS100)</option></select></label>`;
+  if (r.lvl) h += `<label>Highest level <select data-role="lv">${["g", "s", "b"].map(m => `<option value="${m}">${METAL_NAME[m][0].toUpperCase() + METAL_NAME[m].slice(1)} (${esc(r.lvl[m])})</option>`).join("")}</select></label>`;
   if (r.kind === "cap") h += `<span class="devnote">Only your highest CAP award is worn.</span>`;
   if (r.excl === "ftdgsp") h += `<span class="devnote">A cadet earns the DG or the Superior Performer, not both. Checking one clears the other.</span>`;
   return h;
 }
-const ORGDEV = {cross:"bronze cross", plaque:"scholastic scroll", medal:"torch device", sword:"sword device"};
+const ORGDEV = {cross:"bronze cross", plaque:"scholastic scroll", medal:"torch device", sword:"sword device", disc:"medal device"};
 const METAL_NAME = {g:"gold", s:"silver", b:"bronze"};
 function buildGroups(){
   $("groups").innerHTML = GROUPS.map(g => {
@@ -643,7 +648,7 @@ function devText(devs){
   const t = [];
   if (c.ss) t.push(`${c.ss} silver star`); if (c.bs) t.push(`${c.bs} bronze star`);
   if (c.so) t.push(`${c.so} silver OLC`); if (c.bo) t.push(`${c.bo} bronze OLC`);
-  if (org) { const [, kind, metal] = org.split(":"); t.push(kind === "plaque" || kind === "medal" ? `${METAL_NAME[metal] || "gold"} ${ORGDEV[kind]}` : ORGDEV[kind] || "award device"); }
+  if (org) { const [, kind, metal] = org.split(":"); t.push(kind === "plaque" || kind === "medal" || kind === "disc" ? `${METAL_NAME[metal] || "gold"} ${ORGDEV[kind]}` : ORGDEV[kind] || "award device"); }
   return t.join(", ");
 }
 function changed(){
