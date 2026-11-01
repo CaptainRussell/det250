@@ -1,30 +1,25 @@
-# Storm HQ (Det 250)
+# ⚡ Storm HQ (Det 250)
 
-Storm HQ is one site for every AFROTC Detachment 250 tool: tools built by the Operations Flight Commander to support cadet operations, plus fun classroom activities. https://captainrussell.github.io/det250/
+One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operations Flight Commander) to support cadet operations, plus classroom activities.
+**Live site:** https://captainrussell.github.io/det250/
 
-| Folder | Tool |
-|---|---|
-| `/` | Hub page (lists every tool) |
-| `pfra/` | PFRA Calculator |
-| `whos-that-cadet/` | Who's That Cadet! |
-| `org-chart/` | Det 250 Org Chart, Fall 2026 (POC chart + Flip Week) |
-| `ribbon-rack/` | Ribbon Rack Builder (AFROTC cadet ribbons, order of precedence, devices) |
-| `flight-staff-eval/` | Flight Staff Evaluation. `gmc-strats/` redirects here. |
-| `spin-the-wheel/` | Spin the Wheel (seating chart + cold-call wheel) |
-| `make-the-call/` | Make the Call (leadership debate game) |
-| `battle-buddy-recon/` | Battle Buddy Recon (OPSEC exercise) |
-| `practicum-adventure/` | Practicum Adventure (classroom RPG; see its `HOW-TO-RUN.md`) |
-| `shared/` | Det 250 bar, page transitions, patch, instructor tool styles, shared class roster |
+## Cadet Tools
+- **PFRA Calculator** (`pfra/`): scores a PFRA against the 2026 USAF charts, with goal pace per lap and track layout marks (where to wheel the start lines) for the OFC.
+- **Ribbon Rack Builder** (`ribbon-rack/`): builds your AFROTC rack in order of precedence (DAFI 36-2903 AFROTC Sup), with devices and the wear and award criteria for each ribbon.
+- **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
+- **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
 
-## Adding a tool
-1. Put the tool in its own folder, with its page at `<folder>/index.html`.
-2. Add the shared bar so it matches the rest of the site: in `<head>` add
-   `<link rel="stylesheet" href="../shared/det250.css">`, and copy the `<a class="d250-bar" ...>` line
-   from the top of `org-chart/index.html` to just after `<body>`.
-3. Add one entry to the `TOOLS` list in the root `index.html`.
+## Evaluator Tools
+- **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
 
-## Password-protected pages
-No page is locked right now (Flight Staff Evaluation was unlocked in Oct 2026). To lock a page,
-keep the plain page out of the repo and encrypt it:
+## Instructor Tools
+- **Practicum Adventure** (`practicum-adventure/`): a video game style practicum cadets join and play from their phones. Tests objectives from the AFAS 3410 and 3420 series.
+- **Spin the Wheel** (`spin-the-wheel/`): seating chart and name wheel for cold calls, with a pop-out wheel.
+- **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
+- **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
-    node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html
+## Notes
+- Hosted on GitHub Pages from `main`. Pushed changes go live in a few minutes.
+- To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `TOOLS` in the root `index.html`. Full details are in `CLAUDE.md`.
+- Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
+- No page is password locked. To lock one: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
