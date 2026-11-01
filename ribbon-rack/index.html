@@ -546,6 +546,7 @@ function optsHTML(r){
   if (r.opt && r.opt.type === "select") h += `<label>${esc(r.opt.label)} <select data-role="o">${r.opt.choices.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select></label>`;
   if (r.kind === "org" && !r.opt) h += `<label><input type="checkbox" data-role="d"> Wear award device</label>`;
   if (r.kind === "cap") h += `<span class="devnote">Only your highest CAP award is worn.</span>`;
+  if (r.excl === "ftdgsp") h += `<span class="devnote">A cadet earns the DG or the Superior Performer, not both. Checking one clears the other.</span>`;
   return h;
 }
 function buildGroups(){
@@ -633,7 +634,7 @@ function wire(){
       const id = rib.dataset.id, r = BY[id];
       if (t.classList.contains("pick")){
         if (t.checked){
-          if (r.kind === "cap") R.filter(x => x.kind === "cap").forEach(x => delete state.sel[x.id]);
+          if (r.excl) R.filter(x => x.excl === r.excl).forEach(x => delete state.sel[x.id]);
           state.sel[id] = defaults(r);
         } else delete state.sel[id];
       } else if (t.dataset.role === "o") state.sel[id].o = t.type === "checkbox" ? t.checked : t.value;
