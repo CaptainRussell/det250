@@ -1,4 +1,4 @@
-/* Det 250 Cadet Hub: shared bar + page transitions.
+/* Storm HQ (Det 250): shared bar + page transitions.
    Included by every tool so moving between them feels like one site. */
 
 /* Smooth cross-page transitions (Chrome, Edge, Safari 18.2+; other browsers just navigate). */
@@ -46,7 +46,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
 .d250-bar:hover .d250-all svg { transform: translateX(-3px); }
 .d250-bar:focus-visible { outline: 3px solid #f1be48; outline-offset: -3px; }
 
-@media (max-width: 480px) { .d250-bar .d250-sub { display: none; } }
+@media (max-width: 340px) { .d250-bar .d250-sub { display: none; } }
 
 @media print { .d250-bar { display: none !important; } }
 

@@ -1,8 +1,8 @@
-# Det 250 Cadet Hub: project context
+# Storm HQ (Det 250 Cadet Hub): project context
 
 ## Who and what
 - Owner: Captain Scott D. Russell, USAF. Operations Flight Commander, AFROTC Detachment 250, Iowa State University (office symbol AFROTC DET 250/OFC). Call him Captain Russell.
-- The Det 250 Cadet Hub is a single website that holds every Det 250 cadet tool, so cadets only need one link. It is cadet facing: lead with cadet leadership and cadet tools.
+- Storm HQ (renamed from "Det 250 Cadet Hub" on 1 Nov 2026; URL and repo name unchanged) is a single website that holds every Det 250 cadet tool, so cadets only need one link. Framing: tools built by the Operations Flight Commander to support cadet operations, plus fun classroom activities. Keep "Det 250" visible next to the Storm HQ name. It is cadet facing: lead with cadet leadership and cadet tools.
 - Writing rule: no em dashes in any drafted text (page copy, messages, docs).
 
 ## Where it lives
@@ -49,8 +49,9 @@
 ## Shared design
 - Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, defaults to dark (`data-theme="dark"` on `<html>`; the light palette is still in each page for `data-theme="light"`), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
 - Look: matches the hub page. Dark palette: page #16161a, surface #1f1f25, ink #ececee, soft #b2b3b8, line #34343c, ISU cardinal #c8102e / #ef4054, gold #f1be48. Light palette (kept, not the default): page #f4f4f6, surface #fff, ink #1b1b1d. Dark is the default on every page via `data-theme="dark"`. System font stack.
-- Det 250 bar: dark strip with a cardinal bottom border, patch icon, gold "Det 250", "Cadet Hub", and an "All tools" pill linking to `../`.
-- Footer (all tools): patch, "Optimi In Medio Patrae" (italic), "WE ARE THE STORM", "AFROTC Detachment 250 · Iowa State University", a short source/description line, then "Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250".
+- Det 250 bar: dark strip with a cardinal bottom border, patch icon, gold "Storm HQ", gray "Det 250" (hidden only under 340px wide), and an "All tools" pill linking to `../`.
+- Page titles end in " · Storm HQ" (hub: "Storm HQ · Det 250").
+- Footer (all tools): patch, "Optimi In Medio Patrae" (italic), "WE ARE THE STORM", "Storm HQ · AFROTC Detachment 250 · Iowa State University", a short source/description line, then "Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250".
 - Pages use `<meta name="robots" content="noindex, nofollow">`.
 - Must work at phone width (16px gutters, no sideways scroll), keyboard accessible, and honor reduced motion.
 

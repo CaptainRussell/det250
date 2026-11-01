@@ -1,4 +1,4 @@
-/* Det 250 Cadet Hub: the common screen pieces for the instructor tools.
+/* Storm HQ (Det 250): the common screen pieces for the instructor tools.
    Load after class-roster.js and cadet-groups.js.
 
    Every instructor tool uses the same flow:

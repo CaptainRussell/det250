@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Flight Staff Evaluation</title>
+<title>Flight Staff Evaluation · Storm HQ</title>
 <style>
 :root{
   --bg:#f4f4f6; --surface:#ffffff; --surface-2:#eeeef1; --border:#d9d9de; --border-strong:#c2c2c9;
@@ -271,7 +271,7 @@ footer.foot .sp{flex:1}
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 <header class="top d250-head" style="--tone:#a06f00">
   <div class="d250-head-in">
     <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
@@ -423,7 +423,7 @@ footer.foot .sp{flex:1}
   <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
-  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
   <p class="source-line">Evaluator tool. Ratings go to a private cadre spreadsheet, not to this site.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
@@ -686,7 +686,7 @@ function renderSteps(){
 }
 function renderHeader(){
   const r = role();
-  document.title = 'Flight Staff Evaluation' + (r ? ' – ' + r.label : '');
+  document.title = 'Flight Staff Evaluation' + (r ? ' · ' + r.label : '') + ' · Storm HQ';
   $('#title').textContent = 'Flight Staff Evaluation';
   $('#unitLine').textContent = CONFIG.unit + (r ? ' · ' + r.title : '');
   $('#evalPhoto').innerHTML = r ? avatar({name:r.evaluator, photo:r.photo}, 'hd') : '';
