@@ -66,5 +66,5 @@ const AFROTC_RIBBONS = [
   {"id":"capea","name":"Civil Air Patrol Amelia Earhart Award","kind":"cap","grp":"cap","s":[["#f4f5f4",28.67],["#cd2c3c",4.0],["#f4f5f5",17.28],["#3d3c88",4.5],["#f5f5f5",17.28],["#cd2d3d",4.5],["#f5f4f4",23.78]],"excl":"cap"},
   {"id":"capbm","name":"Civil Air Patrol General Billy Mitchell Award","kind":"cap","grp":"cap","s":[["#e56c23",32.7],["#f2efec",6.0],["#e56c24",23.6],["#f3eee7",6.5],["#e66c23",31.2]],"excl":"cap"},
   {"id":"pr","name":"Pershing Rifles Membership Ribbon","kind":"mem","grp":"mem","s":[["#142065",2.1],["#eceef4",4.2],["#0d1f6b",4.2],["#ecedf4",4.2],["#0f1f6a",4.2],["#f0f0f4",3.7],["#091f74",57.4],["#ededf5",4.2],["#0f1e6b",4.2],["#ecedf2",4.2],["#0e1f69",4.2],["#f1eef3",3.2]]},
-  {"id":"sab","name":"Scabbard and Blade Membership Ribbon","kind":"mem","grp":"mem","s":null,"h":[["#d8333b",40],["#4b67b0",60]],"fixed":["star5"]}
+  {"id":"sab","name":"Scabbard and Blade Membership or Rank Ribbon","kind":"mem","grp":"mem","s":null,"h":[["#d8333b",40],["#4b67b0",60]],"fixed":["star5"],"crit":"Red over blue with five stars, as on the AFROTC ribbon chart (the rank ribbon Captain Russell confirmed, Nov 2026). The rank ribbon takes the place of the membership ribbon; wear one.","ref":"AFROTC Sup 9.3.28.5, Fig 10.4"}
 ];
