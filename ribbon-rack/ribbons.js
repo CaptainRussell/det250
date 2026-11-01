@@ -9,6 +9,8 @@
    lvl: the organizational device comes in gold, silver or bronze by AS class, {metal: AS class label} (only the highest is worn, Sup 10.8.1.7).
    Where the guidance conflicts, follow the AFROTC Sup (Captain Russell, Nov 2026): ROA and MOWW repeat awards get no OLC (Sup 10.8.1.7),
    and their gold/silver/bronze medal is drawn as a device (Sup 10.8.1.7 names them as carrying one).
+   ranks: Scabbard and Blade rank ribbons (replace the membership ribbon, Sup 9.3.28.5), from the society chart Captain Russell sent
+   (Nov 2026): [code, title, bars g gold / s silver].
    FT DG and SP criteria: NOTACC CY25-119 (FT 2026 criteria, sent by Captain Russell). */
 const AFROTC_RIBBONS = [
   {"id":"gv","name":"Gold Valor Award","kind":"award","grp":"afrotc","s":[["#f5db36",100.0]],"crit":"Heroism involving personal risk of life. If several valor awards are given for the same act, wear only one (the AFROTC one).","ref":"AFROTCI 36-2011V3 15.4.2.1"},
@@ -66,5 +68,5 @@ const AFROTC_RIBBONS = [
   {"id":"capea","name":"Civil Air Patrol Amelia Earhart Award","kind":"cap","grp":"cap","s":[["#f4f5f4",28.67],["#cd2c3c",4.0],["#f4f5f5",17.28],["#3d3c88",4.5],["#f5f5f5",17.28],["#cd2d3d",4.5],["#f5f4f4",23.78]],"excl":"cap"},
   {"id":"capbm","name":"Civil Air Patrol General Billy Mitchell Award","kind":"cap","grp":"cap","s":[["#e56c23",32.7],["#f2efec",6.0],["#e56c24",23.6],["#f3eee7",6.5],["#e66c23",31.2]],"excl":"cap"},
   {"id":"pr","name":"Pershing Rifles Membership Ribbon","kind":"mem","grp":"mem","s":[["#142065",2.1],["#eceef4",4.2],["#0d1f6b",4.2],["#ecedf4",4.2],["#0f1f6a",4.2],["#f0f0f4",3.7],["#091f74",57.4],["#ededf5",4.2],["#0f1e6b",4.2],["#ecedf2",4.2],["#0e1f69",4.2],["#f1eef3",3.2]]},
-  {"id":"sab","name":"Scabbard and Blade Membership or Rank Ribbon","kind":"mem","grp":"mem","s":null,"h":[["#d8333b",40],["#4b67b0",60]],"fixed":["star5"],"crit":"Red over blue with five stars. The rank ribbon takes the place of the membership ribbon, so wear only one.","ref":"AFROTC Sup 9.3.28.5, Fig 10.4"}
+  {"id":"sab","name":"Scabbard and Blade Membership or Rank Ribbon","kind":"mem","grp":"mem","s":null,"h":[["#d8333b",40],["#4b67b0",60]],"fixed":["star5"],"ranks":{"s":[["#23307f",34],["#b8333d",32],["#23307f",34]],"list":[["c","Captain",["s","s"]],["l","1st Lieutenant",["g"]],["t","2nd Lieutenant",["s"]],["f","1st Sergeant",[]]]},"crit":"Membership ribbon: red over blue with five stars. Officers of the society wear a rank ribbon in its place (blue with a red center, with bars for officers); wear only one.","ref":"AFROTC Sup 9.3.28.5, Fig 10.4"}
 ];

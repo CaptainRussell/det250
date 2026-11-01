@@ -301,7 +301,7 @@ function save(){
 /* ---------------- share link ----------------
    #r=pf~3!s.xm!b.lov!d.als&p=AFAM~2|NDSM&w=4
    each ribbon: id, then ~count (if > 1), then !flags: s silver star, b bronze star, d org award device worn,
-   v / z org device level silver / bronze (gold when neither) */
+   v / z org device level silver / bronze (gold when neither), k + c/l/t/f Scabbard and Blade rank ribbon */
 function encode(){
   const parts = R.filter(r => state.sel[r.id]).map(r => {
     const s = state.sel[r.id]; let t = r.id, f = "";
@@ -310,6 +310,7 @@ function encode(){
     else if (s.o === "bs" || s.o === true && r.opt && r.opt.dev === "bs") f += "b";
     if (r.orgdev && s.d) f += "d";
     if (r.lvl && s.lv === "s") f += "v"; else if (r.lvl && s.lv === "b") f += "z";
+    if (r.ranks && s.rk) f += "k" + s.rk;
     return f ? t + "!" + f : t;
   });
   const q = new URLSearchParams();
@@ -335,6 +336,7 @@ function decode(hash){
     }
     if (r.orgdev) v.d = f.includes("d");
     if (r.lvl) v.lv = f.includes("v") ? "s" : f.includes("z") ? "b" : "g";
+    if (r.ranks) { const m = f.match(/k([cltf])/); v.rk = m ? m[1] : ""; }
     s.sel[id] = v;
   });
   s.per = q.get("w") === "4" ? 4 : 3;
@@ -375,7 +377,12 @@ function devicesFor(r, s){
    (no second ribbon: the ribbon itself is the first award, so a second ribbon read as an extra award). */
 function rack(){
   const out = [];
-  R.forEach(r => { if (state.sel[r.id]) out.push({r, devs: devicesFor(r, state.sel[r.id]), label: r.name}); });
+  R.forEach(r => {
+    const s = state.sel[r.id]; if (!s) return;
+    const rk = r.ranks && s.rk && r.ranks.list.find(x => x[0] === s.rk);
+    if (rk) out.push({r: Object.assign({}, r, {s: r.ranks.s, h: null, fixed: [], bars: rk[2]}), devs: [], label: `Scabbard and Blade Rank Ribbon (${rk[1]})`});
+    else out.push({r, devs: devicesFor(r, s), label: r.name});
+  });
   return out;
 }
 
@@ -513,6 +520,11 @@ function orgDevice(kind, p, metal){
   return "";
 }
 function fixedArt(r){
+  if (r.bars && r.bars.length){ // Scabbard and Blade rank: small upright bars on the red center
+    const bw = 3.4, gap = 3.4, tot = r.bars.length * bw + (r.bars.length - 1) * gap;
+    return r.bars.map((m, i) => { const x = W / 2 - tot / 2 + i * (bw + gap), t = m === "g" ? ["#f6dc8a", "#b88a2a", "#5a3a07"] : ["#ffffff", "#aeb4bd", "#454b54"];
+      return `<rect x="${(x + .5).toFixed(2)}" y="7.4" width="${bw}" height="16" fill="#000" fill-opacity=".3"/><rect x="${x.toFixed(2)}" y="6.8" width="${bw}" height="16" fill="${t[0]}" stroke="${t[2]}" stroke-width=".5"/><rect x="${(x + bw * .55).toFixed(2)}" y="6.8" width="${(bw * .45).toFixed(2)}" height="16" fill="${t[1]}"/>`; }).join("");
+  }
   if (r.fixed && r.fixed.includes("star5")){
     let s = ""; for (let i = 0; i < 5; i++) s += star(20 + i * 17.5, H * .44, "d", 8.8);
     return s;
@@ -573,6 +585,7 @@ function optsHTML(r){
   if (r.opt && r.opt.type === "select") h += `<label>${esc(r.opt.label)} <select data-role="o">${r.opt.choices.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select></label>`;
   if (r.orgdev) h += `<label><input type="checkbox" data-role="d"> Wear the ${esc(ORGDEV[r.orgdev])}</label>`;
   if (r.lvl) h += `<label>Highest level <select data-role="lv">${["g", "s", "b"].map(m => `<option value="${m}">${METAL_NAME[m][0].toUpperCase() + METAL_NAME[m].slice(1)} (${esc(r.lvl[m])})</option>`).join("")}</select></label>`;
+  if (r.ranks) h += `<label>Ribbon <select data-role="rk"><option value="">Membership (five stars)</option>${r.ranks.list.map(([c, t]) => `<option value="${c}">Rank: ${esc(t)}</option>`).join("")}</select></label>`;
   if (r.kind === "cap") h += `<span class="devnote">Only your highest CAP award is worn.</span>`;
   if (r.excl === "ftdgsp") h += `<span class="devnote">A cadet earns the DG or the Superior Performer, not both. Checking one clears the other.</span>`;
   return h;
@@ -600,6 +613,7 @@ function syncPicker(){
     const o = el.querySelector('[data-role="o"]');
     if (o) { if (o.type === "checkbox") o.checked = !!s.o; else o.value = s.o || ""; }
     const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
+    const rk = el.querySelector('[data-role="rk"]'); if (rk) rk.value = s.rk || "";
     const lv = el.querySelector('[data-role="lv"]'); if (lv) { lv.value = s.lv || "g"; lv.disabled = !s.d; }
     const dv = el.querySelector('[data-role="dv"]');
     if (dv) { const olc = devicesFor(r, s).filter(x => x === "so" || x === "bo"); dv.textContent = olc.length ? devText(olc) : "no oak leaf cluster"; }
@@ -674,6 +688,7 @@ function wire(){
       } else if (t.dataset.role === "o") state.sel[id].o = t.type === "checkbox" ? t.checked : t.value;
       else if (t.dataset.role === "d") state.sel[id].d = t.checked;
       else if (t.dataset.role === "lv") state.sel[id].lv = t.value;
+      else if (t.dataset.role === "rk") state.sel[id].rk = t.value;
       changed();
     }
   });
