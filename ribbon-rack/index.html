@@ -163,8 +163,15 @@ button,input,select{font:inherit;color:inherit}
             <button type="button" data-per="3" aria-pressed="true">3</button>
             <button type="button" data-per="4" aria-pressed="false">4</button>
           </div>
-          <span class="devnote" id="perHint">3 is standard. 4 per row is for when the coat lapel covers part of the rack.</span>
         </div>
+        <div class="ctrls">
+          <span class="lbl" id="alLbl">Short top row</span>
+          <div class="seg" role="group" aria-labelledby="alLbl">
+            <button type="button" data-align="center" aria-pressed="true">Centered</button>
+            <button type="button" data-align="right" aria-pressed="false">Lapel side open</button>
+          </div>
+        </div>
+        <p class="devnote" style="margin:8px 0 0">Centered when the coat lapel does not cover the rack, and on the shirt. When the lapel covers part of it, keep the short row to the outside (your left, toward the sleeve). <span class="cite">DAFI 36-2903 13.1.2, Fig 13.1</span></p>
         <div class="nameline">
           <input id="who" type="text" placeholder="Name for the printout (optional)" aria-label="Name for the printout" maxlength="60" autocomplete="off">
         </div>
@@ -189,7 +196,7 @@ button,input,select{font:inherit;color:inherit}
         <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">Fig 10.4</span></li>
         <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
         <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
-        <li><b>3 or 4 per row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows rows of 3 and of 4, and other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
+        <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
         <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
         <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
         <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. A first 100 adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTCI 36-2011V3 Table 15.1</span></li>
@@ -262,7 +269,7 @@ const BY = Object.fromEntries(R.map((r, i) => [r.id, Object.assign(r, {rank: i})
 /* ---------------- state ---------------- */
 let state = blank();
 let viewingShared = false;
-function blank(){ return {sel:{}, prior:[], per:3, who:""}; }
+function blank(){ return {sel:{}, prior:[], per:3, align:"center", who:""}; }
 function load(){
   try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.sel) return Object.assign(blank(), s); } catch(e) {}
   return blank();
@@ -288,6 +295,7 @@ function encode(){
   if (parts.length) q.set("r", parts.join("."));
   if (state.prior.length) q.set("p", state.prior.map(p => p.name.replace(/[|~]/g, " ") + (p.n > 1 ? "~" + p.n : "")).join("|"));
   if (state.per === 4) q.set("w", "4");
+  if (state.align === "right") q.set("a", "r");
   if (state.who) q.set("n", state.who);
   return q.toString();
 }
@@ -313,6 +321,7 @@ function decode(hash){
     s.prior.push({name: name.slice(0, 40), n: Math.max(1, Math.min(30, parseInt(n || "1", 10) || 1))});
   });
   s.per = q.get("w") === "4" ? 4 : 3;
+  s.align = q.get("a") === "r" ? "right" : "center";
   s.who = (q.get("n") || "").slice(0, 60);
   return s;
 }
@@ -513,7 +522,8 @@ function rackSVG(items, per, opts){
   let cloths = "", devs = "", k = 0;
   for (let row = 0; row < rows; row++){
     const inRow = row === 0 ? top : per;
-    const off = M + (cols - inRow) * W / 2;
+    // Fig 13.1: a short top row is centered, or (lapel covering the rack) flush to the wearer's left, which is the viewer's right
+    const off = M + (cols - inRow) * W * (opts.align === "right" ? 1 : .5);
     for (let c = 0; c < inRow; c++, k++){
       const x = off + c * W, y = M + row * H;
       cloths += ribbonSVG(items[k], x, y, p);
@@ -603,8 +613,9 @@ function render(){
   const items = rack();
   const stage = $("stage");
   if (!items.length) stage.innerHTML = `<p class="empty">Check the ribbons you've been awarded and your rack builds here.</p>`;
-  else stage.innerHTML = rackSVG(items, state.per);
-  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
+  else stage.innerHTML = rackSVG(items, state.per, {align: state.align});
+  document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
+  document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
   $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
   $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : it.note ? " · " + esc(it.note) : ""}${it.r.prior ? " (prior service)" : ""}</li>`).join("");
   const w = [];
@@ -675,7 +686,8 @@ function wire(){
       if (q && any) g.open = true;
     });
   });
-  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
+  document.querySelectorAll(".seg button[data-per]").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
+  document.querySelectorAll(".seg button[data-align]").forEach(b => b.addEventListener("click", () => { state.align = b.dataset.align; changed(); }));
   $("who").addEventListener("input", () => { state.who = $("who").value.slice(0, 60); save(); });
   // Reset asks once on the button itself: first press arms it, a second press within 4 s clears
   $("clearBtn").addEventListener("click", () => {
@@ -686,7 +698,7 @@ function wire(){
       return;
     }
     clearTimeout(b.t); delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger");
-    state = Object.assign(blank(), {per: state.per}); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
+    state = Object.assign(blank(), {per: state.per, align: state.align}); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
     changed(); toast("Rack reset");
   });
   $("startOwn").addEventListener("click", () => {
@@ -709,15 +721,15 @@ function toast(msg){
 function buildPrint(){
   const items = rack();
   $("printSheet").innerHTML = items.length ? `<h1>${esc(state.who || "Ribbon rack")}</h1>
-    <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row. Check that your printer is set to 100% scale.</p>
-    <div class="rk">${rackSVG(items, state.per, {inches:true})}</div>
+    <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row, top row ${state.align === "right" ? "to the outside" : "centered"}. Check that your printer is set to 100% scale.</p>
+    <div class="rk">${rackSVG(items, state.per, {inches:true, align: state.align})}</div>
     <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : it.note ? " (" + esc(it.note) + ")" : ""}${it.r.prior ? ", prior service" : ""}</li>`).join("")}</ol>
     <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons precede all AFROTC ribbons. Det 250 Cadet Hub, Ribbon Rack Builder.</p>` : "";
 }
 function savePNG(){
   const items = rack(); if (!items.length) return;
   const scale = 6;
-  const svg = rackSVG(items, state.per, {px: scale});
+  const svg = rackSVG(items, state.per, {px: scale, align: state.align});
   const [vw, vh] = rackPx(items, state.per);
   const pad = 12, w = vw * scale + pad * 2, h = vh * scale + pad * 2;
   const img = new Image();
