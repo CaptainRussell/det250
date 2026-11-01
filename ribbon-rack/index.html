@@ -190,7 +190,7 @@ button,input,select{font:inherit;color:inherit}
         <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
         <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
         <li><b>3 or 4 per row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows rows of 3 and of 4, and other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
-        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. No more than four devices on one ribbon; past that, a second ribbon follows the first. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
+        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
         <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
         <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. A first 100 adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTCI 36-2011V3 Table 15.1</span></li>
         <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; AFROTC Sup 10.8.1.4</span></li>
@@ -343,7 +343,8 @@ function devicesFor(r, s){
   if (r.kind === "org" && !r.opt && s.d) list = ["org:" + (r.orgdev || "medal")];
   return list;
 }
-/* The rack: prior service first, then AFROTC precedence. Over four devices: a second ribbon follows. */
+/* The rack: prior service first, then AFROTC precedence. Each award is one ribbon with all of its devices
+   (no second ribbon: the ribbon itself is the first award, so a second ribbon read as an extra award). */
 function rack(){
   const out = [];
   state.prior.forEach(p => {
@@ -351,13 +352,8 @@ function rack(){
     // prior service blocks are labeled placeholders; the award count goes in the label
     out.push({r, devs: [], label: p.name || "Prior service ribbon", note: p.n > 1 ? p.n + " awards" : ""});
   });
-  R.forEach(r => { if (state.sel[r.id]) pushSplit(out, r, devicesFor(r, state.sel[r.id]), r.name); });
+  R.forEach(r => { if (state.sel[r.id]) out.push({r, devs: devicesFor(r, state.sel[r.id]), label: r.name}); });
   return out;
-}
-function pushSplit(out, r, devs, label){
-  if (devs.length <= 4) { out.push({r, devs, label}); return; }
-  out.push({r, devs: devs.slice(0, 4), label});
-  out.push({r, devs: devs.slice(4), label: label + " (second ribbon)", second: true});
 }
 
 /* ---------------- drawing ----------------
@@ -611,7 +607,6 @@ function render(){
   $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
   $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : it.note ? " · " + esc(it.note) : ""}${it.r.prior ? " (prior service)" : ""}</li>`).join("");
   const w = [];
-  if (items.some(i => i.second)) w.push("A ribbon has more than four devices, so a second ribbon follows it (DAFI 36-2903 13.6.6).");
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
   $("who").value = state.who;
   ["printBtn", "pngBtn", "linkBtn", "clearBtn"].forEach(id => $(id).disabled = !items.length);
