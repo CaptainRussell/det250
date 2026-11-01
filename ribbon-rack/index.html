@@ -34,14 +34,17 @@ button,input,select{font:inherit;color:inherit}
 .grp{border-top:1px solid var(--line)}
 .grp>summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
 .grp>summary::-webkit-details-marker{display:none}
-.grp>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(-45deg);transition:transform .2s var(--d250-ease);flex:none}
+.grp>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(-45deg);transition:transform .14s var(--d250-ease);flex:none}
 .grp[open]>summary::before{transform:rotate(45deg)}
 .grp>summary .n{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
 .grp>summary .n.on{color:var(--gold)}
 .gnote{margin:-4px 16px 10px;font-size:12.5px;color:var(--soft)}
 .psnote{margin:0 16px 12px}
 .psnote b{color:var(--ink)}
-.rib{border-top:1px dashed var(--line);padding:8px 16px}
+.rib{border-top:1px dashed var(--line);padding:8px 16px;transition:background-color .14s}
+.rib.on{background:color-mix(in srgb,var(--gold) 7%,transparent)}
+.rib.flash{animation:ribflash .9s ease-out}
+@keyframes ribflash{0%,35%{background:color-mix(in srgb,var(--gold) 26%,transparent)}}
 .rib:first-of-type{border-top:0}
 .rib label.main{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:36px}
 .rib input[type=checkbox].pick{width:20px;height:20px;flex:none;accent-color:var(--accent)}
@@ -51,7 +54,9 @@ button,input,select{font:inherit;color:inherit}
 .nm .crit{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:var(--soft);line-height:1.4}
 .nm .crit .cite{white-space:normal}
 .opts{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:8px 0 4px 32px;font-size:13.5px;color:var(--soft)}
-.rib.on .opts{display:flex}
+.rib.on .opts{display:flex;animation:optsin .14s ease-out}
+@keyframes optsin{from{opacity:0;transform:translateY(-4px)}}
+.opts .dv{font-size:12.5px;font-weight:700;color:var(--gold)}
 .opts label{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;cursor:pointer;max-width:100%}
 .opts input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
 .opts select{padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface-2);max-width:100%;min-width:0}
@@ -77,6 +82,10 @@ button,input,select{font:inherit;color:inherit}
 .rackbox{padding:4px 16px 16px}
 .stage{background:#2b3c63;background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:26px 14px;display:grid;place-items:center;min-height:150px;overflow:hidden}
 .stage svg{max-width:100%;height:auto;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
+.stage .rb{cursor:pointer}
+.stage .rb:hover{filter:brightness(1.12)}
+.stage .pop{transform-box:fill-box;transform-origin:center;animation:pop .2s cubic-bezier(.2,.9,.35,1.25)}
+@keyframes pop{from{opacity:0;transform:scale(.7)}}
 .empty{color:#c9d3ea;font-size:14px;text-align:center;max-width:260px}
 .ctrls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:12px}
 .seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
@@ -88,6 +97,14 @@ button,input,select{font:inherit;color:inherit}
 .order{margin:10px 0 0;padding:0 0 0 22px;font-size:13px;color:var(--soft);max-height:220px;overflow:auto}
 .order li{margin:2px 0}
 .order li b{color:var(--ink);font-weight:600}
+.order button{all:unset;display:block;width:100%;text-align:left;cursor:pointer;border-radius:4px}
+.order button:hover b{text-decoration:underline}
+.order button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.order .rowh{display:block;list-style:none;margin:8px 0 2px -22px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.order .rowh:first-child{margin-top:0}
+.jump{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:0;background:var(--d250-cardinal);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer;transition:opacity .14s,transform .14s}
+.jump.off{opacity:0;transform:translateY(12px);pointer-events:none}
+@media (max-width:900px){.jump{display:inline-flex}.toast{bottom:74px}}
 .warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--d250-gold-bg);color:var(--ink);font-size:13px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
 .shared{margin-bottom:14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notes{margin-top:20px}
@@ -102,12 +119,13 @@ button,input,select{font:inherit;color:inherit}
 .doc .dn{margin:0;font-weight:700;color:var(--ink)}
 .doc .dd{margin:2px 0 0;font-size:13.5px}
 .doc .da{display:flex;gap:8px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;transition:opacity .2s,transform .2s;pointer-events:none;z-index:60}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);opacity:0;background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;transition:opacity .14s,transform .14s;pointer-events:none;z-index:60;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .nameline{display:flex;gap:8px;align-items:center;margin-top:12px}
 .nameline input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
 #printSheet{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.jump{display:none!important}}
 @media print{
   @page{margin:.5in}
   body{background:#fff;color:#000}
@@ -191,7 +209,8 @@ button,input,select{font:inherit;color:inherit}
     <div class="body">
       <ul>
         <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">AFROTC Sup 10.8.1.1, Fig 10.4</span></li>
-        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> JROTC ribbons are not authorized on the AFROTC uniform. Only awards in AFROTCI 36-2011V3 may be worn. <span class="cite">AFROTCI 36-2011V3 15.3.2</span></li>
+        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> Ribbons from JROTC, other services' ROTC and CAP (other than the CAP awards on the chart) are not on the AFROTC ribbon chart, and only awards in AFROTCI 36-2011V3 are authorized on the cadet uniform. <span class="cite">AFROTCI 36-2011V3 15.3.2</span></li>
+        <li><b>Valor awards:</b> active duty valor awards go above all AFROTC awards. An AFJROTC valor award counts as the AFROTC award; CAP, Army ROTC and Navy ROTC valor awards go below the AFROTC valor awards and above everything else. If several valor awards are given for the same act, wear only one. <span class="cite">AFROTCI 36-2011V3 15.4, 15.4.1</span></li>
         <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">Fig 10.4</span></li>
         <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
         <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
@@ -200,7 +219,7 @@ button,input,select{font:inherit;color:inherit}
         <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
         <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. A first 100 adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTCI 36-2011V3 Table 15.1</span></li>
         <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; AFROTC Sup 10.8.1.4</span></li>
-        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, MOWW and others) wear only one device, centered, even if earned more than once. <span class="cite">AFROTC Sup 10.8.1.7</span></li>
+        <li><b>Organizational awards</b> (Legion of Valor, American Legion, Sons of the American Revolution) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (American Legion: gold for AS300 and AS400, silver for AS200, bronze for AS100). <span class="cite">AFROTC Sup 10.8.1.7</span> The HQ ROA and MOWW criteria sheets add a bronze oak leaf cluster for each added award. <span class="cite">HQ AFROTC cadet award criteria</span></li>
         <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
       </ul>
     </div>
@@ -243,6 +262,7 @@ button,input,select{font:inherit;color:inherit}
 
 <div id="printSheet" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="jump off" id="jumpBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg><span id="jumpTxt">View rack</span></button>
 
 <script src="ribbons.js"></script>
 <script>
@@ -256,7 +276,7 @@ const GROUPS = [
   {id:"afrotc", title:"AFROTC awards"},
   {id:"ft", title:"Field Training"},
   {id:"aas", title:"Arnold Air Society and Silver Wings"},
-  {id:"org", title:"Organizational awards (AFA, American Legion, ROA and others)", note:"Only one device is worn on an organizational award, even if earned more than once."},
+  {id:"org", title:"Organizational awards (AFA, American Legion, ROA and others)", note:"Only one device is worn on an organizational award, even if earned more than once (ROA and MOWW add a bronze oak leaf cluster for each added award)."},
   {id:"cap", title:"Civil Air Patrol", note:"Only your highest CAP award is worn. Checking one clears the others."},
   {id:"mem", title:"Membership ribbons"}
 ];
@@ -279,14 +299,16 @@ function save(){
 
 /* ---------------- share link ----------------
    #r=pf~3!s.xm!b.lov!d.als&p=AFAM~2|NDSM&w=4
-   each ribbon: id, then ~count (if > 1), then !flags: s silver star, b bronze star, d org award device worn */
+   each ribbon: id, then ~count (if > 1), then !flags: s silver star, b bronze star, d org award device worn,
+   v / z org device level silver / bronze (gold when neither) */
 function encode(){
   const parts = R.filter(r => state.sel[r.id]).map(r => {
     const s = state.sel[r.id]; let t = r.id, f = "";
     if (s.n !== minN(r)) t += "~" + s.n;
     if (s.o === "ss" || s.o === true && r.opt && r.opt.dev === "ss") f += "s";
     else if (s.o === "bs" || s.o === true && r.opt && r.opt.dev === "bs") f += "b";
-    if (r.kind === "org" && !r.opt && s.d) f += "d";
+    if (r.orgdev && s.d) f += "d";
+    if (r.lvl && s.lv === "s") f += "v"; else if (r.lvl && s.lv === "b") f += "z";
     return f ? t + "!" + f : t;
   });
   const q = new URLSearchParams();
@@ -310,7 +332,8 @@ function decode(hash){
       if (r.opt.type === "check") v.o = f.includes(r.opt.dev === "ss" ? "s" : "b");
       else v.o = f.includes("s") ? "ss" : f.includes("b") ? "bs" : "";
     }
-    if (r.kind === "org" && !r.opt) v.d = f.includes("d");
+    if (r.orgdev) v.d = f.includes("d");
+    if (r.lvl) v.lv = f.includes("v") ? "s" : f.includes("z") ? "b" : "g";
     s.sel[id] = v;
   });
   s.per = q.get("w") === "4" ? 4 : 3;
@@ -324,7 +347,8 @@ const minN = r => r.count && r.count.min === 0 ? 0 : 1;
 function defaults(r){
   const v = {n:minN(r)};
   if (r.opt) v.o = r.opt.type === "check" ? false : "";
-  if (r.kind === "org" && !r.opt) v.d = !!r.orgdev;
+  if (r.orgdev) v.d = true;
+  if (r.lvl) v.lv = "g";
   return v;
 }
 function devicesFor(r, s){
@@ -334,7 +358,7 @@ function devicesFor(r, s){
     const d = r.opt.type === "check" ? (s.o ? r.opt.dev : "") : s.o;
     if (d) stars.push(d);
   }
-  if (r.kind === "award"){
+  if (r.kind === "award" || r.olc){
     // n awards = n - 1 clusters; the scholarship ribbon counts completed years instead (one cluster each)
     const k = Math.max(0, minN(r) === 0 ? (s.n || 0) : (s.n || 1) - 1);
     for (let i = 0; i < Math.floor(k / 5); i++) olc.push("so");
@@ -342,7 +366,7 @@ function devicesFor(r, s){
   }
   stars.sort((a, b) => a === b ? 0 : a === "ss" ? -1 : 1);
   let list = stars.concat(olc);
-  if (r.kind === "org" && !r.opt && s.d) list = ["org:" + (r.orgdev || "medal")];
+  if (r.orgdev && s.d) list = ["org:" + r.orgdev + ":" + (r.lvl ? s.lv || "g" : "g")];
   return list;
 }
 /* The rack, in AFROTC precedence. Prior service ribbons are not built here: they precede all AFROTC ribbons (Sup 10.8.1.8).
@@ -371,6 +395,8 @@ function defs(p){
     <linearGradient id="ms${p}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#c3c8d0"/><stop offset="1" stop-color="#6c727c"/></linearGradient>
     <linearGradient id="mg${p}" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff0b4"/><stop offset=".4" stop-color="#d7a23c"/><stop offset=".75" stop-color="#9c6a17"/><stop offset="1" stop-color="#6b4508"/></linearGradient>
     <radialGradient id="md${p}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".5" stop-color="#c79a4a"/><stop offset="1" stop-color="#6e4b1c"/></radialGradient>
+    <radialGradient id="mds${p}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#b9bec6"/><stop offset="1" stop-color="#5d636c"/></radialGradient>
+    <radialGradient id="mdb${p}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#f0bb92"/><stop offset=".5" stop-color="#a5643b"/><stop offset="1" stop-color="#55290f"/></radialGradient>
   </defs>`;
 }
 function stripes(r){
@@ -427,7 +453,7 @@ function leaf(x, y, m, p){
 const LEAF_W = 25, LEAF_STEP = 13;   // first leaf spans about 25 units; each added leaf adds 13
 function devices(list, p){
   const n = list.length; if (!n) return "";
-  if (n === 1 && list[0].startsWith("org:")) return orgDevice(list[0].slice(4), p);
+  if (n === 1 && list[0].startsWith("org:")) { const [, kind, metal] = list[0].split(":"); return orgDevice(kind, p, metal); }
   const stars = list.filter(d => d === "ss" || d === "bs");
   const oaks = list.filter(d => d === "so" || d === "bo");
   const starW = 16, gap = stars.length && oaks.length ? 2 : 0;
@@ -439,8 +465,14 @@ function devices(list, p){
   oaks.forEach((d, i) => { out += leaf(x + 13.6 + i * LEAF_STEP, H / 2 + .4, d === "so" ? "s" : "b", p); });
   return out;
 }
-function orgDevice(kind, p){
-  const cx = W / 2, cy = H / 2;
+/* metal: g gold, s silver, b bronze. The American Legion scroll and torch come in all three by AS class. */
+const METAL = {
+  g:{flat:"mg", disc:"md", edge:"#5a3a07", ink:"#3b2504", wave:"#7a5310", ring:"#5e4114", ray:"#8d6a2c"},
+  s:{flat:"ms", disc:"mds", edge:"#3d424a", ink:"#23272d", wave:"#5b616a", ring:"#444a52", ray:"#7b828c"},
+  b:{flat:"mb", disc:"mdb", edge:"#3f1d0b", ink:"#2a1205", wave:"#5c2c12", ring:"#4a2410", ray:"#7a4424"}
+};
+function orgDevice(kind, p, metal){
+  const cx = W / 2, cy = H / 2, m = METAL[metal] || METAL.g;
   if (kind === "cross"){ // Legion of Valor Bronze Cross: a cross pattee
     const d = "M-3.8 -10.5H3.8L1.5 -1.5 10.5 -3.8V3.8L1.5 1.5 3.8 10.5H-3.8L-1.5 1.5 -10.5 3.8V-3.8L-1.5 -1.5Z";
     return `<g transform="translate(${cx} ${cy})"><path d="${d}" transform="translate(.8 1)" fill="#000" fill-opacity=".35"/><path d="${d}" fill="url(#mg${p})" stroke="#5a3a07" stroke-width=".7" stroke-linejoin="round"/><path d="M0 -9.6V9.6M-9.6 0H9.6" stroke="#5a3a07" stroke-width=".5" opacity=".6"/></g>`;
@@ -448,20 +480,20 @@ function orgDevice(kind, p){
   if (kind === "plaque"){ // American Legion Scholastic Excellence: a gold scroll that stands above and below the ribbon
     return `<g transform="translate(${cx} ${cy}) rotate(3)">
       <rect x="-12" y="-17.5" width="26" height="37" rx="2" fill="#000" fill-opacity=".35"/>
-      <rect x="-13" y="-18.5" width="26" height="37" rx="2" fill="url(#mg${p})" stroke="#5a3a07" stroke-width=".7"/>
-      <path d="M-13 -15.2C-9 -18.4 -4 -12.8 1 -15.4S9 -18.2 13 -15.2" fill="none" stroke="#7a5310" stroke-width=".9"/>
-      <path d="M-13 15.2C-9 12 -4 17.6 1 15.2S9 12.4 13 15.2" fill="none" stroke="#7a5310" stroke-width=".9"/>
-      <g font-family="Arial Narrow,Roboto Condensed,Arial,sans-serif" font-weight="700" font-size="5.4" fill="#3b2504" text-anchor="middle">
+      <rect x="-13" y="-18.5" width="26" height="37" rx="2" fill="url(#${m.flat}${p})" stroke="${m.edge}" stroke-width=".7"/>
+      <path d="M-13 -15.2C-9 -18.4 -4 -12.8 1 -15.4S9 -18.2 13 -15.2" fill="none" stroke="${m.wave}" stroke-width=".9"/>
+      <path d="M-13 15.2C-9 12 -4 17.6 1 15.2S9 12.4 13 15.2" fill="none" stroke="${m.wave}" stroke-width=".9"/>
+      <g font-family="Arial Narrow,Roboto Condensed,Arial,sans-serif" font-weight="700" font-size="5.4" fill="${m.ink}" text-anchor="middle">
         <text y="-2.6" textLength="21" lengthAdjust="spacingAndGlyphs">SCHOLASTIC</text><text y="5.4" textLength="21.5" lengthAdjust="spacingAndGlyphs">EXCELLENCE</text></g></g>`;
   }
   if (kind === "medal"){ // American Legion General Military Excellence: round gold medallion with a torch
     let rays = "";
     for (let i = 0; i < 16; i++){ const a = i / 16 * Math.PI * 2; rays += `M${(4 * Math.cos(a)).toFixed(2)} ${(4 * Math.sin(a)).toFixed(2)}L${(10 * Math.cos(a)).toFixed(2)} ${(10 * Math.sin(a)).toFixed(2)}`; }
     return `<g transform="translate(${cx} ${cy})"><circle r="12.6" transform="translate(.8 1)" fill="#000" fill-opacity=".35"/>
-      <circle r="12.6" fill="url(#md${p})" stroke="#4e3310" stroke-width=".8"/><circle r="10.6" fill="none" stroke="#5e4114" stroke-width=".6"/>
-      <path d="${rays}" stroke="#8d6a2c" stroke-width=".55" opacity=".8"/>
-      <path d="M-3.6 -2.4H3.6L1.3 2.6 .9 7.2H-.9L-1.3 2.6Z" fill="#f6ead0" stroke="#5e4114" stroke-width=".5"/>
-      <path d="M0 -8.6C2.6 -6 2.4 -3.8 0 -2.8 -2.4 -3.8 -2.6 -6 0 -8.6Z" fill="#fff8e6" stroke="#5e4114" stroke-width=".45"/></g>`;
+      <circle r="12.6" fill="url(#${m.disc}${p})" stroke="${m.edge}" stroke-width=".8"/><circle r="10.6" fill="none" stroke="${m.ring}" stroke-width=".6"/>
+      <path d="${rays}" stroke="${m.ray}" stroke-width=".55" opacity=".8"/>
+      <path d="M-3.6 -2.4H3.6L1.3 2.6 .9 7.2H-.9L-1.3 2.6Z" fill="#f6ead0" stroke="${m.ring}" stroke-width=".5"/>
+      <path d="M0 -8.6C2.6 -6 2.4 -3.8 0 -2.8 -2.4 -3.8 -2.6 -6 0 -8.6Z" fill="#fff8e6" stroke="${m.ring}" stroke-width=".45"/></g>`;
   }
   if (kind === "sword"){ // Sons of the American Revolution: a short sword across the ribbon
     return `<g stroke-linecap="round" stroke-linejoin="round">
@@ -472,8 +504,7 @@ function orgDevice(kind, p){
       <path d="M13 25.2L25.2 22.8" stroke="#2e3238" stroke-width="3.6"/>
       <circle cx="12" cy="25.4" r="2.6" fill="#3a3f46" stroke="#22262b" stroke-width=".5"/></g>`;
   }
-  // other organizational awards: one bronze disc with a star
-  return `<g transform="translate(${cx} ${cy})"><circle r="10" transform="translate(.7 .9)" fill="#000" fill-opacity=".35"/><circle r="10" fill="url(#mb${p})" stroke="#3f1d0b" stroke-width=".7"/><circle r="7.4" fill="none" stroke="#3f1d0b" stroke-width=".5"/></g>${star(cx, cy, "b", 5)}`;
+  return "";
 }
 function fixedArt(r){
   if (r.fixed && r.fixed.includes("star5")){
@@ -486,10 +517,10 @@ function fixedArt(r){
 function cloth(r, p){
   return `${stripes(r)}<rect width="${W}" height="${H}" fill="url(#rib${p})"/>${fixedArt(r)}<rect width="${W}" height="${H}" fill="url(#bv${p})"/><rect width="${W}" height="${H}" fill="url(#bh${p})"/>`;
 }
-function ribbonSVG(item, x, y, p){
+function ribbonSVG(item, x, y, p, pop){
   const r = item.r;
-  return `<g transform="translate(${x} ${y})"><title>${esc(item.label)}</title>${cloth(r, p)}
-    <rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></g>`;
+  return `<g transform="translate(${x} ${y})" class="rb" data-id="${r.id}"><g${pop ? ' class="pop"' : ""}><title>${esc(item.label)}</title>${cloth(r, p)}
+    <rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></g></g>`;
 }
 function rackSVG(items, per, opts){
   opts = opts || {};
@@ -505,9 +536,10 @@ function rackSVG(items, per, opts){
     const off = M + (cols - inRow) * W * (opts.align === "right" ? 1 : .5);
     for (let c = 0; c < inRow; c++, k++){
       const x = off + c * W, y = M + row * H;
-      cloths += ribbonSVG(items[k], x, y, p);
+      const id = items[k].r.id, popR = !!(opts.pop && opts.pop.has(id)), popD = popR || !!(opts.popDev && opts.popDev.has(id));
+      cloths += ribbonSVG(items[k], x, y, p, popR);
       // devices go on after every ribbon so a tall device sits over the ribbon above it
-      devs += `<g transform="translate(${x} ${y})">${devices(items[k].devs, p)}</g>`;
+      if (items[k].devs.length) devs += `<g transform="translate(${x} ${y})" pointer-events="none"><g${popD ? ' class="pop"' : ""}>${devices(items[k].devs, p)}</g></g>`;
     }
   }
   const size = opts.inches
@@ -518,7 +550,7 @@ function rackSVG(items, per, opts){
 function rackPx(items, per){ const rows = Math.ceil(items.length / per), cols = Math.min(per, items.length); return [cols * W + 2 * M, rows * H + 2 * M]; }
 function swatch(r){
   const p = ++uid;
-  const devs = r.orgdev ? ["org:" + r.orgdev] : (r.fixed || []).filter(d => d === "ss" || d === "bs");
+  const devs = r.orgdev ? ["org:" + r.orgdev + ":g"] : (r.fixed || []).filter(d => d === "ss" || d === "bs");
   return `<svg class="sw" viewBox="0 0 ${W} ${H}" aria-hidden="true">${defs(p)}${cloth(r, p)}${devices(devs, p)}<rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></svg>`;
 }
 /* Used by the test page to compare drawings with the chart. */
@@ -529,15 +561,19 @@ const $ = id => document.getElementById(id);
 function optsHTML(r){
   let h = "";
   if (r.kind === "award"){
-    h += `<span>${esc(r.count ? r.count.label : "Times awarded")}</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">${minN(r)}</output><button type="button" data-act="inc" aria-label="One more award">+</button></span>`;
+    h += `<span>${esc(r.count ? r.count.label : "Times awarded")}</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">${minN(r)}</output><button type="button" data-act="inc" aria-label="One more award">+</button></span><span class="dv" data-role="dv"></span>`;
   }
+  if (r.olc) h += `<span>Times awarded</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">1</output><button type="button" data-act="inc" aria-label="One more award">+</button></span><span class="dv" data-role="dv"></span>`;
   if (r.opt && r.opt.type === "check") h += `<label><input type="checkbox" data-role="o"> ${esc(r.opt.label)}</label>`;
   if (r.opt && r.opt.type === "select") h += `<label>${esc(r.opt.label)} <select data-role="o">${r.opt.choices.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select></label>`;
-  if (r.kind === "org" && !r.opt) h += `<label><input type="checkbox" data-role="d"> Wear award device</label>`;
+  if (r.orgdev) h += `<label><input type="checkbox" data-role="d"> Wear the ${esc(ORGDEV[r.orgdev])}</label>`;
+  if (r.lvl) h += `<label>Highest level <select data-role="lv"><option value="g">Gold (AS300, AS400)</option><option value="s">Silver (AS200)</option><option value="b">Bronze (AS100)</option></select></label>`;
   if (r.kind === "cap") h += `<span class="devnote">Only your highest CAP award is worn.</span>`;
   if (r.excl === "ftdgsp") h += `<span class="devnote">A cadet earns the DG or the Superior Performer, not both. Checking one clears the other.</span>`;
   return h;
 }
+const ORGDEV = {cross:"bronze cross", plaque:"scholastic scroll", medal:"torch device", sword:"sword device"};
+const METAL_NAME = {g:"gold", s:"silver", b:"bronze"};
 function buildGroups(){
   $("groups").innerHTML = GROUPS.map(g => {
     const list = R.filter(r => r.grp === g.id);
@@ -559,6 +595,9 @@ function syncPicker(){
     const o = el.querySelector('[data-role="o"]');
     if (o) { if (o.type === "checkbox") o.checked = !!s.o; else o.value = s.o || ""; }
     const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
+    const lv = el.querySelector('[data-role="lv"]'); if (lv) { lv.value = s.lv || "g"; lv.disabled = !s.d; }
+    const dv = el.querySelector('[data-role="dv"]');
+    if (dv) { const olc = devicesFor(r, s).filter(x => x === "so" || x === "bo"); dv.textContent = olc.length ? devText(olc) : "no oak leaf cluster"; }
   });
   GROUPS.forEach(g => {
     const c = R.filter(r => r.grp === g.id && state.sel[r.id]).length;
@@ -570,15 +609,29 @@ function syncPicker(){
 }
 
 /* ---------------- render ---------------- */
+let lastSig = null;   // id -> device text from the last render, so only what changed animates
 function render(){
   const items = rack();
   const stage = $("stage");
+  const sig = Object.fromEntries(items.map(it => [it.r.id, it.devs.join()]));
+  const pop = new Set(), popDev = new Set();
+  if (lastSig) items.forEach(it => { const id = it.r.id; if (!(id in lastSig)) pop.add(id); else if (lastSig[id] !== sig[id]) popDev.add(id); });
+  lastSig = sig;
   if (!items.length) stage.innerHTML = `<p class="empty">Check the ribbons you've been awarded and your rack builds here.</p>`;
-  else stage.innerHTML = rackSVG(items, state.per, {align: state.align});
+  else stage.innerHTML = rackSVG(items, state.per, {align: state.align, pop, popDev});
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
   $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
-  $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : ""}</li>`).join("");
+  // the order list, split by row as the rack shows it (the top row holds the leftovers)
+  const top = items.length % state.per || state.per, rowsN = Math.ceil(items.length / state.per);
+  let ol = "";
+  items.forEach((it, i) => {
+    const row = i < top ? 0 : 1 + Math.floor((i - top) / state.per);
+    if (rowsN > 1 && (i === 0 || (i - top) % state.per === 0 && i >= top)) ol += `<li class="rowh" aria-hidden="true">${row === 0 ? "Top row" : row === rowsN - 1 ? "Bottom row" : "Row " + (row + 1)}</li>`;
+    ol += `<li><button type="button" data-goto="${it.r.id}"><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : ""}</button></li>`;
+  });
+  $("orderList").innerHTML = ol;
+  updateJump(items.length);
   const w = [];
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
   $("who").value = state.who;
@@ -590,7 +643,7 @@ function devText(devs){
   const t = [];
   if (c.ss) t.push(`${c.ss} silver star`); if (c.bs) t.push(`${c.bs} bronze star`);
   if (c.so) t.push(`${c.so} silver OLC`); if (c.bo) t.push(`${c.bo} bronze OLC`);
-  if (org) t.push("award device");
+  if (org) { const [, kind, metal] = org.split(":"); t.push(kind === "plaque" || kind === "medal" ? `${METAL_NAME[metal] || "gold"} ${ORGDEV[kind]}` : ORGDEV[kind] || "award device"); }
   return t.join(", ");
 }
 function changed(){
@@ -606,11 +659,16 @@ function wire(){
       const id = rib.dataset.id, r = BY[id];
       if (t.classList.contains("pick")){
         if (t.checked){
-          if (r.excl) R.filter(x => x.excl === r.excl).forEach(x => delete state.sel[x.id]);
+          if (r.excl) {
+            const gone = R.filter(x => x.excl === r.excl && x.id !== id && state.sel[x.id]);
+            gone.forEach(x => delete state.sel[x.id]);
+            if (gone.length) toast(`Removed ${gone.map(x => x.name).join(", ")}. ${r.excl === "cap" ? "Only your highest CAP award is worn." : "A cadet earns the DG or the Superior Performer, not both."}`);
+          }
           state.sel[id] = defaults(r);
         } else delete state.sel[id];
       } else if (t.dataset.role === "o") state.sel[id].o = t.type === "checkbox" ? t.checked : t.value;
       else if (t.dataset.role === "d") state.sel[id].d = t.checked;
+      else if (t.dataset.role === "lv") state.sel[id].lv = t.value;
       changed();
     }
   });
@@ -623,6 +681,22 @@ function wire(){
       changed(); return;
     }
   });
+
+  // tap a ribbon in the rack (or a line in the order list) to find it in the list
+  const goto = id => {
+    const el = document.querySelector(`.rib[data-id="${id}"]`); if (!el) return;
+    if ($("q").value) { $("q").value = ""; $("q").dispatchEvent(new Event("input")); }
+    const g = el.closest("details"); if (g) g.open = true;
+    el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center"});
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    el.querySelector(".pick").focus({preventScroll: true});
+  };
+  $("stage").addEventListener("click", e => { const g = e.target.closest(".rb"); if (g) goto(g.dataset.id); });
+  $("orderList").addEventListener("click", e => { const b = e.target.closest("[data-goto]"); if (b) goto(b.dataset.goto); });
+  $("jumpBtn").addEventListener("click", () => {
+    $("h-rack").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+  });
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { rackSeen = es[0].isIntersecting; updateJump(); }).observe($("stage"));
 
   $("q").addEventListener("input", () => {
     const q = $("q").value.trim().toLowerCase();
@@ -661,9 +735,18 @@ function wire(){
   $("printBtn").addEventListener("click", () => { buildPrint(); window.print(); });
   window.addEventListener("beforeprint", buildPrint);
 }
+/* Phones: the rack sits above the list, so once it scrolls away a pill brings you back to it. */
+let rackSeen = true, rackN = 0;
+function updateJump(n){
+  if (n !== undefined) rackN = n;
+  const b = $("jumpBtn");
+  $("jumpTxt").textContent = `View rack (${rackN})`;
+  b.classList.toggle("off", rackSeen || !rackN);
+  b.tabIndex = rackSeen || !rackN ? -1 : 0;
+}
 function toast(msg){
   const t = $("toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200);
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), msg.length > 40 ? 3600 : 2000);
 }
 function buildPrint(){
   const items = rack();
