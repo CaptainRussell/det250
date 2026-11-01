@@ -363,6 +363,18 @@ section.band{margin-top:26px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ---------- detail drawer ---------- */
+.role-description{margin:16px 0;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.role-description .dh{margin:0 0 6px}
+.role-description p{margin:0 0 10px}
+.role-description p:last-child{margin-bottom:0}
+.role-description summary{cursor:pointer;font-weight:700;padding:8px 0;min-height:44px}
+.role-description summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.role-description ul{margin:6px 0 12px;padding-left:20px}
+.role-description li+li{margin-top:8px}
+.role-description h4{font-size:13px;margin:14px 0 6px}
+.role-source,.role-note{font-size:12px;color:var(--muted)}
+.role-source{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+
 .scrim{position:fixed;inset:0;z-index:50;background:rgba(10,14,20,.45);opacity:0;pointer-events:none;transition:opacity .3s}
 .scrim.open{opacity:1;pointer-events:auto}
 .drawer{position:fixed;z-index:60;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);transform:translateX(105%);transition:transform .38s var(--ease);display:flex;flex-direction:column;visibility:hidden}
@@ -483,6 +495,7 @@ section.band{margin-top:26px}
   <div class="dbody" id="dbody"></div>
 </aside>
 
+<script src="position-descriptions.js"></script>
 <script>
 /* =====================================================================
    DATA: edit names here.
@@ -567,7 +580,7 @@ const SEATS = [
   {id:"a2",    des:"A2/DT",     title:"Intelligence Director",               poc:["AlbertJosephI","C/Maj"],    flip:"TjadenAndrewJ",     parent:"wgcos", dir:"A2"},
   {id:"a22",   des:"A22/HISTO", title:"Historical Officer",                  poc:["BradleeColinR","C/Capt"],   flip:"McJannetMiloG",     parent:"a2"},
   {id:"dhisto",des:"Dep HISTO", title:"Deputy Historical Officer",           poc:["McNamaraZacharyA","C/3C"],                            parent:"a22"},
-  {id:"a23",   des:"A23/FLI",   title:"FLI Officer",                         poc:["BuddeCashJ","C/3C"],                                  parent:"a2"},
+  {id:"a23",   des:"A23/FLI",   title:"Flight Simulator Instructor",                         poc:["BuddeCashJ","C/3C"],                                  parent:"a2"},
   /* A3 */
   {id:"a3",    des:"A3/DT",     title:"Operations Director",                 poc:["SalasAlfredoE","C/Maj"],    flip:"BennettLiamB",      parent:"wgcos", dir:"A3"},
   {id:"a31",   des:"A31/SPO",   title:"Special Projects Officer",            poc:["HumistonVictoriaR","C/Capt"], flip:"SheldonElijahD",  parent:"a3"},
@@ -960,6 +973,32 @@ function personChip(seat){
   const go = seat.member ? primaryOf(h.key).id : seat.id;
   return `<button type="button" class="chip ${h.ring}" data-go="${go}">${img(h.key)}<span><span class="c1">${esc(h.rank)} ${esc(h.last)}</span><br><span class="c2">${esc([h.des, h.title].filter(Boolean).join(" · "))}</span></span></button>`;
 }
+/* Shared squadron/flight roles use one description for every corresponding seat. */
+function positionDescription(seat){
+  if(seat.member) return "";
+  const roleKey = ({sq1:"squadron",sq2:"squadron",afl:"flight",bfl:"flight",cfl:"flight",dfl:"flight",
+    afd:"flightDeputy",bfd:"flightDeputy",cfd:"flightDeputy",dfd:"flightDeputy",dparo1:"deputyParo",dparo2:"deputyParo"})[seat.id] || seat.id;
+  // GMCIC has a different title and no separate OPLAN description.
+  if(MODE === "flip" && seat.id === "gmca")
+    return `<section class="role-description" aria-label="Position description"><h3 class="dh">Position description</h3><p class="role-note">The OPLAN describes the GMC Advisor role. It does not provide a separate duty description for LLAB GMC In Charge during Flip Week.</p><p class="role-source">Source: Fall 2026 OPLAN, Section B, GMC Advisor, PDF pp. 9-10.</p></section>`;
+  const role = POSITION_DESCRIPTIONS[roleKey];
+  if(!role){
+    return `<section class="role-description" aria-label="Position description"><h3 class="dh">Position description</h3><p class="role-note">No separate duty description for this position is listed in the Fall 2026 OPLAN. Confirm assigned responsibilities with the position’s supervisor.</p></section>`;
+  }
+  const localDuties = (role.primaryDuties || []).length + (role.alternateDuties || []).length;
+  const dutyCount = localDuties + role.responsibilities.length;
+  const dutyList = texts => `<ul>${texts.map(text => `<li>${esc(text)}</li>`).join("")}</ul>`;
+  return `<section class="role-description" aria-label="Position description">
+    ${role.critical ? `<h3 class="dh">Critical role</h3><p>${esc(role.critical)}</p>` : `<h3 class="dh">Position description</h3>`}
+    ${role.note ? `<p class="role-note">${esc(role.note)}</p>` : ""}
+    ${dutyCount ? `<details><summary>Responsibilities (${dutyCount})</summary>
+      ${role.primaryDuties?.length ? `<h4>Primary duties</h4>${dutyList(role.primaryDuties)}` : ""}
+      ${role.alternateDuties?.length ? `<h4>Alternate duties</h4>${dutyList(role.alternateDuties)}` : ""}
+      ${role.responsibilities.length ? `${localDuties ? "<h4>Program responsibilities</h4>" : ""}${dutyList(role.responsibilities)}` : ""}
+    </details>` : ""}
+    <div class="role-source">${seat.cadre ? "Sources" : "Source"}: ${role.sources.map(esc).join("<br>")}</div>
+  </section>`;
+}
 function openSeat(id, refresh){
   if(byId[id] && byId[id].member) id = primaryOf(byId[id].poc[0]).id;
   const seat = byId[id]; if(!seat || !inMode(seat)) return;
@@ -969,6 +1008,7 @@ function openSeat(id, refresh){
       <div class="big" id="d-name">${esc(fullName(h))}</div>
       <div class="seat">${esc(h.title)}</div></div>
       <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${flightRow(h.key)}</dl>`;
+  html += positionDescription(seat);
   if(MODE === "flip" && other && !seat.cadre){
     html += `<div class="dh">Normally held by</div>
       <div class="counter">${img(other.key)}<div><b>${esc(fullName(other))}</b><br><span class="c2">${esc(other.des)} · ${esc(other.cls)}</span></div></div>`;
@@ -1031,7 +1071,7 @@ document.addEventListener("keydown", e => {
   }
   if(e.key === "Escape"){ if(!$("#results").hidden) hideResults(); else if(drawerSeat) closeDrawer(); else closeFlight(); }
   if(e.key === "Tab" && (drawerSeat || flightOpen)){
-    const f = [...(drawerSeat ? $("#drawer") : $("#fmodal")).querySelectorAll("button")]; if(!f.length) return;
+    const f = [...(drawerSeat ? $("#drawer") : $("#fmodal")).querySelectorAll("button, summary")].filter(el => el.getClientRects().length); if(!f.length) return;
     if(e.shiftKey && document.activeElement === f[0]){ e.preventDefault(); f[f.length - 1].focus(); }
     else if(!e.shiftKey && document.activeElement === f[f.length - 1]){ e.preventDefault(); f[0].focus(); }
   }

@@ -59,6 +59,7 @@
 All data is in the script near the bottom:
 - `PEOPLE`: photo key -> [last, first, class]. Photo file is `photos/<key>.jpg` (key = name with non-letters removed, for example `ReidElijahB`). Missing photos show initials.
 - `SEATS`: one row per POC-chart position: `id, des, title, poc:[key, rank], flip (key), parent, dir`, optional `flipDes`, `flipTitle`, `pocDes`. A seat without `flip` is hidden during Flip Week. Cadre seats use `cadre:true` and also have office symbols in `des`.
+- `position-descriptions.js` stores position-based OPLAN critical roles and full responsibility bullets, plus cited cadre summaries from the supplied Vol 2 and Vol 3, primary/alternate duties from the signed 27 July 2026 duty memo, and Capt Russell’s clarification of the secretary’s ISU liaison role. The detail drawer uses shared squadron/flight descriptions in both views. The seven GMC deputy seats without separate OPLAN descriptions use supporting duties based on Capt Russell’s local guidance and their supervisor’s OPLAN scope; responsibility remains with the supervisor. The Flip Week GMCIC role still has an explicit source-gap note. Keep source paragraph/page citations with duty updates.
 - `FLIGHTS` (GMC per flight) and `FLIGHTS_POC` (POC per flight), keyed `afl`, `bfl`, `cfl`, `dfl`. Flight member seats are generated from `FLIGHTS`.
 - Views: POC Chart (default) and Flip Week (toggle, `?view=flip`). Deep link to a seat with `#<seat id>`.
 - Ranks during Flip Week are automatic: AS100 = C/4C, AS200/AS250/AS500 = C/3C.
@@ -88,7 +89,6 @@ Serve the parent folder (`python3 -m http.server`) so the site loads at `/det250
 ## Open items
 - Archive the three old tool repos on GitHub (optional; forwarding still works).
 - Make `GMC_Strats_Fall_2026` private or delete it, so the old unprotected page in its history is no longer public.
-- A23/FLI title is a placeholder ("FLI Officer") until the official title is known.
 - McConnell's photo file is named "Lauren L." but the roster says "Liam"; the chart uses Liam.
 - The ISU cadre page still lists Matthews as Captain; the chart uses Maj.
 - `CaptainRussell/practicum-adventure` still serves its own GitHub Pages copy. Once the hub copy is live, replace it with a forwarding page like the other old repos (phones then join through `det250/practicum-adventure/join.html`). Changes made in that repo must be copied here by hand.
