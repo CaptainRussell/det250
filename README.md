@@ -8,6 +8,7 @@ One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/
 | `pfra/` | PFRA Calculator |
 | `whos-that-cadet/` | Who's That Cadet! |
 | `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
+| `ribbon-rack/` | Ribbon Rack Builder (AFROTC cadet ribbons, order of precedence, devices) |
 | `flight-staff-eval/` | Flight Staff Evaluation. `gmc-strats/` redirects here. |
 | `spin-the-wheel/` | Spin the Wheel (seating chart + cold-call wheel) |
 | `make-the-call/` | Make the Call (leadership debate game) |
