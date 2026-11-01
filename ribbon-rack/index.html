@@ -124,6 +124,22 @@ button,input,select{font:inherit;color:inherit}
 .nameline{display:flex;gap:8px;align-items:center;margin-top:12px}
 .nameline input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
 #printSheet{display:none}
+/* AFROTC ribbon chart pop-out (Sup Figure 10.4) */
+.chartbtn{margin-left:auto;padding:6px 10px;font-size:13px}
+.ph .chartbtn+.rt{margin-left:0}
+.chartthumb{display:block;width:92px;flex:none;border-radius:6px;border:1px solid var(--line-strong);cursor:zoom-in;padding:0;background:none;overflow:hidden}
+.chartthumb img{display:block;width:100%;height:auto}
+dialog.chart{padding:0;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden}
+dialog.chart[open]{display:flex;flex-direction:column;animation:dlgin .16s ease-out}
+dialog.chart::backdrop{background:rgba(6,8,14,.72)}
+@keyframes dlgin{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.chart .ch{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.chart .ch h2{margin:0;font-size:15px;font-weight:800;flex:1;min-width:0}
+.chart .ch .cite{white-space:normal}
+.chart .cb{overflow:auto;flex:1;min-height:0;background:#cfe3f3;-webkit-overflow-scrolling:touch}
+.chart .cb img{display:block;width:100%;height:auto;cursor:zoom-in}
+.chart.zoom .cb img{width:1500px;max-width:none;cursor:zoom-out}
+.chart .cf{padding:8px 14px;font-size:12.5px;color:var(--soft);border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{.jump{display:none!important}}
 @media print{
@@ -162,7 +178,7 @@ button,input,select{font:inherit;color:inherit}
 
   <div class="layout">
     <section class="panel pickcol" aria-labelledby="h-pick">
-      <h2 class="ph" id="h-pick">Your ribbons <span class="rt" id="pickCount">0 selected</span></h2>
+      <h2 class="ph" id="h-pick">Your ribbons <button class="btn chartbtn" type="button" data-chart aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h4M13 8h4M7 12h4M13 12h4M7 16h4M13 16h4"/></svg>Official chart</button><span class="rt" id="pickCount">0 selected</span></h2>
       <div class="search">
         <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
       </div>
@@ -230,6 +246,12 @@ button,input,select{font:inherit;color:inherit}
     <h2 class="ph" id="h-refs">References</h2>
     <div class="body">
       <div class="doc">
+        <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart.jpg" alt="" width="1500" height="2000" loading="lazy"></button>
+        <div><p class="dn">AFROTC Ribbon Chart</p>
+          <p class="dd">The full order of precedence, as printed in the AFROTC Supplement, Figure 10.4 (AFROTCVA 36-2001, Aug 2021). Read left to right, top to bottom, highest first.</p></div>
+        <div class="da"><button class="btn" type="button" data-chart aria-haspopup="dialog">View</button><a class="btn" href="references/afrotc-ribbon-chart.jpg" download>Save</a></div>
+      </div>
+      <div class="doc">
         <div><p class="dn">DAFI 36-2903, AFROTC Supplement</p>
           <p class="dd">18 November 2021. Figure 10.4 (AFROTC Ribbon Chart) sets the ribbons and their order. Paragraphs 10.8.1.3 to 10.8.1.8 cover stars, oak leaf clusters, organizational devices and prior service ribbons.</p></div>
         <div class="da"><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" download>Save</a></div>
@@ -296,6 +318,11 @@ button,input,select{font:inherit;color:inherit}
 
 <div id="printSheet" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="chart" id="chartDlg" aria-labelledby="chartTitle">
+  <div class="ch"><h2 id="chartTitle">AFROTC Ribbon Chart <span class="cite">AFROTC Sup Figure 10.4</span></h2><button class="iconbtn" type="button" id="chartClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="cb"><img id="chartImg" alt="AFROTC Ribbon Chart, Figure 10.4 of the DAFI 36-2903 AFROTC Supplement: every AFROTC ribbon in order of precedence, read left to right and top to bottom, from the Gold Valor Award to the Scabbard and Blade Membership Ribbon." width="1500" height="2000"></div>
+  <p class="cf">Order of precedence: left to right, top to bottom, highest first. Tap the chart to zoom. * Only your highest CAP award is worn.</p>
+</dialog>
 <button class="jump off" id="jumpBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg><span id="jumpTxt">View rack</span></button>
 
 <script src="ribbons.js"></script>
@@ -785,6 +812,22 @@ function wire(){
     catch(e) { prompt("Copy this link:", url); }
   });
   $("pngBtn").addEventListener("click", savePNG);
+  // the official chart in a pop-out; tap the picture to zoom to full size
+  const dlg = $("chartDlg");
+  document.addEventListener("click", e => {
+    if (!e.target.closest("[data-chart]")) return;
+    const img = $("chartImg"); if (!img.src) img.src = "references/afrotc-ribbon-chart.jpg";
+    dlg.classList.remove("zoom");
+    if (dlg.showModal) dlg.showModal(); else window.open(img.src, "_blank");
+  });
+  $("chartClose").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });   // click on the backdrop
+  $("chartImg").addEventListener("click", e => {
+    const box = e.currentTarget.parentElement, r = e.currentTarget.getBoundingClientRect();
+    const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+    dlg.classList.toggle("zoom");
+    if (dlg.classList.contains("zoom")) { const im = e.currentTarget; box.scrollLeft = fx * im.offsetWidth - box.clientWidth / 2; box.scrollTop = fy * im.offsetHeight - box.clientHeight / 2; }
+  });
   $("printBtn").addEventListener("click", () => { buildPrint(); window.print(); });
   window.addEventListener("beforeprint", buildPrint);
 }
