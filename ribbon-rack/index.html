@@ -125,8 +125,14 @@ button,input,select{font:inherit;color:inherit}
 .nameline input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
 #printSheet{display:none}
 /* AFROTC ribbon chart pop-out (Sup Figure 10.4) */
-.chartbtn{margin-left:auto;padding:6px 10px;font-size:13px}
-.ph .chartbtn+.rt{margin-left:0}
+.chartcta{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 16px;padding:10px 14px 10px 10px;border-radius:12px;border:2px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface));color:var(--ink);text-align:left;cursor:pointer;transition:background-color .14s,transform .14s}
+.chartcta:hover{background:color-mix(in srgb,var(--gold) 22%,var(--surface))}
+.chartcta:active{transform:scale(.99)}
+.chartcta img{width:84px;height:56px;object-fit:cover;border-radius:7px;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.chartcta .ct{flex:1;min-width:0}
+.chartcta b{display:block;font-size:16px;line-height:1.25}
+.chartcta small{display:block;margin-top:2px;font-size:13px;color:var(--soft)}
+.chartcta .go{flex:none;color:var(--gold)}
 .chartthumb{display:block;width:92px;flex:none;border-radius:6px;border:1px solid var(--line-strong);cursor:zoom-in;padding:0;background:none;overflow:hidden}
 .chartthumb img{display:block;width:100%;height:auto}
 dialog.chart{padding:0;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden}
@@ -176,9 +182,10 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <button class="btn" id="startOwn" type="button">Start my own rack</button>
   </div>
 
+  <button class="chartcta" type="button" data-chart aria-haspopup="dialog"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160"><span class="ct"><b>View the official AFROTC Ribbon Chart</b><small>Every ribbon in order of precedence (AFROTC Sup Figure 10.4)</small></span><svg class="go" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   <div class="layout">
     <section class="panel pickcol" aria-labelledby="h-pick">
-      <h2 class="ph" id="h-pick">Your ribbons <button class="btn chartbtn" type="button" data-chart aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h4M13 8h4M7 12h4M13 12h4M7 16h4M13 16h4"/></svg>Official chart</button><span class="rt" id="pickCount">0 selected</span></h2>
+      <h2 class="ph" id="h-pick">Your ribbons<span class="rt" id="pickCount">0 selected</span></h2>
       <div class="search">
         <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
       </div>
@@ -246,7 +253,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <h2 class="ph" id="h-refs">References</h2>
     <div class="body">
       <div class="doc">
-        <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart.jpg" alt="" width="1500" height="2000" loading="lazy"></button>
+        <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160" loading="lazy"></button>
         <div><p class="dn">AFROTC Ribbon Chart</p>
           <p class="dd">The full order of precedence, as printed in the AFROTC Supplement, Figure 10.4 (AFROTCVA 36-2001, Aug 2021). Read left to right, top to bottom, highest first.</p></div>
         <div class="da"><button class="btn" type="button" data-chart aria-haspopup="dialog">View</button><a class="btn" href="references/afrotc-ribbon-chart.jpg" download>Save</a></div>
@@ -652,12 +659,24 @@ function optsHTML(r){
 }
 const ORGDEV = {cross:"bronze cross", plaque:"scholastic scroll", medal:"torch device", sword:"sword device", disc:"medal device"};
 const METAL_NAME = {g:"gold", s:"silver", b:"bronze"};
+/* Search matches the name, the group, the initials (AAS, SAME, ROA, MOWW, CAP ...) and a few common names. */
+const ALIAS = {gv:"valor", sv:"valor", octa:"cta usaa", ftdg:"dg distinguished graduate", ftsp:"sp", iron:"ironman",
+  afa:"lovelace cadet of the year", als:"al legion", algm:"al legion", amvets:"amvets", pf:"pfa pt fitness 100 silver star",
+  xm:"marksman rifle pistol weapon", csr:"scholarship", ws:"warrior", color:"color guard honor guard", aasmem:"aas",
+  swmem:"sw", pr:"pr", sab:"s&b sab rank", capsp:"cap", capea:"cap", capbm:"cap", w1812:"1812", d1812:"1812"};
+const SMALL = new Set(["of", "the", "and", "for", "us", "award", "ribbon", "membership", "or"]);
+function initials(name){
+  return name.replace(/[“”"]/g, "").split(/[\s/]+/).filter(w => w && !SMALL.has(w.toLowerCase())).map(w => w[0]).join("");
+}
+function searchText(r, g){
+  return [r.name.replace(/[“”]/g, ""), g.title.replace(/\s*\(.*\)/, ""), initials(r.name), ALIAS[r.id] || ""].join(" ").toLowerCase();
+}
 function buildGroups(){
   $("groups").innerHTML = GROUPS.map(g => {
     const list = R.filter(r => r.grp === g.id);
     return `<details class="grp" data-g="${g.id}" open><summary>${esc(g.title)} <span class="n" data-count="${g.id}"></span></summary>
       ${g.note ? `<p class="gnote">${esc(g.note)}</p>` : ""}
-      ${list.map(r => `<div class="rib" data-id="${r.id}" data-q="${esc((r.name + " " + g.title).toLowerCase())}">
+      ${list.map(r => `<div class="rib" data-id="${r.id}" data-q="${esc(searchText(r, g))}">
         <label class="main"><input class="pick" type="checkbox" aria-describedby="nm-${r.id}"><span class="nm" id="nm-${r.id}">${esc(r.name)}${r.crit ? `<small class="crit">${esc(r.crit)} <span class="cite">${esc(r.ref)}</span></small>` : ""}</span>${swatch(r)}</label>
         <div class="opts">${optsHTML(r)}</div></div>`).join("")}</details>`;
   }).join("");
