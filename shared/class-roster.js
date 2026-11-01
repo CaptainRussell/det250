@@ -1,4 +1,4 @@
-/* Det 250 Cadet Hub: one saved class roster shared by the instructor tools.
+/* Storm HQ (Det 250): one saved class roster shared by the instructor tools.
    Type your class once in any instructor tool and the others can load it.
    Stored in this browser only (localStorage), never sent anywhere.
    Names are plain, one per entry: "Last, First" or just "Last". Each tool

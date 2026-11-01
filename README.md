@@ -1,6 +1,6 @@
-# Det 250 Cadet Hub
+# Storm HQ (Det 250)
 
-One site for every AFROTC Detachment 250 tool: https://captainrussell.github.io/det250/
+Storm HQ is one site for every AFROTC Detachment 250 tool: tools built by the Operations Flight Commander to support cadet operations, plus fun classroom activities. https://captainrussell.github.io/det250/
 
 | Folder | Tool |
 |---|---|

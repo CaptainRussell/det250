@@ -1,4 +1,4 @@
-/* Det 250 Cadet Hub: preset cadet groups for the instructor tool rosters.
+/* Storm HQ (Det 250): preset cadet groups for the instructor tool rosters.
    GENERATED from the PEOPLE table in org-chart/index.html by
    tools/build-cadet-groups.mjs. Do not edit by hand: change the org chart,
    then run  node tools/build-cadet-groups.mjs  from the repo root. */

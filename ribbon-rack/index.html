@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Det 250 Ribbon Rack Builder</title>
+<title>Ribbon Rack Builder · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <meta name="description" content="Build an AFROTC cadet ribbon rack in the correct order of precedence, with devices, from DAFI 36-2903 and the AFROTC supplement.">
 <link rel="stylesheet" href="../shared/det250.css">
@@ -163,7 +163,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
 <header class="d250-head" style="--tone:#4338ca">
   <div class="d250-head-in">
@@ -314,7 +314,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
   <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
-  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
   <p class="source-line">
     Ribbons and order of precedence from the <strong>DAFI 36-2903 AFROTC Supplement</strong> (18 Nov 2021), Figure 10.4
     (AFROTC Ribbon Chart, Aug 2021). Award criteria from <strong>AFROTCI 36-2011 V3</strong> (24 Jun 2026), the HQ AFROTC cadet award criteria (Sep 2026), <strong>AASMAN-1</strong> and the sponsor organizations listed under References. Wear rules from <strong>DAFI 36-2903</strong> (29 Feb 2024). Ribbon colors are drawn
@@ -869,7 +869,7 @@ function buildPrint(){
     <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row, top row ${state.align === "right" ? "to the outside" : "centered"}. Check that your printer is set to 100% scale.</p>
     <div class="rk">${rackSVG(items, state.per, {inches:true, align: state.align})}</div>
     <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : ""}</li>`).join("")}</ol>
-    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons earned on active duty precede all AFROTC ribbons (AFROTC Sup 10.8.1.8). Det 250 Cadet Hub, Ribbon Rack Builder.</p>` : "";
+    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons earned on active duty precede all AFROTC ribbons (AFROTC Sup 10.8.1.8). Storm HQ, Ribbon Rack Builder.</p>` : "";
 }
 function savePNG(){
   const items = rack(); if (!items.length) return;

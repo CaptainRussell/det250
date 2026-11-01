@@ -29,7 +29,7 @@ people.filter(p => GROUPS.some(g => g.classes.includes(p.cls))).forEach(p => {
   cadets[full(p).toLowerCase()] = [existsSync(`org-chart/photos/${p.key}.jpg`) ? p.key : "", p.cls];
 });
 
-const js = `/* Det 250 Cadet Hub: preset cadet groups for the instructor tool rosters.
+const js = `/* Storm HQ (Det 250): preset cadet groups for the instructor tool rosters.
    GENERATED from the PEOPLE table in org-chart/index.html by
    tools/build-cadet-groups.mjs. Do not edit by hand: change the org chart,
    then run  node tools/build-cadet-groups.mjs  from the repo root. */

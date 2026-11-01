@@ -1,4 +1,4 @@
-/* Det 250 Cadet Hub: shared pieces for the instructor tools (classroom games).
+/* Storm HQ (Det 250): shared pieces for the instructor tools (classroom games).
    Load after det250.css. Uses the --d250-* tokens, so light and dark come for free.
    Each tool keeps its own layout CSS; this file only holds the common parts:
    page, panels, labels, buttons, form fields, chips, the stat tally and entrance motion. */
