@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Det 250 Ribbon Rack Builder</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<meta name="description" content="Build an AFROTC cadet ribbon rack in the correct order of precedence, with devices, from DAFI 36-2903 and the AFROTC supplement.">
+<link rel="stylesheet" href="../shared/det250.css">
+<style>
+:root{
+  --bg:var(--d250-page); --surface:var(--d250-surface); --surface-2:var(--d250-surface-2);
+  --ink:var(--d250-ink); --soft:var(--d250-soft); --faint:var(--d250-faint);
+  --line:var(--d250-line); --line-strong:var(--d250-line-strong);
+  --accent:var(--d250-cardinal); --gold:var(--d250-gold); --tone:#4338ca;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--d250-font);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 0}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:20px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.rackcol{order:-1}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--d250-shadow)}
+.panel>h2,.panel .ph{margin:0;padding:14px 16px 10px;font-size:15px;font-weight:800;letter-spacing:.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ph .rt{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--soft)}
+.search{display:flex;gap:8px;padding:0 16px 12px}
+.search input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+.grp{border-top:1px solid var(--line)}
+.grp>summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.grp>summary::-webkit-details-marker{display:none}
+.grp>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(-45deg);transition:transform .2s var(--d250-ease);flex:none}
+.grp[open]>summary::before{transform:rotate(45deg)}
+.grp>summary .n{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
+.grp>summary .n.on{color:var(--gold)}
+.gnote{margin:-4px 16px 10px;font-size:12.5px;color:var(--soft)}
+.rib{border-top:1px dashed var(--line);padding:8px 16px}
+.rib:first-of-type{border-top:0}
+.rib label.main{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:36px}
+.rib input[type=checkbox].pick{width:20px;height:20px;flex:none;accent-color:var(--accent)}
+.rib .sw{flex:none;width:66px;height:18px;display:block;border-radius:1px;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.rib .nm{flex:1;min-width:0;font-size:14px;line-height:1.3}
+.rib.on .nm{font-weight:700}
+.nm .crit{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:var(--soft);line-height:1.4}
+.nm .crit .cite{white-space:normal}
+.opts{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:8px 0 4px 32px;font-size:13.5px;color:var(--soft)}
+.rib.on .opts{display:flex}
+.opts label{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;cursor:pointer;max-width:100%}
+.opts input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
+.opts select{padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface-2);max-width:100%;min-width:0}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden}
+.step button{width:32px;height:32px;border:0;background:var(--surface-2);cursor:pointer;font-weight:800;font-size:16px}
+.step button:hover{background:var(--line)}
+.step output{min-width:32px;text-align:center;font-weight:800;color:var(--ink)}
+.devnote{font-size:12.5px;color:var(--faint)}
+.hidden{display:none!important}
+/* prior service */
+.prior{padding:4px 16px 14px}
+.prior .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.prior .row input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
+.iconbtn{width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2);cursor:pointer;display:grid;place-items:center}
+.iconbtn:hover{background:var(--line)}
+.iconbtn:disabled{opacity:.35;cursor:default}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);font-weight:700;font-size:14px;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--line)}
+.btn.primary{background:var(--d250-cardinal);border-color:var(--d250-cardinal);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{border-color:var(--d250-cardinal);color:var(--d250-cardinal)}
+.btn svg{width:16px;height:16px}
+.btn:disabled{opacity:.45;cursor:default}
+/* rack */
+.rackcol{position:sticky;top:12px}
+@media (max-width:900px){.rackcol{position:static}}
+.rackbox{padding:4px 16px 16px}
+.stage{background:#2b3c63;background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:26px 14px;display:grid;place-items:center;min-height:150px;overflow:hidden}
+.stage svg{max-width:100%;height:auto;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
+.empty{color:#c9d3ea;font-size:14px;text-align:center;max-width:260px}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:12px}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--surface-2);padding:7px 12px;font-weight:700;font-size:13.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
+.ctrls .lbl{font-size:13px;color:var(--soft);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.count{font-size:13px;color:var(--soft);margin-top:10px}
+.order{margin:10px 0 0;padding:0 0 0 22px;font-size:13px;color:var(--soft);max-height:220px;overflow:auto}
+.order li{margin:2px 0}
+.order li b{color:var(--ink);font-weight:600}
+.warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--d250-gold-bg);color:var(--ink);font-size:13px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
+.shared{margin-bottom:14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.notes{margin-top:20px}
+.notes .body{padding:0 16px 14px;font-size:14px;color:var(--soft)}
+.notes ul{margin:0;padding-left:20px}
+.notes li{margin:6px 0}
+.notes b{color:var(--ink)}
+.cite{font-size:12px;color:var(--faint);white-space:nowrap}
+.doc{display:flex;gap:12px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
+.doc:first-child{border-top:0;padding-top:0}
+.doc>div:first-child{flex:1 1 320px;min-width:0}
+.doc .dn{margin:0;font-weight:700;color:var(--ink)}
+.doc .dd{margin:2px 0 0;font-size:13.5px}
+.doc .da{display:flex;gap:8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;transition:opacity .2s,transform .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.nameline{display:flex;gap:8px;align-items:center;margin-top:12px}
+.nameline input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
+#printSheet{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  @page{margin:.5in}
+  body{background:#fff;color:#000}
+  .d250-bar,.d250-head,.wrap,.d250-foot,.toast{display:none!important}
+  #printSheet{display:block!important;font:11pt/1.4 system-ui,sans-serif;color:#000}
+  #printSheet h1{font-size:15pt;margin:0 0 2pt}
+  #printSheet .sub{font-size:10pt;margin:0 0 14pt}
+  #printSheet .rk{margin:0 0 16pt}
+  #printSheet .rk svg{display:block}
+  #printSheet ol{margin:0;padding-left:18pt;font-size:10pt;columns:2;column-gap:24pt}
+  #printSheet .fine{margin-top:12pt;font-size:8.5pt}
+}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Det 250 Cadet Hub: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Det 250</span><span class="d250-sub">Cadet Hub</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+
+<header class="d250-head" style="--tone:#4338ca">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="6" height="4" rx=".6"/><rect x="9" y="4" width="6" height="4" rx=".6"/><rect x="15.5" y="4" width="6" height="4" rx=".6"/><rect x="5.75" y="8" width="6" height="4" rx=".6"/><rect x="12.25" y="8" width="6" height="4" rx=".6"/><circle cx="12" cy="17" r="3.5"/><path d="M12 12v1.5"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 · Cadet tool</p>
+      <h1>Ribbon Rack Builder</h1>
+      <p class="d250-head-sub">Check the ribbons you've earned and see your rack in order of precedence, with devices.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shared hidden" id="sharedBar" role="status">
+    <span id="sharedMsg">You're viewing a shared rack.</span>
+    <button class="btn" id="startOwn" type="button">Start my own rack</button>
+  </div>
+
+  <div class="layout">
+    <section class="panel pickcol" aria-labelledby="h-pick">
+      <h2 class="ph" id="h-pick">Your ribbons <span class="rt" id="pickCount">0 selected</span></h2>
+      <div class="search">
+        <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
+      </div>
+      <div id="groups"></div>
+    </section>
+
+    <aside class="panel rackcol" aria-labelledby="h-rack">
+      <h2 class="ph" id="h-rack">Your rack <span class="rt" id="rackCount"></span></h2>
+      <div class="rackbox">
+        <div class="stage" id="stage" aria-live="polite"></div>
+        <div class="ctrls">
+          <span class="lbl" id="perLbl">Ribbons per row</span>
+          <div class="seg" role="group" aria-labelledby="perLbl">
+            <button type="button" data-per="3" aria-pressed="true">3</button>
+            <button type="button" data-per="4" aria-pressed="false">4</button>
+          </div>
+        </div>
+        <div class="ctrls">
+          <span class="lbl" id="alLbl">Short top row</span>
+          <div class="seg" role="group" aria-labelledby="alLbl">
+            <button type="button" data-align="center" aria-pressed="true">Centered</button>
+            <button type="button" data-align="right" aria-pressed="false">Lapel side open</button>
+          </div>
+        </div>
+        <p class="devnote" style="margin:8px 0 0">Centered when the coat lapel does not cover the rack, and on the shirt. When the lapel covers part of it, keep the short row to the outside (your left, toward the sleeve). <span class="cite">DAFI 36-2903 13.1.2, Fig 13.1</span></p>
+        <div class="nameline">
+          <input id="who" type="text" placeholder="Name for the printout (optional)" aria-label="Name for the printout" maxlength="60" autocomplete="off">
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="button" id="printBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print actual size</button>
+          <button class="btn" type="button" id="pngBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Save image</button>
+          <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy share link</button>
+          <button class="btn" type="button" id="clearBtn">Reset rack</button>
+        </div>
+        <div id="warns"></div>
+        <ol class="order" id="orderList" aria-label="Rack order, highest first"></ol>
+      </div>
+    </aside>
+  </div>
+
+  <section class="panel notes" aria-labelledby="h-notes">
+    <h2 class="ph" id="h-notes">How to wear it</h2>
+    <div class="body">
+      <ul>
+        <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">AFROTC Sup 10.8.1.1, Fig 10.4</span></li>
+        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">AFROTC Sup 10.8.1.8</span> JROTC ribbons are not authorized on the AFROTC uniform. Only awards in AFROTCI 36-2011V3 may be worn. <span class="cite">AFROTCI 36-2011V3 15.3.2</span></li>
+        <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">Fig 10.4</span></li>
+        <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
+        <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
+        <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
+        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">AFROTC Sup 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
+        <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">AFROTC Sup 10.8.1.3, 10.8.1.4</span></li>
+        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. A first 100 adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">AFROTCI 36-2011V3 Table 15.1</span></li>
+        <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; AFROTC Sup 10.8.1.4</span></li>
+        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, MOWW and others) wear only one device, centered, even if earned more than once. <span class="cite">AFROTC Sup 10.8.1.7</span></li>
+        <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel notes refs" aria-labelledby="h-refs">
+    <h2 class="ph" id="h-refs">References</h2>
+    <div class="body">
+      <div class="doc">
+        <div><p class="dn">DAFI 36-2903, AFROTC Supplement</p>
+          <p class="dd">18 November 2021. Figure 10.4 (AFROTC Ribbon Chart) sets the ribbons and their order. Paragraphs 10.8.1.3 to 10.8.1.8 cover stars, oak leaf clusters, organizational devices and prior service ribbons.</p></div>
+        <div class="da"><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" download>Save</a></div>
+      </div>
+      <div class="doc">
+        <div><p class="dn">AFROTCI 36-2011 Volume 3, Cadet Operations</p>
+          <p class="dd">24 June 2026. Chapter 15 and Table 15.1 give the award criteria shown under each ribbon, including the Fitness Award silver star.</p></div>
+        <div class="da"><a class="btn" href="../pfra/references/afrotci-36-2011v3.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="../pfra/references/afrotci-36-2011v3.pdf" download>Save</a></div>
+      </div>
+      <div class="doc">
+        <div><p class="dn">DAFI 36-2903, Dress and Personal Appearance</p>
+          <p class="dd">29 February 2024. Ribbon placement (4.5.2, 4.7.3), badges above ribbons (12.2), and ribbon and device rules (Chapter 13). Opens on the Air Force e-Publishing site.</p></div>
+        <div class="da"><a class="btn" href="https://static.e-publishing.af.mil/production/1/af_a1/publication/dafi36-2903/dafi36-2903.pdf" target="_blank" rel="noopener">Open</a></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">
+    Ribbons and order of precedence from the <strong>DAFI 36-2903 AFROTC Supplement</strong> (18 Nov 2021), Figure 10.4
+    (AFROTC Ribbon Chart, Aug 2021). Award criteria from <strong>AFROTCI 36-2011 V3</strong> (24 Jun 2026). Wear rules from <strong>DAFI 36-2903</strong> (29 Feb 2024). Ribbon colors are drawn
+    to match the chart; check your rack against the regulation before inspection.
+  </p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<div id="printSheet" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="ribbons.js"></script>
+<script>
+(function(){
+"use strict";
+const KEY = "d250-ribbon-rack-v1";
+const W = 110, H = 30;               // one ribbon: 1 3/8 x 3/8 in
+const UNIT_IN = 1.375 / W;           // inches per unit, for actual-size printing
+
+const GROUPS = [
+  {id:"prior", title:"Prior service ribbons", note:"Ribbons earned on active duty are worn ahead of all AFROTC ribbons. Add them in the order your service's precedence chart lists them. They show as labeled blocks on the rack, so use the real ribbon and devices on your uniform."},
+  {id:"afrotc", title:"AFROTC awards"},
+  {id:"ft", title:"Field Training"},
+  {id:"aas", title:"Arnold Air Society and Silver Wings"},
+  {id:"org", title:"Organizational awards (AFA, American Legion, ROA and others)", note:"Only one device is worn on an organizational award, even if earned more than once."},
+  {id:"cap", title:"Civil Air Patrol", note:"Only your highest CAP award is worn. Checking one clears the others."},
+  {id:"mem", title:"Membership ribbons"}
+];
+
+const R = AFROTC_RIBBONS;
+const BY = Object.fromEntries(R.map((r, i) => [r.id, Object.assign(r, {rank: i})]));
+
+/* ---------------- state ---------------- */
+let state = blank();
+let viewingShared = false;
+function blank(){ return {sel:{}, prior:[], per:3, align:"center", who:""}; }
+function load(){
+  try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.sel) return Object.assign(blank(), s); } catch(e) {}
+  return blank();
+}
+function save(){
+  if (viewingShared) return;
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+/* ---------------- share link ----------------
+   #r=pf~3!s.xm!b.lov!d.als&p=AFAM~2|NDSM&w=4
+   each ribbon: id, then ~count (if > 1), then !flags: s silver star, b bronze star, d org award device worn */
+function encode(){
+  const parts = R.filter(r => state.sel[r.id]).map(r => {
+    const s = state.sel[r.id]; let t = r.id, f = "";
+    if (s.n !== minN(r)) t += "~" + s.n;
+    if (s.o === "ss" || s.o === true && r.opt && r.opt.dev === "ss") f += "s";
+    else if (s.o === "bs" || s.o === true && r.opt && r.opt.dev === "bs") f += "b";
+    if (r.kind === "org" && !r.opt && s.d) f += "d";
+    return f ? t + "!" + f : t;
+  });
+  const q = new URLSearchParams();
+  if (parts.length) q.set("r", parts.join("."));
+  if (state.prior.length) q.set("p", state.prior.map(p => p.name.replace(/[|~]/g, " ") + (p.n > 1 ? "~" + p.n : "")).join("|"));
+  if (state.per === 4) q.set("w", "4");
+  if (state.align === "right") q.set("a", "r");
+  if (state.who) q.set("n", state.who);
+  return q.toString();
+}
+function decode(hash){
+  const q = new URLSearchParams(hash.replace(/^#/, ""));
+  if (!q.has("r") && !q.has("p")) return null;
+  const s = blank();
+  (q.get("r") || "").split(".").filter(Boolean).forEach(tok => {
+    const [head, f = ""] = tok.split("!");
+    const [id, num] = head.split("~");
+    const r = BY[id]; if (!r) return;
+    const parsed = parseInt(num, 10);
+    const v = {n: Math.max(minN(r), Math.min(30, isNaN(parsed) ? minN(r) : parsed))};
+    if (r.opt) {
+      if (r.opt.type === "check") v.o = f.includes(r.opt.dev === "ss" ? "s" : "b");
+      else v.o = f.includes("s") ? "ss" : f.includes("b") ? "bs" : "";
+    }
+    if (r.kind === "org" && !r.opt) v.d = f.includes("d");
+    s.sel[id] = v;
+  });
+  (q.get("p") || "").split("|").filter(Boolean).slice(0, 30).forEach(t => {
+    const [name, n] = t.split("~");
+    s.prior.push({name: name.slice(0, 40), n: Math.max(1, Math.min(30, parseInt(n || "1", 10) || 1))});
+  });
+  s.per = q.get("w") === "4" ? 4 : 3;
+  s.align = q.get("a") === "r" ? "right" : "center";
+  s.who = (q.get("n") || "").slice(0, 60);
+  return s;
+}
+
+/* ---------------- devices ---------------- */
+const minN = r => r.count && r.count.min === 0 ? 0 : 1;
+function defaults(r){
+  const v = {n:minN(r)};
+  if (r.opt) v.o = r.opt.type === "check" ? false : "";
+  if (r.kind === "org" && !r.opt) v.d = !!r.orgdev;
+  return v;
+}
+function devicesFor(r, s){
+  const stars = [], olc = [];
+  (r.fixed || []).forEach(d => { if (d === "ss" || d === "bs") stars.push(d); });
+  if (r.opt){
+    const d = r.opt.type === "check" ? (s.o ? r.opt.dev : "") : s.o;
+    if (d) stars.push(d);
+  }
+  if (r.kind === "award" || r.kind === "prior"){
+    // n awards = n - 1 clusters; the scholarship ribbon counts completed years instead (one cluster each)
+    const k = Math.max(0, minN(r) === 0 ? (s.n || 0) : (s.n || 1) - 1);
+    for (let i = 0; i < Math.floor(k / 5); i++) olc.push("so");
+    for (let i = 0; i < k % 5; i++) olc.push("bo");
+  }
+  stars.sort((a, b) => a === b ? 0 : a === "ss" ? -1 : 1);
+  let list = stars.concat(olc);
+  if (r.kind === "org" && !r.opt && s.d) list = ["org:" + (r.orgdev || "medal")];
+  return list;
+}
+/* The rack: prior service first, then AFROTC precedence. Each award is one ribbon with all of its devices
+   (no second ribbon: the ribbon itself is the first award, so a second ribbon read as an extra award). */
+function rack(){
+  const out = [];
+  state.prior.forEach(p => {
+    const r = {id:"prior", name:p.name, kind:"prior", prior:true};
+    // prior service blocks are labeled placeholders; the award count goes in the label
+    out.push({r, devs: [], label: p.name || "Prior service ribbon", note: p.n > 1 ? p.n + " awards" : ""});
+  });
+  R.forEach(r => { if (state.sel[r.id]) out.push({r, devs: devicesFor(r, state.sel[r.id]), label: r.name}); });
+  return out;
+}
+
+/* ---------------- drawing ----------------
+   One ribbon is W x H units (1 3/8 x 3/8 in). Ribbons are drawn flat from their stripes,
+   then a horizontal rib texture and an edge bevel go on top, like the AFROTC ribbon chart.
+   Devices follow DAFI 36-2903 13.6: centered, silver to the wearer's right (viewer's left)
+   of bronze, oak leaf clusters joined in one row like a single-constructed device. */
+let uid = 0;
+const M = 6; // margin around a rack so devices that stand proud of a ribbon (the AL plaque) are not cut off
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function defs(p){
+  return `<defs>
+    <pattern id="rib${p}" width="8" height="2.1" patternUnits="userSpaceOnUse"><rect y="0" width="8" height=".75" fill="#000" fill-opacity=".17"/><rect y="1.15" width="8" height=".45" fill="#fff" fill-opacity=".13"/></pattern>
+    <linearGradient id="bv${p}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".12" stop-color="#fff" stop-opacity=".08"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset=".86" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>
+    <linearGradient id="bh${p}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".02" stop-color="#fff" stop-opacity="0"/><stop offset=".975" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+    <linearGradient id="mb${p}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#e6a77a"/><stop offset=".45" stop-color="#a9653c"/><stop offset="1" stop-color="#5a2c15"/></linearGradient>
+    <linearGradient id="ms${p}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#c3c8d0"/><stop offset="1" stop-color="#6c727c"/></linearGradient>
+    <linearGradient id="mg${p}" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff0b4"/><stop offset=".4" stop-color="#d7a23c"/><stop offset=".75" stop-color="#9c6a17"/><stop offset="1" stop-color="#6b4508"/></linearGradient>
+    <radialGradient id="md${p}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".5" stop-color="#c79a4a"/><stop offset="1" stop-color="#6e4b1c"/></radialGradient>
+  </defs>`;
+}
+function stripes(r){
+  if (r.prior){
+    return `<rect width="${W}" height="${H}" fill="#5b6170"/><rect x="2" y="2" width="${W-4}" height="${H-4}" fill="none" stroke="#9aa1b2" stroke-width="1" stroke-dasharray="3 2"/>`;
+  }
+  if (r.h){ // horizontal bands (Scabbard and Blade)
+    let y = 0;
+    return r.h.map(([c, p]) => { const h = H * p / 100, t = `<rect x="0" y="${y.toFixed(2)}" width="${W}" height="${(h + .05).toFixed(2)}" fill="${c}"/>`; y += h; return t; }).join("");
+  }
+  let x = 0;
+  return r.s.map(([c, p]) => { const w = W * p / 100, t = `<rect x="${x.toFixed(2)}" y="0" width="${(w + .05).toFixed(2)}" height="${H}" fill="${c}"/>`; x += w; return t; }).join("");
+}
+const TONE = {
+  b:{lt:"#e0a274", dk:"#8b4a25", line:"#3f1d0b"},
+  d:{lt:"#a7856a", dk:"#4f3524", line:"#24160c"},   // the darker antique bronze stars on the Scabbard and Blade ribbon
+  s:{lt:"#ffffff", dk:"#9ba2ac", line:"#454b54"}
+};
+/* A faceted five point star: each point has a lit half and a shaded half. */
+function star(cx, cy, m, R1){
+  R1 = R1 || 8; const R2 = R1 * .4, t = TONE[m], pts = [];
+  for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R2 : R1; pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]); }
+  let s = "";
+  for (let i = 0; i < 10; i++){
+    const a = pts[i], b = pts[(i + 1) % 10];
+    s += `<path d="M${cx.toFixed(2)} ${cy.toFixed(2)}L${a[0].toFixed(2)} ${a[1].toFixed(2)}L${b[0].toFixed(2)} ${b[1].toFixed(2)}Z" fill="${i % 2 ? t.dk : t.lt}"/>`;
+  }
+  const outline = "M" + pts.map(p => p[0].toFixed(2) + " " + p[1].toFixed(2)).join("L") + "Z";
+  return `<g><path d="${outline}" fill="#000" fill-opacity=".35" transform="translate(.7 .9)"/>${s}<path d="${outline}" fill="none" stroke="${t.line}" stroke-width=".7" stroke-linejoin="round"/></g>`;
+}
+/* One oak leaf with its stem and two acorns, drawn around (0,0): leaf points up to the right,
+   stem and acorns low on the left, like the issued device. */
+const LEAF = (() => {
+  const pts = [];
+  for (let i = 0; i <= 72; i++){
+    const t = i / 72 * Math.PI * 2;
+    const lobe = 1 + .15 * Math.pow(Math.abs(Math.cos(t * 4.5)), .6);          // rounded lobes along the edge
+    let x = 9.6 * Math.cos(t) * lobe, y = 6.6 * Math.sin(t) * lobe;
+    if (Math.cos(t) < 0) { x *= .95; y *= .8; }                      // narrower at the stem end
+    const a = -22 * Math.PI / 180;
+    pts.push([x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)]);
+  }
+  return "M" + pts.map(p => p[0].toFixed(2) + " " + p[1].toFixed(2)).join("L") + "Z";
+})();
+function leaf(x, y, m, p){
+  const t = TONE[m], g = m === "s" ? `url(#ms${p})` : `url(#mb${p})`;
+  return `<g transform="translate(${x.toFixed(2)} ${y.toFixed(2)})">
+    <path d="${LEAF}" transform="translate(.6 .9)" fill="#000" fill-opacity=".35"/>
+    <path d="M-8.6 3.8L-12.6 6.6" stroke="${t.line}" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="-12.4" cy="2.3" r="1.75" fill="${g}" stroke="${t.line}" stroke-width=".55"/>
+    <circle cx="-9.4" cy="7.6" r="1.75" fill="${g}" stroke="${t.line}" stroke-width=".55"/>
+    <path d="${LEAF}" fill="${g}" stroke="${t.line}" stroke-width=".65" stroke-linejoin="round"/>
+    <path d="M-8.4 3.6C-3 1.4 3 -1.4 8.6 -4.1" fill="none" stroke="${t.line}" stroke-width=".7" stroke-linecap="round"/>
+    <path d="M-4.5 2L-5.6 -1.6M-.6 .3L-1.2 -3.6M3.3 -1.5L3.3 -5M-3 1.3L-1 5M1 -.5L3.4 3.4M5 -2.4L7.2 .6" fill="none" stroke="${t.line}" stroke-width=".45" stroke-linecap="round" opacity=".85"/>
+    <path d="M-7 -1.2C-3 -4.4 2 -6.6 6.4 -6.8" fill="none" stroke="${t.lt}" stroke-width=".7" opacity=".7"/></g>`;
+}
+const LEAF_W = 25, LEAF_STEP = 13;   // first leaf spans about 25 units; each added leaf adds 13
+function devices(list, p){
+  const n = list.length; if (!n) return "";
+  if (n === 1 && list[0].startsWith("org:")) return orgDevice(list[0].slice(4), p);
+  const stars = list.filter(d => d === "ss" || d === "bs");
+  const oaks = list.filter(d => d === "so" || d === "bo");
+  const starW = 16, gap = stars.length && oaks.length ? 2 : 0;
+  const oakW = oaks.length ? LEAF_W + LEAF_STEP * (oaks.length - 1) : 0;
+  const total = stars.length * starW + gap + oakW;
+  let x = W / 2 - total / 2, out = "";
+  stars.forEach(d => { out += star(x + starW / 2, H / 2, d === "ss" ? "s" : "b"); x += starW; });
+  x += gap;
+  oaks.forEach((d, i) => { out += leaf(x + 13.6 + i * LEAF_STEP, H / 2 + .4, d === "so" ? "s" : "b", p); });
+  return out;
+}
+function orgDevice(kind, p){
+  const cx = W / 2, cy = H / 2;
+  if (kind === "cross"){ // Legion of Valor Bronze Cross: a cross pattee
+    const d = "M-3.8 -10.5H3.8L1.5 -1.5 10.5 -3.8V3.8L1.5 1.5 3.8 10.5H-3.8L-1.5 1.5 -10.5 3.8V-3.8L-1.5 -1.5Z";
+    return `<g transform="translate(${cx} ${cy})"><path d="${d}" transform="translate(.8 1)" fill="#000" fill-opacity=".35"/><path d="${d}" fill="url(#mg${p})" stroke="#5a3a07" stroke-width=".7" stroke-linejoin="round"/><path d="M0 -9.6V9.6M-9.6 0H9.6" stroke="#5a3a07" stroke-width=".5" opacity=".6"/></g>`;
+  }
+  if (kind === "plaque"){ // American Legion Scholastic Excellence: a gold scroll that stands above and below the ribbon
+    return `<g transform="translate(${cx} ${cy}) rotate(3)">
+      <rect x="-12" y="-17.5" width="26" height="37" rx="2" fill="#000" fill-opacity=".35"/>
+      <rect x="-13" y="-18.5" width="26" height="37" rx="2" fill="url(#mg${p})" stroke="#5a3a07" stroke-width=".7"/>
+      <path d="M-13 -15.2C-9 -18.4 -4 -12.8 1 -15.4S9 -18.2 13 -15.2" fill="none" stroke="#7a5310" stroke-width=".9"/>
+      <path d="M-13 15.2C-9 12 -4 17.6 1 15.2S9 12.4 13 15.2" fill="none" stroke="#7a5310" stroke-width=".9"/>
+      <g font-family="Arial Narrow,Roboto Condensed,Arial,sans-serif" font-weight="700" font-size="5.4" fill="#3b2504" text-anchor="middle">
+        <text y="-2.6" textLength="21" lengthAdjust="spacingAndGlyphs">SCHOLASTIC</text><text y="5.4" textLength="21.5" lengthAdjust="spacingAndGlyphs">EXCELLENCE</text></g></g>`;
+  }
+  if (kind === "medal"){ // American Legion General Military Excellence: round gold medallion with a torch
+    let rays = "";
+    for (let i = 0; i < 16; i++){ const a = i / 16 * Math.PI * 2; rays += `M${(4 * Math.cos(a)).toFixed(2)} ${(4 * Math.sin(a)).toFixed(2)}L${(10 * Math.cos(a)).toFixed(2)} ${(10 * Math.sin(a)).toFixed(2)}`; }
+    return `<g transform="translate(${cx} ${cy})"><circle r="12.6" transform="translate(.8 1)" fill="#000" fill-opacity=".35"/>
+      <circle r="12.6" fill="url(#md${p})" stroke="#4e3310" stroke-width=".8"/><circle r="10.6" fill="none" stroke="#5e4114" stroke-width=".6"/>
+      <path d="${rays}" stroke="#8d6a2c" stroke-width=".55" opacity=".8"/>
+      <path d="M-3.6 -2.4H3.6L1.3 2.6 .9 7.2H-.9L-1.3 2.6Z" fill="#f6ead0" stroke="#5e4114" stroke-width=".5"/>
+      <path d="M0 -8.6C2.6 -6 2.4 -3.8 0 -2.8 -2.4 -3.8 -2.6 -6 0 -8.6Z" fill="#fff8e6" stroke="#5e4114" stroke-width=".45"/></g>`;
+  }
+  if (kind === "sword"){ // Sons of the American Revolution: a short sword across the ribbon
+    return `<g stroke-linecap="round" stroke-linejoin="round">
+      <path d="M26 20.4L91 10.6l4 2.4-3.6 2.2L26.6 24z" fill="#000" fill-opacity=".3" transform="translate(.7 1.2)"/>
+      <path d="M26 20.4L91 10.6l4 2.4-3.6 2.2L26.6 24z" fill="url(#ms${p})" stroke="#3d424a" stroke-width=".6"/>
+      <path d="M27 22.2L93 12.8" stroke="#ffffff" stroke-width=".5" opacity=".8"/>
+      <path d="M24.2 15.6l2.8 11.2" stroke="#2e3238" stroke-width="3"/>
+      <path d="M13 25.2L25.2 22.8" stroke="#2e3238" stroke-width="3.6"/>
+      <circle cx="12" cy="25.4" r="2.6" fill="#3a3f46" stroke="#22262b" stroke-width=".5"/></g>`;
+  }
+  // other organizational awards: one bronze disc with a star
+  return `<g transform="translate(${cx} ${cy})"><circle r="10" transform="translate(.7 .9)" fill="#000" fill-opacity=".35"/><circle r="10" fill="url(#mb${p})" stroke="#3f1d0b" stroke-width=".7"/><circle r="7.4" fill="none" stroke="#3f1d0b" stroke-width=".5"/></g>${star(cx, cy, "b", 5)}`;
+}
+function fixedArt(r){
+  if (r.fixed && r.fixed.includes("star5")){
+    let s = ""; for (let i = 0; i < 5; i++) s += star(20 + i * 17.5, H * .44, "d", 8.8);
+    return s;
+  }
+  return "";
+}
+function priorLabel(name, note){
+  const cut = (t, n) => t.length > n ? t.slice(0, n - 1) + "…" : t;
+  const f = 'font-family="system-ui,Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#fff"';
+  if (!note) return `<text x="${W/2}" y="${H/2 + 3.6}" ${f} font-size="10" font-weight="700">${esc(cut(name, 20))}</text>`;
+  return `<text x="${W/2}" y="13" ${f} font-size="9.5" font-weight="700">${esc(cut(name, 21))}</text><text x="${W/2}" y="23.5" ${f} font-size="7.5" opacity=".9">${esc(cut("+ " + note, 26))}</text>`;
+}
+/* Cloth first, then texture and bevel, then devices on top. */
+function cloth(r, p){
+  return `${stripes(r)}<rect width="${W}" height="${H}" fill="url(#rib${p})"/>${fixedArt(r)}<rect width="${W}" height="${H}" fill="url(#bv${p})"/><rect width="${W}" height="${H}" fill="url(#bh${p})"/>`;
+}
+function ribbonSVG(item, x, y, p){
+  const r = item.r;
+  return `<g transform="translate(${x} ${y})"><title>${esc(item.label)}</title>${cloth(r, p)}
+    ${r.prior ? priorLabel(item.label, item.note) : ""}
+    <rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></g>`;
+}
+function rackSVG(items, per, opts){
+  opts = opts || {};
+  const p = ++uid;
+  const n = items.length, rows = Math.ceil(n / per);
+  const top = n % per || per;
+  const cols = Math.min(per, n);
+  const vw = cols * W + 2 * M, vh = rows * H + 2 * M;
+  let cloths = "", devs = "", k = 0;
+  for (let row = 0; row < rows; row++){
+    const inRow = row === 0 ? top : per;
+    // Fig 13.1: a short top row is centered, or (lapel covering the rack) flush to the wearer's left, which is the viewer's right
+    const off = M + (cols - inRow) * W * (opts.align === "right" ? 1 : .5);
+    for (let c = 0; c < inRow; c++, k++){
+      const x = off + c * W, y = M + row * H;
+      cloths += ribbonSVG(items[k], x, y, p);
+      // devices go on after every ribbon so a tall device sits over the ribbon above it
+      devs += `<g transform="translate(${x} ${y})">${devices(items[k].devs, p)}</g>`;
+    }
+  }
+  const size = opts.inches
+    ? `width="${(vw * UNIT_IN).toFixed(4)}in" height="${(vh * UNIT_IN).toFixed(4)}in"`
+    : opts.px ? `width="${vw * opts.px}" height="${vh * opts.px}"` : `width="${vw * 2}" height="${vh * 2}"`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" ${size} role="img" aria-label="Ribbon rack with ${n} ribbon${n === 1 ? "" : "s"}">${defs(p)}${cloths}${devs}</svg>`;
+}
+function rackPx(items, per){ const rows = Math.ceil(items.length / per), cols = Math.min(per, items.length); return [cols * W + 2 * M, rows * H + 2 * M]; }
+function swatch(r){
+  const p = ++uid;
+  const devs = r.orgdev ? ["org:" + r.orgdev] : (r.fixed || []).filter(d => d === "ss" || d === "bs");
+  return `<svg class="sw" viewBox="0 0 ${W} ${H}" aria-hidden="true">${defs(p)}${cloth(r, p)}${devices(devs, p)}<rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></svg>`;
+}
+/* Used by the test page to compare drawings with the chart. */
+window.D250RibbonDraw = {rackSVG, swatch, devicesFor: (id, s) => devicesFor(BY[id], s), BY};
+
+/* ---------------- picker ---------------- */
+const $ = id => document.getElementById(id);
+function optsHTML(r){
+  let h = "";
+  if (r.kind === "award"){
+    h += `<span>${esc(r.count ? r.count.label : "Times awarded")}</span><span class="step"><button type="button" data-act="dec" aria-label="One fewer award">&minus;</button><output data-role="n">${minN(r)}</output><button type="button" data-act="inc" aria-label="One more award">+</button></span>`;
+  }
+  if (r.opt && r.opt.type === "check") h += `<label><input type="checkbox" data-role="o"> ${esc(r.opt.label)}</label>`;
+  if (r.opt && r.opt.type === "select") h += `<label>${esc(r.opt.label)} <select data-role="o">${r.opt.choices.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select></label>`;
+  if (r.kind === "org" && !r.opt) h += `<label><input type="checkbox" data-role="d"> Wear award device</label>`;
+  if (r.kind === "cap") h += `<span class="devnote">Only your highest CAP award is worn.</span>`;
+  if (r.excl === "ftdgsp") h += `<span class="devnote">A cadet earns the DG or the Superior Performer, not both. Checking one clears the other.</span>`;
+  return h;
+}
+function buildGroups(){
+  $("groups").innerHTML = GROUPS.map(g => {
+    if (g.id === "prior") return `<details class="grp" data-g="prior"><summary>${esc(g.title)} <span class="n" data-count="prior"></span></summary>
+      <p class="gnote">${esc(g.note)}</p><div class="prior"><div id="priorList"></div>
+      <button class="btn" type="button" id="addPrior" style="margin-top:10px">+ Add prior service ribbon</button></div></details>`;
+    const list = R.filter(r => r.grp === g.id);
+    return `<details class="grp" data-g="${g.id}" open><summary>${esc(g.title)} <span class="n" data-count="${g.id}"></span></summary>
+      ${g.note ? `<p class="gnote">${esc(g.note)}</p>` : ""}
+      ${list.map(r => `<div class="rib" data-id="${r.id}" data-q="${esc((r.name + " " + g.title).toLowerCase())}">
+        <label class="main"><input class="pick" type="checkbox" aria-describedby="nm-${r.id}"><span class="nm" id="nm-${r.id}">${esc(r.name)}${r.crit ? `<small class="crit">${esc(r.crit)} <span class="cite">${esc(r.ref)}</span></small>` : ""}</span>${swatch(r)}</label>
+        <div class="opts">${optsHTML(r)}</div></div>`).join("")}</details>`;
+  }).join("");
+}
+function syncPicker(){
+  R.forEach(r => {
+    const el = document.querySelector(`.rib[data-id="${r.id}"]`); if (!el) return;
+    const s = state.sel[r.id];
+    el.classList.toggle("on", !!s);
+    el.querySelector(".pick").checked = !!s;
+    if (!s) return;
+    const n = el.querySelector('[data-role="n"]'); if (n) n.textContent = s.n;
+    const o = el.querySelector('[data-role="o"]');
+    if (o) { if (o.type === "checkbox") o.checked = !!s.o; else o.value = s.o || ""; }
+    const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
+  });
+  GROUPS.forEach(g => {
+    const c = g.id === "prior" ? state.prior.length : R.filter(r => r.grp === g.id && state.sel[r.id]).length;
+    const el = document.querySelector(`[data-count="${g.id}"]`);
+    if (el) { el.textContent = c ? c + " selected" : ""; el.classList.toggle("on", !!c); }
+  });
+  const total = Object.keys(state.sel).length + state.prior.length;
+  $("pickCount").textContent = total + " selected";
+  renderPrior();
+}
+function renderPrior(){
+  const box = $("priorList"); if (!box) return;
+  const focusIdx = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pi : null;
+  const focusRole = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pr : null;
+  box.innerHTML = state.prior.map((p, i) => `<div class="row">
+    <input type="text" value="${esc(p.name)}" maxlength="40" placeholder="Ribbon name, like AF Achievement Medal" aria-label="Prior service ribbon ${i + 1} name" data-pi="${i}" data-pr="name">
+    <span class="step" title="Times awarded"><button type="button" data-pi="${i}" data-pr="dec" aria-label="One fewer award">&minus;</button><output>${p.n}</output><button type="button" data-pi="${i}" data-pr="inc" aria-label="One more award">+</button></span>
+    <button class="iconbtn" type="button" data-pi="${i}" data-pr="up" aria-label="Move up" ${i ? "" : "disabled"}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button class="iconbtn" type="button" data-pi="${i}" data-pr="del" aria-label="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join("");
+  if (focusIdx !== null && focusIdx !== undefined && focusRole){
+    const el = box.querySelector(`[data-pi="${focusIdx}"][data-pr="${focusRole}"]`);
+    if (el) { el.focus(); if (el.setSelectionRange && el.value) el.setSelectionRange(el.value.length, el.value.length); }
+  }
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const items = rack();
+  const stage = $("stage");
+  if (!items.length) stage.innerHTML = `<p class="empty">Check the ribbons you've been awarded and your rack builds here.</p>`;
+  else stage.innerHTML = rackSVG(items, state.per, {align: state.align});
+  document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
+  document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
+  $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
+  $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : it.note ? " · " + esc(it.note) : ""}${it.r.prior ? " (prior service)" : ""}</li>`).join("");
+  const w = [];
+  $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
+  $("who").value = state.who;
+  ["printBtn", "pngBtn", "linkBtn", "clearBtn"].forEach(id => $(id).disabled = !items.length);
+}
+function devText(devs){
+  const c = {ss:0, bs:0, so:0, bo:0}, org = devs.find(d => d.startsWith("org:"));
+  devs.forEach(d => { if (c[d] !== undefined) c[d]++; });
+  const t = [];
+  if (c.ss) t.push(`${c.ss} silver star`); if (c.bs) t.push(`${c.bs} bronze star`);
+  if (c.so) t.push(`${c.so} silver OLC`); if (c.bo) t.push(`${c.bo} bronze OLC`);
+  if (org) t.push("award device");
+  return t.join(", ");
+}
+function changed(){
+  if (viewingShared) { viewingShared = false; $("sharedBar").classList.add("hidden"); history.replaceState(null, "", location.pathname); }
+  save(); syncPicker(); render();
+}
+
+/* ---------------- events ---------------- */
+function wire(){
+  $("groups").addEventListener("change", e => {
+    const t = e.target, rib = t.closest(".rib");
+    if (rib){
+      const id = rib.dataset.id, r = BY[id];
+      if (t.classList.contains("pick")){
+        if (t.checked){
+          if (r.excl) R.filter(x => x.excl === r.excl).forEach(x => delete state.sel[x.id]);
+          state.sel[id] = defaults(r);
+        } else delete state.sel[id];
+      } else if (t.dataset.role === "o") state.sel[id].o = t.type === "checkbox" ? t.checked : t.value;
+      else if (t.dataset.role === "d") state.sel[id].d = t.checked;
+      changed();
+    }
+  });
+  $("groups").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const rib = b.closest(".rib");
+    if (rib && b.dataset.act){
+      const s = state.sel[rib.dataset.id]; if (!s) return;
+      s.n = Math.max(minN(BY[rib.dataset.id]), Math.min(30, s.n + (b.dataset.act === "inc" ? 1 : -1)));
+      changed(); return;
+    }
+    if (b.id === "addPrior"){ state.prior.push({name:"", n:1}); changed();
+      const ins = $("priorList").querySelectorAll('input[data-pr="name"]'); if (ins.length) ins[ins.length - 1].focus(); return; }
+    if (b.dataset.pr){
+      const i = +b.dataset.pi, p = state.prior[i];
+      if (b.dataset.pr === "inc") p.n = Math.min(30, p.n + 1);
+      if (b.dataset.pr === "dec") p.n = Math.max(1, p.n - 1);
+      if (b.dataset.pr === "up" && i) [state.prior[i - 1], state.prior[i]] = [state.prior[i], state.prior[i - 1]];
+      if (b.dataset.pr === "del") state.prior.splice(i, 1);
+      changed();
+    }
+  });
+  $("groups").addEventListener("input", e => {
+    const t = e.target;
+    if (t.dataset.pr === "name"){ state.prior[+t.dataset.pi].name = t.value.slice(0, 40); save(); render(); }
+  });
+  $("q").addEventListener("input", () => {
+    const q = $("q").value.trim().toLowerCase();
+    document.querySelectorAll(".rib").forEach(el => el.classList.toggle("hidden", !!q && !el.dataset.q.includes(q)));
+    document.querySelectorAll(".grp").forEach(g => {
+      if (g.dataset.g === "prior") { g.classList.toggle("hidden", !!q && !"prior service active duty".includes(q)); return; }
+      const any = g.querySelectorAll(".rib:not(.hidden)").length;
+      g.classList.toggle("hidden", !any);
+      if (q && any) g.open = true;
+    });
+  });
+  document.querySelectorAll(".seg button[data-per]").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
+  document.querySelectorAll(".seg button[data-align]").forEach(b => b.addEventListener("click", () => { state.align = b.dataset.align; changed(); }));
+  $("who").addEventListener("input", () => { state.who = $("who").value.slice(0, 60); save(); });
+  // Reset asks once on the button itself: first press arms it, a second press within 4 s clears
+  $("clearBtn").addEventListener("click", () => {
+    const b = $("clearBtn");
+    if (!b.dataset.armed){
+      b.dataset.armed = "1"; b.textContent = "Press again to reset"; b.classList.add("danger");
+      clearTimeout(b.t); b.t = setTimeout(() => { delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger"); }, 4000);
+      return;
+    }
+    clearTimeout(b.t); delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger");
+    state = Object.assign(blank(), {per: state.per, align: state.align}); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
+    changed(); toast("Rack reset");
+  });
+  $("startOwn").addEventListener("click", () => {
+    viewingShared = false; state = load(); $("sharedBar").classList.add("hidden");
+    history.replaceState(null, "", location.pathname); syncPicker(); render();
+  });
+  $("linkBtn").addEventListener("click", async () => {
+    const url = location.origin + location.pathname + "#" + encode();
+    try { await navigator.clipboard.writeText(url); toast("Share link copied"); }
+    catch(e) { prompt("Copy this link:", url); }
+  });
+  $("pngBtn").addEventListener("click", savePNG);
+  $("printBtn").addEventListener("click", () => { buildPrint(); window.print(); });
+  window.addEventListener("beforeprint", buildPrint);
+}
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+function buildPrint(){
+  const items = rack();
+  $("printSheet").innerHTML = items.length ? `<h1>${esc(state.who || "Ribbon rack")}</h1>
+    <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row, top row ${state.align === "right" ? "to the outside" : "centered"}. Check that your printer is set to 100% scale.</p>
+    <div class="rk">${rackSVG(items, state.per, {inches:true, align: state.align})}</div>
+    <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : it.note ? " (" + esc(it.note) + ")" : ""}${it.r.prior ? ", prior service" : ""}</li>`).join("")}</ol>
+    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons precede all AFROTC ribbons. Det 250 Cadet Hub, Ribbon Rack Builder.</p>` : "";
+}
+function savePNG(){
+  const items = rack(); if (!items.length) return;
+  const scale = 6;
+  const svg = rackSVG(items, state.per, {px: scale, align: state.align});
+  const [vw, vh] = rackPx(items, state.per);
+  const pad = 12, w = vw * scale + pad * 2, h = vh * scale + pad * 2;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d");
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h);
+    g.drawImage(img, pad, pad);
+    c.toBlob(b => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(b);
+      a.download = (state.who ? state.who.replace(/[^\w-]+/g, "-") + "-" : "") + "ribbon-rack.png";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast("Image saved");
+    }, "image/png");
+  };
+  img.onerror = () => toast("Couldn't make the image in this browser");
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+/* ---------------- start ---------------- */
+buildGroups();
+const shared = decode(location.hash);
+if (shared){
+  state = shared; viewingShared = true;
+  $("sharedBar").classList.remove("hidden");
+  $("sharedMsg").textContent = state.who ? `You're viewing ${state.who}'s rack. Changing anything saves it as your rack in this browser.` : "You're viewing a shared rack. Changing anything saves it as your rack in this browser.";
+} else state = load();
+wire(); syncPicker(); render();
+})();
+</script>
+</body>
+</html>
