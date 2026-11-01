@@ -39,6 +39,8 @@ button,input,select{font:inherit;color:inherit}
 .grp>summary .n{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
 .grp>summary .n.on{color:var(--gold)}
 .gnote{margin:-4px 16px 10px;font-size:12.5px;color:var(--soft)}
+.psnote{margin:0 16px 12px}
+.psnote b{color:var(--ink)}
 .rib{border-top:1px dashed var(--line);padding:8px 16px}
 .rib:first-of-type{border-top:0}
 .rib label.main{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:36px}
@@ -59,10 +61,6 @@ button,input,select{font:inherit;color:inherit}
 .step output{min-width:32px;text-align:center;font-weight:800;color:var(--ink)}
 .devnote{font-size:12.5px;color:var(--faint)}
 .hidden{display:none!important}
-/* prior service */
-.prior{padding:4px 16px 14px}
-.prior .row{display:flex;gap:8px;align-items:center;margin-top:8px}
-.prior .row input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
 .iconbtn{width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2);cursor:pointer;display:grid;place-items:center}
 .iconbtn:hover{background:var(--line)}
 .iconbtn:disabled{opacity:.35;cursor:default}
@@ -150,6 +148,7 @@ button,input,select{font:inherit;color:inherit}
       <div class="search">
         <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
       </div>
+      <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">AFROTC Sup 10.8.1.8</span></p>
       <div id="groups"></div>
     </section>
 
@@ -254,7 +253,6 @@ const W = 110, H = 30;               // one ribbon: 1 3/8 x 3/8 in
 const UNIT_IN = 1.375 / W;           // inches per unit, for actual-size printing
 
 const GROUPS = [
-  {id:"prior", title:"Prior service ribbons", note:"Ribbons earned on active duty are worn ahead of all AFROTC ribbons. Add them in the order your service's precedence chart lists them. They show as labeled blocks on the rack, so use the real ribbon and devices on your uniform."},
   {id:"afrotc", title:"AFROTC awards"},
   {id:"ft", title:"Field Training"},
   {id:"aas", title:"Arnold Air Society and Silver Wings"},
@@ -269,7 +267,7 @@ const BY = Object.fromEntries(R.map((r, i) => [r.id, Object.assign(r, {rank: i})
 /* ---------------- state ---------------- */
 let state = blank();
 let viewingShared = false;
-function blank(){ return {sel:{}, prior:[], per:3, align:"center", who:""}; }
+function blank(){ return {sel:{}, per:3, align:"center", who:""}; }
 function load(){
   try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.sel) return Object.assign(blank(), s); } catch(e) {}
   return blank();
@@ -293,7 +291,6 @@ function encode(){
   });
   const q = new URLSearchParams();
   if (parts.length) q.set("r", parts.join("."));
-  if (state.prior.length) q.set("p", state.prior.map(p => p.name.replace(/[|~]/g, " ") + (p.n > 1 ? "~" + p.n : "")).join("|"));
   if (state.per === 4) q.set("w", "4");
   if (state.align === "right") q.set("a", "r");
   if (state.who) q.set("n", state.who);
@@ -301,7 +298,7 @@ function encode(){
 }
 function decode(hash){
   const q = new URLSearchParams(hash.replace(/^#/, ""));
-  if (!q.has("r") && !q.has("p")) return null;
+  if (!q.has("r")) return null;
   const s = blank();
   (q.get("r") || "").split(".").filter(Boolean).forEach(tok => {
     const [head, f = ""] = tok.split("!");
@@ -315,10 +312,6 @@ function decode(hash){
     }
     if (r.kind === "org" && !r.opt) v.d = f.includes("d");
     s.sel[id] = v;
-  });
-  (q.get("p") || "").split("|").filter(Boolean).slice(0, 30).forEach(t => {
-    const [name, n] = t.split("~");
-    s.prior.push({name: name.slice(0, 40), n: Math.max(1, Math.min(30, parseInt(n || "1", 10) || 1))});
   });
   s.per = q.get("w") === "4" ? 4 : 3;
   s.align = q.get("a") === "r" ? "right" : "center";
@@ -341,7 +334,7 @@ function devicesFor(r, s){
     const d = r.opt.type === "check" ? (s.o ? r.opt.dev : "") : s.o;
     if (d) stars.push(d);
   }
-  if (r.kind === "award" || r.kind === "prior"){
+  if (r.kind === "award"){
     // n awards = n - 1 clusters; the scholarship ribbon counts completed years instead (one cluster each)
     const k = Math.max(0, minN(r) === 0 ? (s.n || 0) : (s.n || 1) - 1);
     for (let i = 0; i < Math.floor(k / 5); i++) olc.push("so");
@@ -352,15 +345,11 @@ function devicesFor(r, s){
   if (r.kind === "org" && !r.opt && s.d) list = ["org:" + (r.orgdev || "medal")];
   return list;
 }
-/* The rack: prior service first, then AFROTC precedence. Each award is one ribbon with all of its devices
+/* The rack, in AFROTC precedence. Prior service ribbons are not built here: they precede all AFROTC ribbons (Sup 10.8.1.8).
+   Each award is one ribbon with all of its devices
    (no second ribbon: the ribbon itself is the first award, so a second ribbon read as an extra award). */
 function rack(){
   const out = [];
-  state.prior.forEach(p => {
-    const r = {id:"prior", name:p.name, kind:"prior", prior:true};
-    // prior service blocks are labeled placeholders; the award count goes in the label
-    out.push({r, devs: [], label: p.name || "Prior service ribbon", note: p.n > 1 ? p.n + " awards" : ""});
-  });
   R.forEach(r => { if (state.sel[r.id]) out.push({r, devs: devicesFor(r, state.sel[r.id]), label: r.name}); });
   return out;
 }
@@ -385,9 +374,6 @@ function defs(p){
   </defs>`;
 }
 function stripes(r){
-  if (r.prior){
-    return `<rect width="${W}" height="${H}" fill="#5b6170"/><rect x="2" y="2" width="${W-4}" height="${H-4}" fill="none" stroke="#9aa1b2" stroke-width="1" stroke-dasharray="3 2"/>`;
-  }
   if (r.h){ // horizontal bands (Scabbard and Blade)
     let y = 0;
     return r.h.map(([c, p]) => { const h = H * p / 100, t = `<rect x="0" y="${y.toFixed(2)}" width="${W}" height="${(h + .05).toFixed(2)}" fill="${c}"/>`; y += h; return t; }).join("");
@@ -496,12 +482,6 @@ function fixedArt(r){
   }
   return "";
 }
-function priorLabel(name, note){
-  const cut = (t, n) => t.length > n ? t.slice(0, n - 1) + "…" : t;
-  const f = 'font-family="system-ui,Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#fff"';
-  if (!note) return `<text x="${W/2}" y="${H/2 + 3.6}" ${f} font-size="10" font-weight="700">${esc(cut(name, 20))}</text>`;
-  return `<text x="${W/2}" y="13" ${f} font-size="9.5" font-weight="700">${esc(cut(name, 21))}</text><text x="${W/2}" y="23.5" ${f} font-size="7.5" opacity=".9">${esc(cut("+ " + note, 26))}</text>`;
-}
 /* Cloth first, then texture and bevel, then devices on top. */
 function cloth(r, p){
   return `${stripes(r)}<rect width="${W}" height="${H}" fill="url(#rib${p})"/>${fixedArt(r)}<rect width="${W}" height="${H}" fill="url(#bv${p})"/><rect width="${W}" height="${H}" fill="url(#bh${p})"/>`;
@@ -509,7 +489,6 @@ function cloth(r, p){
 function ribbonSVG(item, x, y, p){
   const r = item.r;
   return `<g transform="translate(${x} ${y})"><title>${esc(item.label)}</title>${cloth(r, p)}
-    ${r.prior ? priorLabel(item.label, item.note) : ""}
     <rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></g>`;
 }
 function rackSVG(items, per, opts){
@@ -561,9 +540,6 @@ function optsHTML(r){
 }
 function buildGroups(){
   $("groups").innerHTML = GROUPS.map(g => {
-    if (g.id === "prior") return `<details class="grp" data-g="prior"><summary>${esc(g.title)} <span class="n" data-count="prior"></span></summary>
-      <p class="gnote">${esc(g.note)}</p><div class="prior"><div id="priorList"></div>
-      <button class="btn" type="button" id="addPrior" style="margin-top:10px">+ Add prior service ribbon</button></div></details>`;
     const list = R.filter(r => r.grp === g.id);
     return `<details class="grp" data-g="${g.id}" open><summary>${esc(g.title)} <span class="n" data-count="${g.id}"></span></summary>
       ${g.note ? `<p class="gnote">${esc(g.note)}</p>` : ""}
@@ -585,27 +561,12 @@ function syncPicker(){
     const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
   });
   GROUPS.forEach(g => {
-    const c = g.id === "prior" ? state.prior.length : R.filter(r => r.grp === g.id && state.sel[r.id]).length;
+    const c = R.filter(r => r.grp === g.id && state.sel[r.id]).length;
     const el = document.querySelector(`[data-count="${g.id}"]`);
     if (el) { el.textContent = c ? c + " selected" : ""; el.classList.toggle("on", !!c); }
   });
-  const total = Object.keys(state.sel).length + state.prior.length;
+  const total = Object.keys(state.sel).length;
   $("pickCount").textContent = total + " selected";
-  renderPrior();
-}
-function renderPrior(){
-  const box = $("priorList"); if (!box) return;
-  const focusIdx = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pi : null;
-  const focusRole = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pr : null;
-  box.innerHTML = state.prior.map((p, i) => `<div class="row">
-    <input type="text" value="${esc(p.name)}" maxlength="40" placeholder="Ribbon name, like AF Achievement Medal" aria-label="Prior service ribbon ${i + 1} name" data-pi="${i}" data-pr="name">
-    <span class="step" title="Times awarded"><button type="button" data-pi="${i}" data-pr="dec" aria-label="One fewer award">&minus;</button><output>${p.n}</output><button type="button" data-pi="${i}" data-pr="inc" aria-label="One more award">+</button></span>
-    <button class="iconbtn" type="button" data-pi="${i}" data-pr="up" aria-label="Move up" ${i ? "" : "disabled"}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 15l6-6 6 6"/></svg></button>
-    <button class="iconbtn" type="button" data-pi="${i}" data-pr="del" aria-label="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join("");
-  if (focusIdx !== null && focusIdx !== undefined && focusRole){
-    const el = box.querySelector(`[data-pi="${focusIdx}"][data-pr="${focusRole}"]`);
-    if (el) { el.focus(); if (el.setSelectionRange && el.value) el.setSelectionRange(el.value.length, el.value.length); }
-  }
 }
 
 /* ---------------- render ---------------- */
@@ -617,7 +578,7 @@ function render(){
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
   $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
-  $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : it.note ? " · " + esc(it.note) : ""}${it.r.prior ? " (prior service)" : ""}</li>`).join("");
+  $("orderList").innerHTML = items.map(it => `<li><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : ""}</li>`).join("");
   const w = [];
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
   $("who").value = state.who;
@@ -661,26 +622,12 @@ function wire(){
       s.n = Math.max(minN(BY[rib.dataset.id]), Math.min(30, s.n + (b.dataset.act === "inc" ? 1 : -1)));
       changed(); return;
     }
-    if (b.id === "addPrior"){ state.prior.push({name:"", n:1}); changed();
-      const ins = $("priorList").querySelectorAll('input[data-pr="name"]'); if (ins.length) ins[ins.length - 1].focus(); return; }
-    if (b.dataset.pr){
-      const i = +b.dataset.pi, p = state.prior[i];
-      if (b.dataset.pr === "inc") p.n = Math.min(30, p.n + 1);
-      if (b.dataset.pr === "dec") p.n = Math.max(1, p.n - 1);
-      if (b.dataset.pr === "up" && i) [state.prior[i - 1], state.prior[i]] = [state.prior[i], state.prior[i - 1]];
-      if (b.dataset.pr === "del") state.prior.splice(i, 1);
-      changed();
-    }
   });
-  $("groups").addEventListener("input", e => {
-    const t = e.target;
-    if (t.dataset.pr === "name"){ state.prior[+t.dataset.pi].name = t.value.slice(0, 40); save(); render(); }
-  });
+
   $("q").addEventListener("input", () => {
     const q = $("q").value.trim().toLowerCase();
     document.querySelectorAll(".rib").forEach(el => el.classList.toggle("hidden", !!q && !el.dataset.q.includes(q)));
     document.querySelectorAll(".grp").forEach(g => {
-      if (g.dataset.g === "prior") { g.classList.toggle("hidden", !!q && !"prior service active duty".includes(q)); return; }
       const any = g.querySelectorAll(".rib:not(.hidden)").length;
       g.classList.toggle("hidden", !any);
       if (q && any) g.open = true;
@@ -723,8 +670,8 @@ function buildPrint(){
   $("printSheet").innerHTML = items.length ? `<h1>${esc(state.who || "Ribbon rack")}</h1>
     <p class="sub">Printed at actual size (1 3/8 x 3/8 in per ribbon), ${state.per} per row, top row ${state.align === "right" ? "to the outside" : "centered"}. Check that your printer is set to 100% scale.</p>
     <div class="rk">${rackSVG(items, state.per, {inches:true, align: state.align})}</div>
-    <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : it.note ? " (" + esc(it.note) + ")" : ""}${it.r.prior ? ", prior service" : ""}</li>`).join("")}</ol>
-    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons precede all AFROTC ribbons. Det 250 Cadet Hub, Ribbon Rack Builder.</p>` : "";
+    <ol>${items.map(it => `<li>${esc(it.label)}${it.devs.length ? " (" + devText(it.devs) + ")" : ""}</li>`).join("")}</ol>
+    <p class="fine">Order of precedence: DAFI 36-2903 AFROTC Supplement, Figure 10.4. Prior service ribbons earned on active duty precede all AFROTC ribbons (AFROTC Sup 10.8.1.8). Det 250 Cadet Hub, Ribbon Rack Builder.</p>` : "";
 }
 function savePNG(){
   const items = rack(); if (!items.length) return;
