@@ -249,6 +249,34 @@ const GENDER = {
   'Jalodia': 'f',
   'Hader': 'm',
   'Tu': 'm',
+  // AS 100's
+  'Aldana Castro': 'm',
+  'Andersen': 'm',
+  'Burdick': 'm',
+  'Gardner': 'f',
+  'Chandler': 'f',
+  'Dobbs': 'm',
+  'Johnson': 'f',
+  'George': 'm',
+  'Goodin': 'f',
+  'Kilker': 'm',
+  'McCarthy': 'm',
+  'Kluesner': 'm',
+  'McConnell': 'm',
+  'McJannet': 'm',
+  'Nelsen': 'm',
+  'Mafnas': 'm',
+  'Phan': 'f',
+  'Miller': 'm',
+  'Peterson': 'f',
+  'Malin': 'm',
+  'Ruehle-May': 'm',
+  'O’Toole': 'm',
+  'Wheeler': 'm',
+  'Tidgewell': 'm',
+  'Sheldon': 'm',
+  'Sinclair': 'm',
+  'Theis': 'm',
 };
 // Named characters outside your Unit. Each run draws them from roster names nobody else is using.
 // In text: {X:wing} = "Col Hyman" · {X:wing.name} = "Hyman" · {X:wing.he} {X:wing.He} {X:wing.him} {X:wing.his} {X:wing.His}.
@@ -275,7 +303,7 @@ const ROSTER_OPTIONS = [
   { id: 'as200', name: 'AS 200’s, AS 250’s, and AS 500’s', rank: 'Cadets Third Class', insignia: 'insignia/cadet-third-class.png',
     names: ['Brady','Estes','Martinez','Condon-Matzke','Bendinger','Budde','Dybvig','Hutchinson','Fennel','Hemauer','Jordan','Moreno','Hoang','McNamara','Mueller','Ramsey','Sanderson','Kasparek','Reed','Urbanowicz','Reid','Utterback','Wenthold','Schnute'] },
   { id: 'as100', name: 'AS 100’s', rank: 'Cadets Fourth Class', insignia: 'insignia/cadet-fourth-class.png',
-    names: ['Aldana Castro','Andersen','Burdick','Gardner','Chandler','Cohorst','Dobbs','Johnson','George','Goodin','Kilker','McCarthy','Kluesner','McConnell','McJannet','Nelsen','Mafnas','Phan','Miller','Peterson','Malin','Ruehle-May',"O’Toole",'Wheeler','Tidgewell','Sheldon','Sinclair','Theis'] }
+    names: ['Aldana Castro','Andersen','Burdick','Gardner','Chandler','Dobbs','Johnson','George','Goodin','Kilker','McCarthy','Kluesner','McConnell','McJannet','Nelsen','Mafnas','Phan','Miller','Peterson','Malin','Ruehle-May',"O’Toole",'Wheeler','Tidgewell','Sheldon','Sinclair','Theis'] }
 ];
 
 // vet = takes years in the Air Force: never drawn for the newest Airman (slot B)
