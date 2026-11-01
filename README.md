@@ -7,7 +7,7 @@ Storm HQ is one site for every AFROTC Detachment 250 tool: tools built by the Op
 | `/` | Hub page (lists every tool) |
 | `pfra/` | PFRA Calculator |
 | `whos-that-cadet/` | Who's That Cadet! |
-| `org-chart/` | Fall 2026 Org Chart (POC chart + Flip Week) |
+| `org-chart/` | Det 250 Org Chart, Fall 2026 (POC chart + Flip Week) |
 | `ribbon-rack/` | Ribbon Rack Builder (AFROTC cadet ribbons, order of precedence, devices) |
 | `flight-staff-eval/` | Flight Staff Evaluation. `gmc-strats/` redirects here. |
 | `spin-the-wheel/` | Spin the Wheel (seating chart + cold-call wheel) |
