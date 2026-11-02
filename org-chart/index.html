@@ -1135,6 +1135,7 @@ const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.
 document.querySelectorAll(".band").forEach(b => io ? io.observe(b) : b.classList.add("in"));
 if(location.hash && byId[location.hash.slice(1)]) setTimeout(() => openSeat(location.hash.slice(1)), 400);
 </script>
+<script src="proposal-duties.js"></script>
 <script src="proposals.js"></script>
 </body>
 </html>
