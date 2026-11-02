@@ -73,7 +73,7 @@
   }
   function toNative(s,p){
     let key=Object.keys(PEOPLE).find(key=>PEOPLE[key][0]===s.last);
-    if(!key){key=s.last==='Bienfang'?'BienfangMitchell':'ProposedTBD';PEOPLE[key]=s.last==='Bienfang'?['Bienfang','Mitchell','']:['TBD','',''];}
+    if(!key){key=s.last==='Bienfang'?'BienfangMitchell':'ProposedTBD';PEOPLE[key]=s.last==='Bienfang'?['Bienfang','Mitchell','AS400']:['TBD','',''];}
     return {id:mapId(s.id),des:s.des,title:s.title,poc:[key,s.rank],parent:s.parent?mapId(s.parent):'russell',
       dir:/^A\d$/.test(s.id)?s.id:undefined,dirName:s.title.replace(/ Director$/,'').replace(/^Director of /,''),proposal:true,proposalField:s.id==='BC'||s.id==='BCL'||s.id.startsWith('bc-')||s.id.startsWith('bcl-'),proposalDuty:dutiesFor(s,p),proposalSource:p.source,proposalTeam:p.name};
   }
