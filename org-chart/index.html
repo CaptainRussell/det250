@@ -430,13 +430,13 @@ section.band{margin-top:26px}
       <div class="seg" role="group" aria-label="Which chart to show">
         <button type="button" data-set-mode="poc" aria-pressed="true">POC Chart</button>
         <button type="button" data-set-mode="flip" aria-pressed="false">Flip Week</button>
+        <button type="button" id="proposed-chart-tab" aria-pressed="false" aria-controls="spring-proposals">Proposed 2027 Org Charts</button>
       </div>
   </div>
 </header>
 
 <main class="wrap" id="main">
   <div class="toolbar">
-    <a class="proposal-jump" href="#spring-proposals">Spring 2027 proposed charts</a>
     <div class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <label class="sr" for="q">Find a cadet or position</label>
@@ -852,6 +852,7 @@ function setMode(m){
   const root = document.documentElement, pos = document.querySelectorAll(".po");
   const apply = () => {
     MODE = m; root.dataset.mode = m; if(m === "flip") closeFlight(); refreshMode();
+    document.dispatchEvent(new Event("chartmodechange"));
     if(drawerSeat){ inMode(byId[drawerSeat]) ? openSeat(drawerSeat, true) : closeDrawer(); }
     const u = new URL(location); m === "flip" ? u.searchParams.set("view", "flip") : u.searchParams.delete("view"); history.replaceState(null, "", u);
   };

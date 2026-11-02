@@ -44,9 +44,66 @@
     return `<li>${renderCard(s,p)}${children.length?'<ul>'+children.map(c=>branch(c,p)).join('')+'</ul>':''}</li>`;
   }
   const host=document.getElementById('spring-proposals');
-  host.innerHTML=`<div class="bandhead"><h2>Spring 2027 proposals</h2><span class="rt">Proposed positions for board review</span></div><nav class="proposal-nav" aria-label="Spring 2027 proposals">${proposals.map(p=>'<a href="#proposal-'+p.id+'">'+esc(p.name)+'</a>').join('')}</nav><p class="proposal-note">Flight assignments are omitted from these proposed charts.</p>`+proposals.map(p=>{
+  host.innerHTML=`<div class="bandhead"><h2>Spring 2027 proposals</h2><span class="rt">Proposed positions for board review</span></div><div class="proposal-nav" role="tablist" aria-label="Proposed 2027 teams">${proposals.map((p,i)=>'<button type="button" role="tab" id="team-tab-'+p.id+'" aria-controls="proposal-'+p.id+'" aria-selected="'+(i===0)+'" tabindex="'+(i===0?0:-1)+'" data-proposal="'+p.id+'">'+esc(p.name.replaceAll(' / ','/'))+'</button>').join('')}</div><p class="proposal-note">Flight assignments are omitted from these proposed charts.</p>`+proposals.map(p=>{
     const directors=p.seats.filter(s=>/^A\d$/.test(s.id));
     const command={...p,seats:p.seats.filter(s=>!/^A\d$/.test(s.id)&&!/^A\d$/.test(s.parent||''))};
-    return `<section class="proposal-section" id="proposal-${p.id}" aria-labelledby="title-${p.id}"><h3 id="title-${p.id}">${esc(p.name)} <span>Spring 2027</span></h3><h4>Wing and squadron leadership</h4><ul class="proposal-tree">${branch(command.seats.find(s=>s.id==='cc'),command)}</ul><h4>A-Staff Directorates</h4><div class="proposal-directorates">${directors.map(s=>'<article class="proposal-directorate"><h5>'+esc(s.des)+'</h5><ul class="proposal-tree">'+branch(s,p)+'</ul></article>').join('')}</div><p class="proposal-source">Source: ${esc(p.source)}. Proposed ranks and reporting lines follow the submitted chart.</p></section>`;
+    return `<section class="proposal-section" role="tabpanel" tabindex="0" id="proposal-${p.id}" aria-labelledby="team-tab-${p.id}"><h3 id="title-${p.id}">${esc(p.name)} <span>Spring 2027</span></h3><h4>Wing and squadron leadership</h4><ul class="proposal-tree">${branch(command.seats.find(s=>s.id==='cc'),command)}</ul><h4>A-Staff Directorates</h4><div class="proposal-directorates">${directors.map(s=>'<article class="proposal-directorate"><h5>'+esc(s.des)+'</h5><ul class="proposal-tree">'+branch(s,p)+'</ul></article>').join('')}</div><p class="proposal-source">Source: ${esc(p.source)}. Proposed ranks and reporting lines follow the submitted chart.</p></section>`;
   }).join('');
+
+  const root=document.documentElement;
+  const mainTab=document.getElementById('proposed-chart-tab');
+  const params=new URLSearchParams(location.search);
+  let selected=proposals.some(p=>p.id===params.get('proposal')) ? params.get('proposal') : 'kingery-helle';
+  const hashTeam=location.hash.replace('#proposal-','');
+  if(proposals.some(p=>p.id===hashTeam)) selected=hashTeam;
+  function selectTeam(id,focus=false){
+    selected=id;
+    host.querySelectorAll('[role="tab"]').forEach(tab=>{
+      const active=tab.dataset.proposal===id;
+      tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
+      if(active&&focus)tab.focus();
+    });
+    host.querySelectorAll('[role="tabpanel"]').forEach(panel=>panel.hidden=panel.id!=='proposal-'+id);
+    if(root.dataset.chartView==='proposed')saveLocation();
+  }
+  function saveLocation(){
+    const url=new URL(location.href);
+    url.searchParams.set('view',root.dataset.chartView==='proposed'?'proposed':MODE);
+    if(root.dataset.chartView==='proposed')url.searchParams.set('proposal',selected);
+    else url.searchParams.delete('proposal');
+    url.hash='';history.replaceState(null,'',url.pathname+url.search);
+  }
+  function showProposals(show){
+    root.dataset.chartView=show?'proposed':MODE;
+    host.hidden=!show;
+    document.querySelectorAll('#main > .band, #main > .toolbar').forEach(el=>el.hidden=show);
+    mainTab.setAttribute('aria-pressed',String(show));
+    document.querySelectorAll('[data-set-mode]').forEach(b=>b.setAttribute('aria-pressed',String(!show&&b.dataset.setMode===MODE)));
+    if(show){clearTimeout(switching);document.querySelectorAll(".po.leaving").forEach(el=>el.classList.remove("leaving"));closeDrawer();closeFlight();hidePeek();hideResults();}
+  }
+  // Capture the top-level view switch before the existing POC/Flip handler.
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#proposed-chart-tab')){
+      event.stopImmediatePropagation();showProposals(true);saveLocation();window.scrollTo(0,0);
+    }else if(event.target.closest('[data-set-mode]')){
+      showProposals(false);
+      saveLocation();
+    }
+  },true);
+  document.addEventListener('chartmodechange',()=>showProposals(false));
+  host.addEventListener('click',event=>{
+    const tab=event.target.closest('[data-proposal]');if(tab)selectTeam(tab.dataset.proposal);
+  });
+  host.querySelector('[role="tablist"]').addEventListener('keydown',event=>{
+    const tabs=[...host.querySelectorAll('[role="tab"]')];let i=tabs.indexOf(document.activeElement);
+    if(i<0)return;
+    if(event.key==='ArrowRight')i=(i+1)%tabs.length;
+    else if(event.key==='ArrowLeft')i=(i+tabs.length-1)%tabs.length;
+    else if(event.key==='Home')i=0;
+    else if(event.key==='End')i=tabs.length-1;
+    else return;
+    event.preventDefault();selectTeam(tabs[i].dataset.proposal,true);
+  });
+  selectTeam(selected);
+  showProposals(params.get('view')==='proposed'||location.hash==='#spring-proposals'||proposals.some(p=>p.id===hashTeam));
 })();
