@@ -22,4 +22,4 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - Hosted on GitHub Pages from `main`. Pushed changes go live in a few minutes.
 - To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `TOOLS` in the root `index.html`. Full details are in `CLAUDE.md`.
 - Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
-- No page is password locked. To lock one: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
+- Flight Staff Evaluation is password encrypted. Keep decrypted source outside the public repo. To rebuild its lock: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`

@@ -21,7 +21,7 @@
 | `whos-that-cadet/` | Who's That Cadet! face/name flashcard drills, shadow mode, printable cards (`index.html`, `photos/`). |
 | `org-chart/` | Det 250 Org Chart (Fall 2026) (`index.html`, `photos/` 240px face crops, `assets/`). |
 | `ribbon-rack/` | Ribbon Rack Builder (cadet tool): cadets check the AFROTC ribbons they've earned and get the rack in order of precedence, with OLCs and stars, 3 or 4 per row, print at actual size, PNG, share link (`#r=...`). Ribbon list, order and stripe colors are in `ribbons.js`, taken from DAFI 36-2903 AFROTC Sup Figure 10.4 (AFROTC Ribbon Chart, Aug 2021, still current per Captain Russell Nov 2026). Prior service (active duty) ribbons are not built; a note says they precede all AFROTC ribbons (Sup 10.8.1.8), per Captain Russell. No JROTC ribbons (Captain Russell). Award criteria under each ribbon come from AFROTCI 36-2011V3 Table 15.1 (a 100 on the PFA adds the Fitness Award silver star); organizational award criteria come from the HQ AFROTC cadet award criteria sheets (Sep 2026 packet from Captain Russell). Awards in that packet without a ribbon on the AFROTC chart are left out. FT Superior Performer is added after FTDG (same ribbon, no device; not on the chart). `references/` holds the AFROTC Sup PDF; the 36-2011V3 PDF is shared from `pfra/references/`. |
-| `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), a plain page (no password since Oct 2026). `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
+| `flight-staff-eval/` | Flight Staff Evaluation (formerly GMC Stratification), a password-encrypted page (lock restored Nov 2026). `gmc-strats/` is now only a redirect here (keeps old links and the old repo forwarding working). |
 | `spin-the-wheel/` | Instructor tool: classroom seating chart + cold-call wheel. Room size (rows, seats left/right of aisle) is set on the page; `*` after a name = distance learning. |
 | `make-the-call/` | Instructor tool: Agree/Neutral/Disagree leadership debate game (2 to 4 teams, editable statements, sealed scores, podium reveal). |
 | `battle-buddy-recon/` | Instructor tool: OPSEC exercise (brief, pairing wheel, recon clock, brief-out queue). |
@@ -30,7 +30,7 @@
 | `shared/instructor.js` | `D250Steps` (numbered step tabs in the header, step 1 is always Roster, Next button bottom right) `D250Roster` (the common roster panel: preset group toggles, paste box, Load saved class, Clear, Save roster) `D250Wheel` (the one name wheel look and spin for every instructor tool: Make the Call colored slices, gold needle, a fast spin that slows into a slow creep before it stops) and `D250Face.html(name, size)` (Org Chart style round photo with the AS class color ring from `org-chart/photos`, initials for names not on the chart; used in attendance lists, seats, team lists, chips, pairing slots and the called/speaker readouts). Used by Spin the Wheel, Make the Call and Battle Buddy Recon. |
 | `shared/cadet-groups.js` | Preset roster groups (AS 100's, AS 200's, AS 250's, AS 500's, AS 300's, AS 400's, Graybeards) and `D250Cadets` ("last, first" -> photo key, class). GENERATED from `PEOPLE` in `org-chart/index.html` by `node tools/build-cadet-groups.mjs`; rerun it after roster changes. |
 | `shared/class-roster.js` | `D250Class.load()/save()`: one saved class roster (`d250-class-roster-v1`) and class name (`d250-class-name-v1`, `D250Class.name()`) shared by the instructor tools. Practicum Adventure uses the class name as its course unless its Game settings set one. |
-| `tools/encrypt.mjs`, `tools/locked-template.html` | Encrypt a page behind a password (not used by any page right now). |
+| `tools/encrypt.mjs`, `tools/locked-template.html` | Encrypt a page behind a password (used by Flight Staff Evaluation). |
 | `README.md` | Short how-to. |
 
 ## Adding a tool
@@ -42,9 +42,9 @@
 6. Instructor tools use the standard screen from `shared/instructor.js`: Class box + step tabs in the header, step 1 Roster (roster panel left, tool setup right), a Next button at the bottom right of each step, tool controls on the right of each step heading. Rosters start empty; the only built-in names are the optional org chart preset groups in `shared/cadet-groups.js` (added Oct 2026 at Captain Russell's request).
 
 ## Flight Staff Evaluation
-- Plain HTML in `flight-staff-eval/index.html` (the password lock was removed at Captain Russell's request, Oct 2026). Roster, evaluator roles, photos and the submit settings live in `CONFIG` near the bottom.
-- Results go to a private spreadsheet via the Google Apps Script `submitUrl` in `CONFIG`, not to GitHub. That URL is now readable in the public page source.
-- To lock it again: move the plain page out of the repo and run `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
+- Encrypted HTML in `flight-staff-eval/index.html` (password lock restored at Captain Russell's request, Nov 2026). Decrypt outside the repo to edit; roster, evaluator roles, photos and submit settings live in `CONFIG` in the decrypted page. Never commit decrypted source or the password.
+- Results go to a private spreadsheet via the Google Apps Script `submitUrl` in `CONFIG`, not to GitHub. That URL is inside the encrypted payload. Previously public copies remain in Git history.
+- To rebuild the lock: keep the plain page outside the repo and run `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
 
 ## Shared design
 - Style: "Hub Standard" (chosen Oct 2026). Every tool uses the shared header and footer from `shared/det250.css`, defaults to dark (`data-theme="dark"` on `<html>`; the light palette is still in each page for `data-theme="light"`), and keeps its hub card color only as the header stripe and icon. Who's That Cadet no longer uses the red Pokémon skin.
