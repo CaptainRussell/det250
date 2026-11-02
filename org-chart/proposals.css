@@ -29,3 +29,10 @@
 @media(prefers-reduced-motion:reduce){.proposal-card{transition:none}}
 
 #proposal-peek .pk .proposal-initials{display:grid;place-items:center;flex:none}#proposal-peek .pk small{white-space:normal;line-height:1.3}
+
+.proposal-field-staff{margin-top:28px;padding-top:6px;border-top:1px solid var(--border)}
+.proposal-squadrons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.proposal-squadron{padding:14px;min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+.proposal-squadron .proposal-tree>li>ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+.proposal-squadron .proposal-tree ul ul{display:grid;grid-template-columns:1fr}
+@media(max-width:760px){.proposal-squadrons{grid-template-columns:1fr}.proposal-squadron .proposal-tree>li>ul{grid-template-columns:1fr}}
