@@ -683,7 +683,7 @@ function face(seat, mode){
   return `<span class="face ${mode === "poc" ? "front" : "back"}" aria-hidden="true">
     ${img(h.key, "av " + h.ring)}
     <span class="txt">
-      <span class="tags"><span class="des">${esc(h.des)}</span><span class="cls ${h.ring}">${esc(h.cls)}</span></span>
+      <span class="tags"><span class="des">${esc(h.des)}</span>${h.cls ? `<span class="cls ${h.ring}">${esc(h.cls)}</span>` : ""}</span>
       <span class="nm">${esc(h.rank)} ${esc(h.last)}</span>
       <span class="ttl">${esc(h.title)}</span>
     </span></span>`;
@@ -700,7 +700,7 @@ const ulClass = list => list.every(c => !c.flip && !c.cadre) ? "po" : "";
 /* tree node: both card styles; CSS shows the right one per screen size */
 function node(seat, depth, idx){
   const i = depth * 2 + idx, o = order++;
-  const ch = kids(seat.id).filter(c => !c.dir && !c.member && !!c.cadre === !!seat.cadre);
+  const ch = kids(seat.id).filter(c => !c.dir && !c.member && !!c.cadre === !!seat.cadre && (!c.proposalField || seat.proposalField));
   let html = `<li class="${po(seat)}">${card(seat, "tcard", i, o)}${card(seat, "rcard" + (depth === 0 ? " lead" : ""), i, o)}`;
   if(ch.length) html += `<ul class="${ulClass(ch)}">${ch.map((c, j) => node(c, depth + 1, j)).join("")}</ul>`;
   return html + roster(seat) + "</li>";
@@ -807,14 +807,14 @@ function countUnder(id, m){ return kids(id, m).reduce((a, c) => a + 1 + countUnd
 function build(){
   $("#tree-cadre").innerHTML = `<ul>${node(byId.cacic, 0, 0)}</ul>`;
   const cmd = byId.wgcc, o = order++;
-  const cmdKids = kids("wgcc").filter(s => s.id !== "gpcc");
+  const cmdKids = kids("wgcc").filter(s => s.id !== "gpcc" && !s.proposalField);
   $("#tree-command").innerHTML = `<ul><li>${card(cmd, "tcard", 0, o)}${card(cmd, "rcard lead", 0, o)}<ul>${cmdKids.map((c, j) => node(c, 1, j)).join("")}</ul></li></ul>`;
   const small = matchMedia("(max-width:760px)").matches;
   $("#dirs").innerHTML = SEATS.filter(s => s.dir).map((d, k) => {
     const n = countUnder(d.id), open = !small || n === 0;
     return `<article class="dir" style="--i:${k}" data-open="${open}" data-dir="${d.id}">
       <button type="button" class="dirhead" aria-expanded="${open}" aria-controls="sub-${d.id}">
-        <span><span class="code">${d.dir}</span> <span class="dname">${esc(DIRNAMES[d.dir])}</span></span>
+        <span><span class="code">${d.dir}</span> <span class="dname">${esc(d.dirName || DIRNAMES[d.dir])}</span></span>
         <span style="display:flex;align-items:center;gap:6px"><span class="cnt"></span>
         ${n ? `<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>` : ""}</span>
       </button>
@@ -822,7 +822,7 @@ function build(){
       ${n ? `<div class="subs" id="sub-${d.id}"><div>${olist(d, k)}</div></div>` : ""}
     </article>`;
   }).join("");
-  $("#tree-group").innerHTML = `<ul>${node(byId.gpcc, 0, 0)}</ul>`;
+  $("#tree-group").innerHTML = `<ul>${window.currentProposedChart ? SEATS.filter(s=>s.proposalField && !byId[s.parent]?.proposalField).map((s,i)=>node(s,0,i)).join("") : node(byId.gpcc, 0, 0)}</ul>`;
 }
 
 /* things that depend on the mode: labels, counts, last-visible connector */
@@ -841,6 +841,7 @@ function refreshMode(){
     [...ul.children].forEach(li => li.classList.toggle("lv", li === vis[vis.length - 1]));
   });
   document.querySelectorAll("[data-set-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.setMode === MODE)));
+  if(document.documentElement.dataset.chartView === "proposed") document.querySelectorAll("[data-set-mode]").forEach(b=>b.setAttribute("aria-pressed","false"));
 }
 
 /* ---------- mode switch with animation ---------- */
@@ -969,6 +970,7 @@ function flightRow(key){
 /* who a seat reports to; GMC with a wing position also report to their flight commander */
 function supervisorsOf(seat){
   const h = holder(seat) || holder(seat, "poc"), up = byId[seat.parent], flt = FLIGHT_OF[h.key];
+  if(seat.proposal) return [up].filter(Boolean);
   const fltCC = MODE === "poc" && flt && !seat.member && !seat.cadre && /AS(100|200|250|500)/.test(h.cls) && seat.parent !== flt ? byId[flt] : null;
   return [up, fltCC].filter(s => s && inMode(s));
 }
@@ -979,6 +981,7 @@ function personChip(seat){
 }
 /* Shared squadron/flight roles use one description for every corresponding seat. */
 function positionDescription(seat){
+  if(seat.proposal) return window.renderProposedDuties(seat);
   if(seat.member) return "";
   const roleKey = ({sq1:"squadron",sq2:"squadron",afl:"flight",bfl:"flight",cfl:"flight",dfl:"flight",
     afd:"flightDeputy",bfd:"flightDeputy",cfd:"flightDeputy",dfd:"flightDeputy",dparo1:"deputyParo",dparo2:"deputyParo"})[seat.id] || seat.id;
@@ -1011,7 +1014,7 @@ function openSeat(id, refresh){
   let html = `<div class="hero ${h.ring}">${img(h.key, "", "Photo of " + fullName(h))}
       <div class="big" id="d-name">${esc(fullName(h))}</div>
       <div class="seat">${esc(h.title)}</div></div>
-      <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${flightRow(h.key)}</dl>`;
+      <dl class="facts">${seat.fullName ? `<dt>Name</dt><dd>${esc(seat.fullName)}</dd>` : ""}${h.des ? `<dt>Position</dt><dd>${esc(h.des)}</dd>` : ""}<dt>Rank</dt><dd>${esc(h.rank)}</dd>${seat.cadre || !h.cls ? "" : `<dt>AS year</dt><dd>${esc(h.cls)}</dd>`}${seat.proposal ? "" : flightRow(h.key)}</dl>`;
   html += positionDescription(seat);
   if(MODE === "flip" && other && !seat.cadre){
     html += `<div class="dh">Normally held by</div>
@@ -1022,7 +1025,7 @@ function openSeat(id, refresh){
   if(MODE === "poc" && ledFlight)
     html += `<button type="button" class="flightbtn wide" data-flight="${ledFlight}"><span class="ft"><span class="fn">${esc(flightName(ledFlight))} Flight</span><span class="fc">${flightGMC(ledFlight).length} GMC · ${flightPOC(ledFlight).length} POC</span></span><span class="fv">View flight</span></button>`;
   /* GMC: the seat they hold during Flip Week (opens the Flip Week view) */
-  if(MODE === "poc" && !seat.cadre){
+  if(MODE === "poc" && !seat.cadre && !seat.proposal){
     const fw = SEATS.filter(x => x.flip === h.key);
     if(fw.length) html += `<div class="dh">Flip Week position</div><div class="chips">${fw.map(x => {
       const f = holder(x, "flip");
