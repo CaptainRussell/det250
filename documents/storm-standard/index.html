@@ -132,7 +132,13 @@ figcaption{font-size:13px;color:var(--d250-soft);margin-top:8px;text-align:cente
 .ladder .col{display:flex;flex-direction:column;align-items:center}
 .ladder .col b{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--d250-gold);margin-bottom:6px}
 .ladder .col span{width:100%}
-.ladder .top span{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 18%,var(--d250-surface))}
+.ladder .rung{display:flex;align-items:center;gap:10px;text-align:left}
+.ladder .rung .ic,.ladder .rung .t{flex:none;max-width:none;padding:0;border:0;background:none;border-radius:0}
+.ladder .rung .ic{width:56px;height:44px;display:grid;place-items:center}
+.ladder .rung .ic img{max-width:44px;max-height:44px;width:auto;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.ladder .rung .ic img.ins{max-width:56px;max-height:30px}
+.ladder .rung .t{flex:1;font-size:13.5px;text-align:left}
+.ladder .top .rung{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 18%,var(--d250-surface))}
 .mds{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 16px}
 .mds div{text-align:center;min-width:64px}
 .mds b{display:block;font-size:34px;font-weight:800;line-height:1.1;padding:10px 12px;border-radius:12px;background:var(--d250-surface);border:2px solid var(--tone)}
@@ -140,9 +146,24 @@ figcaption{font-size:13px;color:var(--d250-soft);margin-top:8px;text-align:cente
 .seal{text-align:center}
 .seal img{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.3))}
 .seals{display:flex;gap:12px;justify-content:center;margin-bottom:10px}
-.seals img{width:84px;height:84px}
+.seals img{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.3))}
+.seal-row{display:flex;flex-wrap:wrap;gap:16px 18px;justify-content:center;margin:0 0 18px}
+.seal-row figure{margin:0;width:104px;text-align:center}
+.seal-row img{display:block;width:92px;height:92px;margin:0 auto;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.seal-row figcaption{margin-top:6px;font-size:12.5px;font-weight:700;color:var(--d250-soft)}
+.ibadges{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.ibadge{margin:0;display:flex;flex-direction:column;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;overflow:hidden;box-shadow:var(--d250-shadow)}
+.ibadge .pv{background:#fff;display:grid;place-items:center;height:150px;padding:14px}
+.ibadge .pv img{max-width:100%;max-height:120px;width:auto;height:auto}
+.ibadge .pv img.sm{max-height:72px}
+.ibadge figcaption{margin:0;padding:10px 12px;font-size:13.5px;font-weight:700;line-height:1.3;text-align:left;color:var(--d250-ink)}
+.ibadge figcaption span{display:block;font-weight:500;font-size:12.5px;color:var(--d250-soft);margin-top:2px}
+.pw{background:#fff;border-radius:14px;padding:18px;box-shadow:var(--d250-shadow);border:1px solid var(--d250-line)}
+.pw img{display:block;width:100%;height:auto;box-shadow:none;border-radius:0}
 .cmd{display:flex;gap:14px;align-items:flex-start}
 .cmd img{flex:none;width:64px;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.cmd.delta img{width:60px}
+.cmd .shields{flex:none;display:flex;flex-direction:column;gap:8px}
 .inv{padding:0;overflow:hidden;display:flex;flex-direction:column}
 .inv img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#0b0f19}
 .inv .in{padding:12px 14px 14px}
@@ -271,11 +292,28 @@ const PRINCIPLES = [
   ["Surprise", "Attack the enemy at a time, place, or in a manner for which they are not prepared."],
   ["Simplicity", "Avoid unnecessary complexity in organizing, preparing, planning, and conducting operations."]
 ];
+const BADGES = [
+  ["badge-cta", "Cadet Training Assistant badge", "Worn after serving as a CTA at Field Training."],
+  ["badge-aas-member", "Arnold Air Society rank pin", "Arnold Air Society members."],
+  ["badge-aas-candidate", "Arnold Air Society candidate pin", "Arnold Air Society candidates.", 1],
+  ["badge-pershing-officer", "Pershing Rifles badge, cadet officer", "Pershing Rifles members holding officer rank."],
+  ["badge-pershing-enlisted", "Pershing Rifles badge, cadet enlisted", "Pershing Rifles members holding enlisted rank."]
+];
+const SERVICES = [["seal-army", "Army"], ["seal-marine-corps", "Marine Corps"], ["seal-navy", "Navy"], ["seal-air-force", "Air Force"], ["seal-space-force", "Space Force"], ["seal-coast-guard", "Coast Guard"]];
+const sealRow = rows => `<div class="seal-row">${rows.map(r => `<figure>${img("official/" + r[0] + ".webp", r[1] + " seal", "", 92, 92)}<figcaption>${r[1]}</figcaption></figure>`).join("")}</div>`;
+// Official MAJCOM shields (art/official/majcom-*.webp); USAFE-AFAFRICA shows both of its shields.
+const majcomShields = m => {
+  const ab = ((m.name.match(/\(([^)]+)\)\s*$/) || [])[1] || "").toLowerCase();
+  const keys = ab === "usafe-afafrica" ? ["usafe", "afafrica"] : [ab];
+  return keys.map(k => img("official/majcom-" + k + ".webp", m.name + " shield", "", 64, 64)).join("");
+};
+// One rung of the chain of command: seal or typical rank insignia, then the position.
+const rung = ([t, ic, rank]) => `<span class="rung"><span class="ic">${img("official/" + ic + ".webp", rank ? rank + " insignia" : t + " seal", ic.startsWith("rank") ? "ins" : "")}</span><span class="t">${t}</span></span>`;
 const COCOMS = {
-  geo: [["USAFRICOM", "Africa Command", "Stuttgart, Germany"], ["USCENTCOM", "Central Command", "MacDill AFB, FL"], ["USEUCOM", "European Command", "Stuttgart, Germany"], ["USNORTHCOM", "Northern Command", "Peterson SFB, CO"], ["USPACOM", "Indo-Pacific Command", "Camp H.M. Smith, HI"], ["USSOUTHCOM", "Southern Command", "Miami, FL"], ["USSPACECOM", "Space Command", "Peterson SFB, CO"]],
+  geo: [["USAFRICOM", "Africa Command", "Stuttgart, Germany"], ["USCENTCOM", "Central Command", "MacDill AFB, FL"], ["USEUCOM", "European Command", "Stuttgart, Germany"], ["USNORTHCOM", "Northern Command", "Peterson SFB, CO"], ["USINDOPACOM", "Indo-Pacific Command", "Camp H.M. Smith, HI"], ["USSOUTHCOM", "Southern Command", "Miami, FL"], ["USSPACECOM", "Space Command", "Peterson SFB, CO"]],
   fun: [["USCYBERCOM", "Cyber Command", "Fort George G. Meade, MD"], ["USSOCOM", "Special Operations Command", "MacDill AFB, FL"], ["USSTRATCOM", "Strategic Command", "Offutt AFB, NE"], ["USTRANSCOM", "Transportation Command", "Scott AFB, IL"]]
 };
-const list = rows => `<div class="grid g2">${rows.map(r => `<div class="card"><span class="k">${esc(r[0])}</span><h3>${esc(r[1])}</h3><p>${esc(r[2])}</p></div>`).join("")}</div>`;
+const list = rows => `<div class="grid g2">${rows.map(r => `<div class="card cmd">${img("official/cocom-" + r[0].toLowerCase().replace("uspacom", "usindopacom") + ".webp", r[1] + " seal", "", 72, 72)}<div><span class="k">${esc(r[0])}</span><h3>${esc(r[1])}</h3><p>${esc(r[2])}</p></div></div>`).join("")}</div>`;
 const timeline = rows => `<ol class="tl">${rows.map(r => `<li><b>${esc(r[0])}</b><span>${esc(r[1])}</span></li>`).join("")}</ol>`;
 
 function invGrid(kind){
@@ -325,9 +363,9 @@ const CH = [
   ]},
   {id: "officership", label: "Chapter 2", title: "Officership", subs: [
     {id: "mission", title: "Mission and vision", page: 15, html: () => `<div class="grid g2">
-      <div class="card"><div class="seals">${img("seal-air-force.webp", "Department of the Air Force seal", "", 84, 84)}</div><span class="k">Air Force mission</span><h3>Fly, fight and win: airpower anytime, anywhere.</h3>
+      <div class="card"><div class="seals">${img("official/seal-air-force.webp", "Department of the Air Force seal", "", 110, 110)}</div><span class="k">Air Force mission</span><h3>Fly, fight and win: airpower anytime, anywhere.</h3>
         <p>Core functions:</p><div class="chips"><span>Air Superiority</span><span>Global Strike</span><span>Rapid Global Mobility</span><span>ISR</span><span>Command and Control</span></div></div>
-      <div class="card"><div class="seals">${img("seal-space-force.webp", "Space Force seal", "", 84, 84)}</div><span class="k">Space Force mission</span><h3>Secure our Nation's interests in, from and to space.</h3>
+      <div class="card"><div class="seals">${img("official/seal-space-force.webp", "Space Force seal", "", 110, 110)}</div><span class="k">Space Force mission</span><h3>Secure our Nation's interests in, from and to space.</h3>
         <ul><li><b>In space:</b> space superiority that protects the joint force.</li><li><b>From space:</b> SATCOM, positioning, navigation and timing, and missile warning.</li><li><b>To space:</b> assured access through launch, range and the control network.</li></ul></div></div>`},
     {id: "values", title: "Core values", page: 19, html: () => `<div class="grid g3">
       ${card("Integrity First", "<p>Doing the right thing, all the time, whether everyone is watching or no one is watching.</p><div class=\"chips\"><span>Honesty</span><span>Courage</span><span>Accountability</span></div>", "Core value")}
@@ -336,11 +374,16 @@ const CH = [
       <h3 style="margin:22px 0 10px">A leader of character</h3>
       <div class="grid g3">${card("Lives honorably", "<p>Consistently practices the virtues in our core values.</p>")}${card("Lifts others", "<p>Helps others become their best possible selves.</p>")}${card("Elevates performance", "<p>Toward a common and noble purpose.</p>")}</div>`},
     {id: "chain", title: "Chain of command", page: 16, html: () => `<p class="lead">Each level is responsible for all lower levels and accountable to all higher levels. Resolve problems at the lowest possible level.</p>
-      <div class="ladder">${["President of the United States", "Secretary of War", "Secretary of the Department of the Air Force"].map((x, i) => `${i ? "<i></i>" : ""}<div class="top"><span>${x}</span></div>`).join("")}<i></i>
-        <div class="split">${[["Air Force", ["Chief of Staff, USAF", "MAJCOM Commander", "Numbered Air Force Commander", "Wing Commander", "Group Commander", "Squadron Commander", "Flight Commander"]], ["Space Force", ["Chief of Space Operations, USSF", "Field Command Commander", "Delta Commander", "Squadron Commander", "Flight Commander"]]].map(([h, r]) => `<div class="col"><b>${h}</b>${r.map((x, i) => `${i ? "<i></i>" : ""}<span>${x}</span>`).join("")}</div>`).join("")}</div></div>`},
+      <div class="ladder">${[["President of the United States", "coc-president"], ["Secretary of War", "coc-secwar"], ["Secretary of the Department of the Air Force", "coc-secaf"]].map((x, i) => `${i ? "<i></i>" : ""}<div class="top">${rung(x)}</div>`).join("")}<i></i>
+        <div class="split">${[["Air Force", [["Chief of Staff, USAF", "coc-csaf"], ["MAJCOM Commander", "rank-o10", "General"], ["Numbered Air Force Commander", "rank-o9", "Lieutenant General"], ["Wing Commander", "rank-o6", "Colonel"], ["Group Commander", "rank-o6", "Colonel"], ["Squadron Commander", "rank-o5", "Lieutenant Colonel"], ["Flight Commander", "rank-o3", "Captain"]]], ["Space Force", [["Chief of Space Operations, USSF", "coc-cso"], ["Field Command Commander", "rank-o9", "Lieutenant General"], ["Delta Commander", "rank-o6", "Colonel"], ["Squadron Commander", "rank-o5", "Lieutenant Colonel"], ["Flight Commander", "rank-o3", "Captain"]]]].map(([h, r]) => `<div class="col"><b>${h}</b>${r.map((x, i) => `${i ? "<i></i>" : ""}${rung(x)}`).join("")}</div>`).join("")}</div></div>
+      <p class="muted small" style="margin-top:12px">Insignia show the rank that typically holds each command.</p>`},
     {id: "cadet-rank", title: "Cadet rank and insignia", page: 26, html: () => paper("cadet-rank.webp", "Cadet rank shoulder boards and insignia, Cadet Fourth Class to Cadet Colonel", "Shoulder boards (left) and the matching insignia (right). Tap to enlarge.", 640)},
-    {id: "insignia", title: "AFROTC insignia", page: 27, html: () => `<div class="hero"><div class="paper">${img("afrotc-insignia.webp", "AFROTC insignia: Prop and Wings, select badges, CTA badge, Arnold Air Society, Pershing Rifles and Parachute badge", "zoom")}</div>
-      <div><p class="lead">The badges and pins an AFROTC cadet may wear.</p><ul class="muted"><li>Prop and Wings</li><li>Pilot, Combat Systems Operator, Air Battle Manager, RPA and Space Operations select badges</li><li>CTA badge</li><li>Arnold Air Society member rank pin and candidate pin</li><li>Pershing Rifles rank pin</li><li>Parachute badge</li></ul></div></div>`},
+    {id: "insignia", title: "AFROTC insignia", page: 27, html: () => `<div class="hero"><div class="pw">${img("official/prop-wings.webp", "Prop and Wings", "", 900, 622)}</div>
+      <div class="card"><span class="k">Earned at Field Training</span><h3>Prop and Wings</h3><p>Worn by cadets who complete Field Training (DAFI 36-2903 AFROTC Sup, Figure 4.10). POC wear it centered on the OCP cover.</p></div></div>
+      <h3 style="margin:22px 0 10px">Additional uniform devices</h3>
+      <div class="ibadges">${BADGES.map(b => `<figure class="ibadge"><div class="pv">${img("official/" + b[0] + ".webp", b[1], b[3] ? "sm" : "")}</div><figcaption>${b[1]}<span>${b[2]}</span></figcaption></figure>`).join("")}</div>
+      <p class="muted small" style="margin-top:12px">Badges from DAFI 36-2903 AFROTC Sup, Figure 9.1. The Storm Standard chart (page 26 of the PDF) also shows the Pilot, CSO, ABM, RPA and Space Operations select badges and the Parachute badge.</p>
+      <details class="more"><summary>Full insignia chart from The Storm Standard</summary>${paper("afrotc-insignia.webp", "AFROTC insignia chart: Prop and Wings, select badges, CTA badge, Arnold Air Society, Pershing Rifles and Parachute badge", "Tap to enlarge.", 520)}</details>`},
     {id: "uniforms", title: "AFROTC uniforms", page: 27, html: () => seg("uni", [
       ["Service, men", paper("uniform-service-men.webp", "AFROTC service uniform, men", "", 560)],
       ["Service, women", paper("uniform-service-women.webp", "AFROTC service uniform, women", "", 560)],
@@ -359,8 +402,8 @@ const CH = [
         ${card("Respect for the flag", "<p>In uniform and not in formation, face the flag (or the music) and salute from the first note of the national anthem or &ldquo;To the Colors&rdquo; to the last. Vehicles pull over and stop. In civilian clothes, stand at attention with your right hand over your heart.</p>")}</div>`},
     {id: "creed", title: "The Airman's Creed", page: 47, html: () => `<div class="card creed"><p>I am an American Airman.<br>I am a Warrior.<br>I have answered my Nation's call.</p><p>I am an American Airman.<br>My mission is to Fly, Fight, and Win.<br>I am faithful to a Proud Heritage,<br>A Tradition of Honor,<br>And a Legacy of Valor.</p><p>I am an American Airman.<br>Guardian of Freedom and Justice,<br>My Nation's Sword and Shield,<br>Its Sentry and Avenger.<br>I defend my Country with my Life.</p><p>I am an American Airman.<br>Wingman, Leader, Warrior.<br>I will never leave an Airman behind,<br>I will never falter,<br>And I will not fail.</p></div>
       <p class="muted small">Introduced in 2007 by Gen T. Michael Moseley, Chief of Staff of the Air Force. Everyone present stands at attention when it is recited.</p>`},
-    {id: "conduct", title: "Code of Conduct", page: 54, html: () => `<div class="paper" style="max-width:560px;margin:0 auto 16px">${img("code-of-conduct.webp", "Code of Conduct banner with the seals of the armed services")}</div>
-      <p class="muted">First published by President Eisenhower on 17 August 1955. Its six articles guide every service member who is captured or detained.</p>
+    {id: "conduct", title: "Code of Conduct", page: 54, html: () => `${sealRow(SERVICES)}
+      <p class="muted">First published by President Eisenhower on 17 August 1955. Its six articles guide every member of every service who is captured or detained.</p>
       <ol class="arts"><li>I am an American, fighting in the forces which guard my country and our way of life. I am prepared to give my life in their defense.</li>
       <li>I will never surrender of my own free will. If in command, I will never surrender the members of my command while they still have the means to resist.</li>
       <li>If I am captured, I will continue to resist by all means available. I will make every effort to escape and to aid others to escape. I will accept neither parole nor special favors from the enemy.</li>
@@ -369,26 +412,23 @@ const CH = [
       <li>I will never forget that I am an American, fighting for freedom, responsible for my actions, and dedicated to the principles which made my country free. I will trust in my God and in the United States of America.</li></ol>`}
   ]},
   {id: "history", label: "Chapter 3", title: "History", subs: [
-    {id: "prop-wings", title: "Prop and Wings", page: 61, html: () => `<div class="hero"><div style="text-align:center">${img("prop-wings.webp", "Prop and Wings insignia", "", 260, 185)}</div>
+    {id: "prop-wings", title: "Prop and Wings", page: 61, html: () => `<div class="hero"><div class="pw">${img("official/prop-wings.webp", "Prop and Wings insignia", "", 900, 622)}</div>
       <div><p class="lead">The symbol of the American Airman.</p><p>First worn by Aviation Cadets in 1917 and the branch insignia of the Army Air Service and Air Corps, the Prop and Wings is now earned by Academy, ROTC and OTS cadets who complete the first phase of officer training. It marks your acceptance into the Long Blue Line. Descendants of Air Force, Army Air Corps or WASP members are authorized gold.</p></div></div>
-      <div class="grid g2" style="margin-top:16px"><figure>${img("prop-wings-monument.webp", "Prop and Wings monument at Maxwell AFB", "zoom")}<figcaption>The Prop and Wings monument at Maxwell AFB, birthplace of the Air Corps Tactical School (photo: Mark Hilton, 2014). OTS and ROTC graduates lay their hands on its plaque.</figcaption></figure>
-      <figure>${img("prop-wings-plaque.webp", "The Prop and Wings plaque", "zoom")}<figcaption>The plaque.</figcaption></figure></div>`},
+      <div style="max-width:560px;margin:18px auto 0"><figure>${img("prop-wings-monument.webp", "Prop and Wings monument at Maxwell AFB", "zoom")}<figcaption>The Prop and Wings monument at Maxwell AFB, birthplace of the Air Corps Tactical School (photo: Mark Hilton, 2014). OTS and ROTC graduates lay their hands on its plaque.</figcaption></figure></div>`},
     {id: "afrotc", title: "History of AFROTC", page: 63, html: () => `<p class="lead">AFROTC is the largest and oldest source of commissioned officers for the Air Force.</p>${timeline(ROTC)}`},
     {id: "events", title: "Air and Space Force milestones", page: 67, html: () => timeline(EVENTS)}
   ]},
   {id: "strategy", label: "Chapter 4", title: "Military Strategy", subs: [
     {id: "principles", title: "Principles of war", page: 88, html: () => `<p class="lead">Fundamental, interconnected aspects that tend to lead to military victory. Not a checklist, but a tool for weighing courses of action.</p>
       <div class="grid g3">${PRINCIPLES.map(p => card(esc(p[0]), `<p>${esc(p[1])}</p>`)).join("")}</div>`},
-    {id: "cocoms", title: "Combatant commands", page: 89, html: () => `${paper("combatant-commands.webp", "Seals of the eleven combatant commands", "", 900)}
-      <h3 style="margin:18px 0 8px">Geographic</h3><p class="muted small" style="margin:0 0 10px">Clearly delineated areas with a regional military focus.</p>${list(COCOMS.geo)}
+    {id: "cocoms", title: "Combatant commands", page: 89, html: () => `<h3 style="margin:0 0 8px">Geographic</h3><p class="muted small" style="margin:0 0 10px">Clearly delineated areas with a regional military focus.</p>${list(COCOMS.geo)}
       <h3 style="margin:18px 0 8px">Functional</h3><p class="muted small" style="margin:0 0 10px">World-wide capabilities that support the geographic commands and the Services.</p>${list(COCOMS.fun)}`},
     {id: "departments", title: "The military departments", page: 90, html: () => `<div class="grid g3">
-      <div class="card seal">${img("seal-air-force.webp", "Department of the Air Force seal", "", 110, 110)} ${img("seal-space-force.webp", "Space Force seal", "", 110, 110)}<span class="k">Department of the Air Force</span><h3>Air Force and Space Force</h3><p>Air, space and cyberspace capabilities for theater-wide and national objectives. The Space Force was established 20 December 2019.</p></div>
-      <div class="card seal">${img("seal-army.webp", "Department of the Army seal", "", 110, 110)}<span class="k">Department of the Army</span><h3>U.S. Army</h3><p>To fight and win our Nation's wars by providing prompt, sustained land dominance.</p></div>
-      <div class="card seal">${img("seal-navy.webp", "Department of the Navy seal", "", 110, 110)} ${img("seal-marines.webp", "Marine Corps seal", "", 110, 110)}<span class="k">Department of the Navy</span><h3>Navy and Marine Corps</h3><p>To maintain, train and equip combat-ready naval forces capable of winning wars, deterring aggression and maintaining freedom of the seas.</p></div></div>`},
-    {id: "majcoms", title: "Air Force major commands", page: 92, html: () => `<div class="grid g2">${ART.majcoms.map(m => `<div class="card cmd">${img(m.img, m.name + " shield", "", 64, 64)}<div><h3>${esc(m.name)}</h3>${m.hq ? `<span class="k">${esc(m.hq)}${m.established ? " · est. " + esc(m.established) : ""}</span>` : ""}<p>${esc(m.mission)}</p></div></div>`).join("")}</div>`},
-    {id: "field-commands", title: "Space Force field commands", page: 94, html: () => `<div class="hero"><div style="text-align:center">${img("space-field-commands.webp", "Space Force field command deltas", "", 200, 260)}</div>
-      <div class="grid">${card("Combat Forces Command", "<p>The primary provider of space forces and capabilities.</p>")}${card("STAR Command", "<p>Specialized education and training of the force. Its colors appear on the USSF Det 250 patch.</p>")}${card("Space Systems Command", "<p>Develops, acquires, fields and sustains space systems.</p>")}</div></div>`}
+      <div class="card seal">${img("official/seal-air-force.webp", "Department of the Air Force seal", "", 110, 110)} ${img("official/seal-space-force.webp", "Space Force seal", "", 110, 110)}<span class="k">Department of the Air Force</span><h3>Air Force and Space Force</h3><p>Air, space and cyberspace capabilities for theater-wide and national objectives. The Space Force was established 20 December 2019.</p></div>
+      <div class="card seal">${img("official/seal-army.webp", "Department of the Army seal", "", 110, 110)}<span class="k">Department of the Army</span><h3>U.S. Army</h3><p>To fight and win our Nation's wars by providing prompt, sustained land dominance.</p></div>
+      <div class="card seal">${img("official/seal-navy.webp", "Department of the Navy seal", "", 110, 110)} ${img("official/seal-marine-corps.webp", "Marine Corps seal", "", 110, 110)}<span class="k">Department of the Navy</span><h3>Navy and Marine Corps</h3><p>To maintain, train and equip combat-ready naval forces capable of winning wars, deterring aggression and maintaining freedom of the seas.</p></div></div>`},
+    {id: "majcoms", title: "Air Force major commands", page: 92, html: () => `<div class="grid g2">${ART.majcoms.map(m => `<div class="card cmd"><span class="shields">${majcomShields(m)}</span><div><h3>${esc(m.name)}</h3>${m.hq ? `<span class="k">${esc(m.hq)}${m.established ? " · est. " + esc(m.established) : ""}</span>` : ""}<p>${esc(m.mission)}</p></div></div>`).join("")}</div>`},
+    {id: "field-commands", title: "Space Force field commands", page: 94, html: () => `<div class="grid g3">${[["cfc", "Combat Forces Command", "The primary provider of space forces and capabilities."], ["starcom", "STAR Command", "Space Training and Readiness Command: specialized education and training of the force. Its colors appear on the USSF Det 250 patch."], ["ssc", "Space Systems Command", "Develops, acquires, fields and sustains space systems."]].map(r => `<div class="card cmd delta">${img("official/field-" + r[0] + ".webp", r[1] + " emblem", "", 60, 92)}<div><h3>${r[1]}</h3><p>${r[2]}</p></div></div>`).join("")}</div>`}
   ]},
   {id: "resources", label: "Chapter 5", title: "Military Resources", subs: [
     {id: "mds", title: "Mission design series", page: 106, html: () => `<p class="lead">Every aircraft designation tells you what it is. Example: <b>NKC-135R</b>.</p>
