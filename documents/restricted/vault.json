@@ -1,8 +1,8 @@
 {
  "v": 1,
  "iter": 310000,
- "salt": "gQc7FUMiuDxIEBxQs2h+cg==",
- "check": "H4npLWyBWmT7Ry1UrXyQ3Uqum+d9Oyo2my7BaFC4YvjHYiocz680JQ8+Wlkr",
+ "salt": "euPzSGYeN+vA0cqR0XGVHA==",
+ "check": "Cm4zTW3NvzHTAR5zf6WFHMax1IBY7k9wCjL466W1N5kpPx9XtHzdq5rjM65d",
  "files": [
   {
    "id": "fall-2026-oplan",
@@ -15,6 +15,12 @@
    "group": "plans",
    "title": "Fall 2026 Policy Packet",
    "size": 782162
+  },
+  {
+   "id": "cadre-additional-duties",
+   "group": "plans",
+   "title": "Cadre Additional Duties Roster",
+   "size": 279331
   },
   {
    "id": "opord-week-01",
