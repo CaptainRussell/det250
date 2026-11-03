@@ -12,7 +12,17 @@ const [,, inFile, outFile] = process.argv;
 if(!inFile || !outFile){ console.error("usage: node tools/build-storm-standard.mjs <in.txt> <out.html>"); process.exit(1); }
 
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const lines = fs.readFileSync(inFile, "utf8").replace(/\r/g, "").split("\n").map(l => l.replace(/\s+$/, ""));
+// Accepts either a text export with each page number on its own line at the
+// top of the page, or `pdftotext The_Storm_Standard.pdf out.txt` output (pages
+// split by form feeds, number at the bottom), which keeps word spacing better.
+let raw = fs.readFileSync(inFile, "utf8").replace(/\r/g, "");
+if(raw.includes("\f")){
+  raw = raw.split("\f").map(pg => {
+    const m = pg.match(/\n\s*(\d{1,3})\s*$/);
+    return m ? "\n" + m[1] + "\n" + pg.slice(0, m.index) : pg;
+  }).join("\n");
+}
+const lines = raw.split("\n").map(l => l.replace(/\s+$/, ""));
 
 // ---- split into pages: a line that is only a number starts that page ----
 const pages = [];               // {n, lines[]}
@@ -111,6 +121,9 @@ const meta = (() => {
   return {edition: g("Edition"), version: g("Version"), rev: g("Revision Date")};
 })();
 
+// The PDF sits next to the page as The_Storm_Standard.pdf (copy it in when a new edition comes out).
+const pdfPath = outFile.replace(/[^\\/]+$/, "") + "The_Storm_Standard.pdf";
+const pdfSize = fs.existsSync(pdfPath) ? (fs.statSync(pdfPath).size / 1048576).toFixed(1) + " MB" : "";
 const html = `<!doctype html>
 <html lang="en" data-theme="dark">
 <head>
@@ -137,6 +150,9 @@ body{background:var(--d250-page);color:var(--d250-ink);font:16px/1.65 var(--d250
 .box{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;box-shadow:var(--d250-shadow)}
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--d250-soft);text-decoration:none}
 .back:hover{color:var(--d250-ink)}
+.pdf{display:flex;align-items:center;gap:8px;padding:11px 14px;font-size:14px;font-weight:800;color:#fff;text-decoration:none;background:var(--tone);border-color:var(--tone)}
+.pdf small{margin-left:auto;font-size:12px;font-weight:600;opacity:.85}
+.pdf:hover{background:color-mix(in srgb,var(--tone) 82%,#fff)}
 .nav{padding:8px}
 .nav a{display:block;padding:7px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:600;line-height:1.3}
 .nav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
@@ -183,6 +199,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <div class="wrap">
   <aside class="side">
     <a class="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents and Policy</a>
+    <a class="box pdf" href="The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download the PDF<small>${pdfSize}</small></a>
     <nav class="box nav" aria-label="Chapters">${nav}</nav>
     <form class="box find" id="find" role="search">
       <label for="q">Find in the Standard</label>
@@ -200,7 +217,7 @@ ${body}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Web edition of The Storm Standard (${esc(meta.edition)}, ${esc(meta.rev)}), built from the detachment's PDF. Page numbers match the PDF. Recommend changes through the cadet chain of command to the Education Officer.</p>
+  <p class="source-line">Web edition of The Storm Standard (${esc(meta.edition)}, ${esc(meta.rev)}), built from the detachment's PDF. Page numbers match the PDF, which you can download for the original layout, tables and images. Recommend changes through the cadet chain of command to the Education Officer.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 <script>
