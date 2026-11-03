@@ -113,8 +113,25 @@ function renderPage(p){
   return `<section class="pg" id="p-${p.n}" aria-label="Page ${p.n}"><div class="pno">p. ${p.n}</div>${out.join("\n")}</section>`;
 }
 
-const body = pages.map(renderPage).join("\n");
-const nav = chapters.map(c => `<a href="#${c.id}"><small>${esc(c.label)}</small>${esc(c.title)}</a>`).join("");
+// ---- one tab per section: front matter, then each chapter and appendix ----
+const tabs = [{id: "about", label: "Front matter", title: "Edition, Purpose, Authority", pages: []}];
+for(const p of pages){
+  const before = chapters.length;
+  const html = renderPage(p);
+  if(chapters.length > before){ const c = chapters[chapters.length - 1]; tabs.push({id: c.id, label: c.label, title: c.title, pages: []}); }
+  tabs[tabs.length - 1].pages.push(html);
+}
+const nav = tabs.map(t => `<a href="#${t.id}" data-tab="${t.id}"><small>${esc(t.label)}</small>${esc(t.title)}</a>`).join("");
+const ARROW_L = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+const ARROW_R = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+const tabHtml = (t, i, meta) => {
+  const prev = tabs[i - 1], next = tabs[i + 1];
+  const head = t.id === "about" ? `<div class="box meta"><b>${esc(meta.edition)}</b>, version ${esc(meta.version)}, revised ${esc(meta.rev)}. OPR: Education Officer. Approval: Detachment Commander, AFROTC Detachment 250. Official Air Force, Space Force, AFROTC and federal publications take precedence over this document.</div>` : "";
+  return `<section class="tab" id="t-${t.id}" data-tab="${t.id}" aria-label="${esc(t.label + ": " + t.title)}"${i ? " hidden" : ""}>${head}
+${t.pages.join("\n")}
+<nav class="tabnav" aria-label="Section navigation">${prev ? `<a class="prev" href="#${prev.id}">${ARROW_L}<span><small>Previous</small>${esc(prev.title)}</span></a>` : "<span></span>"}${next ? `<a class="next" href="#${next.id}"><span><small>Next</small>${esc(next.title)}</span>${ARROW_R}</a>` : "<span></span>"}</nav>
+</section>`;
+};
 const meta = (() => {
   const p2 = (pages.find(p => p.n === 2) || {lines: []}).lines.join("\n");
   const g = k => (p2.match(new RegExp(k + ":\\s*(.+)")) || [])[1] || "";
@@ -157,7 +174,26 @@ body{background:var(--d250-page);color:var(--d250-ink);font:16px/1.65 var(--d250
 .nav a{display:block;padding:7px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:600;line-height:1.3}
 .nav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
 .nav a:hover{background:var(--d250-surface-2)}
-.nav a.on{background:color-mix(in srgb,var(--tone) 18%,transparent)}
+.nav a.on{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+@media (max-width:880px){
+  .nav{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px;-webkit-overflow-scrolling:touch}
+  .nav a{flex:none;scroll-snap-align:start;white-space:nowrap;padding:7px 12px}
+  .nav a.on{box-shadow:inset 0 -3px 0 var(--tone)}
+  .side{position:sticky;top:0;z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0}
+  .side .back,.side .pdf,.side .find{display:none}
+  .side.open .find{display:flex}
+}
+.tab[hidden]{display:none}
+.tab{animation:tabin .25s var(--d250-ease)}
+@keyframes tabin{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.tab{animation:none}}
+.tabnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:28px 0 8px}
+.tabnav a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--d250-line);background:var(--d250-surface);color:var(--d250-ink);text-decoration:none;font-weight:800;font-size:14.5px;line-height:1.3}
+.tabnav a:hover{border-color:var(--tone)}
+.tabnav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
+.tabnav .next{justify-content:flex-end;text-align:right}
+.mtools{display:none}
+@media (max-width:880px){.mtools{display:flex;gap:8px;margin:0 0 14px}.mtools a,.mtools button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border-radius:10px;border:1px solid var(--d250-line-strong);background:transparent;color:var(--d250-ink);font:inherit;font-size:13.5px;font-weight:700;text-decoration:none;cursor:pointer}}
 .find{padding:10px;display:flex;flex-direction:column;gap:8px}
 .find label{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
 .find .row{display:flex;gap:6px}
@@ -208,8 +244,8 @@ mark.now{background:var(--d250-gold);color:#16161a}
     </form>
   </aside>
   <main class="doc" id="doc">
-    <div class="box meta"><b>${esc(meta.edition)}</b>, version ${esc(meta.version)}, revised ${esc(meta.rev)}. OPR: Education Officer. Approval: Detachment Commander, AFROTC Detachment 250. Official Air Force, Space Force, AFROTC and federal publications take precedence over this document.</div>
-${body}
+    <div class="mtools"><a href="../">${ARROW_L}Documents</a><a href="The_Storm_Standard.pdf" download>PDF ${pdfSize}</a><button type="button" id="findBtn">Find</button></div>
+    ${tabs.map((t, i) => tabHtml(t, i, meta)).join("\n")}
   </main>
 </div>
 <footer class="d250-foot">
@@ -222,14 +258,25 @@ ${body}
 </footer>
 <script>
 (() => {
-  // Highlight the chapter you're reading in the side nav
-  const links = [...document.querySelectorAll(".nav a")];
-  const heads = links.map(a => document.querySelector(a.getAttribute("href")));
-  const mark = () => {
-    let k = 0; heads.forEach((h, i) => { if(h && h.getBoundingClientRect().top < 120) k = i; });
-    links.forEach((a, i) => a.classList.toggle("on", i === k));
+  // One section at a time. #chapter-2 opens a section, #p-14 opens the section holding page 14.
+  const tabs = [...document.querySelectorAll(".tab")], links = [...document.querySelectorAll(".nav a")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const show = id => {
+    tabs.forEach(t => t.hidden = t.dataset.tab !== id);
+    links.forEach(a => { const on = a.dataset.tab === id; a.classList.toggle("on", on); if(on){ a.setAttribute("aria-current", "true"); a.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current"); });
   };
-  addEventListener("scroll", mark, {passive:true}); mark();
+  const route = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const el = id && document.getElementById(id);
+    const tab = el ? (el.closest(".tab") || document.getElementById("t-" + id)) : null;
+    show(tab ? tab.dataset.tab : tabs[0].dataset.tab);
+    const top = document.getElementById("doc").getBoundingClientRect().top + scrollY - 70;
+    if(el && !/^(chapter|appendix|about)/.test(id)) el.scrollIntoView({block:"start"});
+    else if(scrollY > top) scrollTo({top, behavior: reduce ? "auto" : "smooth"});
+  };
+  addEventListener("hashchange", route); route();
+  const fb = document.getElementById("findBtn");
+  if(fb) fb.addEventListener("click", () => { document.querySelector(".side").classList.toggle("open"); document.getElementById("q").focus(); });
 
   // Find: highlight every match, Next steps through them
   const doc = document.getElementById("doc"), q = document.getElementById("q"), st = document.getElementById("st");
@@ -256,8 +303,10 @@ ${body}
     if(hits[at]) hits[at].classList.remove("now");
     at = (at + 1) % hits.length;
     hits[at].classList.add("now");
-    hits[at].scrollIntoView({block:"center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
-    st.textContent = (at + 1) + " of " + hits.length;
+    show(hits[at].closest(".tab").dataset.tab);
+    hits[at].scrollIntoView({block:"center", behavior: reduce ? "auto" : "smooth"});
+    const tl = hits[at].closest(".tab").getAttribute("aria-label").split(":")[0];
+    st.textContent = (at + 1) + " of " + hits.length + " · " + tl;
   });
   q.addEventListener("input", () => { if(!q.value.trim()){ clear(); last = ""; st.textContent = ""; } });
 })();

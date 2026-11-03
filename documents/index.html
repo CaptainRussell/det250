@@ -6,51 +6,41 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Documents and Policy · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
-<meta name="description" content="Every regulation, instruction, notice and form Det 250 cadets work from, plus The Storm Standard and the password-protected Fall 2026 plans and OPORDs.">
+<meta name="description" content="The Storm Standard, the password-protected Fall 2026 plans and OPORDs, and every AFROTC and Air Force publication and form Det 250 cadets work from.">
 <link rel="stylesheet" href="../shared/det250.css">
 <style>
 :root{
   --bg:var(--d250-page); --surface:var(--d250-surface); --surface-2:var(--d250-surface-2);
   --ink:var(--d250-ink); --soft:var(--d250-soft); --faint:var(--d250-faint);
   --line:var(--d250-line); --line-strong:var(--d250-line-strong);
-  --accent:var(--d250-cardinal); --gold:var(--d250-gold); --tone:#0369a1; --bad:#ff8a80;
+  --gold:var(--d250-gold); --tone:#0369a1; --ease:var(--d250-ease);
+  --shadow:var(--d250-shadow); --shadow-lg:0 10px 28px rgba(16,24,40,.14);
   color-scheme:light;
 }
-:root[data-theme="dark"]{color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
-:root[data-theme="light"]{--bad:#c62828}
+:root[data-theme="dark"]{color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45)}}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--d250-font);-webkit-font-smoothing:antialiased}
-button,input{font:inherit;color:inherit}
+input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 0}
-.unlocked .sec h2 .lk{display:none}
 [hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 0}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* featured */
-.feature{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;padding:22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--tone) 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--tone) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--d250-shadow)}
-.feature .cover{width:92px;height:122px;border-radius:6px 10px 10px 6px;display:grid;place-items:center;background:linear-gradient(160deg,#1c3f66,#0b1a2c);box-shadow:0 10px 24px rgba(0,0,0,.35),inset 6px 0 0 rgba(255,255,255,.08);position:relative}
-.feature .cover img{width:62px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+/* featured: The Storm Standard */
+.feature{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;padding:24px;border-radius:18px;border:1px solid color-mix(in srgb,var(--tone) 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--tone) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow);text-decoration:none;color:var(--ink);transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s}
+.feature:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
+.feature .cover{width:96px;height:128px;border-radius:6px 10px 10px 6px;display:grid;place-items:center;background:linear-gradient(160deg,#1c3f66,#0b1a2c);box-shadow:0 10px 24px rgba(0,0,0,.35),inset 6px 0 0 rgba(255,255,255,.08);position:relative;transition:transform .35s var(--ease)}
+.feature:hover .cover{transform:rotate(-4deg) scale(1.04)}
+.feature .cover img{width:64px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .feature .cover::after{content:"STORM STANDARD";position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:7.5px;font-weight:800;letter-spacing:.14em;color:#f1be48}
 .feature .kick{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-.feature h2{margin:2px 0 4px;font-size:clamp(22px,3.4vw,28px);line-height:1.15;font-weight:800;letter-spacing:-.01em}
-.feature p.lede{margin:0 0 12px;color:var(--soft);max-width:60ch}
-.feature .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.chaps{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.chaps a{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink);text-decoration:none;background:color-mix(in srgb,var(--surface) 70%,transparent)}
-.chaps a:hover{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 18%,var(--surface))}
-@media (max-width:560px){.feature{grid-template-columns:minmax(0,1fr);gap:14px;padding:18px}.feature .cover{width:70px;height:92px}.feature .cover img{width:46px}.feature .cover::after{font-size:6px}}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid transparent;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,transform .15s var(--d250-ease)}
-.btn.primary{background:var(--tone);color:#fff}
-.btn.primary:hover{background:color-mix(in srgb,var(--tone) 82%,#fff)}
-.btn.ghost{background:transparent;border-color:var(--line-strong);color:var(--ink)}
-.btn.ghost:hover{border-color:var(--ink)}
-.btn.sm{min-height:34px;padding:5px 11px;font-size:13px}
-.btn:disabled{opacity:.6;cursor:progress}
-.btn svg{flex:none}
+.feature h2{margin:2px 0 6px;font-size:clamp(26px,4.4vw,36px);line-height:1.1;font-weight:800;letter-spacing:-.015em}
+.feature p.lede{margin:0 0 14px;color:var(--soft);max-width:60ch}
+.feature .go{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:11px;background:var(--tone);color:#fff;font-weight:800;font-size:15px}
+.feature:hover .go{background:color-mix(in srgb,var(--tone) 82%,#fff)}
+@media (max-width:560px){.feature{grid-template-columns:minmax(0,1fr);gap:14px;padding:18px}.feature .cover{width:72px;height:96px}.feature .cover img{width:48px}.feature .cover::after{font-size:6px}}
 
 /* search + jump */
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0 4px}
@@ -62,70 +52,43 @@ button,input{font:inherit;color:inherit}
 .jump a:hover{color:var(--ink);border-color:var(--line-strong)}
 .count{font-size:13px;color:var(--soft);margin:6px 0 0;min-height:20px}
 
-/* sections */
-.sec{margin-top:30px;scroll-margin-top:12px}
-.sec>.sh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.sec h2{margin:0;font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:8px}
-.sec h2 .lk{color:var(--gold)}
-.sec .sd{margin:4px 0 0;font-size:13.5px;color:var(--soft);max-width:70ch}
-.sec[hidden]{display:none}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-@media (max-width:360px){.grid{grid-template-columns:minmax(0,1fr)}}
-
-.doc{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--d250-shadow);min-width:0}
-.doc[hidden]{display:none}
-.doc .num{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--tone)}
-:root[data-theme="dark"] .doc .num{color:#5fb3e8}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .doc .num{color:#5fb3e8}}
-.doc .date{font-weight:600;color:var(--faint);letter-spacing:0}
-.doc h3{margin:0;font-size:16px;line-height:1.3;font-weight:800}
-.doc .what{margin:0;font-size:13.5px;color:var(--soft)}
-.doc .note{margin:0;font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:9px;background:var(--d250-gold-bg);color:var(--ink);border-left:3px solid var(--gold)}
-.doc .cites{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px;color:var(--faint)}
-.doc .cites a,.doc .cites span.c{font-weight:700;color:var(--soft);text-decoration:none;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
-.doc .cites a:hover{color:var(--ink);border-color:var(--line-strong)}
-.doc .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
-.doc .src{font-size:12.5px;color:var(--faint);align-self:center}
-.also{margin-top:12px;font-size:13px;color:var(--soft)}
-.also b{color:var(--ink)}
-
-/* restricted */
-.vault{padding:18px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--d250-shadow);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center}
-.vault .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--d250-gold-bg);color:var(--gold)}
-.vault h2{margin:0;font-size:17px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink)}
-.vault p{margin:2px 0 0;font-size:13.5px;color:var(--soft)}
-.vault form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.vault input{min-width:0;width:200px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);min-height:40px}
-.vault .err{grid-column:1/-1;margin:0;min-height:0;font-size:13px;font-weight:700;color:var(--bad)}
-.vault .err:empty{display:none}
-.vault.open .ic{background:color-mix(in srgb,#2f9e44 22%,transparent);color:#51cf66}
-.vault.shake{animation:shake .4s}
-@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-@media (max-width:720px){.vault{grid-template-columns:auto minmax(0,1fr)}.vault form{grid-column:1/-1}.vault input{flex:1}}
-
-.rlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-.rdoc{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);min-width:0}
-.rdoc[hidden]{display:none}
-.rdoc .pi{flex:none;width:34px;height:40px;border-radius:4px 8px 4px 4px;display:grid;place-items:center;font-size:9.5px;font-weight:800;color:#fff;background:linear-gradient(160deg,#9b1c2e,#5c0f1b)}
-.rdoc.opord .pi{background:linear-gradient(160deg,#4a5a36,#2b351f)}
-.rdoc .t{flex:1;min-width:0}
-.rdoc .t b{display:block;font-size:14.5px;line-height:1.25}
-.rdoc .t small{font-size:12px;color:var(--faint)}
-.rdoc .a{display:flex;gap:6px;flex:none}
-.rdoc .lockd{color:var(--faint);display:inline-flex}
-.locked .rdoc .a{display:none}
-.unlocked .rdoc .lockd{display:none}
-.rdoc .ibtn{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line-strong);background:transparent;color:var(--ink);cursor:pointer}
-.rdoc .ibtn:hover{border-color:var(--ink)}
-.rdoc .ibtn.go{background:var(--tone);border-color:var(--tone);color:#fff}
-.rdoc .ibtn:disabled{opacity:.6;cursor:progress}
-.locked .rlist{opacity:.72}
+/* sections and hub-style cards (same look as the Storm HQ hub tool cards) */
+.sec{margin-top:28px;scroll-margin-top:12px}
+.sechead{margin:0 2px 10px}
+.sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:8px}
+.sechead p{margin:3px 0 0;font-size:13.5px;color:var(--soft);max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
+  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms + .1s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease);pointer-events:none}
+.tool:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
+.tool:hover::after{transform:translateX(100%)}
+.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--ease);font-size:12px;font-weight:800;letter-spacing:.02em}
+.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.body{min-width:0;flex:1}
+.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
+.name svg{flex:none;color:var(--soft)}
+.sub{display:block;margin-top:2px;font-size:13.5px;font-weight:700;color:var(--tone-ink)}
+.blurb{margin:4px 0 0;color:var(--soft);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
+.unlocked .lock{display:none}
+.tool{--tone-ink:var(--tone)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
+:root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
+.grid.compact{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.grid.compact .tool{padding:14px 16px;gap:14px;align-items:center}
+.grid.compact .icon{width:46px;height:46px;border-radius:12px}
 
 .empty{display:none;margin:24px 0 0;padding:24px;text-align:center;color:var(--soft);border:1px dashed var(--line-strong);border-radius:14px}
-.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#26262e;color:#ececee;border:1px solid #46464f;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;transition:opacity .2s,transform .2s;z-index:60;max-width:calc(100% - 32px)}
-.toast.on{opacity:1;transform:translate(-50%,0)}
-@media (prefers-reduced-motion:reduce){.vault.shake{animation:none}.toast{transition:none}}
-@media print{.tools,.vault form,.doc .acts,.rdoc .a,.toast{display:none!important}}
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .tool{padding:16px 14px 14px;gap:14px}
+  .icon{width:48px;height:48px;border-radius:12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
+@media print{.tools{display:none!important}}
 </style>
 </head>
 <body>
@@ -136,32 +99,21 @@ button,input{font:inherit;color:inherit}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 · Cadet tool</p>
       <h1>Documents and Policy</h1>
-      <p class="d250-head-sub">Every regulation, notice and form the detachment runs on, in one place.</p>
+      <p class="d250-head-sub">Every regulation, plan and form the detachment runs on, in one place.</p>
     </div>
   </div>
 </header>
 
-<main class="wrap">
-  <section class="feature" aria-labelledby="ss-h">
-    <a class="cover" href="storm-standard/" aria-label="Read The Storm Standard"><img src="../shared/det250-patch.png" alt=""></a>
-    <div>
+<main class="wrap" id="main">
+  <a class="feature" href="storm-standard/" aria-labelledby="ss-h">
+    <span class="cover" aria-hidden="true"><img src="../shared/det250-patch.png" alt=""></span>
+    <span>
       <p class="kick">Main document · First Edition, Sep 2026</p>
       <h2 id="ss-h">The Storm Standard</h2>
       <p class="lede">Detachment 250's own cadet reference: the Storm legacy, officership, Air and Space Force history, military strategy and resources, and the Constitution. Start here, then go to the source publications below.</p>
-      <div class="row">
-        <a class="btn primary" href="storm-standard/"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Read the Standard</a>
-        <a class="btn ghost" href="storm-standard/The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download PDF</a>
-      </div>
-      <nav class="chaps" aria-label="Storm Standard chapters">
-        <a href="storm-standard/#chapter-1">1 · The Storm Legacy</a>
-        <a href="storm-standard/#chapter-2">2 · Officership</a>
-        <a href="storm-standard/#chapter-3">3 · History</a>
-        <a href="storm-standard/#chapter-4">4 · Military Strategy</a>
-        <a href="storm-standard/#chapter-5">5 · Military Resources</a>
-        <a href="storm-standard/#appendix-i">Appendix · Constitution</a>
-      </nav>
-    </div>
-  </section>
+      <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Read the Standard</span>
+    </span>
+  </a>
 
   <div class="tools">
     <label class="search"><span class="sr">Search documents</span>
@@ -169,35 +121,10 @@ button,input{font:inherit;color:inherit}
       <input id="q" type="search" placeholder="Search: 36-2903, uniform, PFRA, awards, OPORD..." autocomplete="off">
     </label>
     <nav class="jump" aria-label="Jump to section">
-      <a href="#restricted">Plans</a><a href="#opords">OPORDs</a><a href="#afrotc">AFROTC</a><a href="#daf">Air Force</a><a href="#notices">Notices</a><a href="#forms">Forms</a><a href="#law">Law</a>
+      <a href="#plans">Plans</a><a href="#opords">OPORDs</a><a href="#afrotc">AFROTC</a><a href="#daf">Air Force</a><a href="#forms">Forms</a>
     </nav>
   </div>
   <p class="count" id="count" aria-live="polite"></p>
-
-  <div id="vaultArea" class="locked">
-    <section class="sec" id="restricted" aria-labelledby="h-plans">
-      <div class="vault" id="vault">
-        <span class="ic" aria-hidden="true"><svg id="vaultIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-        <div>
-          <h2 id="vaultTitle">Restricted: Fall 2026 plans and OPORDs</h2>
-          <p id="vaultSub">These include locations and dates. Enter the detachment password to open them.</p>
-        </div>
-        <form id="unlock" autocomplete="off">
-          <label class="sr" for="pw">Password</label>
-          <input id="pw" type="password" placeholder="Password" required autocomplete="current-password">
-          <button class="btn primary" id="go" type="submit">Unlock</button>
-        </form>
-        <button class="btn ghost sm" id="relock" type="button" hidden>Lock</button>
-        <p class="err" id="err" role="alert"></p>
-      </div>
-      <div class="sh" style="margin-top:18px"><div><h2 id="h-plans"><span class="lk" aria-hidden="true">&#128274;</span>Detachment plans</h2><p class="sd">The semester OPLAN and the cadet Policy Packet.</p></div></div>
-      <div class="rlist" id="plans"></div>
-    </section>
-    <section class="sec" id="opords" aria-labelledby="h-opords">
-      <div class="sh"><div><h2 id="h-opords"><span class="lk" aria-hidden="true">&#128274;</span>Weekly OPORDs, Fall 2026</h2><p class="sd">Signed LLAB operations orders, one per week.</p></div></div>
-      <div class="rlist" id="opordList"></div>
-    </section>
-  </div>
 
   <div id="pub"></div>
   <p class="empty" id="empty">Nothing matches that search. Try a number like <b>36-2011</b> or a topic like <b>uniform</b>.</p>
@@ -208,270 +135,136 @@ button,input{font:inherit;color:inherit}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Built from every publication the Storm HQ tools, The Storm Standard, the OPLAN and the Policy Packet cite. Air Force publications link to the official e-Publishing site; always use the current version there. Restricted files are encrypted and only open with the password.</p>
+  <p class="source-line">Built from every publication the Storm HQ tools, The Storm Standard, the OPLAN and the Policy Packet cite. Air Force publications link to the official e-Publishing site; always use the current version there. Plans and OPORDs are encrypted and only open with the password.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
-<div class="toast" id="toast" role="status"></div>
 
 <script>
 /* ===================================================================
    PUBLIC DOCUMENTS. Add or edit entries here.
-   num, title, date (optional), what (one line), note (optional),
-   cites: tool or document keys from CITE below,
-   links: [label, href, kind]  kind: "epub" (official e-Publishing),
-          "copy" (PDF already hosted on Storm HQ), "web" (other official site).
-   No link means the publication is not public; cadets get it from cadre.
+   num (card name), title, what (one line), href (one click target).
+   Local PDFs open in this tab; e-Publishing links open a new tab.
+   Restricted plans and OPORDs come from restricted/vault.json.
    =================================================================== */
 const EPUB = "https://static.e-publishing.af.mil/production/1/";
 const EPUB_INDEX = "https://www.e-publishing.af.mil/Product-Index/";
-const CITE = {
-  pfra:["PFRA Calculator","../pfra/"],
-  ribbons:["Ribbon Rack","../ribbon-rack/"],
-  org:["Org Chart","../org-chart/"],
-  practicum:["Practicum Adventure","../practicum-adventure/"],
-  ss:["Storm Standard","storm-standard/"],
-  oplan:["OPLAN","#restricted"],
-  packet:["Policy Packet","#restricted"],
-  opord:["OPORDs","#opords"]
-};
 const SECTIONS = [
-  {id:"afrotc", title:"AFROTC instructions and supplements", sub:"HQ AFROTC publications that govern cadet life. Where they are stricter or more specific than the Air Force publication, they win for cadets."},
-  {id:"daf", title:"Department of the Air Force publications", sub:"Official Air Force instructions, manuals and handbooks. Links go to e-Publishing so you always get the current version."},
-  {id:"notices", title:"HQ AFROTC notices", sub:"NOTACCs are released to detachments, not posted publicly. Ask cadre for a copy."},
-  {id:"forms", title:"Forms", sub:"Forms the tools and plans call for."},
-  {id:"law", title:"Law and founding documents", sub:""}
+  {id:"plans", title:"Detachment plans", tone:"#c8102e", locked:true, sub:"The semester OPLAN, the cadet Policy Packet and the cadre duties roster. These include locations, dates and names, so they open with the detachment password."},
+  {id:"opords", title:"Weekly OPORDs, Fall 2026", tone:"#4a5a36", locked:true, compact:true, sub:"Signed LLAB operations orders, one per week. Same password."},
+  {id:"afrotc", title:"AFROTC instructions and supplements", tone:"#1f4e9c", sub:"HQ AFROTC publications that govern cadet life. Where they are more specific than the Air Force publication, they win for cadets."},
+  {id:"daf", title:"Department of the Air Force publications", tone:"#0369a1", sub:"Links go to the official e-Publishing site so you always get the current version."},
+  {id:"forms", title:"Forms", tone:"#a06f00", sub:""}
 ];
 const DOCS = [
-  // ---- AFROTC ----
-  {sec:"afrotc", num:"AFROTCI 36-2011, Volume 1", title:"Leadership Laboratory (LLAB) Curriculum",
-   what:"LLAB objectives, proficiency checklists and the evaluation tools the OPLAN builds every lab around.",
-   cites:["oplan","packet","org"], key:"llab gmc objectives curriculum leadership laboratory"},
-  {sec:"afrotc", num:"AFROTCI 36-2011, Volume 2", date:"11 Sep 2024", title:"Cadre and detachment guidance",
-   what:"Detachment and cadre responsibilities. The Org Chart cites it for each cadre position's duties.",
-   cites:["org"], key:"cadre detachment duties"},
-  {sec:"afrotc", num:"AFROTCI 36-2011, Volume 3", date:"24 Jun 2026", title:"Cadet Operations",
-   what:"The cadet life cycle from first contact to commissioning: fitness, GMC accountability, discipline, and detachment awards (Table 15.1).",
-   note:"No releasability restrictions, so Storm HQ hosts a copy.",
-   cites:["pfra","ribbons","org","oplan","packet"],
-   links:[["Open PDF","../pfra/references/afrotci-36-2011v3.pdf","copy"]], key:"awards table 15.1 fitness pfa cadet operations"},
-  {sec:"afrotc", num:"DAFI 36-2903 AFROTC Supplement", date:"18 Nov 2021", title:"Dress and Personal Appearance (AFROTC)",
-   what:"Cadet uniform wear, insignia and the AFROTC Ribbon Chart (Figure 10.4) with order of precedence and devices.",
-   cites:["ribbons","packet"],
-   links:[["Open PDF","../ribbon-rack/references/dafi36-2903-afrotcsup.pdf","copy"]], key:"uniform ribbons dress appearance afrotcsup supplement precedence"},
-  {sec:"afrotc", num:"DAFMAN 36-2905 AFROTC Supplement", date:"28 Apr 2023", title:"Physical Fitness Program (AFROTC)",
-   what:"How AFROTC runs cadet fitness assessments.",
-   note:"Awaiting revision. It was written for the 2022 DAFMAN. Where it conflicts with NOTACC CY26-092, AFROTCI 36-2011 V3 or the 2026 DAFMAN, those win.",
-   cites:["pfra"],
-   links:[["Open PDF","../pfra/references/dafman-36-2905-afrotcsup.pdf","copy"]], key:"pfa pfra fitness supplement afrotcsup"},
+  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 1", title:"Cadet's Guide to the LLAB Curriculum",
+   what:"Leadership Laboratory training objectives and evaluation tools. The OPLAN builds every lab around it. Aug 2026.",
+   href:"references/afrotci-36-2011v1.pdf", key:"llab gmc objectives curriculum leadership laboratory guidebook"},
+  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 2", title:"Cadre Training and Certification",
+   what:"How AFROTC cadre are trained and certified. The Org Chart cites it for cadre duties. 11 Sep 2024.",
+   href:"references/afrotci-36-2011v2.pdf", key:"cadre training certification duties"},
+  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 3", title:"Cadet Operations",
+   what:"The cadet life cycle from first contact to commissioning: fitness, accountability, discipline and detachment awards (Table 15.1). 24 Jun 2026.",
+   href:"../pfra/references/afrotci-36-2011v3.pdf", key:"awards table 15.1 fitness pfa cadet operations"},
+  {sec:"afrotc", num:"DAFI 36-2903 AFROTC Sup", title:"Dress and Personal Appearance (AFROTC)",
+   what:"Cadet uniform wear, insignia and the AFROTC Ribbon Chart (Figure 10.4) with order of precedence. 18 Nov 2021.",
+   href:"../ribbon-rack/references/dafi36-2903-afrotcsup.pdf", key:"uniform ribbons dress appearance afrotcsup supplement precedence"},
+  {sec:"afrotc", num:"DAFMAN 36-2905 AFROTC Sup", title:"Physical Fitness Program (AFROTC)",
+   what:"How AFROTC runs cadet fitness assessments. 28 Apr 2023, awaiting revision: newer AFROTC fitness guidance and the 2026 DAFMAN win where they differ.",
+   href:"../pfra/references/dafman-36-2905-afrotcsup.pdf", key:"pfa pfra fitness supplement afrotcsup"},
 
-  // ---- Air Force ----
-  {sec:"daf", num:"DAFI 36-2903", title:"Dress and Personal Appearance of Department of the Air Force Personnel",
+  {sec:"daf", num:"DAFI 36-2903", title:"Dress and Personal Appearance",
    what:"Uniform wear, grooming and appearance standards for everyone in uniform.",
-   cites:["ribbons","practicum","packet"],
-   links:[["e-Publishing",EPUB+"af_a1/publication/dafi36-2903/dafi36-2903.pdf","epub"]], key:"uniform grooming hair dress appearance"},
-  {sec:"daf", num:"DAFMAN 36-2905", date:"24 Mar 2026", title:"Air Force Physical Fitness Readiness Program",
-   what:"The PFRA: components, scoring, body composition and administration. The PFRA Calculator is built on it.",
-   note:"The Policy Packet cites this as AFI 36-2905. It is now DAFMAN 36-2905.",
-   cites:["pfra","packet"],
-   links:[["e-Publishing",EPUB+"af_a1/publication/afman36-2905/dafman36-2905.pdf","epub"],["Storm HQ copy","../pfra/references/dafman-36-2905.pdf","copy"]], key:"pfra pfa fitness run hamr pushups waist"},
+   href:EPUB+"af_a1/publication/dafi36-2903/dafi36-2903.pdf", key:"uniform grooming hair dress appearance"},
+  {sec:"daf", num:"DAFMAN 36-2905", title:"Physical Fitness Readiness Program",
+   what:"The PFRA: components, scoring and administration. The PFRA Calculator is built on it. Replaces AFI 36-2905. 24 Mar 2026.",
+   href:EPUB+"af_a1/publication/afman36-2905/dafman36-2905.pdf", key:"pfra pfa fitness run hamr pushups waist afi 36-2905"},
   {sec:"daf", num:"AFH 1", title:"Airman",
-   what:"The Airman handbook: heritage, customs and courtesies, standards, and the study guide behind much of the Storm Standard.",
-   cites:["ss","practicum"],
-   links:[["e-Publishing",EPUB+"af_a1/publication/afh1/afh1.pdf","epub"]], key:"airman handbook customs courtesies heritage"},
-  {sec:"daf", num:"AFI 1-1", date:"Aug 2023", title:"Air Force Standards",
-   what:"Air Force vision, mission, core values and standards of conduct.",
-   cites:["ss"],
-   links:[["Find on e-Publishing",EPUB_INDEX,"epub"]], key:"core values standards conduct mission vision"},
-  {sec:"daf", num:"DAFI 90-1201", date:"Oct 2024", title:"Protocol",
-   what:"Customs, courtesies, reporting in and out, flag courtesies and ceremonies.",
-   note:"The Policy Packet cites AFI 34-1201 for customs, courtesies and flag respect. The Storm Standard uses DAFI 90-1201, the current protocol instruction.",
-   cites:["ss","packet"],
-   links:[["e-Publishing",EPUB+"saf_ds/publication/dafi90-1201/dafi90-1201.pdf","epub"]], key:"customs courtesies flag reporting protocol salute"},
-  {sec:"daf", num:"DAFI 90-6001", title:"Sexual Assault Prevention and Response (SAPR) Program",
+   what:"The Airman handbook: heritage, customs and courtesies, and standards. Much of the Storm Standard draws on it.",
+   href:EPUB+"af_a1/publication/afh1/afh1.pdf", key:"airman handbook customs courtesies heritage"},
+  {sec:"daf", num:"AFI 1-1", title:"Air Force Standards",
+   what:"Air Force vision, mission, core values and standards of conduct. Aug 2023.",
+   href:EPUB_INDEX, key:"core values standards conduct mission vision"},
+  {sec:"daf", num:"DAFI 90-1201", title:"Protocol",
+   what:"Customs, courtesies, reporting in and out, flag courtesies and ceremonies. Current protocol instruction (the Policy Packet cites the older AFI 34-1201). Oct 2024.",
+   href:EPUB+"saf_ds/publication/dafi90-1201/dafi90-1201.pdf", key:"customs courtesies flag reporting protocol salute afi 34-1201"},
+  {sec:"daf", num:"DAFI 90-6001", title:"Sexual Assault Prevention and Response",
    what:"SAPR policy, reporting options and support. Backs the Policy Packet's zero tolerance rule.",
-   cites:["ss","packet"],
-   links:[["e-Publishing",EPUB+"af_a1/publication/dafi90-6001/afi90-6001.pdf","epub"]], key:"sapr harassment assault report"},
+   href:EPUB+"af_a1/publication/dafi90-6001/afi90-6001.pdf", key:"sapr harassment assault report"},
   {sec:"daf", num:"DAFI 51-508", title:"Political Activities, Free Speech, and Freedom of Assembly",
    what:"What you can and cannot do politically, online and in person, while affiliated with the Air Force.",
-   cites:["ss"],
-   links:[["e-Publishing",EPUB+"af_ja/publication/dafi51-508/dafi51-508.pdf","epub"]], key:"political social media free speech"},
+   href:EPUB+"af_ja/publication/dafi51-508/dafi51-508.pdf", key:"political social media free speech"},
   {sec:"daf", num:"DAFI 36-2614", title:"Commissioning Education Program",
    what:"Commissioning education and training at USAFA, AFROTC and OTS.",
-   cites:["ss"],
-   links:[["e-Publishing",EPUB+"af_a1/publication/dafi36-2614/dafi36-2614.pdf","epub"]], key:"commissioning education"},
+   href:EPUB+"af_a1/publication/dafi36-2614/dafi36-2614.pdf", key:"commissioning education"},
   {sec:"daf", num:"AFH 33-337", title:"The Tongue and Quill",
    what:"Air Force writing and briefing guide. The Policy Packet uses it for email signature blocks.",
-   cites:["packet"],
-   links:[["Find on e-Publishing",EPUB_INDEX,"epub"]], key:"writing email signature block memo briefing"},
+   href:EPUB_INDEX, key:"writing email signature block memo briefing"},
 
-  // ---- Notices ----
-  {sec:"notices", num:"NOTACC CY26-092", date:"6 Aug 2026", title:"AY2026-2027 Fitness Guidance",
-   what:"HQ AFROTC/DO guidance for this year's cadet PFRAs. Releasable to cadets. The PFRA Calculator applies it.",
-   cites:["pfra","ribbons"], key:"fitness pfra pfa notacc"},
-  {sec:"notices", num:"NOTACC CY25-119", title:"Field Training 2026 DG and Superior Performer Criteria",
-   what:"How Field Training Distinguished Graduates and Superior Performers are picked.",
-   cites:["ribbons"], key:"field training distinguished graduate superior performer ft"},
-
-  // ---- Forms ----
-  {sec:"forms", num:"AF Form 4446 and 4446A", title:"PFRA Scorecard and Fitness Screening Questionnaire",
-   what:"The scorecard filled out at every PFRA, and the screening questionnaire you complete before it.",
-   cites:["pfra"],
-   links:[["Scorecard","../pfra/references/af-form-4446.pdf","copy"],["FSQ","../pfra/references/af-form-4446a-fsq.pdf","copy"]], key:"pfra scorecard fsq fitness"},
+  {sec:"forms", num:"AF Form 4446", title:"PFRA Scorecard",
+   what:"The scorecard filled out at every PFRA.",
+   href:"../pfra/references/af-form-4446.pdf", key:"pfra scorecard fitness"},
+  {sec:"forms", num:"AF Form 4446A", title:"Fitness Screening Questionnaire",
+   what:"The screening questionnaire you complete before a PFRA.",
+   href:"../pfra/references/af-form-4446a-fsq.pdf", key:"pfra fsq fitness screening"},
   {sec:"forms", num:"AF Form 1206", title:"Nomination for Award",
    what:"Used to nominate cadets for detachment, region and HQ awards.",
-   cites:["ribbons","org"],
-   links:[["Find on e-Publishing",EPUB_INDEX,"epub"]], key:"award nomination package"},
-  {sec:"forms", num:"AF Form 724", title:"Airman Comprehensive Assessment (ACA) Worksheet",
+   href:EPUB_INDEX, key:"award nomination package"},
+  {sec:"forms", num:"AF Form 724", title:"Airman Comprehensive Assessment Worksheet",
    what:"Feedback worksheet the OPLAN lists among the LLAB evaluation tools.",
-   cites:["oplan"],
-   links:[["Find on e-Publishing",EPUB_INDEX,"epub"]], key:"feedback aca evaluation"},
+   href:EPUB_INDEX, key:"feedback aca evaluation"},
   {sec:"forms", num:"AF Form 174", title:"Record of Individual Counseling",
    what:"Counseling record kept with LOCs and LORs in cadet files.",
-   cites:["org","packet"],
-   links:[["Find on e-Publishing",EPUB_INDEX,"epub"]], key:"counseling loc lor discipline"},
-
-  // ---- Law ----
-  {sec:"law", num:"10 U.S.C. § 2109", title:"Practical Military Training",
-   what:"The law behind SPMT: AFROTC-sponsored training that is uniquely military. The OPLAN defines mandatory and voluntary SPMT from it.",
-   cites:["oplan"],
-   links:[["uscode.house.gov","https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title10-section2109&num=0&edition=prelim","web"]], key:"spmt training title 10"},
-  {sec:"law", num:"U.S. Constitution", title:"The Constitution of the United States",
-   what:"The document every officer swears to support and defend. Full text is Appendix I of the Storm Standard.",
-   cites:["ss"],
-   links:[["In the Storm Standard","storm-standard/#appendix-i","copy"],["National Constitution Center","https://constitutioncenter.org/the-constitution/full-text","web"]], key:"oath constitution amendments"}
+   href:EPUB_INDEX, key:"counseling loc lor discipline"}
 ];
-const ALSO = "Also cited in the Storm Standard: AFDP Volume 2 (Leadership), AFI 13-103 (AFFOR staff), AFI 36-2606 and AFI 36-2501 (oaths), and USAFA Manual 36-3526 (leader of character).";
 
 /* ===================== rendering ===================== */
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const EXT = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
-const PDF = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>';
-function card(d){
-  const links = (d.links || []).map(([label, href, kind], i) => {
-    const ext = /^https?:/.test(href);
-    return `<a class="btn ${i ? "ghost" : "primary"} sm" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${kind === "copy" ? PDF : EXT}${esc(label)}</a>`;
+const SVG = p => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  plans:SVG('<path d="M9 4h6v3H9z"/><path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H15"/><path d="M8.5 12h7M8.5 16h5"/>'),
+  afrotc:SVG('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M8.5 11.5l2.5 2.5 4.5-5"/>'),
+  daf:SVG('<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>'),
+  forms:SVG('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>')
+};
+const EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Opens e-Publishing in a new tab"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+const LOCK = '<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span></span>';
+let n = 0;
+function card(d, s){
+  const ext = /^https?:/.test(d.href);
+  return `<a class="tool" href="${esc(d.href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone};--i:${n++}" data-q="${esc([d.num, d.title, d.what, d.key || ""].join(" ").toLowerCase())}">
+    <span class="icon" aria-hidden="true">${ICON[s.id]}</span>
+    <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p></span></a>`;
+}
+const PLAN_BLURBS = {
+  "fall-2026-oplan":"Cadet wing organization, activities and the Leadership Laboratory plan for the semester.",
+  "fall-2026-policy-packet":"Detachment policies for cadets: conduct, attendance, uniforms, PT, communication and more.",
+  "cadre-additional-duties":"Signed 27 July 2026 memo: each cadre member's primary duties, additional duties and special projects."
+};
+function rcard(f, s){
+  const wk = (f.title.match(/\d+/) || [""])[0];
+  const icon = s.id === "opords" ? `<span class="icon" aria-hidden="true">WK ${esc(wk)}</span>` : `<span class="icon" aria-hidden="true">${ICON.plans}</span>`;
+  const blurb = PLAN_BLURBS[f.id] ? `<p class="blurb">${esc(PLAN_BLURBS[f.id])}</p>` : "";
+  return `<a class="tool" href="view/?id=${encodeURIComponent(f.id)}" style="--tone:${s.tone};--i:${n++}" data-q="${esc((f.title + " restricted password " + s.title).toLowerCase())}">
+    ${icon}<span class="body"><span class="name">${esc(f.title)}</span>${blurb}${LOCK}</span></a>`;
+}
+function render(vault){
+  n = 0;
+  document.getElementById("pub").innerHTML = SECTIONS.map(s => {
+    let items;
+    if(s.locked){
+      const files = vault ? vault.files.filter(f => f.group === s.id) : [];
+      items = files.map(f => rcard(f, s)).join("") || `<p class="blurb">Loading…</p>`;
+    } else items = DOCS.filter(d => d.sec === s.id).map(d => card(d, s)).join("");
+    return `<section class="sec" id="${s.id}" aria-labelledby="h-${s.id}">
+      <div class="sechead"><h2 id="h-${s.id}">${esc(s.title)}</h2>${s.sub ? `<p>${esc(s.sub)}</p>` : ""}</div>
+      <div class="grid${s.compact ? " compact" : ""}">${items}</div>
+    </section>`;
   }).join("");
-  const cites = (d.cites || []).map(k => CITE[k] ? `<a href="${esc(CITE[k][1])}">${esc(CITE[k][0])}</a>` : "").join("");
-  return `<article class="doc" data-q="${esc([d.num, d.title, d.what, d.note || "", d.key || "", (d.cites || []).map(k => CITE[k] ? CITE[k][0] : "").join(" ")].join(" ").toLowerCase())}">
-    <div class="num">${esc(d.num)}${d.date ? `<span class="date">${esc(d.date)}</span>` : ""}</div>
-    <h3>${esc(d.title)}</h3>
-    <p class="what">${esc(d.what)}</p>
-    ${d.note ? `<p class="note">${esc(d.note)}</p>` : ""}
-    ${cites ? `<div class="cites">Cited in ${cites}</div>` : ""}
-    <div class="acts">${links || '<span class="src">Not posted publicly. Get it from cadre.</span>'}</div>
-  </article>`;
+  filter();
 }
-document.getElementById("pub").innerHTML = SECTIONS.map(s => `
-  <section class="sec" id="${s.id}" aria-labelledby="h-${s.id}">
-    <div class="sh"><div><h2 id="h-${s.id}">${esc(s.title)}</h2>${s.sub ? `<p class="sd">${esc(s.sub)}</p>` : ""}</div></div>
-    <div class="grid">${DOCS.filter(d => d.sec === s.id).map(card).join("")}</div>
-    ${s.id === "daf" ? `<p class="also">${esc(ALSO)}</p>` : ""}
-  </section>`).join("");
 
-/* ===================== restricted (encrypted) ===================== */
-const PASS_KEY = "d250-docs-pass";
-const LOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-const OPEN = EXT;
-const DL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
-const area = document.getElementById("vaultArea"), vault = document.getElementById("vault");
-const form = document.getElementById("unlock"), pw = document.getElementById("pw"), go = document.getElementById("go"), err = document.getElementById("err"), relock = document.getElementById("relock");
-const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 3200); };
-const bytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-let V = null, KEY = null;
-const cache = new Map();
-
-function rdoc(f){
-  const kb = f.size > 1048576 ? (f.size / 1048576).toFixed(1) + " MB" : Math.round(f.size / 1024) + " KB";
-  const tag = f.group === "opords" ? "WK " + (f.title.match(/\d+/) || [""])[0] : "PDF";
-  return `<div class="rdoc ${f.group === "opords" ? "opord" : ""}" data-q="${esc((f.title + " restricted " + f.group).toLowerCase())}">
-    <span class="pi" aria-hidden="true">${esc(tag)}</span>
-    <span class="t"><b>${esc(f.title)}</b><small>PDF · ${kb}</small></span>
-    <span class="lockd" title="Locked">${LOCK}<span class="sr">Locked</span></span>
-    <span class="a">
-      <button class="ibtn go" type="button" data-open="${esc(f.id)}" aria-label="Open ${esc(f.title)}" title="Open">${OPEN}</button>
-      <button class="ibtn" type="button" data-dl="${esc(f.id)}" aria-label="Download ${esc(f.title)}" title="Download">${DL}</button>
-    </span>
-  </div>`;
-}
-async function deriveKey(pass){
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey({name:"PBKDF2", salt:bytes(V.salt), iterations:V.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
-}
-const open = (key, sealed) => crypto.subtle.decrypt({name:"AES-GCM", iv:sealed.subarray(0, 12)}, key, sealed.subarray(12));
-async function tryPass(pass){
-  const key = await deriveKey(pass);
-  await open(key, bytes(V.check));   // throws on a wrong password
-  return key;
-}
-function setUnlocked(on){
-  area.classList.toggle("locked", !on); area.classList.toggle("unlocked", on);
-  vault.classList.toggle("open", on);
-  form.hidden = on; relock.hidden = !on;
-  document.getElementById("vaultSub").textContent = on
-    ? "Unlocked for this browser tab. Open or download any file below. Do not repost these files publicly."
-    : "These include locations and dates. Enter the detachment password to open them.";
-  document.getElementById("vaultIcon").innerHTML = on
-    ? '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>'
-    : '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>';
-}
-async function blobUrl(id){
-  if(cache.has(id)) return cache.get(id);
-  const res = await fetch("restricted/" + id + ".bin");
-  if(!res.ok) throw new Error("fetch " + res.status);
-  const plain = await open(KEY, new Uint8Array(await res.arrayBuffer()));
-  const url = URL.createObjectURL(new Blob([plain], {type:"application/pdf"}));
-  cache.set(id, url); return url;
-}
-document.getElementById("vaultArea").addEventListener("click", async e => {
-  const b = e.target.closest("[data-open],[data-dl]"); if(!b || !KEY) return;
-  const id = b.dataset.open || b.dataset.dl, f = V.files.find(x => x.id === id); if(!f) return;
-  // Open the tab now, while the click still counts, then point it at the PDF.
-  let w = null;
-  if(b.dataset.open){ w = window.open("", "_blank"); if(w){ try { w.document.write('<title>Opening…</title><body style="background:#16161a;color:#ececee;font:16px system-ui;display:grid;place-items:center;height:100vh;margin:0">Decrypting ' + esc(f.title) + '…</body>'); } catch(_){} } }
-  b.disabled = true;
-  try {
-    const url = await blobUrl(id);
-    if(w){ w.location.href = url; }
-    else {
-      const a = document.createElement("a"); a.href = url; a.download = f.title.replace(/[^\w -]+/g, "") + ".pdf";
-      document.body.append(a); a.click(); a.remove();
-      if(b.dataset.open) toast("Pop-up blocked, so the PDF was downloaded instead.");
-    }
-  } catch(_){
-    if(w) w.close();
-    toast("Couldn't open that file. Check your connection and try again.");
-  } finally { b.disabled = false; }
-});
-form.addEventListener("submit", async e => {
-  e.preventDefault(); if(!V) return;
-  err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
-  try {
-    KEY = await tryPass(pw.value);
-    try { sessionStorage.setItem(PASS_KEY, pw.value); } catch(_){}
-    pw.value = ""; setUnlocked(true); toast("Unlocked");
-  } catch(_){
-    err.textContent = "That password didn't work. Try again.";
-    vault.classList.remove("shake"); void vault.offsetWidth; vault.classList.add("shake");
-    pw.select();
-  } finally { go.disabled = false; go.textContent = "Unlock"; }
-});
-relock.addEventListener("click", () => {
-  KEY = null; cache.forEach(u => URL.revokeObjectURL(u)); cache.clear();
-  try { sessionStorage.removeItem(PASS_KEY); } catch(_){}
-  setUnlocked(false);
-});
-(async () => {
-  try {
-    V = await (await fetch("restricted/vault.json")).json();
-    document.getElementById("plans").innerHTML = V.files.filter(f => f.group === "plans").map(rdoc).join("");
-    document.getElementById("opordList").innerHTML = V.files.filter(f => f.group === "opords").map(rdoc).join("");
-    filter();
-    let saved = null; try { saved = sessionStorage.getItem(PASS_KEY); } catch(_){}
-    if(saved){ try { KEY = await tryPass(saved); setUnlocked(true); } catch(_){ try { sessionStorage.removeItem(PASS_KEY); } catch(__){} } }
-  } catch(_){
-    document.getElementById("vaultSub").textContent = "Couldn't load the restricted file list. Refresh to try again.";
-  }
-})();
+/* Unlocked earlier in this tab? Hide the Password pills. The viewer does the unlocking. */
+try { if(sessionStorage.getItem("d250-docs-pass")) document.getElementById("main").classList.add("unlocked"); } catch(_){}
 
 /* ===================== search ===================== */
 const q = document.getElementById("q"), count = document.getElementById("count");
@@ -480,16 +273,23 @@ function filter(){
   let shown = 0, total = 0;
   document.querySelectorAll(".sec").forEach(sec => {
     const items = sec.querySelectorAll("[data-q]");
-    let n = 0;
-    items.forEach(el => { const ok = terms.every(t => el.dataset.q.includes(t)); el.hidden = !ok; if(ok) n++; });
-    total += items.length; shown += n;
-    sec.hidden = terms.length > 0 && n === 0;
+    let k = 0;
+    items.forEach(el => { const ok = terms.every(t => el.dataset.q.includes(t)); el.hidden = !ok; if(ok) k++; });
+    total += items.length; shown += k;
+    sec.hidden = terms.length > 0 && k === 0;
   });
   document.getElementById("empty").style.display = terms.length && !shown ? "block" : "none";
   count.textContent = terms.length ? `${shown} of ${total} documents` : `${total} documents`;
 }
 q.addEventListener("input", filter);
-filter();
+
+render(null);
+fetch("restricted/vault.json").then(r => r.json()).then(v => {
+  render(v);
+  if(location.hash){ const el = document.querySelector(location.hash); if(el) el.scrollIntoView(); }
+}).catch(() => {
+  document.querySelectorAll("#plans .grid, #opords .grid").forEach(g => g.innerHTML = '<p class="blurb">Couldn\'t load the restricted file list. Refresh to try again.</p>');
+});
 </script>
 </body>
 </html>

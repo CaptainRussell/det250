@@ -31,7 +31,26 @@ body{background:var(--d250-page);color:var(--d250-ink);font:16px/1.65 var(--d250
 .nav a{display:block;padding:7px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:600;line-height:1.3}
 .nav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
 .nav a:hover{background:var(--d250-surface-2)}
-.nav a.on{background:color-mix(in srgb,var(--tone) 18%,transparent)}
+.nav a.on{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+@media (max-width:880px){
+  .nav{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px;-webkit-overflow-scrolling:touch}
+  .nav a{flex:none;scroll-snap-align:start;white-space:nowrap;padding:7px 12px}
+  .nav a.on{box-shadow:inset 0 -3px 0 var(--tone)}
+  .side{position:sticky;top:0;z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0}
+  .side .back,.side .pdf,.side .find{display:none}
+  .side.open .find{display:flex}
+}
+.tab[hidden]{display:none}
+.tab{animation:tabin .25s var(--d250-ease)}
+@keyframes tabin{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.tab{animation:none}}
+.tabnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:28px 0 8px}
+.tabnav a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--d250-line);background:var(--d250-surface);color:var(--d250-ink);text-decoration:none;font-weight:800;font-size:14.5px;line-height:1.3}
+.tabnav a:hover{border-color:var(--tone)}
+.tabnav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
+.tabnav .next{justify-content:flex-end;text-align:right}
+.mtools{display:none}
+@media (max-width:880px){.mtools{display:flex;gap:8px;margin:0 0 14px}.mtools a,.mtools button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border-radius:10px;border:1px solid var(--d250-line-strong);background:transparent;color:var(--d250-ink);font:inherit;font-size:13.5px;font-weight:700;text-decoration:none;cursor:pointer}}
 .find{padding:10px;display:flex;flex-direction:column;gap:8px}
 .find label{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
 .find .row{display:flex;gap:6px}
@@ -74,7 +93,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
   <aside class="side">
     <a class="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents and Policy</a>
     <a class="box pdf" href="The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download the PDF<small>4.4 MB</small></a>
-    <nav class="box nav" aria-label="Chapters"><a href="#chapter-1"><small>Chapter 1</small>The Storm Legacy</a><a href="#chapter-2"><small>Chapter 2</small>Officership</a><a href="#chapter-3"><small>Chapter 3</small>History</a><a href="#chapter-4"><small>Chapter 4</small>Military Strategy</a><a href="#chapter-5"><small>Chapter 5</small>Military Resources</a><a href="#appendix-i"><small>Appendix I</small>Constitution</a></nav>
+    <nav class="box nav" aria-label="Chapters"><a href="#about" data-tab="about"><small>Front matter</small>Edition, Purpose, Authority</a><a href="#chapter-1" data-tab="chapter-1"><small>Chapter 1</small>The Storm Legacy</a><a href="#chapter-2" data-tab="chapter-2"><small>Chapter 2</small>Officership</a><a href="#chapter-3" data-tab="chapter-3"><small>Chapter 3</small>History</a><a href="#chapter-4" data-tab="chapter-4"><small>Chapter 4</small>Military Strategy</a><a href="#chapter-5" data-tab="chapter-5"><small>Chapter 5</small>Military Resources</a><a href="#appendix-i" data-tab="appendix-i"><small>Appendix I</small>Constitution</a></nav>
     <form class="box find" id="find" role="search">
       <label for="q">Find in the Standard</label>
       <div class="row"><input id="q" type="search" placeholder="e.g. Code of Conduct" autocomplete="off"><button type="submit" aria-label="Next match">Next</button></div>
@@ -82,7 +101,8 @@ mark.now{background:var(--d250-gold);color:#16161a}
     </form>
   </aside>
   <main class="doc" id="doc">
-    <div class="box meta"><b>First Edition</b>, version 1, revised Sep 2026. OPR: Education Officer. Approval: Detachment Commander, AFROTC Detachment 250. Official Air Force, Space Force, AFROTC and federal publications take precedence over this document.</div>
+    <div class="mtools"><a href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents</a><a href="The_Storm_Standard.pdf" download>PDF 4.4 MB</a><button type="button" id="findBtn">Find</button></div>
+    <section class="tab" id="t-about" data-tab="about" aria-label="Front matter: Edition, Purpose, Authority"><div class="box meta"><b>First Edition</b>, version 1, revised Sep 2026. OPR: Education Officer. Approval: Detachment Commander, AFROTC Detachment 250. Official Air Force, Space Force, AFROTC and federal publications take precedence over this document.</div>
 <section class="pg" id="p-2" aria-label="Page 2"><div class="pno">p. 2</div><h3>Edition, Purpose, Authority</h3>
 <p>Edition: First Edition Version: 1 Revision Date: Sep 2026 Owner: AFROTC Detachment 250 Office of Primary Responsibility (OPR): Education Officer Approval Authority: Detachment Commander, AFROTC Detachment 250 Purpose The Storm Standard provides AFROTC Detachment 250 cadets with a consolidated reference containing selected Air Force and Space Force doctrine, officership concepts, military heritage, Detachment 250 history, local procedures, and study materials.</p>
 <p>This publication is intended to support cadet education, professional development, and preparation for leadership responsibilities within AFROTC.</p>
@@ -97,6 +117,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p class="li">6. Detachment Commander policy memoranda Cadets will comply with the most current controlling publication regardless of the content contained in this document.</p>
 <h3>Changes and Recommendations</h3>
 <p>Recommended changes should be submitted through the cadet chain of command to the publication owner for review.</p></section>
+<nav class="tabnav" aria-label="Section navigation"><span></span><a class="next" href="#chapter-1"><span><small>Next</small>The Storm Legacy</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-chapter-1" data-tab="chapter-1" aria-label="Chapter 1: The Storm Legacy" hidden>
 <section class="pg" id="p-3" aria-label="Page 3"><div class="pno">p. 3</div><h2 class="chap" id="chapter-1"><span>Chapter 1</span>The Storm Legacy</h2>
 <h3>For Iowa</h3>
 <a class="toc-line" href="#p-4"><span>The Storm Legacy / Pioneers of the Storm</span><b>p. 4&ndash;7</b></a>
@@ -275,6 +298,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p>Drawing upon Iowa State University's tradition as a leader in science, technology, engineering, and innovation, Detachment 250 continues to prepare future officers for emerging challenges across the air, space, and cyber domains.</p>
 <h3>The Next Generation of the Storm</h3>
 <p>When the winds of challenge rise, lean into them. It is about moving forward with purpose, demanding excellence of yourself and those around you, and proving every day that you are worthy of the privilege and responsibility of serving your nation. When standards seem high, reach higher. When others seek comfort, choose growth. The challenge is before you. The standard is excellence. The future is yours to shape. Looking ahead, Det 250 remains dedicated to commissioning leaders of character who embody integrity, service, and excellence. As new cadets enter the historic Armory and join The Storm, they become part of a legacy more than seventy-five years in the making, entrusted with carrying that tradition forward while shaping the future.</p></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#about"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Edition, Purpose, Authority</span></a><a class="next" href="#chapter-2"><span><small>Next</small>Officership</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-chapter-2" data-tab="chapter-2" aria-label="Chapter 2: Officership" hidden>
 <section class="pg" id="p-13" aria-label="Page 13"><div class="pno">p. 13</div><h2 class="chap" id="chapter-2"><span>Chapter 2</span>Officership</h2>
 <a class="toc-line" href="#p-14"><span>Air Force Vision</span><b>p. 14</b></a>
 <a class="toc-line" href="#p-14"><span>Air Force Mission</span><b>p. 14</b></a>
@@ -940,6 +966,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p>When engaging in online communication, such as commenting on internet blogs or participating in social media discussions, it is crucial to exercise caution and consider the potential impact of your statements. Degrading morale or discrediting the service is strictly prohibited and can lead to disciplinary action. It is important to remember that your online presence reflects upon the Air Force and can influence public perception. When expressing personal opinions on social media or online platforms, it is essential to clarify that you are speaking for yourself and not on behalf of the Air Force. This helps to avoid any confusion or misrepresentation of the organization's official stance. It is important to maintain a clear distinction between personal views and official positions, ensuring that your statements do not create any misconceptions or misinterpretations.</p>
 <p>Finally, it is imperative to understand that violating laws, regulations, or policies through online activity can result in disciplinary action. The Air Force expects its members to uphold the highest standards of conduct and compliance, both in their professional and personal lives. Any illegal or inappropriate behavior online can have serious repercussions, both within the military justice system and in civil law.</p></section>
 <section class="pg" id="p-58" aria-label="Page 58"><div class="pno">p. 58</div><p>In summary, as an Air Force member, you have a responsibility to maintain proper communication and conduct in all forms of interaction. This includes adhering to Department of the Air Force standards and guidelines, avoiding the sharing of classified or official DoD information without proper authorization, maintaining professionalism and respect in all interactions, being cautious of the impact of your statements on morale and public perception, clarifying personal opinions as separate from official Air Force positions, being mindful of online relationships and their impact on security clearances, and avoiding any illegal or inappropriate behavior that could lead to disciplinary action. By adhering to these principles, you contribute to the reputation, integrity, and success of the Air Force.</p></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>The Storm Legacy</span></a><a class="next" href="#chapter-3"><span><small>Next</small>History</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-chapter-3" data-tab="chapter-3" aria-label="Chapter 3: History" hidden>
 <section class="pg" id="p-59" aria-label="Page 59"><div class="pno">p. 59</div><h2 class="chap" id="chapter-3"><span>Chapter 3</span>History</h2>
 <a class="toc-line" href="#p-60"><span>Prop and Wings</span><b>p. 60</b></a>
 <a class="toc-line" href="#p-62"><span>History of ROTC</span><b>p. 62</b></a>
@@ -1082,6 +1111,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p>Creation of the United States Space Force</p></section>
 <section class="pg" id="p-80" aria-label="Page 80"><div class="pno">p. 80</div><p>The creation of the United States Space Force was rooted in decades of Air Force space operations under Air Force Space Command (AFSPC), which was established in 1982 to manage military space missions such as satellite operations, missile warning, space surveillance, and GPS. Operation DESERT STORM in 1991 demonstrated the vital importance of space capabilities, leading many to call it the first &quot;space war&quot; because of its reliance on GPS, satellite communications, weather data, and missile warning systems. As space became increasingly contested by potential adversaries, military leaders recognized the need for a dedicated service focused solely on protecting U.S. interests in space. On 20 December 2019, the United States Space Force (USSF) was established as the nation's sixth military branch within the Department of the Air Force. The Space Force organizes, trains, and equips forces to conduct military space operations and protect U.S. and allied space capabilities. Today, the USSF provides critical services including GPS, satellite communications, missile warning, and space domain awareness that enable military operations around the globe.</p>
 <p>After the 9/11 attacks, AFSPC provided extensive space-based support to the U.S. Central Command in areas such as communications, positioning, navigation and timing, meteorology, and warning. In 2005, the Air Force expanded AFSPC's mission to include cyberspace operations. The responsibility for conducting cyberspace operations was assigned to AFSPC through the activation of TwentyFourth Air Force in 2009. In 2018, the Air Force transferred the cyber mission to Air Combat Command, allowing AFSPC to focus on gaining and maintaining space superiority and staying ahead of adversaries in the space domain.</p></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Officership</span></a><a class="next" href="#chapter-4"><span><small>Next</small>Military Strategy</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-chapter-4" data-tab="chapter-4" aria-label="Chapter 4: Military Strategy" hidden>
 <section class="pg" id="p-81" aria-label="Page 81"><div class="pno">p. 81</div><h2 class="chap" id="chapter-4"><span>Chapter 4</span>Military Strategy</h2>
 <a class="toc-line" href="#p-82"><span>National Security Strategy</span><b>p. 82</b></a>
 <a class="toc-line" href="#p-82"><span>National Defense Strategy</span><b>p. 82</b></a>
@@ -1299,6 +1331,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p class="li">5. COA Comparison COA comparison is both a subjective and objective process, whereby COAs are considered independently and evaluated/compared against a set of criteria that are established by the staff and commander. The objective is to identify and recommend the COA that has the highest probability of accomplishing the mission and is acceptable.</p>
 <p>COA comparison facilitates the commander’s decision-making process by balancing the ends, means, ways, and risk of each COA. The end product of this task is a briefing to the commander on a COA recommendation a and a decision by the commander. COA comparison helps the commander answer the following questions:</p></section>
 <section class="pg" id="p-103" aria-label="Page 103"><div class="pno">p. 103</div><p class="li">6. COA Approval the staff briefs the commander on the COA comparison and the analysis and wargaming results, including a review of important supporting information. The staff determines the preferred COA to recommend to the commander.</p></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>History</span></a><a class="next" href="#chapter-5"><span><small>Next</small>Military Resources</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-chapter-5" data-tab="chapter-5" aria-label="Chapter 5: Military Resources" hidden>
 <section class="pg" id="p-104" aria-label="Page 104"><div class="pno">p. 104</div><h2 class="chap" id="chapter-5"><span>Chapter 5</span>Military Resources</h2>
 <a class="toc-line" href="#p-105"><span>Air and Space Force Inventory</span><b>p. 105</b></a>
 <a class="toc-line" href="#p-123"><span>Air Force Specialty Codes</span><b>p. 123</b></a>
@@ -1526,6 +1561,9 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <p>Nurse Corps</p>
 <p>Medical Corps</p>
 <p>Medical Services Corp</p></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-4"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Military Strategy</span></a><a class="next" href="#appendix-i"><span><small>Next</small>Constitution</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
+</section>
+<section class="tab" id="t-appendix-i" data-tab="appendix-i" aria-label="Appendix I: Constitution" hidden>
 <section class="pg" id="p-129" aria-label="Page 129"><div class="pno">p. 129</div><h2 class="chap" id="appendix-i"><span>Appendix I</span>Constitution</h2>
 <h3>U.S. Constitution</h3>
 <p class="cite">(Constitutioncenter.org/the-constitution/full-text)</p>
@@ -1702,6 +1740,8 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <section class="pg" id="p-148" aria-label="Page 148"><div class="pno">p. 148</div><h3>Twenty-Seventh Amendment</h3>
 <p>No law, varying the compensation for the services of the Senators and Representatives, shall take effect, until an election of Representatives shall have intervened.</p></section>
 <section class="pg" id="p-149" aria-label="Page 149"><div class="pno">p. 149</div></section>
+<nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Military Resources</span></a><span></span></nav>
+</section>
   </main>
 </div>
 <footer class="d250-foot">
@@ -1714,14 +1754,25 @@ mark.now{background:var(--d250-gold);color:#16161a}
 </footer>
 <script>
 (() => {
-  // Highlight the chapter you're reading in the side nav
-  const links = [...document.querySelectorAll(".nav a")];
-  const heads = links.map(a => document.querySelector(a.getAttribute("href")));
-  const mark = () => {
-    let k = 0; heads.forEach((h, i) => { if(h && h.getBoundingClientRect().top < 120) k = i; });
-    links.forEach((a, i) => a.classList.toggle("on", i === k));
+  // One section at a time. #chapter-2 opens a section, #p-14 opens the section holding page 14.
+  const tabs = [...document.querySelectorAll(".tab")], links = [...document.querySelectorAll(".nav a")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const show = id => {
+    tabs.forEach(t => t.hidden = t.dataset.tab !== id);
+    links.forEach(a => { const on = a.dataset.tab === id; a.classList.toggle("on", on); if(on){ a.setAttribute("aria-current", "true"); a.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current"); });
   };
-  addEventListener("scroll", mark, {passive:true}); mark();
+  const route = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const el = id && document.getElementById(id);
+    const tab = el ? (el.closest(".tab") || document.getElementById("t-" + id)) : null;
+    show(tab ? tab.dataset.tab : tabs[0].dataset.tab);
+    const top = document.getElementById("doc").getBoundingClientRect().top + scrollY - 70;
+    if(el && !/^(chapter|appendix|about)/.test(id)) el.scrollIntoView({block:"start"});
+    else if(scrollY > top) scrollTo({top, behavior: reduce ? "auto" : "smooth"});
+  };
+  addEventListener("hashchange", route); route();
+  const fb = document.getElementById("findBtn");
+  if(fb) fb.addEventListener("click", () => { document.querySelector(".side").classList.toggle("open"); document.getElementById("q").focus(); });
 
   // Find: highlight every match, Next steps through them
   const doc = document.getElementById("doc"), q = document.getElementById("q"), st = document.getElementById("st");
@@ -1748,8 +1799,10 @@ mark.now{background:var(--d250-gold);color:#16161a}
     if(hits[at]) hits[at].classList.remove("now");
     at = (at + 1) % hits.length;
     hits[at].classList.add("now");
-    hits[at].scrollIntoView({block:"center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
-    st.textContent = (at + 1) + " of " + hits.length;
+    show(hits[at].closest(".tab").dataset.tab);
+    hits[at].scrollIntoView({block:"center", behavior: reduce ? "auto" : "smooth"});
+    const tl = hits[at].closest(".tab").getAttribute("aria-label").split(":")[0];
+    st.textContent = (at + 1) + " of " + hits.length + " · " + tl;
   });
   q.addEventListener("input", () => { if(!q.value.trim()){ clear(); last = ""; st.textContent = ""; } });
 })();
