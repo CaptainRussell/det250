@@ -19,7 +19,7 @@ button,input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--d250-gold);outline-offset:2px}
 [hidden]{display:none!important}
 
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--d250-surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--d250-line)}
+.top{position:sticky;top:var(--d250-bar-h,42px);z-index:20;background:color-mix(in srgb,var(--d250-surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--d250-line)}
 .top::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone)}
 .top-in{max-width:1000px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .back{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 12px 6px 9px;border-radius:999px;border:1px solid var(--d250-line-strong);color:var(--d250-ink);text-decoration:none;font-weight:700;font-size:13px;white-space:nowrap}
