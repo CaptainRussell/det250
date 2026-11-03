@@ -82,7 +82,6 @@ FIG = [
     ("patch-usaf", 10, (32, 226, 95, 291), dict(width=420, alpha=True)),
     ("patch-ussf", 11, (32, 97, 85, 171), dict(width=420, alpha=True)),
     ("cadet-rank", 26, (52, 63, 236, 274), dict(width=900)),
-    ("afrotc-insignia", 27, (9, 59, 132, 214), dict(width=700)),
     ("uniform-service-men", 28, (21, 65, 127, 198), dict(width=700)),
     ("uniform-service-women", 28, (144, 65, 252, 199), dict(width=700)),
     ("uniform-blues-men", 28, (18, 251, 130, 398), dict(width=700)),
