@@ -71,7 +71,8 @@
     const d = find(item.id);
     if(!d) return "";
     const s = sec(d.sec), ext = !d.src && /^https?:/.test(d.href);
-    const icon = /form|sheet/i.test(d.num) && d.sec === "external" ? ICON.forms : (ICON[d.sec] || ICON.afrotc);
+    const paths = (window.D250_DOC_ICONS || {})[d.icon];
+    const icon = paths ? SVG(paths) : (ICON[d.sec] || ICON.afrotc);
     return `<a class="d250r-card" href="${esc(href(item.id, from, item.page))}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone || "#0369a1"}">
       <span class="d250r-ic">${icon}</span>
       <span class="d250r-b"><span class="d250r-n">${esc(d.num)}${ext ? EXT : ""}</span><span class="d250r-t">${esc(d.title)}</span><p class="d250r-w">${esc(item.note || d.what)}</p></span></a>`;
