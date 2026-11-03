@@ -10,6 +10,12 @@ is hand written and reads data.js; rerun this when a new edition of the PDF come
 out, then check the page numbers in FIG below (they are PDF page numbers, cover = 1)
 and the PDF page links in index.html.
 
+The PDF's seals, Prop and Wings and badges are too low resolution, so the page
+uses official artwork in art/official/ instead (service seals, combatant command
+seals, MAJCOM shields, Space Force field command emblems, Prop and Wings supplied by Captain Russell, Nov 2026; the
+CTA, Arnold Air Society and Pershing Rifles badges cut from DAFI 36-2903 AFROTC
+Sup Figure 9.1). This script never writes to art/official/.
+
 Needs: pypdfium2, pdfplumber, Pillow (pip install pypdfium2 pdfplumber pillow).
 """
 import json, os, re, sys
@@ -88,17 +94,7 @@ FIG = [
     ("rank-warrant", 31, "tables", dict(width=1100)),
     ("rank-officer-1", 32, "tables", dict(width=1100)),
     ("rank-officer-2", 33, "tables", dict(width=1100)),
-    ("code-of-conduct", 54, (51, 41, 236, 79), dict(width=1000)),
-    ("prop-wings", 61, (113, 46, 175, 89), dict(width=600, alpha=True)),
     ("prop-wings-monument", 62, (50, 86, 237, 266), dict(width=900)),
-    ("prop-wings-plaque", 62, (82, 304, 202, 387), dict(width=700)),
-    ("combatant-commands", 89, (37, 278, 246, 359), dict(width=1100)),
-    ("seal-air-force", 90, (103, 145, 139, 181), dict(width=320, alpha=True)),
-    ("seal-space-force", 90, (147, 145, 183, 181), dict(width=320, alpha=True)),
-    ("seal-army", 91, (125, 53, 160, 88), dict(width=320, alpha=True)),
-    ("seal-navy", 91, (105, 232, 139, 267), dict(width=320, alpha=True)),
-    ("space-field-commands", 94, (23, 114, 72, 179), dict(width=360, alpha=True)),
-    ("seal-marines", 91, (147, 232, 181, 267), dict(width=320, alpha=True)),
 ]
 for name, n, box, opt in FIG:
     if box == "tables":
@@ -182,6 +178,10 @@ for n in range(107, 124):
             note=f.get("Commentary", f.get("_text", ""))))
 
 # ---- major commands (PDF 92-94) ----
+def clean_mission(t):
+    """Drop the page number and the Space Force / AFFOR text that follows the last command on p94."""
+    t = re.split(r"\s+Space Field Commands\b", t)[0]
+    return re.sub(r"\s+\d{2,3}$", "", t).strip()
 majcoms = []
 for n in (92, 93, 94):
     pg = plumb.pages[n - 1]
@@ -206,7 +206,7 @@ for n in (92, 93, 94):
         est = (re.search(r"Established:\s*(.+)", f.get("HQ", "")) or [None, ""])[1].strip()
         slug = re.sub(r"[^a-z0-9]+", "-", h["text"].lower()).strip("-")[:40]
         majcoms.append(dict(name=h["text"], hq=hq, established=est,
-                            mission=f.get("Mission", f.get("_text", "")), page=n,
+                            mission=clean_mission(f.get("Mission", f.get("_text", ""))), page=n,
                             img=save("cmd-" + slug, n, (im["x0"], im["top"], im["x1"], im["bottom"]), width=300, alpha=True)))
 
 # ---- specialty badges (PDF 126-128) ----

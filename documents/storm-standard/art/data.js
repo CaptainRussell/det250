@@ -781,7 +781,7 @@ window.SS_ART = {
    "name": "U.S. Air Forces in Europe-Air Forces Africa (USAFE-AFAFRICA)",
    "hq": "Ramstein AB GE",
    "established": "7 Aug 1945",
-   "mission": "As the air component for both United States European Command and United States Africa Command, USAFE-Air Forces Africa executes the Air Force, United States European Command and United States Africa Command missions with forward-based airpower and infrastructure to conduct and enable theater and global operations. USAFE-Air Force Africa directs air operations in a theater. Spanning three continents, covering more than 15 million square miles, containing 104 independent states, and possessing more than one-fifth of the world’s population and more than a quarter of the world’s gross domestic product. 91",
+   "mission": "As the air component for both United States European Command and United States Africa Command, USAFE-Air Forces Africa executes the Air Force, United States European Command and United States Africa Command missions with forward-based airpower and infrastructure to conduct and enable theater and global operations. USAFE-Air Force Africa directs air operations in a theater. Spanning three continents, covering more than 15 million square miles, containing 104 independent states, and possessing more than one-fifth of the world’s population and more than a quarter of the world’s gross domestic product.",
    "page": 92,
    "img": "cmd-u-s-air-forces-in-europe-air-forces-afri.webp"
   },
@@ -821,7 +821,7 @@ window.SS_ART = {
    "name": "Air Force Reserve Command (AFRC)",
    "hq": "Robins AFB GA",
    "established": "17 February 1997",
-   "mission": "Provide combat-ready forces to fly, fight and win in defense of the United States and its interests. 92",
+   "mission": "Provide combat-ready forces to fly, fight and win in defense of the United States and its interests.",
    "page": 93,
    "img": "cmd-air-force-reserve-command-afrc.webp"
   },
@@ -829,7 +829,7 @@ window.SS_ART = {
    "name": "Air National Guard (ANG)",
    "hq": "",
    "established": "",
-   "mission": "The ANG is not a major Command, but a component in the Total Force in offensive, defensive and relief operations. It has both federal and state mission. The dual mission, a provision of the U.S. Constitution, results in each guardsman holding membership in the National Guard of their state and in the National Guard of the United States. Space Field Commands Combat Forces Command The primary provider of space forces and capabilities. STAR Command Provides for the specialized education and training of the force. Space Systems Command Is responsible for the developing, acquiring, fielding and sustaining space systems. AIR FORCE FORCES (AFFOR) STAFF & AN A-STAFF AFI 13-103 (November 2020) 93",
+   "mission": "The ANG is not a major Command, but a component in the Total Force in offensive, defensive and relief operations. It has both federal and state mission. The dual mission, a provision of the U.S. Constitution, results in each guardsman holding membership in the National Guard of their state and in the National Guard of the United States.",
    "page": 94,
    "img": "cmd-air-national-guard-ang.webp"
   }
