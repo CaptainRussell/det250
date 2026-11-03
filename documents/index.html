@@ -33,14 +33,14 @@ input{font:inherit;color:inherit}
 .feature:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
 .feature .cover{width:96px;height:128px;border-radius:6px 10px 10px 6px;display:grid;place-items:center;background:linear-gradient(160deg,#1c3f66,#0b1a2c);box-shadow:0 10px 24px rgba(0,0,0,.35),inset 6px 0 0 rgba(255,255,255,.08);position:relative;transition:transform .35s var(--ease)}
 .feature:hover .cover{transform:rotate(-4deg) scale(1.04)}
-.feature .cover img{width:64px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
-.feature .cover::after{content:"STORM STANDARD";position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:7.5px;font-weight:800;letter-spacing:.14em;color:#f1be48}
+.feature .cover img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
 .feature .kick{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .feature h2{margin:2px 0 6px;font-size:clamp(26px,4.4vw,36px);line-height:1.1;font-weight:800;letter-spacing:-.015em}
 .feature p.lede{margin:0 0 14px;color:var(--soft);max-width:60ch}
 .feature .go{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:11px;background:var(--tone);color:#fff;font-weight:800;font-size:15px}
 .feature:hover .go{background:color-mix(in srgb,var(--tone) 82%,#fff)}
-@media (max-width:560px){.feature{grid-template-columns:minmax(0,1fr);gap:14px;padding:18px}.feature .cover{width:72px;height:96px}.feature .cover img{width:48px}.feature .cover::after{font-size:6px}}
+@media (max-width:560px){.feature{grid-template-columns:minmax(0,1fr);gap:14px;padding:18px}.feature .cover{width:72px;height:96px}}
 
 /* expand / collapse all */
 .bar2{display:flex;justify-content:flex-end;gap:8px;margin:22px 0 -6px}
@@ -81,6 +81,9 @@ input{font:inherit;color:inherit}
 .tool{--tone-ink:var(--tone)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
 :root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
+.tool.is-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--d250-gold) 16%,var(--surface)),var(--surface) 75%);border-color:color-mix(in srgb,var(--d250-gold) 50%,var(--line))}
+.tool.is-tool:hover{border-color:var(--d250-gold)}
+.toolpill{font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--d250-gold);color:#16161a}
 .grid.compact{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
 .grid.compact .tool{padding:14px 16px;gap:14px;align-items:center}
 .grid.compact .icon{width:46px;height:46px;border-radius:12px}
@@ -147,11 +150,11 @@ input{font:inherit;color:inherit}
 
 <main class="wrap" id="main">
   <a class="feature" href="storm-standard/" aria-labelledby="ss-h">
-    <span class="cover" aria-hidden="true"><img src="../shared/det250-patch.png" alt=""></span>
+    <span class="cover" aria-hidden="true"><img src="storm-standard/art/cover.webp" alt=""></span>
     <span>
       <p class="kick">Main document · First Edition, Sep 2026</p>
       <h2 id="ss-h">The Storm Standard</h2>
-      <p class="lede">Detachment 250's own cadet reference: the Storm legacy, officership, Air and Space Force history, military strategy and resources, and the Constitution. Start here, then go to the source publications below.</p>
+      <p class="lede">Detachment 250's own cadet reference: the Storm legacy, officership, Air and Space Force history, military strategy and resources. The online view highlights the key topics with their graphics; the full text is in the PDF.</p>
       <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Read the Standard</span>
     </span>
   </a>
@@ -196,10 +199,13 @@ let n = 0;
 function card(d, s){
   const href = d.src ? "view/?id=" + encodeURIComponent(d.id) : d.href;
   const ext = /^https?:/.test(href);
-  const icon = d.tool ? ICON.tool : /form|sheet/i.test(d.num) && s.id !== "fitness" ? ICON.forms : ICON[s.id];
-  return `<a class="tool" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone};--i:${n++}">
+  const paths = (window.D250_DOC_ICONS || {})[d.icon];
+  const icon = paths ? SVG(paths) : d.tool ? ICON.tool : ICON[s.id];
+  // a link to a Storm HQ tool looks different from a document
+  const kind = d.tool ? '<span class="meta"><span class="toolpill">Storm HQ tool <span aria-hidden="true">&rarr;</span></span></span>' : "";
+  return `<a class="tool${d.tool ? " is-tool" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${d.tool ? "#a06f00" : s.tone};--i:${n++}">
     <span class="icon" aria-hidden="true">${icon}</span>
-    <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p></span></a>`;
+    <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p>${kind}</span></a>`;
 }
 const PLAN_BLURBS = {
   "fall-2026-oplan":"Cadet wing organization, activities and the Leadership Laboratory plan for the semester.",
