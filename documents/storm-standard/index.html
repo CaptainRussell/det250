@@ -117,11 +117,6 @@ figcaption{font-size:13px;color:var(--d250-soft);margin-top:8px;text-align:cente
 .quote cite{display:block;margin-top:6px;font-size:13px;font-style:normal;color:var(--d250-soft)}
 .creed{font-size:18px;line-height:1.7;font-weight:600;text-align:center;padding:24px}
 .creed p{margin:0 auto 14px}
-.tl{list-style:none;margin:0;padding:0 0 0 22px;border-left:2px solid var(--d250-line-strong);max-width:72ch}
-.tl li{position:relative;margin:0 0 16px}
-.tl li::before{content:"";position:absolute;left:-29px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--tone);box-shadow:0 0 0 3px var(--d250-page)}
-.tl b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--d250-gold)}
-.tl span{font-size:15px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
 .chips span{font-size:13.5px;font-weight:700;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--tone) 20%,transparent);border:1px solid color-mix(in srgb,var(--tone) 50%,transparent)}
 .ladder{display:flex;flex-direction:column;align-items:center;gap:0;max-width:560px;margin:0 auto}
@@ -196,6 +191,9 @@ dialog.lb::backdrop{background:rgba(5,5,10,.85)}
 dialog.lb img{display:block;max-width:100%;max-height:88vh;background:#fff;border-radius:10px}
 dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:22px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.panel{animation:none}.pnav a,.chgrid a{transition:none}}
+.d250-head-icon.ss-cover{width:40px;height:60px;border-radius:6px;overflow:hidden;background:#0b1020;padding:0}
+.d250-head-icon.ss-cover img{display:block;width:100%;height:100%;object-fit:cover}
+@media (max-width:480px){.d250-head-icon.ss-cover{width:36px;height:54px;border-radius:5px}}
 @media print{.d250-bar,.d250-head,.side,.d250-foot,.pnav,.steps{display:none!important}.wrap{display:block}}
 </style>
 </head>
@@ -203,7 +201,7 @@ dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;bord
 <a class="d250-bar" href="../" aria-label="Back to Documents and Policy"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents &amp; Policy</span></a>
 <header class="d250-head" style="--tone:#0369a1">
   <div class="d250-head-in">
-    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M12 6l1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4z"/></svg></span>
+    <span class="d250-head-icon ss-cover" aria-hidden="true"><img src="art/official/cover-icon.webp" alt="" width="40" height="60"></span>
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 · Documents and Policy</p>
       <h1>The Storm Standard</h1>
@@ -241,46 +239,6 @@ const seg = (id, views) => `<div class="seg" role="group" data-seg="${id}">${vie
   <div data-segview="${id}">${views.map((v, i) => `<div data-v="${i}"${i ? " hidden" : ""}>${v[1]}</div>`).join("")}</div>`;
 
 /* ---------------- content: chapters and their topics ---------------- */
-const PIONEERS = [
-  ["Brig. Gen. Boyd Hubbard Jr.", "B.S. Mechanical Engineering, 1933", "Commanded the 501st Bomb Group (B-29). His group delivered six million pounds of TNT on primary targets in Japan without losing an aircraft."],
-  ["Lt. Gen. Thomas J. Hickey", "B.S. Electrical Engineering, 1956", "Flew 220 combat missions in Vietnam and rose to Air Force Deputy Chief of Staff for Personnel."],
-  ["Brig. Gen. Wayne L. Schultz", "B.S. Aerospace Engineering, 1966", "Governor's Trophy as outstanding AFROTC graduate; won the Lt. Gen. Claire Lee Chennault Aerial Tactician of the Year Award."],
-  ["Brig. Gen. David A. Cotton", "B.S. Computer Science, 1981", "Air Force Director of Cyberspace Operations; one of Iowa State's earliest distinguished Air Force cyber leaders."],
-  ["Maj. Gen. Clinton E. Crosier", "B.S. Aerospace Engineering, 1987", "As Director of Space Force Planning, helped stand up the U.S. Space Force, the first new military service in 72 years."],
-  ["Maj. Gen. Patrick J. Doherty", "B.S. Aerospace Engineering, 1987", "B-52 navigator turned F-15E pilot; commanded the 4th Fighter Wing, 82nd Training Wing and 19th Air Force."],
-  ["Maj. Gen. Bret C. Larson", "B.S., 1988", "Commander, 22nd Air Force; more than 5,000 flying hours and 600 combat hours."],
-  ["Lt. Gen. Michael J. Schmidt", "B.S. Industrial Engineering, 1990", "ROTC Distinguished Graduate; led the F-35 Lightning II Joint Program Office, the world's largest fighter program."],
-  ["Brig Gen Bobbi J. Doorenbos", "B.B.A. Finance, 1992", "White House Fellow; commanded the 188th Wing (MQ-9, ISR and space targeting) and flew 1,200+ hours in the F-16."]
-];
-const EVENTS = [
-  ["17 Dec 1903", "The Wright brothers make the first sustained, controlled, powered flights at Kitty Hawk, North Carolina."],
-  ["27 Jun 1923", "First aerial refueling, over San Diego, using a DH-4."],
-  ["28 Sep 1924", "First around-the-world flight completed: 26,350 miles in 175 days."],
-  ["16 Mar 1926", "Dr. Robert H. Goddard launches the first liquid-fueled rocket."],
-  ["18 Apr 1942", "The Doolittle Raid: 16 B-25s launch from USS Hornet to strike Tokyo."],
-  ["2 Oct 1942", "The Bell XP-59A makes the first American jet flight."],
-  ["6 Aug 1945", "The B-29 Enola Gay, commanded by Col Paul W. Tibbets Jr., drops the first atomic bomb."],
-  ["18 Sep 1947", "The Air Force becomes a separate service; W. Stuart Symington is sworn in as the first Secretary of the Air Force."],
-  ["14 Oct 1947", "Capt Charles E. Yeager breaks the sound barrier in the Bell X-1 Glamorous Glennis."],
-  ["12 May 1949", "The Berlin Airlift ends the Soviet blockade: 1,783,826 tons in 277,262 flights."],
-  ["8 Nov 1950", "First all-jet aerial combat: Lt Russell J. Brown's F-80 downs a MiG-15 over Korea."],
-  ["5 May 1961", "Cdr Alan B. Shepard Jr. becomes the first American in space."],
-  ["3 Jun 1965", "Maj Edward H. White, USAF, makes the first American spacewalk on Gemini 4."],
-  ["20 Jul 1969", "Apollo 11 lands on the Moon, with Col Edwin E. Aldrin Jr., USAF, and Lt Col Michael Collins, USAF, on the crew."],
-  ["1 Sep 1975", "Gen Daniel \"Chappie\" James, an original Tuskegee Airman, becomes the first African-American four-star general."],
-  ["12 Apr 1981", "Space Shuttle Columbia makes the first shuttle launch."],
-  ["29 Aug 2019", "U.S. Space Command is re-established as the 11th combatant command."],
-  ["20 Dec 2019", "The Space Force is established as the sixth armed service, under the Department of the Air Force."]
-];
-const ROTC = [
-  ["1916", "The National Defense Act establishes ROTC."],
-  ["1920", "The Army Reorganization Act creates ROTC units to train rated officers for the Air Corps."],
-  ["After WWII", "Gen Dwight D. Eisenhower signs General Order No. 124, establishing AFROTC units at 78 colleges and universities."],
-  ["1949", "Iowa State establishes AFROTC Detachment 250."],
-  ["1973", "The Airman Scholarship and Commissioning Program opens AFROTC to enlisted Airmen."],
-  ["1993", "Air Training Command and Air University merge into Air Education and Training Command."],
-  ["1997", "AFROTC and OTS merge under HQ Air Force Officer Accession and Training Schools (AFOATS)."]
-];
 const PRINCIPLES = [
   ["Unity of Command", "Concentration of effort for every objective under one responsible commander."],
   ["Objective", "Direct military operations toward a defined and attainable objective."],
@@ -309,12 +267,25 @@ const majcomShields = m => {
 };
 // One rung of the chain of command: seal or typical rank insignia, then the position.
 const rung = ([t, ic, rank]) => `<span class="rung"><span class="ic">${img("official/" + ic + ".webp", rank ? rank + " insignia" : t + " seal", ic.startsWith("rank") ? "ins" : "")}</span><span class="t">${t}</span></span>`;
+// One-line missions for the web view (the PDF has the full statements).
+const MAJCOM_SHORT = {
+  "acc": "Organizes, trains and equips the combat air forces: fighter, reconnaissance, battle-management and electronic-combat aircraft.",
+  "amc": "Global air mobility: airlift and aerial refueling with the right effects, right place, right time.",
+  "pacaf": "Delivers Air Force capabilities across the Indo-Pacific to deter aggression and defend the Homeland.",
+  "usafe-afafrica": "Air component for U.S. European Command and U.S. Africa Command, spanning three continents and 104 countries.",
+  "aetc": "Recruits, trains and educates Airmen to deliver airpower for America.",
+  "afmc": "Delivers war-winning technology, acquisition support, sustainment and expeditionary capabilities.",
+  "afsoc": "Provides Air Force special operations forces for worldwide deployment to the unified commands.",
+  "afgsc": "Strategic deterrence and global strike: the nation's ICBMs and bomber forces.",
+  "afrc": "Provides combat-ready forces to fly, fight and win in defense of the United States.",
+  "ang": "A Total Force component with a dual mission: federal service and service to its state."
+};
+const majcomShort = m => MAJCOM_SHORT[((m.name.match(/\(([^)]+)\)\s*$/) || [])[1] || "").toLowerCase()] || m.mission;
 const COCOMS = {
   geo: [["USAFRICOM", "Africa Command", "Stuttgart, Germany"], ["USCENTCOM", "Central Command", "MacDill AFB, FL"], ["USEUCOM", "European Command", "Stuttgart, Germany"], ["USNORTHCOM", "Northern Command", "Peterson SFB, CO"], ["USINDOPACOM", "Indo-Pacific Command", "Camp H.M. Smith, HI"], ["USSOUTHCOM", "Southern Command", "Miami, FL"], ["USSPACECOM", "Space Command", "Peterson SFB, CO"]],
   fun: [["USCYBERCOM", "Cyber Command", "Fort George G. Meade, MD"], ["USSOCOM", "Special Operations Command", "MacDill AFB, FL"], ["USSTRATCOM", "Strategic Command", "Offutt AFB, NE"], ["USTRANSCOM", "Transportation Command", "Scott AFB, IL"]]
 };
 const list = rows => `<div class="grid g2">${rows.map(r => `<div class="card cmd">${img("official/cocom-" + r[0].toLowerCase().replace("uspacom", "usindopacom") + ".webp", r[1] + " seal", "", 72, 72)}<div><span class="k">${esc(r[0])}</span><h3>${esc(r[1])}</h3><p>${esc(r[2])}</p></div></div>`).join("")}</div>`;
-const timeline = rows => `<ol class="tl">${rows.map(r => `<li><b>${esc(r[0])}</b><span>${esc(r[1])}</span></li>`).join("")}</ol>`;
 
 function invGrid(kind){
   const items = ART.inventory.filter(x => x.kind === kind);
@@ -332,11 +303,7 @@ const CH = [
       <div><p class="lead">The Storm Standard is Detachment 250's cadet reference: our legacy, officership, history, military strategy and the resources of the Air and Space Forces.</p>
       <p class="muted">This online view highlights the most important topics, mostly with visuals. Use the tabs to move one topic at a time. The PDF has every word.</p>
       <div class="row"><a class="btn" href="#legacy/welcome">Begin <span aria-hidden="true">&rarr;</span></a><a class="btn ghost" href="The_Storm_Standard.pdf" download>Download the PDF</a></div>
-      <div class="chgrid">${CH.slice(1, -1).map(c => `<a href="#${c.id}/${c.subs[0].id}"><small>${esc(c.label)}</small>${esc(c.title)}</a>`).join("")}</div></div></div>`},
-    {id: "about", title: "Edition and authority", page: 3, html: () => `<div class="grid g2">
-      ${card("First Edition, Sep 2026", `<p>Owner: AFROTC Detachment 250. OPR: Education Officer. Approval: Detachment Commander.</p><p>A consolidated reference of selected Air Force and Space Force doctrine, officership, heritage, Det 250 history and study material, to support cadet education and leadership development.</p>`, "Edition")}
-      ${card("Official publications win", `<p>The Storm Standard does not replace official publications. Where they conflict, these take precedence, in order:</p><ul><li>United States Code</li><li>Department of War directives and instructions</li><li>Department of the Air Force publications</li><li>Air Force and Space Force doctrine</li><li>AFROTC instructions and guidance</li><li>Detachment Commander policy memoranda</li></ul>`, "Authority")}
-      ${card("Recommend a change", `<p>Send recommended changes through the cadet chain of command to the publication owner.</p>`, "Changes")}</div>`}
+      <div class="chgrid">${CH.slice(1, -1).map(c => `<a href="#${c.id}/${c.subs[0].id}"><small>${esc(c.label)}</small>${esc(c.title)}</a>`).join("")}</div></div></div>`}
   ]},
   {id: "legacy", label: "Chapter 1", title: "The Storm Legacy", subs: [
     {id: "welcome", title: "Welcome to the Storm", page: 5, html: () => `<p class="quote">By joining Detachment 250, you become part of a distinguished tradition that dates back to 1949, when Iowa State University established one of the nation's early Air Force ROTC detachments.</p>
@@ -346,8 +313,6 @@ const CH = [
         <div class="card stat"><b>843</b><span>Officers commissioned in the first decade</span></div>
         <div class="card stat"><b>~2,000</b><span>Cadets enrolled in the early Cold War</span></div></div>
       <p style="margin-top:16px">Iowa State is one of only a handful of universities to host Army, Navy and Air ROTC at the same time. <b>Gold Star Hall</b> in the Memorial Union honors the Iowa Staters who died in military service, from World War I through the Global War on Terrorism.</p>`},
-    {id: "pioneers", title: "Pioneers from the Storm", page: 5, html: () => `<p class="lead">Iowa State graduates who went on to shape the Air and Space Forces.</p>
-      <div class="grid g3">${PIONEERS.map(p => card(esc(p[0]), `<p>${esc(p[2])}</p>`, esc(p[1]))).join("")}</div>`},
     {id: "patches", title: "The Det 250 patches", page: 10, html: () => `<div class="grid">
       <div class="card patch">${img("patch-usaf.webp", "USAF Det 250 patch", "", 150, 155)}<div><span class="k">USAF Det 250 patch</span><h3>Optimi in Medio Patriae</h3>
         <ul><li><b>Tornado:</b> Iowa State's Cyclone tradition and our identity as "The Storm."</li><li><b>Bald eagle:</b> service to the United States and the ideals of Air and Space Force leadership.</li><li><b>Map with Iowa highlighted:</b> roots in Ames, serving across the nation and the world.</li><li><b>Motto:</b> "The Best in the Heart of the Nation."</li></ul></div></div>
@@ -382,8 +347,7 @@ const CH = [
       <div class="card"><span class="k">Earned at Field Training</span><h3>Prop and Wings</h3><p>Worn by cadets who complete Field Training (DAFI 36-2903 AFROTC Sup, Figure 4.10). POC wear it centered on the OCP cover.</p></div></div>
       <h3 style="margin:22px 0 10px">Additional uniform devices</h3>
       <div class="ibadges">${BADGES.map(b => `<figure class="ibadge"><div class="pv">${img("official/" + b[0] + ".webp", b[1], b[3] ? "sm" : "")}</div><figcaption>${b[1]}<span>${b[2]}</span></figcaption></figure>`).join("")}</div>
-      <p class="muted small" style="margin-top:12px">Badges from DAFI 36-2903 AFROTC Sup, Figure 9.1. The Storm Standard chart (page 26 of the PDF) also shows the Pilot, CSO, ABM, RPA and Space Operations select badges and the Parachute badge.</p>
-      <details class="more"><summary>Full insignia chart from The Storm Standard</summary>${paper("afrotc-insignia.webp", "AFROTC insignia chart: Prop and Wings, select badges, CTA badge, Arnold Air Society, Pershing Rifles and Parachute badge", "Tap to enlarge.", 520)}</details>`},
+      <p class="muted small" style="margin-top:12px">Badges from DAFI 36-2903 AFROTC Sup, Figure 9.1.</p>`},
     {id: "uniforms", title: "AFROTC uniforms", page: 27, html: () => seg("uni", [
       ["Service, men", paper("uniform-service-men.webp", "AFROTC service uniform, men", "", 560)],
       ["Service, women", paper("uniform-service-women.webp", "AFROTC service uniform, women", "", 560)],
@@ -415,8 +379,6 @@ const CH = [
     {id: "prop-wings", title: "Prop and Wings", page: 61, html: () => `<div class="hero"><div class="pw">${img("official/prop-wings.webp", "Prop and Wings insignia", "", 900, 622)}</div>
       <div><p class="lead">The symbol of the American Airman.</p><p>First worn by Aviation Cadets in 1917 and the branch insignia of the Army Air Service and Air Corps, the Prop and Wings is now earned by Academy, ROTC and OTS cadets who complete the first phase of officer training. It marks your acceptance into the Long Blue Line. Descendants of Air Force, Army Air Corps or WASP members are authorized gold.</p></div></div>
       <div style="max-width:560px;margin:18px auto 0"><figure>${img("prop-wings-monument.webp", "Prop and Wings monument at Maxwell AFB", "zoom")}<figcaption>The Prop and Wings monument at Maxwell AFB, birthplace of the Air Corps Tactical School (photo: Mark Hilton, 2014). OTS and ROTC graduates lay their hands on its plaque.</figcaption></figure></div>`},
-    {id: "afrotc", title: "History of AFROTC", page: 63, html: () => `<p class="lead">AFROTC is the largest and oldest source of commissioned officers for the Air Force.</p>${timeline(ROTC)}`},
-    {id: "events", title: "Air and Space Force milestones", page: 67, html: () => timeline(EVENTS)}
   ]},
   {id: "strategy", label: "Chapter 4", title: "Military Strategy", subs: [
     {id: "principles", title: "Principles of war", page: 88, html: () => `<p class="lead">Fundamental, interconnected aspects that tend to lead to military victory. Not a checklist, but a tool for weighing courses of action.</p>
@@ -427,7 +389,7 @@ const CH = [
       <div class="card seal">${img("official/seal-air-force.webp", "Department of the Air Force seal", "", 110, 110)} ${img("official/seal-space-force.webp", "Space Force seal", "", 110, 110)}<span class="k">Department of the Air Force</span><h3>Air Force and Space Force</h3><p>Air, space and cyberspace capabilities for theater-wide and national objectives. The Space Force was established 20 December 2019.</p></div>
       <div class="card seal">${img("official/seal-army.webp", "Department of the Army seal", "", 110, 110)}<span class="k">Department of the Army</span><h3>U.S. Army</h3><p>To fight and win our Nation's wars by providing prompt, sustained land dominance.</p></div>
       <div class="card seal">${img("official/seal-navy.webp", "Department of the Navy seal", "", 110, 110)} ${img("official/seal-marine-corps.webp", "Marine Corps seal", "", 110, 110)}<span class="k">Department of the Navy</span><h3>Navy and Marine Corps</h3><p>To maintain, train and equip combat-ready naval forces capable of winning wars, deterring aggression and maintaining freedom of the seas.</p></div></div>`},
-    {id: "majcoms", title: "Air Force major commands", page: 92, html: () => `<div class="grid g2">${ART.majcoms.map(m => `<div class="card cmd"><span class="shields">${majcomShields(m)}</span><div><h3>${esc(m.name)}</h3>${m.hq ? `<span class="k">${esc(m.hq)}${m.established ? " · est. " + esc(m.established) : ""}</span>` : ""}<p>${esc(m.mission)}</p></div></div>`).join("")}</div>`},
+    {id: "majcoms", title: "Air Force major commands", page: 92, html: () => `<div class="grid g2">${ART.majcoms.map(m => `<div class="card cmd"><span class="shields">${majcomShields(m)}</span><div><h3>${esc(m.name)}</h3>${m.hq ? `<span class="k">${esc(m.hq)}${m.established ? " · est. " + esc(m.established) : ""}</span>` : ""}<p>${esc(majcomShort(m))}</p></div></div>`).join("")}</div>`},
     {id: "field-commands", title: "Space Force field commands", page: 94, html: () => `<div class="grid g3">${[["cfc", "Combat Forces Command", "The primary provider of space forces and capabilities."], ["starcom", "STAR Command", "Space Training and Readiness Command: specialized education and training of the force. Its colors appear on the USSF Det 250 patch."], ["ssc", "Space Systems Command", "Develops, acquires, fields and sustains space systems."]].map(r => `<div class="card cmd delta">${img("official/field-" + r[0] + ".webp", r[1] + " emblem", "", 60, 92)}<div><h3>${r[1]}</h3><p>${r[2]}</p></div></div>`).join("")}</div>`}
   ]},
   {id: "resources", label: "Chapter 5", title: "Military Resources", subs: [
@@ -445,7 +407,11 @@ const CH = [
   {id: "closing", label: "Closing", title: "We Are The Storm", subs: [
     {id: "back-cover", title: "We Are The Storm", page: 150, html: () => `<div class="cover">${img("back-cover.webp", "Back cover: We Are The Storm, Air and Space, with AFROTC contact information", "", 640, 960)}
       <div><p class="lead">The challenge is before you. The standard is excellence.</p><p class="muted">Connect with Detachment 250: afrotc@iastate.edu, (515) 294-1716.</p>
-      <div class="row"><a class="btn" href="The_Storm_Standard.pdf" download>Download the full PDF</a><a class="btn ghost" href="#start/cover">Back to the cover</a></div></div></div>`}
+      <div class="row"><a class="btn" href="The_Storm_Standard.pdf" download>Download the full PDF</a><a class="btn ghost" href="#start/cover">Back to the cover</a></div></div></div>`},
+    {id: "about", title: "Edition and authority", page: 3, html: () => `<div class="grid g2">
+      ${card("First Edition, Sep 2026", `<p>Owner: AFROTC Detachment 250. OPR: Education Officer. Approval: Detachment Commander.</p><p>A consolidated reference of selected Air Force and Space Force doctrine, officership, heritage, Det 250 history and study material, to support cadet education and leadership development.</p>`, "Edition")}
+      ${card("Official publications win", `<p>The Storm Standard does not replace official publications. Where they conflict, these take precedence, in order:</p><ul><li>United States Code</li><li>Department of War directives and instructions</li><li>Department of the Air Force publications</li><li>Air Force and Space Force doctrine</li><li>AFROTC instructions and guidance</li><li>Detachment Commander policy memoranda</li></ul>`, "Authority")}
+      ${card("Recommend a change", `<p>Send recommended changes through the cadet chain of command to the publication owner.</p>`, "Changes")}</div>`}
   ]}
 ];
 
@@ -463,7 +429,7 @@ function resolve(hash){
   if(i < 0 && ci) i = flat.findIndex(x => x.c.id === ci);
   // links from the old full-text reader: #chapter-N, #p-N
   const ch = h.match(/^chapter-(\d)$/); if(i < 0 && ch) i = flat.findIndex(x => x.c.label === "Chapter " + ch[1]);
-  const pg = h.match(/^p-(\d+)$/); if(i < 0 && pg){ const n = +pg[1]; let best = 0; flat.forEach((x, k) => { if(x.s.page <= n + 1) best = k; }); i = best; }
+  const pg = h.match(/^p-(\d+)$/); if(i < 0 && pg){ const n = +pg[1]; let best = 0, bp = -1; flat.forEach((x, k) => { if(x.s.page <= n + 1 && x.s.page > bp){ best = k; bp = x.s.page; } }); i = best; }
   return i < 0 ? 0 : i;
 }
 let current = -1;
