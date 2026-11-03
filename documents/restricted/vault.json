@@ -1,0 +1,86 @@
+{
+ "v": 1,
+ "iter": 310000,
+ "salt": "gQc7FUMiuDxIEBxQs2h+cg==",
+ "check": "H4npLWyBWmT7Ry1UrXyQ3Uqum+d9Oyo2my7BaFC4YvjHYiocz680JQ8+Wlkr",
+ "files": [
+  {
+   "id": "fall-2026-oplan",
+   "group": "plans",
+   "title": "Fall 2026 OPLAN",
+   "size": 1194842
+  },
+  {
+   "id": "fall-2026-policy-packet",
+   "group": "plans",
+   "title": "Fall 2026 Policy Packet",
+   "size": 782162
+  },
+  {
+   "id": "opord-week-01",
+   "group": "opords",
+   "title": "OPORD Week 1",
+   "size": 802128
+  },
+  {
+   "id": "opord-week-02",
+   "group": "opords",
+   "title": "OPORD Week 2",
+   "size": 2623028
+  },
+  {
+   "id": "opord-week-03",
+   "group": "opords",
+   "title": "OPORD Week 3",
+   "size": 2654548
+  },
+  {
+   "id": "opord-week-04",
+   "group": "opords",
+   "title": "OPORD Week 4",
+   "size": 2111619
+  },
+  {
+   "id": "opord-week-05",
+   "group": "opords",
+   "title": "OPORD Week 5",
+   "size": 1695875
+  },
+  {
+   "id": "opord-week-06",
+   "group": "opords",
+   "title": "OPORD Week 6",
+   "size": 1695098
+  },
+  {
+   "id": "opord-week-07",
+   "group": "opords",
+   "title": "OPORD Week 7",
+   "size": 1665777
+  },
+  {
+   "id": "opord-week-08",
+   "group": "opords",
+   "title": "OPORD Week 8",
+   "size": 2058798
+  },
+  {
+   "id": "opord-week-09",
+   "group": "opords",
+   "title": "OPORD Week 9",
+   "size": 1869834
+  },
+  {
+   "id": "opord-week-10",
+   "group": "opords",
+   "title": "OPORD Week 10",
+   "size": 2572395
+  },
+  {
+   "id": "opord-week-11",
+   "group": "opords",
+   "title": "OPORD Week 11",
+   "size": 1635250
+  }
+ ]
+}

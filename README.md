@@ -7,6 +7,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **PFRA Calculator** (`pfra/`): scores a PFRA against the 2026 USAF charts, with goal pace per lap and track layout marks (where to wheel the start lines) for the OFC.
 - **Ribbon Rack Builder** (`ribbon-rack/`): builds your AFROTC rack in order of precedence (DAFI 36-2903 AFROTC Sup), with devices and the wear and award criteria for each ribbon.
 - **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
+- **Documents and Policy** (`documents/`): The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, with links to the official sources. The Fall 2026 OPLAN, Policy Packet and OPORDs are encrypted and open with the detachment password.
 - **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
 
 ## Evaluator Tools
@@ -23,3 +24,4 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `TOOLS` in the root `index.html`. Full details are in `CLAUDE.md`.
 - Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
 - Flight Staff Evaluation is password encrypted. Keep decrypted source outside the public repo. To rebuild its lock: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
+- Restricted documents are encrypted. Keep the plain PDFs outside the repo. To rebuild: `node tools/encrypt-files.mjs <password> <list.json> documents/restricted` (see the script header for the list format).

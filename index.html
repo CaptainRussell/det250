@@ -124,6 +124,8 @@ const TOOLS = [
    blurb:"Fall 2026 250th Cadet Wing: cadre, wing staff, flights and the Flip Week view."},
   {href:"ribbon-rack/", name:"Ribbon Rack Builder", tone:"#4338ca", icon:"ribbons", section:"cadets",
    blurb:"Check the AFROTC ribbons you've earned and get your rack in order of precedence, with devices. Print it or share it."},
+  {href:"documents/", name:"Documents and Policy", tone:"#0369a1", icon:"book", section:"cadets",
+   blurb:"The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, and the locked Fall 2026 plans and OPORDs."},
   {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tone:"#a06f00", icon:"chart", section:"evaluators", locked:true,
    blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
   {href:"spin-the-wheel/", name:"Spin the Wheel", tone:"#b45309", icon:"wheel", section:"instructors",
@@ -146,6 +148,7 @@ const ICONS = {
   wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>',
   scale:'<path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z"/>',
   binoculars:'<circle cx="6.5" cy="15.5" r="3.5"/><circle cx="17.5" cy="15.5" r="3.5"/><path d="M10 15.5h4M4 13l2-8h3l1 7M20 13l-2-8h-3l-1 7"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>',
   dice:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/>'
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

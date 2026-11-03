@@ -1,0 +1,5 @@
+# Plain restricted PDFs and the file list never go in this public repo.
+# Only the encrypted .bin files and vault.json belong here.
+*.pdf
+*.PDF
+list.json
