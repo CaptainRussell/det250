@@ -119,6 +119,8 @@ button,input,select{font:inherit;color:inherit}
 .doc .dn{margin:0;font-weight:700;color:var(--ink)}
 .doc .dd{margin:2px 0 0;font-size:13.5px}
 .doc .da{display:flex;gap:8px}
+#rr-refs{padding:14px 0 16px;border-top:1px solid var(--line)}
+.rr-other{margin:6px 0 0;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);opacity:0;background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;transition:opacity .14s,transform .14s;pointer-events:none;z-index:60;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .nameline{display:flex;gap:8px;align-items:center;margin-top:12px}
@@ -258,21 +260,8 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
           <p class="dd">Figure 10.4 of DAFI36-2903_AFROTCSUP (18 November 2021), the full order of precedence. Read it left to right, top to bottom, highest first.</p></div>
         <div class="da"><button class="btn" type="button" data-chart aria-haspopup="dialog">View</button><a class="btn" href="references/afrotc-ribbon-chart.jpg" download>Save</a></div>
       </div>
-      <div class="doc">
-        <div><p class="dn">DAFI36-2903_AFROTCSUP, AFROTC Supplement to DAFI 36-2903</p>
-          <p class="dd">18 November 2021. Figure 10.4 (AFROTC Ribbon Chart) sets the ribbons and their order. Paragraphs 10.8.1.3 to 10.8.1.8 cover stars, oak leaf clusters, organizational devices and prior service ribbons.</p></div>
-        <div class="da"><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="references/dafi36-2903-afrotcsup.pdf" download>Save</a></div>
-      </div>
-      <div class="doc">
-        <div><p class="dn">AFROTCI 36-2011 Volume 3, Cadet Operations</p>
-          <p class="dd">24 June 2026. Chapter 15 and Table 15.1 give the criteria for the AFROTC awards and ribbons, including the Fitness Award silver star. Criteria for the organizational awards (American Legion, ROA, MOAA and others) come from the HQ AFROTC cadet award criteria sheets (Sep 2026).</p></div>
-        <div class="da"><a class="btn" href="../pfra/references/afrotci-36-2011v3.pdf" target="_blank" rel="noopener">View</a><a class="btn" href="../pfra/references/afrotci-36-2011v3.pdf" download>Save</a></div>
-      </div>
-      <div class="doc">
-        <div><p class="dn">DAFI 36-2903, Dress and Personal Appearance</p>
-          <p class="dd">29 February 2024. Ribbon placement (4.5.2, 4.7.3), badges above ribbons (12.2), and ribbon and device rules (Chapter 13). Opens on the Air Force e-Publishing site.</p></div>
-        <div class="da"><a class="btn" href="https://static.e-publishing.af.mil/production/1/af_a1/publication/dafi36-2903/dafi36-2903.pdf" target="_blank" rel="noopener">Open</a></div>
-      </div>
+      <div id="rr-refs"></div>
+      <p class="dn rr-other">Other sources</p>
       <div class="doc">
         <div><p class="dn">HQ AFROTC cadet award criteria</p>
           <p class="dd">Master list (CAO 25 Sep 2026) and the per-award criteria sheets for the organizational awards. Not posted here; ask cadre for a copy.</p></div>
@@ -905,6 +894,15 @@ if (shared){
 } else state = load();
 wire(); syncPicker(); render();
 })();
+</script>
+<script src="../documents/library.js"></script>
+<script src="../shared/doc-refs.js"></script>
+<script>
+  D250Refs.mount(document.getElementById("rr-refs"), {from: "ribbon-rack", items: [
+    {id: "dafi36-2903-afrotcsup", page: 18, note: "18 November 2021. Figure 10.4 (AFROTC Ribbon Chart) sets the ribbons and their order. Paragraphs 10.8.1.3 to 10.8.1.8 cover stars, oak leaf clusters, organizational devices and prior service ribbons."},
+    {id: "afrotci-36-2011v3", page: 111, note: "24 June 2026. Chapter 15 and Table 15.1 give the criteria for the AFROTC awards and ribbons, including the Fitness Award silver star."},
+    {id: "ext-dafi36-2903", note: "29 February 2024. Ribbon placement (4.5.2, 4.7.3), badges above ribbons (12.2), and ribbon and device rules (Chapter 13)."}
+  ]});
 </script>
 </body>
 </html>

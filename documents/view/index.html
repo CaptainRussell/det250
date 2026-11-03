@@ -36,7 +36,7 @@ button,input{font:inherit;color:inherit}
 
 .stage{max-width:960px;margin:0 auto;padding:18px 16px 8px}
 .pages{display:flex;flex-direction:column;align-items:center;gap:14px}
-.pg{position:relative;width:100%;background:#fff;border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,.35);overflow:hidden}
+.pg{scroll-margin-top:150px;position:relative;width:100%;background:#fff;border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,.35);overflow:hidden}
 .pg canvas{display:block;width:100%;height:auto}
 .pg .n{position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:700;color:#888;background:rgba(255,255,255,.85);padding:1px 6px;border-radius:6px}
 .status{padding:40px 16px;text-align:center;color:var(--d250-soft)}
@@ -62,7 +62,7 @@ button,input{font:inherit;color:inherit}
 <a class="d250-bar" href="../../" aria-label="Storm HQ, Det 250: all tools"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 <div class="top">
   <div class="top-in">
-    <a class="back" id="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents &amp; Policy</a>
+    <a class="back" id="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span id="backLabel">Documents &amp; Policy</span></a>
     <div class="ttl"><small id="grp">Restricted</small><h1 id="title">Loading…</h1></div>
     <div class="acts">
       <span class="pc" id="pc"></span>
@@ -102,7 +102,28 @@ button,input{font:inherit;color:inherit}
   const GROUP = {plans:"Detachment plans", opords:"Weekly OPORD"};
   const $ = id => document.getElementById(id);
   const bytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  const id = new URLSearchParams(location.search).get("id") || "";
+  const Q = new URLSearchParams(location.search);
+  const id = Q.get("id") || "";
+  // ?from=<tool folder>: opened from another Storm HQ tool, so the back button
+  // returns there (to the exact page and seat when the browser says where we came from).
+  const FROM = {"pfra":"PFRA Calculator", "ribbon-rack":"Ribbon Rack", "org-chart":"Org Chart"};
+  const from = Object.prototype.hasOwnProperty.call(FROM, Q.get("from")) ? Q.get("from") : "";
+  const page = Math.max(1, parseInt(Q.get("page"), 10) || 1);
+  const keep = from ? "&from=" + encodeURIComponent(from) : "";
+  function backTo(fallback){
+    if(!from){ $("back").href = fallback; return; }
+    const tool = new URL("../../" + from + "/", location.href);
+    let ref = null; try { ref = document.referrer && new URL(document.referrer); } catch(_){}
+    // The tool saves its exact address on click (shared/doc-refs.js); the referrer is the fallback.
+    let back = tool.href;
+    try {
+      const saved = sessionStorage.getItem("d250-docs-back-" + from);
+      if(saved && saved.startsWith(tool.href)) back = saved;
+      else if(ref && ref.origin === location.origin && ref.pathname.startsWith(tool.pathname)) back = ref.href;
+    } catch(_){}
+    $("back").href = back;
+    $("backLabel").textContent = FROM[from];
+  }
   let V, F, KEY, plain, PUB;
   pdfjsLib.GlobalWorkerOptions.workerSrc = "../vendor/pdfjs/pdf.worker.min.js";
 
@@ -116,13 +137,13 @@ button,input{font:inherit;color:inherit}
 
   function setNav(){
     const list = V.files.filter(x => x.group === F.group), i = list.indexOf(F);
-    $("back").href = "../#" + F.group;
+    backTo("../#" + F.group);
     $("grp").textContent = GROUP[F.group] || "Restricted";
     $("title").textContent = F.title;
     document.title = F.title + " · Storm HQ";
     [["prev", list[i - 1]], ["next", list[i + 1]]].forEach(([b, t]) => {
       const a = $(b);
-      if(t){ a.href = "?id=" + encodeURIComponent(t.id); a.title = t.title; a.setAttribute("aria-label", t.title); a.removeAttribute("aria-disabled"); }
+      if(t){ a.href = "?id=" + encodeURIComponent(t.id) + keep; a.title = t.title; a.setAttribute("aria-label", t.title); a.removeAttribute("aria-disabled"); }
       else { a.removeAttribute("href"); a.setAttribute("aria-disabled", "true"); }
     });
   }
@@ -131,13 +152,13 @@ button,input{font:inherit;color:inherit}
   function setPubNav(){
     const sec = (window.D250_DOC_SECTIONS || []).find(x => x.id === PUB.sec) || {};
     const list = window.D250_DOCS.filter(x => x.sec === PUB.sec && x.src), i = list.indexOf(PUB);
-    $("back").href = "../#" + PUB.sec;
+    backTo("../#" + PUB.sec);
     $("grp").textContent = sec.title || "Documents";
     $("title").textContent = PUB.num + ": " + PUB.title;
     document.title = PUB.num + " · Storm HQ";
     [["prev", list[i - 1]], ["next", list[i + 1]]].forEach(([b, t]) => {
       const a = $(b);
-      if(t){ a.href = "?id=" + encodeURIComponent(t.id); a.title = t.num; a.setAttribute("aria-label", t.num); a.removeAttribute("aria-disabled"); }
+      if(t){ a.href = "?id=" + encodeURIComponent(t.id) + keep; a.title = t.num; a.setAttribute("aria-label", t.num); a.removeAttribute("aria-disabled"); }
       else { a.removeAttribute("href"); a.setAttribute("aria-disabled", "true"); }
     });
   }
@@ -179,6 +200,7 @@ button,input{font:inherit;color:inherit}
       s.div.prepend(c);
       await s.page.render({canvasContext: c.getContext("2d"), viewport: v}).promise;
     };
+    if(page > 1 && slots[page - 1]){ await draw(slots[page - 1]); slots[page - 1].div.scrollIntoView({block:"start"}); }
     const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ draw(slots[e.target.dataset.i]); io.unobserve(e.target); } }), {rootMargin: "800px 0px"});
     slots.forEach((s, i) => { s.div.dataset.i = i; io.observe(s.div); });
   }
