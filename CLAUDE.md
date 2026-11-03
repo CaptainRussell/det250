@@ -14,7 +14,7 @@
 ## Repo layout
 | Path | What |
 |---|---|
-| `index.html` | Hub page. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tone, icon, section `cadets`, `evaluators` or `instructors`, locked, blurb). Hub sections: Cadet tools, Evaluator tools, Instructor tools. Cards show only icon, name and blurb (no tags, no "Open" arrow, no section subtitles). |
+| `index.html` | Hub page. Its bar is a `<div class="d250-bar d250-bar-hub">` with a "Portfolio" back pill at the top left (to https://captainrussell.github.io/Portfolio/, Captain Russell's portfolio, added Nov 2026) and the Storm HQ home link; tool pages keep the single-link bar. Tools are listed in the `TOOLS` array near the bottom (fields: href, name, tone, icon, section `cadets`, `evaluators` or `instructors`, locked, blurb). Hub sections: Cadet tools, Evaluator tools, Instructor tools. Cards show only icon, name and blurb (no tags, no "Open" arrow, no section subtitles). |
 | `shared/det250.css` | Det 250 bar styles and cross-page view transitions. |
 | `shared/det250-patch.png`, `det250-patch-icon.png` | Det 250 patch (transparent background) and favicon. |
 | `pfra/` | AFROTC PFRA Calculator (`index.html`, `app.js`, `src/*.js`, `styles.css`, `pfra-scoring-data.json`, `references/` PDFs + HAMR audio, about 55 MB). |
