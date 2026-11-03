@@ -36,8 +36,9 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
 .d250-bar .d250-name { color: #f1be48; font-weight: 800; letter-spacing: .02em; }
 .d250-bar .d250-sub { color: #b2b3b8; font-weight: 600; }
 .d250-bar .d250-all {
-  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 11px; border-radius: 999px; border: 1px solid #46464f;
+  order: -1; /* the return button sits top left on every page (Storm HQ and the Portfolio) */
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px 5px 8px; border-radius: 999px; border: 1px solid #46464f;
   color: #ececee; font-weight: 700; font-size: 12px; white-space: nowrap;
   transition: background .2s, border-color .2s;
 }
