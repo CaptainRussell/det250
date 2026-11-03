@@ -695,7 +695,7 @@ body.guide{font-family:var(--ui);font-size:17px;line-height:1.55;background:#0b0
 body.gm{font-family:var(--ui);font-size:14px;line-height:1.45;background:#0e1020}
 .gmw{display:grid;grid-template-columns:1fr 380px;gap:14px;padding:12px 14px;min-height:100vh}
 .gmtop{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:2px solid #2b2e55;padding-bottom:10px}
-.gmprogress{position:sticky;top:0;z-index:20;grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#0e1020;border:1px solid #3d4280;border-radius:6px;box-shadow:0 4px 14px #0008}
+.gmprogress{position:sticky;top:var(--d250-bar-h,42px);z-index:20;grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#0e1020;border:1px solid #3d4280;border-radius:6px;box-shadow:0 4px 14px #0008}
 .gmprogress[hidden]{display:none}
 .gmprogress.gmprogress-scene{display:block}
 .gmprogress-scene>.gchoice{margin:0}

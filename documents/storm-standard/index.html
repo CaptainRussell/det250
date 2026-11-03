@@ -26,7 +26,7 @@ img{max-width:100%}
 .box{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;box-shadow:var(--d250-shadow)}
 
 /* side nav: chapters; the open chapter lists its subsections */
-.side{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px}
+.side{position:sticky;top:calc(var(--d250-bar-h,42px) + 16px);display:flex;flex-direction:column;gap:12px}
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--d250-soft);text-decoration:none}
 .back:hover{color:var(--d250-ink)}
 .pdf{display:flex;align-items:center;gap:8px;padding:11px 14px;font-size:14px;font-weight:800;color:#fff;text-decoration:none;background:var(--tone);border-color:var(--tone)}
@@ -47,7 +47,7 @@ img{max-width:100%}
 .nav .subs a.here{color:var(--d250-ink);border-left-color:var(--tone)}
 .msubs{display:none}
 @media (max-width:880px){
-  .side{position:sticky;top:0;z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0;gap:0}
+  .side{position:sticky;top:var(--d250-bar-h,42px);z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0;gap:0}
   .side .back,.side .pdf{display:none}
   .nav{display:flex;gap:6px;overflow-x:auto;padding:6px;-webkit-overflow-scrolling:touch}
   .nav .navi{flex:none}
@@ -179,7 +179,7 @@ dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;bord
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../../" aria-label="Storm HQ, Det 250: all tools"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../" aria-label="Back to Documents and Policy"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents &amp; Policy</span></a>
 <header class="d250-head" style="--tone:#0369a1">
   <div class="d250-head-in">
     <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M12 6l1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4z"/></svg></span>
@@ -192,7 +192,6 @@ dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;bord
 </header>
 <div class="wrap">
   <aside class="side">
-    <a class="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents and Policy</a>
     <a class="box pdf" href="The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download the PDF<small>4.4 MB</small></a>
     <nav class="box nav" id="nav" aria-label="Chapters"></nav>
     <div class="msubs" id="msubs" aria-label="Topics in this chapter"></div>
@@ -446,7 +445,7 @@ function show(i, focus){
   const here = msubs.querySelector(".here"); if(here) here.scrollIntoView({block: "nearest", inline: "center"});
   const tab = nav.querySelector(".navi.on"); if(tab && window.matchMedia("(max-width:880px)").matches) tab.scrollIntoView({block: "nearest", inline: "center"});
   if(focus){
-    const top = stage.getBoundingClientRect().top + scrollY - (window.matchMedia("(max-width:880px)").matches ? 120 : 16);
+    const top = stage.getBoundingClientRect().top + scrollY - (window.matchMedia("(max-width:880px)").matches ? 162 : 58);
     if(scrollY > top) scrollTo({top, behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"});
     stage.focus({preventScroll: true});
   }

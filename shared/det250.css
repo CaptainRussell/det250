@@ -21,8 +21,11 @@ textarea, [contenteditable]:not([contenteditable="false"]),
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=button]):not([type=submit]):not([type=reset]):not([type=file]):not([type=image]) { cursor: text; }
 
 /* ---------- the bar ---------- */
+/* The bar stays pinned at the top of every page. Anything else a page pins below it
+   uses top: var(--d250-bar-h) so the two stack instead of overlapping. */
+:root { --d250-bar-h: 42px; }
 .d250-bar {
-  position: relative; z-index: 50;
+  position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 10px;
   min-height: 40px; margin: 0; padding: 6px 16px;
   background: #16161a; color: #ececee;
@@ -36,8 +39,9 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
 .d250-bar .d250-name { color: #f1be48; font-weight: 800; letter-spacing: .02em; }
 .d250-bar .d250-sub { color: #b2b3b8; font-weight: 600; }
 .d250-bar .d250-all {
-  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 11px; border-radius: 999px; border: 1px solid #46464f;
+  order: -1; /* the return button sits top left on every page (Storm HQ and the Portfolio) */
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px 5px 8px; border-radius: 999px; border: 1px solid #46464f;
   color: #ececee; font-weight: 700; font-size: 12px; white-space: nowrap;
   transition: background .2s, border-color .2s;
 }
@@ -58,8 +62,8 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
   transition: background .2s, border-color .2s;
 }
 .d250-bar .d250-portfolio svg { transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
-.d250-bar .d250-portfolio:hover { background: #c8102e; border-color: #c8102e; }
-.d250-bar .d250-portfolio:hover svg { transform: translateX(-3px); }
+.d250-bar .d250-portfolio:hover, .d250-bar:hover .d250-portfolio { background: #c8102e; border-color: #c8102e; }
+.d250-bar .d250-portfolio:hover svg, .d250-bar:hover .d250-portfolio svg { transform: translateX(-3px); }
 
 
 @media print { .d250-bar { display: none !important; } }

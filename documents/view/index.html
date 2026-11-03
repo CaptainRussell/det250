@@ -19,7 +19,7 @@ button,input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--d250-gold);outline-offset:2px}
 [hidden]{display:none!important}
 
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--d250-surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--d250-line)}
+.top{position:sticky;top:var(--d250-bar-h,42px);z-index:20;background:color-mix(in srgb,var(--d250-surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--d250-line)}
 .top::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone)}
 .top-in{max-width:1000px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .back{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 12px 6px 9px;border-radius:999px;border:1px solid var(--d250-line-strong);color:var(--d250-ink);text-decoration:none;font-weight:700;font-size:13px;white-space:nowrap}
@@ -59,10 +59,9 @@ button,input{font:inherit;color:inherit}
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../../" aria-label="Storm HQ, Det 250: all tools"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" id="back" href="../" aria-label="Back"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span id="backLabel">Documents &amp; Policy</span></span></a>
 <div class="top">
   <div class="top-in">
-    <a class="back" id="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span id="backLabel">Documents &amp; Policy</span></a>
     <div class="ttl"><small id="grp">Restricted</small><h1 id="title">Loading…</h1></div>
     <div class="acts">
       <span class="pc" id="pc"></span>

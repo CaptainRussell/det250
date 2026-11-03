@@ -77,7 +77,7 @@ button,input,select{font:inherit;color:inherit}
 .btn svg{width:16px;height:16px}
 .btn:disabled{opacity:.45;cursor:default}
 /* rack */
-.rackcol{position:sticky;top:12px}
+.rackcol{position:sticky;top:calc(var(--d250-bar-h,42px) + 12px)}
 @media (max-width:900px){.rackcol{position:static}}
 .rackbox{padding:4px 16px 16px}
 .stage{background:#2b3c63;background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:26px 14px;display:grid;place-items:center;min-height:150px;overflow:hidden}
