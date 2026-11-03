@@ -64,7 +64,7 @@ input{font:inherit;color:inherit}
 .sec .grid{padding:2px 2px 6px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
-  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms + .1s)}
+  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(min(var(--i,0), 14) * 35ms + .1s)}
 @keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
 .tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease);pointer-events:none}
 .tool:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
@@ -173,83 +173,10 @@ input{font:inherit;color:inherit}
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
+<script src="library.js"></script>
 <script>
-/* ===================================================================
-   PUBLIC DOCUMENTS. Add or edit entries here.
-   num (card name), title, what (one line), href (one click target).
-   Local PDFs open in this tab; e-Publishing links open a new tab.
-   Restricted plans and OPORDs come from restricted/vault.json.
-   =================================================================== */
-const EPUB = "https://static.e-publishing.af.mil/production/1/";
-const EPUB_INDEX = "https://www.e-publishing.af.mil/Product-Index/";
-const SECTIONS = [
-  {id:"plans", title:"Detachment plans", tone:"#c8102e", locked:true, sub:"The semester OPLAN, the cadet Policy Packet and the cadre duties roster. These include locations, dates and names, so they open with the detachment password."},
-  {id:"opords", title:"Weekly OPORDs, Fall 2026", tone:"#4a5a36", locked:true, compact:true, sub:"Signed LLAB operations orders, one per week. Same password."},
-  {id:"afrotc", title:"AFROTC instructions and supplements", tone:"#1f4e9c", sub:"HQ AFROTC publications that govern cadet life. Where they are more specific than the Air Force publication, they win for cadets."},
-  {id:"daf", title:"Department of the Air Force publications", tone:"#0369a1", sub:"Links go to the official e-Publishing site so you always get the current version."},
-  {id:"forms", title:"Forms", tone:"#a06f00", sub:""}
-];
-const DOCS = [
-  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 1", title:"Cadet's Guide to the LLAB Curriculum",
-   what:"Leadership Laboratory training objectives and evaluation tools. The OPLAN builds every lab around it. Aug 2026.",
-   href:"references/afrotci-36-2011v1.pdf", key:"llab gmc objectives curriculum leadership laboratory guidebook"},
-  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 2", title:"Cadre Training and Certification",
-   what:"How AFROTC cadre are trained and certified. The Org Chart cites it for cadre duties. 11 Sep 2024.",
-   href:"references/afrotci-36-2011v2.pdf", key:"cadre training certification duties"},
-  {sec:"afrotc", num:"AFROTCI 36-2011, Vol 3", title:"Cadet Operations",
-   what:"The cadet life cycle from first contact to commissioning: fitness, accountability, discipline and detachment awards (Table 15.1). 24 Jun 2026.",
-   href:"../pfra/references/afrotci-36-2011v3.pdf", key:"awards table 15.1 fitness pfa cadet operations"},
-  {sec:"afrotc", num:"DAFI 36-2903 AFROTC Sup", title:"Dress and Personal Appearance (AFROTC)",
-   what:"Cadet uniform wear, insignia and the AFROTC Ribbon Chart (Figure 10.4) with order of precedence. 18 Nov 2021.",
-   href:"../ribbon-rack/references/dafi36-2903-afrotcsup.pdf", key:"uniform ribbons dress appearance afrotcsup supplement precedence"},
-  {sec:"afrotc", num:"DAFMAN 36-2905 AFROTC Sup", title:"Physical Fitness Program (AFROTC)",
-   what:"How AFROTC runs cadet fitness assessments. 28 Apr 2023, awaiting revision: newer AFROTC fitness guidance and the 2026 DAFMAN win where they differ.",
-   href:"../pfra/references/dafman-36-2905-afrotcsup.pdf", key:"pfa pfra fitness supplement afrotcsup"},
-
-  {sec:"daf", num:"DAFI 36-2903", title:"Dress and Personal Appearance",
-   what:"Uniform wear, grooming and appearance standards for everyone in uniform.",
-   href:EPUB+"af_a1/publication/dafi36-2903/dafi36-2903.pdf", key:"uniform grooming hair dress appearance"},
-  {sec:"daf", num:"DAFMAN 36-2905", title:"Physical Fitness Readiness Program",
-   what:"The PFRA: components, scoring and administration. The PFRA Calculator is built on it. Replaces AFI 36-2905. 24 Mar 2026.",
-   href:EPUB+"af_a1/publication/afman36-2905/dafman36-2905.pdf", key:"pfra pfa fitness run hamr pushups waist afi 36-2905"},
-  {sec:"daf", num:"AFH 1", title:"Airman",
-   what:"The Airman handbook: heritage, customs and courtesies, and standards. Much of the Storm Standard draws on it.",
-   href:EPUB+"af_a1/publication/afh1/afh1.pdf", key:"airman handbook customs courtesies heritage"},
-  {sec:"daf", num:"AFI 1-1", title:"Air Force Standards",
-   what:"Air Force vision, mission, core values and standards of conduct. Aug 2023.",
-   href:EPUB_INDEX, key:"core values standards conduct mission vision"},
-  {sec:"daf", num:"DAFI 90-1201", title:"Protocol",
-   what:"Customs, courtesies, reporting in and out, flag courtesies and ceremonies. Current protocol instruction (the Policy Packet cites the older AFI 34-1201). Oct 2024.",
-   href:EPUB+"saf_ds/publication/dafi90-1201/dafi90-1201.pdf", key:"customs courtesies flag reporting protocol salute afi 34-1201"},
-  {sec:"daf", num:"DAFI 90-6001", title:"Sexual Assault Prevention and Response",
-   what:"SAPR policy, reporting options and support. Backs the Policy Packet's zero tolerance rule.",
-   href:EPUB+"af_a1/publication/dafi90-6001/afi90-6001.pdf", key:"sapr harassment assault report"},
-  {sec:"daf", num:"DAFI 51-508", title:"Political Activities, Free Speech, and Freedom of Assembly",
-   what:"What you can and cannot do politically, online and in person, while affiliated with the Air Force.",
-   href:EPUB+"af_ja/publication/dafi51-508/dafi51-508.pdf", key:"political social media free speech"},
-  {sec:"daf", num:"DAFI 36-2614", title:"Commissioning Education Program",
-   what:"Commissioning education and training at USAFA, AFROTC and OTS.",
-   href:EPUB+"af_a1/publication/dafi36-2614/dafi36-2614.pdf", key:"commissioning education"},
-  {sec:"daf", num:"AFH 33-337", title:"The Tongue and Quill",
-   what:"Air Force writing and briefing guide. The Policy Packet uses it for email signature blocks.",
-   href:EPUB_INDEX, key:"writing email signature block memo briefing"},
-
-  {sec:"forms", num:"AF Form 4446", title:"PFRA Scorecard",
-   what:"The scorecard filled out at every PFRA.",
-   href:"../pfra/references/af-form-4446.pdf", key:"pfra scorecard fitness"},
-  {sec:"forms", num:"AF Form 4446A", title:"Fitness Screening Questionnaire",
-   what:"The screening questionnaire you complete before a PFRA.",
-   href:"../pfra/references/af-form-4446a-fsq.pdf", key:"pfra fsq fitness screening"},
-  {sec:"forms", num:"AF Form 1206", title:"Nomination for Award",
-   what:"Used to nominate cadets for detachment, region and HQ awards.",
-   href:EPUB_INDEX, key:"award nomination package"},
-  {sec:"forms", num:"AF Form 724", title:"Airman Comprehensive Assessment Worksheet",
-   what:"Feedback worksheet the OPLAN lists among the LLAB evaluation tools.",
-   href:EPUB_INDEX, key:"feedback aca evaluation"},
-  {sec:"forms", num:"AF Form 174", title:"Record of Individual Counseling",
-   what:"Counseling record kept with LOCs and LORs in cadet files.",
-   href:EPUB_INDEX, key:"counseling loc lor discipline"}
-];
+/* The public document list is in library.js (shared with view/). */
+const SECTIONS = window.D250_DOC_SECTIONS, DOCS = window.D250_DOCS;
 
 /* ===================== rendering ===================== */
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -258,15 +185,20 @@ const ICON = {
   plans:SVG('<path d="M9 4h6v3H9z"/><path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H15"/><path d="M8.5 12h7M8.5 16h5"/>'),
   afrotc:SVG('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M8.5 11.5l2.5 2.5 4.5-5"/>'),
   daf:SVG('<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>'),
-  forms:SVG('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>')
+  forms:SVG('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
+  fitness:SVG('<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>'),
+  tool:SVG('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/><path d="M16 15v3"/>'),
+  external:SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>')
 };
 const EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Opens e-Publishing in a new tab"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 const LOCK = '<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="lt"></span></span></span>';
 let n = 0;
 function card(d, s){
-  const ext = /^https?:/.test(d.href);
-  return `<a class="tool" href="${esc(d.href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone};--i:${n++}">
-    <span class="icon" aria-hidden="true">${ICON[s.id]}</span>
+  const href = d.src ? "view/?id=" + encodeURIComponent(d.id) : d.href;
+  const ext = /^https?:/.test(href);
+  const icon = d.tool ? ICON.tool : /form|sheet/i.test(d.num) && s.id !== "fitness" ? ICON.forms : ICON[s.id];
+  return `<a class="tool" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone};--i:${n++}">
+    <span class="icon" aria-hidden="true">${icon}</span>
     <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p></span></a>`;
 }
 const PLAN_BLURBS = {

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Restricted document · Storm HQ</title>
+<title>Document · Storm HQ</title>
 <link rel="icon" type="image/png" href="../../shared/det250-patch-icon.png">
 <link rel="stylesheet" href="../../shared/det250.css">
 <style>
@@ -91,9 +91,10 @@ button,input{font:inherit;color:inherit}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Restricted detachment document. Do not repost it publicly.</p>
+  <p class="source-line" id="srcLine">Documents and Policy. Always check e-Publishing for the current version of Air Force publications.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
+<script src="../library.js"></script>
 <script src="../vendor/pdfjs/pdf.min.js"></script>
 <script>
 (() => {
@@ -102,7 +103,7 @@ button,input{font:inherit;color:inherit}
   const $ = id => document.getElementById(id);
   const bytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const id = new URLSearchParams(location.search).get("id") || "";
-  let V, F, KEY, plain;
+  let V, F, KEY, plain, PUB;
   pdfjsLib.GlobalWorkerOptions.workerSrc = "../vendor/pdfjs/pdf.worker.min.js";
 
   const status = t => { $("status").hidden = !t; $("status").textContent = t || ""; };
@@ -126,14 +127,36 @@ button,input{font:inherit;color:inherit}
     });
   }
 
+  // Public internal documents (library.js): no password, streamed from the file.
+  function setPubNav(){
+    const sec = (window.D250_DOC_SECTIONS || []).find(x => x.id === PUB.sec) || {};
+    const list = window.D250_DOCS.filter(x => x.sec === PUB.sec && x.src), i = list.indexOf(PUB);
+    $("back").href = "../#" + PUB.sec;
+    $("grp").textContent = sec.title || "Documents";
+    $("title").textContent = PUB.num + ": " + PUB.title;
+    document.title = PUB.num + " · Storm HQ";
+    [["prev", list[i - 1]], ["next", list[i + 1]]].forEach(([b, t]) => {
+      const a = $(b);
+      if(t){ a.href = "?id=" + encodeURIComponent(t.id); a.title = t.num; a.setAttribute("aria-label", t.num); a.removeAttribute("aria-disabled"); }
+      else { a.removeAttribute("href"); a.setAttribute("aria-disabled", "true"); }
+    });
+  }
+
   async function render(){
-    status("Decrypting…");
-    const res = await fetch("../restricted/" + F.id + ".bin");
-    if(!res.ok) throw new Error("fetch");
-    plain = new Uint8Array(await open(KEY, new Uint8Array(await res.arrayBuffer())));
-    $("dl").hidden = false;
-    status("Opening…");
-    const pdf = await pdfjsLib.getDocument({data: plain.slice()}).promise;
+    let pdf;
+    if(PUB){
+      status("Opening…");
+      $("dl").hidden = false;
+      pdf = await pdfjsLib.getDocument({url: "../" + PUB.src}).promise;
+    } else {
+      status("Decrypting…");
+      const res = await fetch("../restricted/" + F.id + ".bin");
+      if(!res.ok) throw new Error("fetch");
+      plain = new Uint8Array(await open(KEY, new Uint8Array(await res.arrayBuffer())));
+      $("dl").hidden = false;
+      status("Opening…");
+      pdf = await pdfjsLib.getDocument({data: plain.slice()}).promise;
+    }
     $("pc").textContent = pdf.numPages + (pdf.numPages === 1 ? " page" : " pages");
     const host = $("pages"); host.innerHTML = "";
     const width = () => Math.min(host.clientWidth || 900, 900);
@@ -161,6 +184,10 @@ button,input{font:inherit;color:inherit}
   }
 
   $("dl").addEventListener("click", () => {
+    if(PUB){
+      const a = document.createElement("a"); a.href = "../" + (PUB.dl || PUB.src); a.download = "";
+      document.body.append(a); a.click(); a.remove(); return;
+    }
     if(!plain) return;
     const url = URL.createObjectURL(new Blob([plain], {type:"application/pdf"}));
     const a = document.createElement("a"); a.href = url; a.download = F.title.replace(/[^\w -]+/g, "") + ".pdf";
@@ -181,6 +208,13 @@ button,input{font:inherit;color:inherit}
   });
 
   (async () => {
+    PUB = (window.D250_DOCS || []).find(x => x.src && x.id === id);
+    if(PUB){
+      setPubNav();
+      try { await render(); } catch(_){ status("Couldn't open this document. Check your connection and refresh."); }
+      return;
+    }
+    $("srcLine").textContent = "Restricted detachment document. Do not repost it publicly.";
     try { V = await (await fetch("../restricted/vault.json")).json(); }
     catch(_){ status("Couldn't load the document list. Refresh to try again."); return; }
     F = V.files.find(x => x.id === id);
