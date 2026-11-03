@@ -28,14 +28,33 @@ body{background:var(--d250-page);color:var(--d250-ink);font:16px/1.65 var(--d250
 .pdf small{margin-left:auto;font-size:12px;font-weight:600;opacity:.85}
 .pdf:hover{background:color-mix(in srgb,var(--tone) 82%,#fff)}
 .nav{padding:8px}
-.nav a{display:block;padding:7px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:600;line-height:1.3}
-.nav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
-.nav a:hover{background:var(--d250-surface-2)}
-.nav a.on{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+.nav .tabl{position:relative;display:block;padding:8px 30px 8px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;transition:background .2s,box-shadow .2s}
+.nav .tabl small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
+.nav .tabl:hover{background:var(--d250-surface-2)}
+.nav .navi.on .tabl{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+.nav .chev{position:absolute;right:12px;top:50%;width:8px;height:8px;margin-top:-6px;border-right:2px solid var(--d250-soft);border-bottom:2px solid var(--d250-soft);transform:rotate(-45deg);transition:transform .3s var(--d250-ease)}
+.nav .navi.on .chev{transform:rotate(45deg)}
+.nav .subs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--d250-ease)}
+.nav .navi.on .subs{grid-template-rows:1fr}
+.nav .subs>div{overflow:hidden;display:flex;flex-direction:column;margin-left:14px;border-left:1px solid var(--d250-line)}
+.nav .subs a{display:block;padding:6px 10px 6px 12px;margin:1px 0;color:var(--d250-soft);text-decoration:none;font-size:13px;font-weight:600;line-height:1.3;border-left:2px solid transparent;margin-left:-1px;opacity:0;transform:translateX(-6px);transition:color .2s,border-color .2s,opacity .3s,transform .3s var(--d250-ease)}
+.nav .navi.on .subs a{opacity:1;transform:none}
+.nav .navi.on .subs a:nth-child(2){transition-delay:.03s}.nav .navi.on .subs a:nth-child(3){transition-delay:.06s}.nav .navi.on .subs a:nth-child(4){transition-delay:.09s}.nav .navi.on .subs a:nth-child(5){transition-delay:.12s}.nav .navi.on .subs a:nth-child(6){transition-delay:.15s}.nav .navi.on .subs a:nth-child(7){transition-delay:.18s}.nav .navi.on .subs a:nth-child(8){transition-delay:.21s}
+.nav .subs a:hover{color:var(--d250-ink)}
+.nav .subs a.here{color:var(--d250-ink);border-left-color:var(--tone)}
+.msubs{display:none}
+@media (max-width:880px){html{scroll-padding-top:140px}}
+@media (prefers-reduced-motion:reduce){.nav .subs,.nav .subs a,.nav .chev{transition:none}}
 @media (max-width:880px){
   .nav{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px;-webkit-overflow-scrolling:touch}
-  .nav a{flex:none;scroll-snap-align:start;white-space:nowrap;padding:7px 12px}
-  .nav a.on{box-shadow:inset 0 -3px 0 var(--tone)}
+  .nav .navi{flex:none;scroll-snap-align:start}
+  .nav .tabl{white-space:nowrap;padding:7px 12px}
+  .nav .navi.on .tabl{box-shadow:inset 0 -3px 0 var(--tone)}
+  .nav .chev,.nav .subs{display:none}
+  .msubs{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 0;-webkit-overflow-scrolling:touch}
+  .msubs:empty{display:none}
+  .msubs a{flex:none;white-space:nowrap;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--d250-line-strong);color:var(--d250-soft);text-decoration:none;animation:tabin .3s var(--d250-ease) both}
+  .msubs a.here{color:#fff;background:var(--tone);border-color:var(--tone)}
   .side{position:sticky;top:0;z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0}
   .side .back,.side .pdf,.side .find{display:none}
   .side.open .find{display:flex}
@@ -93,7 +112,8 @@ mark.now{background:var(--d250-gold);color:#16161a}
   <aside class="side">
     <a class="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents and Policy</a>
     <a class="box pdf" href="The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download the PDF<small>4.4 MB</small></a>
-    <nav class="box nav" aria-label="Chapters"><a href="#about" data-tab="about"><small>Front matter</small>Edition, Purpose, Authority</a><a href="#chapter-1" data-tab="chapter-1"><small>Chapter 1</small>The Storm Legacy</a><a href="#chapter-2" data-tab="chapter-2"><small>Chapter 2</small>Officership</a><a href="#chapter-3" data-tab="chapter-3"><small>Chapter 3</small>History</a><a href="#chapter-4" data-tab="chapter-4"><small>Chapter 4</small>Military Strategy</a><a href="#chapter-5" data-tab="chapter-5"><small>Chapter 5</small>Military Resources</a><a href="#appendix-i" data-tab="appendix-i"><small>Appendix I</small>Constitution</a></nav>
+    <nav class="box nav" aria-label="Chapters"><div class="navi" data-tab="about"><a class="tabl" href="#about" data-tab="about"><small>Front matter</small>Edition, Purpose, Authority</a></div><div class="navi" data-tab="chapter-1"><a class="tabl" href="#chapter-1" data-tab="chapter-1"><small>Chapter 1</small>The Storm Legacy<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-4" data-p="4">Pioneers of the Storm</a><a href="#p-8" data-p="8">Significant Events of ISU &amp; Det 250</a><a href="#p-12" data-p="12">Carry the Legacy Forward</a></div></div></div><div class="navi" data-tab="chapter-2"><a class="tabl" href="#chapter-2" data-tab="chapter-2"><small>Chapter 2</small>Officership<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-14" data-p="14">Vision, Mission and Core Functions</a><a href="#p-15" data-p="15">Chain of Command, Leadership, Followership</a><a href="#p-17" data-p="17">Honor Code and Core Values</a><a href="#p-24" data-p="24">Oaths of Office</a><a href="#p-28" data-p="28">Rank and Insignia</a><a href="#p-33" data-p="33">Customs, Courtesies and the Flag</a><a href="#p-40" data-p="40">Creeds, Prayer and Quotations</a><a href="#p-51" data-p="51">Standards, Conduct, UCMJ, Social Media</a></div></div></div><div class="navi" data-tab="chapter-3"><a class="tabl" href="#chapter-3" data-tab="chapter-3"><small>Chapter 3</small>History<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-60" data-p="60">Prop and Wings</a><a href="#p-62" data-p="62">History of ROTC and Air and Space Leaders</a><a href="#p-66" data-p="66">Air and Space Force Events</a><a href="#p-68" data-p="68">United States Air Force Heritage</a></div></div></div><div class="navi" data-tab="chapter-4"><a class="tabl" href="#chapter-4" data-tab="chapter-4"><small>Chapter 4</small>Military Strategy<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-82" data-p="82">National Strategy</a><a href="#p-83" data-p="83">Operational Imperatives and Domains</a><a href="#p-85" data-p="85">Core Missions and Spacepower</a><a href="#p-87" data-p="87">Principles of War</a><a href="#p-88" data-p="88">Combatant Commands and the Services</a><a href="#p-91" data-p="91">Major Commands and the A-Staff</a><a href="#p-95" data-p="95">Agile Combat Employment</a><a href="#p-97" data-p="97">Joint Planning Process</a></div></div></div><div class="navi" data-tab="chapter-5"><a class="tabl" href="#chapter-5" data-tab="chapter-5"><small>Chapter 5</small>Military Resources<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-105" data-p="105">Air and Space Force Inventory</a><a href="#p-123" data-p="123">Air Force Specialty Codes</a><a href="#p-124" data-p="124">Space Force Specialty Codes</a><a href="#p-125" data-p="125">Specialty Code Badges</a></div></div></div><div class="navi" data-tab="appendix-i"><a class="tabl" href="#appendix-i" data-tab="appendix-i"><small>Appendix I</small>Constitution<i class="chev" aria-hidden="true"></i></a><div class="subs"><div><a href="#p-129" data-p="129">Preamble and Articles</a><a href="#p-139" data-p="139">Bill of Rights</a><a href="#p-140" data-p="140">Amendments XI to XXVII</a></div></div></div></nav>
+    <div class="msubs" id="msubs" aria-label="Subsections"></div>
     <form class="box find" id="find" role="search">
       <label for="q">Find in the Standard</label>
       <div class="row"><input id="q" type="search" placeholder="e.g. Code of Conduct" autocomplete="off"><button type="submit" aria-label="Next match">Next</button></div>
@@ -121,10 +141,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 </section>
 <section class="tab" id="t-chapter-1" data-tab="chapter-1" aria-label="Chapter 1: The Storm Legacy" hidden>
 <section class="pg" id="p-3" aria-label="Page 3"><div class="pno">p. 3</div><h2 class="chap" id="chapter-1"><span>Chapter 1</span>The Storm Legacy</h2>
-<h3>For Iowa</h3>
-<a class="toc-line" href="#p-4"><span>The Storm Legacy / Pioneers of the Storm</span><b>p. 4&ndash;7</b></a>
-<a class="toc-line" href="#p-8"><span>Significant Events of ISU &amp; Det 250</span><b>p. 8&ndash;11</b></a>
-<a class="toc-line" href="#p-12"><span>Carry the Legacy Forward</span><b>p. 12</b></a></section>
+<h3>For Iowa</h3></section>
 <section class="pg" id="p-4" aria-label="Page 4"><div class="pno">p. 4</div><p>The Storm Legacy: Iowa's Air and Space Heritage Welcome to the Storm. By joining Detachment 250, you become part of a distinguished tradition that dates back to 1949, when Iowa State University established one of the nation's early Air Force ROTC detachments. Within the walls of the historic Armory, generations of cadets have learned to lead, serve, and excel before commissioning as officers in the United States Air and Space Forces. Today, the story of Detachment 250 is not simply a record of past achievements. It is a reminder that the standards, traditions, and leadership forged within these halls have shaped generations of officers who went on to influence the Air Force far beyond Iowa State. Their achievements demonstrate how the leadership developed here can influence the Air Force for decades to come. As we look forward to the future, it is fitting to first honor the pioneers whose determination, innovation, and service laid the foundation upon which we stand today.</p>
 <p>Pioneers from the Storm</p>
 <h3>Brig. Gen. Boyd Hubbard Jr.</h3>
@@ -301,35 +318,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#about"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Edition, Purpose, Authority</span></a><a class="next" href="#chapter-2"><span><small>Next</small>Officership</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
 </section>
 <section class="tab" id="t-chapter-2" data-tab="chapter-2" aria-label="Chapter 2: Officership" hidden>
-<section class="pg" id="p-13" aria-label="Page 13"><div class="pno">p. 13</div><h2 class="chap" id="chapter-2"><span>Chapter 2</span>Officership</h2>
-<a class="toc-line" href="#p-14"><span>Air Force Vision</span><b>p. 14</b></a>
-<a class="toc-line" href="#p-14"><span>Air Force Mission</span><b>p. 14</b></a>
-<a class="toc-line" href="#p-14"><span>Air Force Core Functions</span><b>p. 14</b></a>
-<a class="toc-line" href="#p-14"><span>Space Force Mission</span><b>p. 14</b></a>
-<a class="toc-line" href="#p-15"><span>Chain of Command</span><b>p. 15</b></a>
-<a class="toc-line" href="#p-15"><span>Leadership Concept</span><b>p. 15</b></a>
-<a class="toc-line" href="#p-16"><span>Effective Followership</span><b>p. 16</b></a>
-<a class="toc-line" href="#p-17"><span>The Honor Code</span><b>p. 17</b></a>
-<a class="toc-line" href="#p-18"><span>A Leader of Character</span><b>p. 18</b></a>
-<a class="toc-line" href="#p-18"><span>Air Force Core Values</span><b>p. 18</b></a>
-<a class="toc-line" href="#p-23"><span>A Way of Life</span><b>p. 23</b></a>
-<a class="toc-line" href="#p-23"><span>Commissioning Education Program</span><b>p. 23</b></a>
-<a class="toc-line" href="#p-24"><span>Air Force and Space Force Oaths</span><b>p. 24</b></a>
-<a class="toc-line" href="#p-28"><span>Military Rank and Insignia</span><b>p. 28</b></a>
-<a class="toc-line" href="#p-33"><span>Military Customs and Courtesies</span><b>p. 33</b></a>
-<a class="toc-line" href="#p-36"><span>Respect for the Flag and Songs</span><b>p. 36</b></a>
-<a class="toc-line" href="#p-40"><span>High Flight</span><b>p. 40</b></a>
-<a class="toc-line" href="#p-40"><span>Cadet Prayer</span><b>p. 40</b></a>
-<a class="toc-line" href="#p-41"><span>Quotations</span><b>p. 41</b></a>
-<a class="toc-line" href="#p-46"><span>Airman’s Creed</span><b>p. 46</b></a>
-<a class="toc-line" href="#p-47"><span>The Profession of Arms</span><b>p. 47</b></a>
-<a class="toc-line" href="#p-47"><span>Wingman Concept</span><b>p. 47</b></a>
-<a class="toc-line" href="#p-48"><span>Stress Management</span><b>p. 48</b></a>
-<a class="toc-line" href="#p-51"><span>Air Force Standards</span><b>p. 51</b></a>
-<a class="toc-line" href="#p-52"><span>Code of Conduct</span><b>p. 52</b></a>
-<a class="toc-line" href="#p-54"><span>Military Law, UCMJ Overview</span><b>p. 54</b></a>
-<a class="toc-line" href="#p-55"><span>Types of Courts-Martial</span><b>p. 55</b></a>
-<a class="toc-line" href="#p-56"><span>Social Media Guidance</span><b>p. 56</b></a></section>
+<section class="pg" id="p-13" aria-label="Page 13"><div class="pno">p. 13</div><h2 class="chap" id="chapter-2"><span>Chapter 2</span>Officership</h2></section>
 <section class="pg" id="p-14" aria-label="Page 14"><div class="pno">p. 14</div><h3>Air Force Vision</h3>
 <p class="cite">AFI 1-1 (Aug 2023)</p>
 <p>The United States Air Force will be a trusted and reliable Joint partner with our sister services known for integrity in all of our activities, including supporting the Joint mission first and foremost. We will provide compelling airpower capabilities for use by the combatant commanders. We will excel as stewards of all Air Force resources in service to the American people, while providing precise and reliable Global Vigilance, Reach, and Power for the Nation.</p>
@@ -969,12 +958,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>The Storm Legacy</span></a><a class="next" href="#chapter-3"><span><small>Next</small>History</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
 </section>
 <section class="tab" id="t-chapter-3" data-tab="chapter-3" aria-label="Chapter 3: History" hidden>
-<section class="pg" id="p-59" aria-label="Page 59"><div class="pno">p. 59</div><h2 class="chap" id="chapter-3"><span>Chapter 3</span>History</h2>
-<a class="toc-line" href="#p-60"><span>Prop and Wings</span><b>p. 60</b></a>
-<a class="toc-line" href="#p-62"><span>History of ROTC</span><b>p. 62</b></a>
-<a class="toc-line" href="#p-62"><span>Air and Space Leaders</span><b>p. 62</b></a>
-<a class="toc-line" href="#p-66"><span>Air and Space Force Events</span><b>p. 66</b></a>
-<a class="toc-line" href="#p-68"><span>United States Air Force Heritage</span><b>p. 68</b></a></section>
+<section class="pg" id="p-59" aria-label="Page 59"><div class="pno">p. 59</div><h2 class="chap" id="chapter-3"><span>Chapter 3</span>History</h2></section>
 <section class="pg" id="p-60" aria-label="Page 60"><div class="pno">p. 60</div><h3>Prop and Wings</h3>
 <p>The Prop and Wings (propeller and wings) is a military insignia used to identify various aviation-related units in the United States military. The Prop and Wings originated as branch insignia of the United States Army Air Service in 1920, and remained such from 1926 to 1947 for the successor United States Army Air Corps. It is now worn after successful completion of program requirements. The Prop &amp; Wings is the symbol of the American Airman. First worn by Aviation Cadets in 1917, the tradition continued in other commissioning programs. The Prop &amp; Wings symbol is now worn by all Air Force Academy, Reserve Officer Training Corps (ROTC) cadets, and Officer Training School (OTS) trainees who have met the challenges of the first phase of officer training. Through completion of this common experience, they have earned the right to be accepted as full members of the Long Blue Line of the U.S. Air Force. As future leaders of the Air Force, all graduates of OTS and ROTC lay their hands on this historic plaque. Descendants of Air Force, Army Air Corps, or WASP members are authorized gold.</p>
 <p>Inscription:</p>
@@ -1114,26 +1098,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>Officership</span></a><a class="next" href="#chapter-4"><span><small>Next</small>Military Strategy</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
 </section>
 <section class="tab" id="t-chapter-4" data-tab="chapter-4" aria-label="Chapter 4: Military Strategy" hidden>
-<section class="pg" id="p-81" aria-label="Page 81"><div class="pno">p. 81</div><h2 class="chap" id="chapter-4"><span>Chapter 4</span>Military Strategy</h2>
-<a class="toc-line" href="#p-82"><span>National Security Strategy</span><b>p. 82</b></a>
-<a class="toc-line" href="#p-82"><span>National Defense Strategy</span><b>p. 82</b></a>
-<a class="toc-line" href="#p-82"><span>The National Military Strategy</span><b>p. 82</b></a>
-<a class="toc-line" href="#p-83"><span>Air Force Operational Imperatives</span><b>p. 83</b></a>
-<a class="toc-line" href="#p-84"><span>Air Force Domains</span><b>p. 84</b></a>
-<a class="toc-line" href="#p-85"><span>Air Force Core Missions</span><b>p. 85</b></a>
-<a class="toc-line" href="#p-85"><span>Air Force Core Tenets</span><b>p. 85</b></a>
-<a class="toc-line" href="#p-86"><span>Military Spacepower Core Competencies in the Space Force</span><b>p. 86</b></a>
-<a class="toc-line" href="#p-86"><span>Spacepower Disciplines of the Space Force</span><b>p. 86</b></a>
-<a class="toc-line" href="#p-87"><span>Principles of War</span><b>p. 87</b></a>
-<a class="toc-line" href="#p-88"><span>Combatant Commands</span><b>p. 88</b></a>
-<a class="toc-line" href="#p-89"><span>Joint Mindset</span><b>p. 89</b></a>
-<a class="toc-line" href="#p-89"><span>Department of the Air Force</span><b>p. 89</b></a>
-<a class="toc-line" href="#p-90"><span>Department of the Army</span><b>p. 90</b></a>
-<a class="toc-line" href="#p-90"><span>Department of the Navy</span><b>p. 90</b></a>
-<a class="toc-line" href="#p-91"><span>Air and Space Force Major Commands</span><b>p. 91</b></a>
-<a class="toc-line" href="#p-93"><span>Air Force Forces (AFFOR) Staff &amp; an A-Staff</span><b>p. 93</b></a>
-<a class="toc-line" href="#p-95"><span>Agile Combat Employment</span><b>p. 95</b></a>
-<a class="toc-line" href="#p-97"><span>Joint Planning Process</span><b>p. 97</b></a></section>
+<section class="pg" id="p-81" aria-label="Page 81"><div class="pno">p. 81</div><h2 class="chap" id="chapter-4"><span>Chapter 4</span>Military Strategy</h2></section>
 <section class="pg" id="p-82" aria-label="Page 82"><div class="pno">p. 82</div><h3>National Security Strategy</h3>
 <p>The national security strategy (NSS) is a document that outlines the United States' overarching approach to protecting its national interests and ensuring its security. The NSS provides a strategic framework for addressing emerging threats, promoting economic prosperity, and advancing American values. The strategy encompasses a wide range of issues, including defense, diplomacy, intelligence, economics, and homeland security, all underpinned with allied efforts when feasible. It guides the government's efforts in formulating policies, allocating resources, and coordinating actions to safeguard the nation's security and promote its global leadership.</p>
 <h3>National Defense Strategy</h3>
@@ -1334,11 +1299,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <nav class="tabnav" aria-label="Section navigation"><a class="prev" href="#chapter-3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><small>Previous</small>History</span></a><a class="next" href="#chapter-5"><span><small>Next</small>Military Resources</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></nav>
 </section>
 <section class="tab" id="t-chapter-5" data-tab="chapter-5" aria-label="Chapter 5: Military Resources" hidden>
-<section class="pg" id="p-104" aria-label="Page 104"><div class="pno">p. 104</div><h2 class="chap" id="chapter-5"><span>Chapter 5</span>Military Resources</h2>
-<a class="toc-line" href="#p-105"><span>Air and Space Force Inventory</span><b>p. 105</b></a>
-<a class="toc-line" href="#p-123"><span>Air Force Specialty Codes</span><b>p. 123</b></a>
-<a class="toc-line" href="#p-124"><span>Space Force Specialty Codes</span><b>p. 124</b></a>
-<a class="toc-line" href="#p-125"><span>Air Force Specialty Code Badges</span><b>p. 125</b></a></section>
+<section class="pg" id="p-104" aria-label="Page 104"><div class="pno">p. 104</div><h2 class="chap" id="chapter-5"><span>Chapter 5</span>Military Resources</h2></section>
 <section class="pg" id="p-105" aria-label="Page 105"><div class="pno">p. 105</div><p>Air and Space Force Inventory Mission Design Series AFH1</p>
 <p>Status Prefix (optional)</p>
 <p>Basic Mission</p>
@@ -1755,12 +1716,35 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <script>
 (() => {
   // One section at a time. #chapter-2 opens a section, #p-14 opens the section holding page 14.
-  const tabs = [...document.querySelectorAll(".tab")], links = [...document.querySelectorAll(".nav a")];
+  const tabs = [...document.querySelectorAll(".tab")], items = [...document.querySelectorAll(".nav .navi")], msubs = document.getElementById("msubs");
+  let active = null;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const show = id => {
+    if(active === id) return; active = id;
     tabs.forEach(t => t.hidden = t.dataset.tab !== id);
-    links.forEach(a => { const on = a.dataset.tab === id; a.classList.toggle("on", on); if(on){ a.setAttribute("aria-current", "true"); a.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current"); });
+    items.forEach(n => {
+      const on = n.dataset.tab === id, a = n.querySelector(".tabl");
+      n.classList.toggle("on", on);
+      if(on){ a.setAttribute("aria-current", "true"); if(innerWidth <= 880) n.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current");
+    });
+    const subs = document.querySelector('.navi[data-tab="' + id + '"] .subs');
+    msubs.innerHTML = subs ? subs.firstElementChild.innerHTML : "";
+    spy();
   };
+  // Light up the subsection you're reading
+  const spy = () => {
+    const tab = tabs.find(t => !t.hidden); if(!tab) return;
+    let cur = 0;
+    tab.querySelectorAll(".pg").forEach(pg => { if(pg.getBoundingClientRect().top < 160) cur = +pg.id.slice(2); });
+    document.querySelectorAll(".subs a, .msubs a").forEach(a => a.classList.remove("here"));
+    [document.querySelector('.navi.on .subs'), msubs].forEach(box => {
+      if(!box) return;
+      const links = [...box.querySelectorAll("a")];
+      let pick = null; links.forEach(a => { if(+a.dataset.p <= cur) pick = a; });
+      if(pick) pick.classList.add("here");
+    });
+  };
+  addEventListener("scroll", spy, {passive:true});
   const route = () => {
     const id = decodeURIComponent(location.hash.slice(1));
     const el = id && document.getElementById(id);

@@ -84,10 +84,7 @@ function renderPage(p){
     // Page list with dot leaders -> links
     const lm = s.match(LEADER);
     if(lm){
-      flush();
-      const to = lm[3] ? `&ndash;${lm[3]}` : "";
-      out.push(`<a class="toc-line" href="#p-${lm[2]}"><span>${esc(lm[1])}</span><b>p. ${lm[2]}${to}</b></a>`);
-      prevEnded = true; continue;
+      flush(); prevEnded = true; continue;   // chapter page lists become the side-tab subsections
     }
     if(CITE.test(s) && s.length < 90 && prevEnded){
       flush(); out.push(`<p class="cite">${esc(s)}</p>`); prevEnded = true; continue;
@@ -121,7 +118,20 @@ for(const p of pages){
   if(chapters.length > before){ const c = chapters[chapters.length - 1]; tabs.push({id: c.id, label: c.label, title: c.title, pages: []}); }
   tabs[tabs.length - 1].pages.push(html);
 }
-const nav = tabs.map(t => `<a href="#${t.id}" data-tab="${t.id}"><small>${esc(t.label)}</small>${esc(t.title)}</a>`).join("");
+// Subsections shown when a section's tab is open. Kept to 8 or fewer per
+// chapter for clarity, so related entries from the PDF's chapter page lists
+// are grouped. [label, page] or [label, "text on the page"] (first page holding it).
+const SUBS = {
+  "chapter-1": [["Pioneers of the Storm", 4], ["Significant Events of ISU & Det 250", 8], ["Carry the Legacy Forward", 12]],
+  "chapter-2": [["Vision, Mission and Core Functions", 14], ["Chain of Command, Leadership, Followership", 15], ["Honor Code and Core Values", 17], ["Oaths of Office", 24], ["Rank and Insignia", 28], ["Customs, Courtesies and the Flag", 33], ["Creeds, Prayer and Quotations", 40], ["Standards, Conduct, UCMJ, Social Media", 51]],
+  "chapter-3": [["Prop and Wings", 60], ["History of ROTC and Air and Space Leaders", 62], ["Air and Space Force Events", 66], ["United States Air Force Heritage", 68]],
+  "chapter-4": [["National Strategy", 82], ["Operational Imperatives and Domains", 83], ["Core Missions and Spacepower", 85], ["Principles of War", 87], ["Combatant Commands and the Services", 88], ["Major Commands and the A-Staff", 91], ["Agile Combat Employment", 95], ["Joint Planning Process", 97]],
+  "chapter-5": [["Air and Space Force Inventory", 105], ["Air Force Specialty Codes", 123], ["Space Force Specialty Codes", 124], ["Specialty Code Badges", 125]],
+  "appendix-i": [["Preamble and Articles", 129], ["Bill of Rights", "First Amendment"], ["Amendments XI to XXVII", "Eleventh Amendment"]]
+};
+const pageOf = v => typeof v === "number" ? v : (pages.find(p => p.lines.some(l => l.trim() === v)) || {n: 0}).n;
+for(const t of tabs) t.subs = (SUBS[t.id] || []).map(([label, v]) => [label, pageOf(v)]).filter(([, n]) => n);
+const nav = tabs.map(t => `<div class="navi" data-tab="${t.id}"><a class="tabl" href="#${t.id}" data-tab="${t.id}"><small>${esc(t.label)}</small>${esc(t.title)}${t.subs.length ? '<i class="chev" aria-hidden="true"></i>' : ""}</a>${t.subs.length ? `<div class="subs"><div>${t.subs.map(([label, n]) => `<a href="#p-${n}" data-p="${n}">${esc(label)}</a>`).join("")}</div></div>` : ""}</div>`).join("");
 const ARROW_L = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
 const ARROW_R = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 const tabHtml = (t, i, meta) => {
@@ -171,14 +181,33 @@ body{background:var(--d250-page);color:var(--d250-ink);font:16px/1.65 var(--d250
 .pdf small{margin-left:auto;font-size:12px;font-weight:600;opacity:.85}
 .pdf:hover{background:color-mix(in srgb,var(--tone) 82%,#fff)}
 .nav{padding:8px}
-.nav a{display:block;padding:7px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:600;line-height:1.3}
-.nav a small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
-.nav a:hover{background:var(--d250-surface-2)}
-.nav a.on{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+.nav .tabl{position:relative;display:block;padding:8px 30px 8px 10px;border-radius:9px;color:var(--d250-ink);text-decoration:none;font-size:14px;font-weight:700;line-height:1.3;transition:background .2s,box-shadow .2s}
+.nav .tabl small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
+.nav .tabl:hover{background:var(--d250-surface-2)}
+.nav .navi.on .tabl{background:color-mix(in srgb,var(--tone) 22%,transparent);box-shadow:inset 3px 0 0 var(--tone)}
+.nav .chev{position:absolute;right:12px;top:50%;width:8px;height:8px;margin-top:-6px;border-right:2px solid var(--d250-soft);border-bottom:2px solid var(--d250-soft);transform:rotate(-45deg);transition:transform .3s var(--d250-ease)}
+.nav .navi.on .chev{transform:rotate(45deg)}
+.nav .subs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--d250-ease)}
+.nav .navi.on .subs{grid-template-rows:1fr}
+.nav .subs>div{overflow:hidden;display:flex;flex-direction:column;margin-left:14px;border-left:1px solid var(--d250-line)}
+.nav .subs a{display:block;padding:6px 10px 6px 12px;margin:1px 0;color:var(--d250-soft);text-decoration:none;font-size:13px;font-weight:600;line-height:1.3;border-left:2px solid transparent;margin-left:-1px;opacity:0;transform:translateX(-6px);transition:color .2s,border-color .2s,opacity .3s,transform .3s var(--d250-ease)}
+.nav .navi.on .subs a{opacity:1;transform:none}
+.nav .navi.on .subs a:nth-child(2){transition-delay:.03s}.nav .navi.on .subs a:nth-child(3){transition-delay:.06s}.nav .navi.on .subs a:nth-child(4){transition-delay:.09s}.nav .navi.on .subs a:nth-child(5){transition-delay:.12s}.nav .navi.on .subs a:nth-child(6){transition-delay:.15s}.nav .navi.on .subs a:nth-child(7){transition-delay:.18s}.nav .navi.on .subs a:nth-child(8){transition-delay:.21s}
+.nav .subs a:hover{color:var(--d250-ink)}
+.nav .subs a.here{color:var(--d250-ink);border-left-color:var(--tone)}
+.msubs{display:none}
+@media (max-width:880px){html{scroll-padding-top:140px}}
+@media (prefers-reduced-motion:reduce){.nav .subs,.nav .subs a,.nav .chev{transition:none}}
 @media (max-width:880px){
   .nav{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px;-webkit-overflow-scrolling:touch}
-  .nav a{flex:none;scroll-snap-align:start;white-space:nowrap;padding:7px 12px}
-  .nav a.on{box-shadow:inset 0 -3px 0 var(--tone)}
+  .nav .navi{flex:none;scroll-snap-align:start}
+  .nav .tabl{white-space:nowrap;padding:7px 12px}
+  .nav .navi.on .tabl{box-shadow:inset 0 -3px 0 var(--tone)}
+  .nav .chev,.nav .subs{display:none}
+  .msubs{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 0;-webkit-overflow-scrolling:touch}
+  .msubs:empty{display:none}
+  .msubs a{flex:none;white-space:nowrap;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--d250-line-strong);color:var(--d250-soft);text-decoration:none;animation:tabin .3s var(--d250-ease) both}
+  .msubs a.here{color:#fff;background:var(--tone);border-color:var(--tone)}
   .side{position:sticky;top:0;z-index:5;background:var(--d250-page);padding:8px 0;margin:-8px 0 0}
   .side .back,.side .pdf,.side .find{display:none}
   .side.open .find{display:flex}
@@ -237,6 +266,7 @@ mark.now{background:var(--d250-gold);color:#16161a}
     <a class="back" href="../"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents and Policy</a>
     <a class="box pdf" href="The_Storm_Standard.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download the PDF<small>${pdfSize}</small></a>
     <nav class="box nav" aria-label="Chapters">${nav}</nav>
+    <div class="msubs" id="msubs" aria-label="Subsections"></div>
     <form class="box find" id="find" role="search">
       <label for="q">Find in the Standard</label>
       <div class="row"><input id="q" type="search" placeholder="e.g. Code of Conduct" autocomplete="off"><button type="submit" aria-label="Next match">Next</button></div>
@@ -259,12 +289,35 @@ mark.now{background:var(--d250-gold);color:#16161a}
 <script>
 (() => {
   // One section at a time. #chapter-2 opens a section, #p-14 opens the section holding page 14.
-  const tabs = [...document.querySelectorAll(".tab")], links = [...document.querySelectorAll(".nav a")];
+  const tabs = [...document.querySelectorAll(".tab")], items = [...document.querySelectorAll(".nav .navi")], msubs = document.getElementById("msubs");
+  let active = null;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const show = id => {
+    if(active === id) return; active = id;
     tabs.forEach(t => t.hidden = t.dataset.tab !== id);
-    links.forEach(a => { const on = a.dataset.tab === id; a.classList.toggle("on", on); if(on){ a.setAttribute("aria-current", "true"); a.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current"); });
+    items.forEach(n => {
+      const on = n.dataset.tab === id, a = n.querySelector(".tabl");
+      n.classList.toggle("on", on);
+      if(on){ a.setAttribute("aria-current", "true"); if(innerWidth <= 880) n.scrollIntoView({block:"nearest", inline:"nearest"}); } else a.removeAttribute("aria-current");
+    });
+    const subs = document.querySelector('.navi[data-tab="' + id + '"] .subs');
+    msubs.innerHTML = subs ? subs.firstElementChild.innerHTML : "";
+    spy();
   };
+  // Light up the subsection you're reading
+  const spy = () => {
+    const tab = tabs.find(t => !t.hidden); if(!tab) return;
+    let cur = 0;
+    tab.querySelectorAll(".pg").forEach(pg => { if(pg.getBoundingClientRect().top < 160) cur = +pg.id.slice(2); });
+    document.querySelectorAll(".subs a, .msubs a").forEach(a => a.classList.remove("here"));
+    [document.querySelector('.navi.on .subs'), msubs].forEach(box => {
+      if(!box) return;
+      const links = [...box.querySelectorAll("a")];
+      let pick = null; links.forEach(a => { if(+a.dataset.p <= cur) pick = a; });
+      if(pick) pick.classList.add("here");
+    });
+  };
+  addEventListener("scroll", spy, {passive:true});
   const route = () => {
     const id = decodeURIComponent(location.hash.slice(1));
     const el = id && document.getElementById(id);
