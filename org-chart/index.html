@@ -374,6 +374,8 @@ section.band{margin-top:26px}
 .role-description h4{font-size:13px;margin:14px 0 6px}
 .role-source,.role-note{font-size:12px;color:var(--muted)}
 .role-source{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.role-source a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.role-source a:hover{color:var(--d250-gold)}
 
 .scrim{position:fixed;inset:0;z-index:50;background:rgba(10,14,20,.45);opacity:0;pointer-events:none;transition:opacity .3s}
 .scrim.open{opacity:1;pointer-events:auto}
@@ -498,6 +500,8 @@ section.band{margin-top:26px}
   <div class="dbody" id="dbody"></div>
 </aside>
 
+<script src="../documents/library.js"></script>
+<script src="../shared/doc-refs.js"></script>
 <script src="position-descriptions.js"></script>
 <script>
 /* =====================================================================
@@ -1003,8 +1007,20 @@ function positionDescription(seat){
       ${role.alternateDuties?.length ? `<h4>Alternate duties</h4>${dutyList(role.alternateDuties)}` : ""}
       ${role.responsibilities.length ? `${localDuties ? "<h4>Program responsibilities</h4>" : ""}${dutyList(role.responsibilities)}` : ""}
     </details>` : ""}
-    <div class="role-source">${seat.cadre ? "Sources" : "Source"}: ${role.sources.map(esc).join("<br>")}</div>
+    <div class="role-source">${seat.cadre ? "Sources" : "Source"}: ${role.sources.map(sourceLink).join("<br>")}</div>
   </section>`;
+}
+// A citation opens its document in Documents and Policy at the cited page;
+// the viewer's back button returns to this seat. OPLAN and duty memo links ask for the password.
+function sourceLink(text){
+  if(!window.D250Refs) return esc(text);
+  const pg = (text.match(/pp?\. (\d+)/) || [])[1];
+  let url = null;
+  const vol = text.match(/AFROTCI 36-2011,? Vol(?:ume)? ([123])/);
+  if(vol) url = D250Refs.href("afrotci-36-2011v" + vol[1], "org-chart", pg);
+  else if(/OPLAN/.test(text)) url = D250Refs.view("fall-2026-oplan", "org-chart", pg);
+  else if(/detachment memo|duty memo/i.test(text)) url = D250Refs.view("cadre-additional-duties", "org-chart");
+  return url ? `<a href="${esc(url)}">${esc(text)}</a>` : esc(text);
 }
 function openSeat(id, refresh){
   if(byId[id] && byId[id].member) id = primaryOf(byId[id].poc[0]).id;

@@ -866,129 +866,11 @@
   </section>
 
   <!-- ---------------------------------------------------------------- -->
-  <section class="card documents">
-    <h2>Reference Documents</h2>
-    <p class="card-intro">The official paperwork behind the assessment.</p>
-
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">PFRA Scoring Charts</p>
-          <p class="document-note">
-            Effective 1 March 2026, current as of 17 March 2026. Every point value
-            this tool uses.
-          </p>
-        </div>
-        <div class="document-actions">
-          <button type="button" class="secondary small view-toggle"
-                  aria-expanded="false">View</button>
-          <a class="secondary small doc-link" href="references/pfra-scoring-charts.pdf"
-             download>Save</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
-
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">AF Form 4446 - Scorecard</p>
-          <p class="document-note">The scorecard you sign.</p>
-        </div>
-        <div class="document-actions">
-          <button type="button" class="secondary small view-toggle" aria-expanded="false"
-                  hidden>View</button>
-          <a class="secondary small doc-flat" href="references/af-form-4446-flat.pdf"
-             download hidden>Save Flat</a>
-          <a class="secondary small doc-link" href="references/af-form-4446.pdf"
-             download>Save Fillable</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
-
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">AF Form 4446A - FSQ</p>
-          <p class="document-note">Fitness Screening Questionnaire.</p>
-        </div>
-        <div class="document-actions">
-          <button type="button" class="secondary small view-toggle" aria-expanded="false"
-                  hidden>View</button>
-          <a class="secondary small doc-flat" href="references/af-form-4446a-fsq-flat.pdf"
-             download hidden>Save Flat</a>
-          <a class="secondary small doc-link" href="references/af-form-4446a-fsq.pdf"
-             download>Save Fillable</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
-
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">DAFMAN 36-2905 - AFROTC Supplement</p>
-          <p class="document-note">
-            28 April 2023, and <strong>awaiting revision</strong>. NOTACC
-            CY26-092 states HQ AFROTC will rewrite it for the new assessment. It
-            still describes a 1.5 mile run and BMI; HQ confirmed at a Check 6 on
-            1 October 2026 that BMI is gone and cadets are assessed on body fat
-            to the DAFMAN standard. Read it for AFROTC administration nothing
-            newer covers, not for what is tested.
-          </p>
-        </div>
-        <div class="document-actions">
-          <button type="button" class="secondary small view-toggle"
-                  aria-expanded="false">View</button>
-          <a class="secondary small doc-link" href="references/dafman-36-2905-afrotcsup.pdf"
-             download>Save</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
-
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">AFROTCI 36-2011 Volume 3 - Cadet Operations</p>
-          <p class="document-note">
-            24 June 2026, 179 pages. The AFROTC side of the assessment: what a
-            PFRA is worth, what failing one costs, and the Fitness Award in
-            Table 15.1.
-          </p>
-        </div>
-        <div class="document-actions">
-          <button type="button" class="secondary small view-toggle"
-                  aria-expanded="false">View</button>
-          <a class="secondary small doc-link" href="references/afrotci-36-2011v3.pdf"
-             download>Save</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
-
-    <!-- No View button: this is a 116 page scan with no text layer, and the
-         file is not linearised, so a browser has to pull all 40 MB before it
-         can draw page one. On a phone on cellular that is a trap, so the only
-         action is a deliberate download. -->
-    <div class="document">
-      <div class="document-head">
-        <div>
-          <p class="document-name">DAFMAN 36-2905</p>
-          <p class="document-note">
-            Air Force Physical Fitness Readiness Program, 24 March 2026. The manual
-            every scoring rule in this tool comes from. Large scanned file (40 MB);
-            the text cannot be searched.
-          </p>
-        </div>
-        <div class="document-actions">
-          <a class="secondary small doc-link" href="references/dafman-36-2905.pdf"
-             download>Save</a>
-        </div>
-      </div>
-      <div class="viewer" hidden></div>
-    </div>
+  <section class="card refs-card" aria-labelledby="refs-title">
+    <h2 id="refs-title">References</h2>
+    <p class="card-intro">The official paperwork behind the assessment. Each one opens in
+      Documents and Policy, and the back button brings you here.</p>
+    <div id="pfra-refs"></div>
   </section>
 
 </main>
@@ -1031,6 +913,18 @@
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
+<script src="../documents/library.js"></script>
+<script src="../shared/doc-refs.js"></script>
+<script>
+  D250Refs.mount(document.getElementById("pfra-refs"), {from: "pfra", items: [
+    {id: "pfra-scoring-charts", note: "Effective 1 March 2026, current as of 17 March 2026. Every point value this tool uses."},
+    {id: "af-form-4446", note: "The scorecard you sign. The download is the fillable form (opens in Adobe Reader)."},
+    {id: "af-form-4446a", note: "Fitness Screening Questionnaire, completed before the test. The download is the fillable form."},
+    {id: "afrotci-36-2011v3", note: "The AFROTC side of the assessment: what a PFRA is worth, what failing one costs, and the Fitness Award in Table 15.1."},
+    {id: "dafman36-2905", note: "24 March 2026. The manual every scoring rule in this tool comes from. Large scanned file (40 MB); the text cannot be searched."},
+    {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
+  ]});
+</script>
 <script type="module" src="app.js?v=c1401fb0cb"></script>
 </body>
 </html>
