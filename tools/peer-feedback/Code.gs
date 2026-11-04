@@ -15,12 +15,12 @@
    Endpoints
      GET  ?action=whoami&code=XXXX-XXXX   -> who the code belongs to + the peers to rate
      GET  ?action=results&token=...      -> everything the Cadre page needs
-     POST {action:"peer", code, ratings:{peerKey:[lead,prof,team,comm,part]}}
+     POST {action:"peer", code, ratings:{peerKey:[lead,prof,team,comm]}}
    Tabs it keeps: Ratings (one row per rater and peer, latest submission only),
    Submissions (one row per cadet), Log (every accepted submit). */
 
-var CATS = ['lead', 'prof', 'team', 'comm', 'part'];
-var CAT_LABELS = ['Leadership / initiative', 'Professionalism / bearing', 'Teamwork / followership', 'Communication', 'Participation / attendance'];
+var CATS = ['lead', 'prof', 'team', 'comm'];
+var CAT_LABELS = ['Leadership', 'Professionalism', 'Teamwork', 'Communication'];
 var GROUP_LABELS = { poc: 'POC', gmc: 'AS 200 / 250 / 500', as100: 'AS 100' };
 
 function norm_(code) { return String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
@@ -66,7 +66,7 @@ function doGet(e) {
       if (!p.token || p.token !== CADRE_TOKEN) return out_({ ok: false, error: 'Not authorized.' });
       var subs = submittedMap_();
       var rv = ratingsSheet_().getDataRange().getValues(), ratings = [];
-      for (var i = 1; i < rv.length; i++) ratings.push([rv[i][0], rv[i][4]].concat(rv[i].slice(7, 12).map(Number)));
+      for (var i = 1; i < rv.length; i++) ratings.push([rv[i][0], rv[i][4]].concat(rv[i].slice(7, 7 + CATS.length).map(Number)));
       return out_({ ok: true, due: DUE, now: new Date().toISOString(), categories: CATS, groups: GROUP_LABELS,
         roster: ROSTER.map(function (r) { var s = subs[r.key];
           return { key: r.key, name: r.name, cls: r.cls, group: r.group, submittedAt: s ? new Date(s.at).toISOString() : null, times: s ? s.times : 0 }; }),

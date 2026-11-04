@@ -12,7 +12,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
-- **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in the five Flight Staff Evaluation areas. Results go to a private cadre spreadsheet.
+- **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in Leadership, Professionalism, Teamwork and Communication. Results go to a private cadre spreadsheet.
 - **Cadre Dashboard** (`cadre/`): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
 
 ## Instructor Tools
