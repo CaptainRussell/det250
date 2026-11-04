@@ -58,22 +58,32 @@ ${roster.map(r => "  " + JSON.stringify(r)).join(",\n")}
 ` + readFileSync("tools/peer-feedback/Code.gs", "utf8");
 writeFileSync(path.join(outDir, "PeerFeedback.gs"), gs);
 
+// One QR code (same link on every slip), drawn as inline SVG so the slips print offline.
+// Needs qrcode-generator: npm i qrcode-generator, then run with NODE_PATH=<that folder>/node_modules.
+const PAGE_URL = "https://captainrussell.github.io/det250/peer-feedback/";
+let qrSvg;
+try {
+  const qrcode = (await import("node:module")).createRequire(import.meta.url)("qrcode-generator");
+  const q = qrcode(0, "M"); q.addData(PAGE_URL); q.make();
+  qrSvg = q.createSvgTag({ cellSize: 2, margin: 0, scalable: true });
+} catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
+
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const slips = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Peer Feedback codes · Storm HQ</title>
 <style>
 body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:16px;color:#1b1b1d}
 h1{font-size:18px;margin:0 0 4px} p.note{margin:0 0 14px;color:#55565c}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-.slip{border:1px dashed #9a9aa2;padding:12px 14px;break-inside:avoid}
-.slip .t{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#a06f00;font-weight:700}
-.slip .n{font-weight:700;margin:4px 0 2px}.slip .c{font:700 22px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;color:#c8102e}
-.slip .u{font-size:11px;color:#55565c;margin-top:4px}
+.slip{border:1px dashed #9a9aa2;padding:10px 12px;break-inside:avoid;display:flex;align-items:center;gap:10px}
+.slip .w{flex:1;min-width:0}
+.slip .n{font-weight:700;margin:0 0 4px}.slip .c{font:700 20px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;color:#c8102e;white-space:nowrap}
+.slip .q{width:76px;height:76px;flex:none}.slip .q svg{width:100%;height:100%;display:block}
 h2{font-size:14px;margin:18px 0 6px;break-after:avoid}
 @media print{body{margin:0}.note{display:none}}
 </style></head><body>
 <h1>Peer Feedback personal codes</h1><p class="note">Private. Print and cut, or send each cadet only their own code. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
 ${Object.keys(GROUP_LABEL).map(g => `<h2>${esc(GROUP_LABEL[g])}</h2><div class="grid">${people.filter(p => p.group === g).map(p =>
-  `<div class="slip"><div class="t">Storm HQ · Peer Feedback</div><div class="n">${esc(p.name)} (${esc(p.cls)})</div><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/det250/peer-feedback/</div></div>`).join("")}</div>`).join("")}
+  `<div class="slip"><div class="w"><div class="n">${esc(p.name)} (${esc(p.cls)})</div><div class="c">${esc(p.code)}</div></div><div class="q">${qrSvg}</div></div>`).join("")}</div>`).join("")}
 </body></html>`;
 writeFileSync(path.join(outDir, "code-slips.html"), slips);
 
