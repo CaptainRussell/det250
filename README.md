@@ -9,9 +9,13 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
 - **Documents and Policy** (`documents/`): The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, with links to the official sources. The Fall 2026 OPLAN, Policy Packet, cadre duties roster and OPORDs are encrypted and open with the detachment password in a built-in viewer.
 - **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
+- **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in the five Flight Staff Evaluation areas. Results go to a private cadre spreadsheet.
 
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
+
+## Cadre Tools
+- **Cadre Dashboard** (`cadre/`): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
 
 ## Instructor Tools
 - **Practicum Adventure** (`practicum-adventure/`): a video game style practicum cadets join and play from their phones. Tests objectives from the AFAS 3410 and 3420 series.
@@ -25,3 +29,4 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
 - Flight Staff Evaluation is password encrypted. Keep decrypted source outside the public repo. To rebuild its lock: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
 - Restricted documents are encrypted. Keep the plain PDFs outside the repo. To rebuild: `node tools/encrypt-files.mjs <password> <list.json> documents/restricted` (see the script header for the list format).
+- Peer Feedback codes and its Apps Script are private. Build them OUTSIDE the repo with `node tools/build-peer-feedback.mjs <private folder>` (keeps existing codes), then paste `PeerFeedback.gs` into the Peer Feedback Sheet's Apps Script. The Cadre Dashboard's connection settings are encrypted in `cadre/vault.json`: `node tools/build-cadre-vault.mjs <cadre password> <config.json>`.

@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cadre Dashboard · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+.wrap,.d250-head{--d250-measure:1240px}
+:root{--t-top:#1f8a4c;--t-mid:#c99400;--t-bot:#c8372d;--ok:#1b7a44}
+:root[data-theme="dark"]{--t-top:#4cc483;--t-mid:#e8c14a;--t-bot:#f0776b;--ok:#4cc483}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--t-top:#4cc483;--t-mid:#e8c14a;--t-bot:#f0776b;--ok:#4cc483}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* lock (same look as the Flight Staff Evaluation lock) */
+.lockwrap{min-height:calc(100vh - 360px);display:grid;place-items:center;padding:32px 0}
+.lock{width:min(400px,100%);background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:18px;padding:28px 24px 24px;text-align:center;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:pop .45s var(--d250-ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.lock img{width:84px;height:auto}
+.lock h2{font-size:20px;margin:12px 0 4px}
+.lock p{color:var(--d250-soft);font-size:14px}
+.lock form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.lock input{font-size:16px;min-height:46px}
+.lock .btn{min-height:46px}
+.err{min-height:20px;color:var(--d250-cardinal);font-size:13px;font-weight:600}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* tabs + toolbar */
+.topbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.seg{display:inline-flex;background:var(--d250-surface-2);border:1px solid var(--d250-line-strong);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:9px;padding:7px 14px;font-weight:700;color:var(--d250-soft);cursor:pointer;min-height:38px}
+.seg button:hover{color:var(--d250-ink)}
+.seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
+.seg.small button{padding:5px 11px;min-height:32px;font-size:13px}
+.seg.small button[aria-pressed="true"]{background:var(--d250-gold-bg);color:var(--d250-gold)}
+.upd{font-size:12.5px;color:var(--d250-soft);display:flex;gap:10px;align-items:center}
+.note{background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
+.note.bad{background:color-mix(in srgb,var(--d250-cardinal) 15%,transparent);color:var(--d250-cardinal)}
+section.blk{margin-bottom:20px}
+.blk-hd{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 14px;margin:0 0 10px}
+.blk-hd h2{font-size:19px;font-weight:800}
+
+/* completion */
+.comp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.compcard .panel-bd{display:flex;flex-direction:column;gap:10px}
+.cc-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cc-top b{font-size:15px}
+.cc-n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.cc-n small{font-size:14px;color:var(--d250-soft);font-weight:700}
+.bar{height:8px;border-radius:99px;background:var(--d250-surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .5s var(--d250-ease)}
+.who{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:260px;overflow:auto}
+.who li{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.who li .t{margin-left:auto;font-size:12px;color:var(--d250-soft);font-weight:600;white-space:nowrap}
+.who li.done{color:var(--d250-soft)}
+.cc-tools{display:flex;gap:8px;flex-wrap:wrap}
+
+/* rankings */
+.filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:12px}
+.tblwrap{overflow-x:auto}
+table.rk{width:100%;border-collapse:collapse;font-size:13.5px}
+table.rk th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--d250-soft);text-align:center;padding:9px 6px;border-bottom:1px solid var(--d250-line);white-space:nowrap;position:sticky;top:0;background:var(--d250-surface)}
+table.rk th.l,table.rk td.l{text-align:left}
+table.rk th button{all:unset;cursor:pointer}
+table.rk th button:hover,table.rk th button[aria-sort]{color:var(--d250-ink)}
+table.rk td{padding:7px 6px;border-bottom:1px solid var(--d250-line);text-align:center;font-variant-numeric:tabular-nums}
+table.rk tbody tr{cursor:pointer;transition:background .15s}
+table.rk tbody tr:hover td{background:var(--d250-surface-2)}
+table.rk td.rank{font-weight:800;font-size:15px;border-left:4px solid var(--tc,transparent)}
+tr.top{--tc:var(--t-top)} tr.mid{--tc:var(--t-mid)} tr.bot{--tc:var(--t-bot)}
+.nm{display:flex;align-items:center;gap:9px;font-weight:700;white-space:nowrap}
+.nm small{display:block;font-weight:600;color:var(--d250-soft);font-size:12px}
+.ov{display:flex;align-items:center;gap:8px;min-width:130px}
+.ov .bar{flex:1;height:7px}
+.ov .bar i{background:var(--d250-gold)}
+.ov b{font-size:15px;min-width:34px;text-align:right}
+.cell{display:inline-block;min-width:38px;padding:3px 6px;border-radius:7px;font-weight:700;background:color-mix(in srgb,var(--hc) var(--ha),transparent)}
+.clsc{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;color:var(--d250-page);background:var(--c,var(--d250-soft))}
+.muted-n{color:var(--d250-faint)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--d250-soft);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;background:var(--c)}
+
+/* rater check */
+details.chk summary{cursor:pointer;font-weight:700;padding:12px 16px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.chk summary::-webkit-details-marker{display:none}
+details.chk[open] summary{border-bottom:1px solid var(--d250-line)}
+.flag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;background:var(--d250-gold-bg);color:var(--d250-gold)}
+
+/* detail dialog */
+dialog{border:1px solid var(--d250-line);border-radius:16px;background:var(--d250-surface);color:var(--d250-ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 40px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dl-hd{display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid var(--d250-line)}
+.dl-hd h3{font-size:20px;font-weight:800}
+.dl-hd .x{margin-left:auto}
+.dl-bd{padding:16px;display:flex;flex-direction:column;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:var(--d250-surface-2);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft);font-weight:700}
+.stat .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.catbars{display:flex;flex-direction:column;gap:9px}
+.cb{display:grid;grid-template-columns:150px minmax(0,1fr) 42px;gap:10px;align-items:center;font-size:13px;font-weight:600}
+.cb .trk{position:relative;height:12px;border-radius:99px;background:var(--d250-surface-2)}
+.cb .trk i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--d250-gold)}
+.cb .trk em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--d250-ink);opacity:.7}
+.cb b{text-align:right;font-variant-numeric:tabular-nums}
+.stack{display:flex;height:22px;border-radius:7px;overflow:hidden}
+.stack i{display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;font-style:normal;background:var(--sc)}
+:root{--s1:#c8372d;--s2:#d9822b;--s3:#8a8b92;--s4:#3a8f5c;--s5:#1f7a8c}
+
+/* FSE */
+.roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.role{display:flex;align-items:center;gap:12px;padding:14px}
+.role .rt{font-weight:800}
+.role .rs{font-size:12.5px;color:var(--d250-soft)}
+.pill{margin-left:auto;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.no{background:var(--d250-gold-bg);color:var(--d250-gold)}
+.cm{min-width:220px;font-size:12.5px;color:var(--d250-soft);text-align:left;max-width:420px;white-space:normal}
+.cm b{color:var(--d250-ink)}
+.empty-n{padding:24px;text-align:center;color:var(--d250-soft)}
+
+@media (max-width:900px){.comp,.roles{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cb{grid-template-columns:96px minmax(0,1fr) 36px}.topbar{flex-direction:column;align-items:stretch}.seg{justify-content:stretch}.seg button{flex:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.d250-bar,.topbar,.filters,.cc-tools,.chk{display:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<header class="d250-head" style="--tone:#475569">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8 15v-3M12 15V9M16 15v-5"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
+      <h1>Cadre Dashboard</h1>
+      <p class="d250-head-sub">Peer Feedback and Flight Staff Evaluation results, rankings and who still owes theirs.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="lockwrap" id="lockwrap">
+    <div class="lock" id="lock">
+      <img src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch">
+      <h2>Cadre Dashboard</h2>
+      <p>Cadre only. Enter the cadre password to continue.</p>
+      <form id="f" autocomplete="off">
+        <label class="label" for="pw">Password</label>
+        <input id="pw" type="password" required autocomplete="current-password">
+        <div class="err" id="err" role="alert"></div>
+        <button class="btn primary" id="go" type="submit">Unlock</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="topbar">
+      <div class="seg" role="group" aria-label="Evaluation">
+        <button type="button" data-tab="peer" aria-pressed="true">Peer Feedback</button>
+        <button type="button" data-tab="fse" aria-pressed="false">Flight Staff Evaluation</button>
+      </div>
+      <div class="upd"><span id="upd"></span><button class="btn small" id="refresh" type="button">↻ Refresh</button><button class="linkbtn" id="lockBtn" type="button">Lock</button></div>
+    </div>
+    <div id="tPeer"></div>
+    <div id="tFse" hidden></div>
+  </div>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);opacity:0;background:var(--d250-ink);color:var(--d250-page);padding:10px 16px;border-radius:10px;font-weight:700;transition:opacity .3s;pointer-events:none;z-index:60"></div>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Cadre tool. Results are read live from the private cadre spreadsheets and are never stored on this site. Peer rankings are an input to the commander's internal rankings, not the ranking itself.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../shared/cadet-groups.js"></script>
+<script src="../shared/instructor.js"></script>
+<script>
+/* Connection settings (Apps Script URLs + read keys) are encrypted in vault.json with the
+   cadre password (tools/build-cadre-vault.mjs). Everything else on this page is public code. */
+const PASS_KEY = 'd250-cadre-pass', UI_KEY = 'd250-cadre-ui-v1';
+const FACTORS = [
+  {k:'lead', short:'Lead', label:'Leadership / initiative'},
+  {k:'prof', short:'Prof', label:'Professionalism / bearing'},
+  {k:'team', short:'Team', label:'Teamwork / followership'},
+  {k:'comm', short:'Comm', label:'Communication'},
+  {k:'part', short:'Part', label:'Participation / attendance'}
+];
+const PEER_GROUPS = [
+  {g:'poc', label:'POC', classes:['AS300','AS400','Graybeard']},
+  {g:'gmc', label:'AS 200 / 250 / 500', classes:['AS200','AS250','AS500']},
+  {g:'as100', label:'AS 100', classes:['AS100']}
+];
+// Flight Staff Evaluation roles tracked here (Gp/CC dropped Nov 2026, Captain Russell).
+const FSE_ROLES = [
+  {id:'sq-alpha-bravo', label:'Alpha/Bravo Sq/CC', evaluator:'Hyman, Nathan', flights:['Alpha','Bravo'], sq:true},
+  {id:'flt-alpha', label:'Alpha Flt/CC', evaluator:'Helle, Nicolas', flights:['Alpha']},
+  {id:'flt-bravo', label:'Bravo Flt/CC', evaluator:'Bourek, Akryn', flights:['Bravo']},
+  {id:'sq-charlie-delta', label:'Charlie/Delta Sq/CC', evaluator:'Kingery, Alex', flights:['Charlie','Delta'], sq:true},
+  {id:'flt-charlie', label:'Charlie Flt/CC', evaluator:'Barszcz, Caden', flights:['Charlie']},
+  {id:'flt-delta', label:'Delta Flt/CC', evaluator:'Marschang, Allissa', flights:['Delta']}
+];
+const CLS_COLOR = {AS100:'--as100',AS200:'--as200',AS250:'--as250',AS300:'--as300',AS400:'--as400',AS500:'--as500',Graybeard:'--gb'};
+const CLS_LABEL = c => c === 'Graybeard' ? 'Graybeard' : String(c || '').replace('AS', 'AS ');
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plain = n => String(n || '').replace(/\s+[A-Z]\.?$/, '');   // "Hyman, Nathan T." -> "Hyman, Nathan"
+const face = (name, sz) => window.D250Face ? D250Face.html(plain(name), sz) : '';
+const clsChip = c => `<span class="clsc" style="--c:var(${CLS_COLOR[c] || '--d250-soft'})">${esc(CLS_LABEL(c))}</span>`;
+const fmtWhen = d => d ? new Date(d).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '';
+const fmtDue = d => new Date(d).toLocaleString('en-US', {timeZone:'America/Chicago', weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) + ' CT';
+const f2 = x => x == null || isNaN(x) ? '–' : x.toFixed(2);
+const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : NaN;
+const sd = a => { if(a.length < 2) return 0; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / a.length); };
+function toast(t){ const el = $('#toast'); el.textContent = t; el.style.opacity = 1; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.opacity = 0, 2200); }
+function heat(v){ // score 1..5 -> cell colors (red low, gray middle, green high)
+  if(v == null || isNaN(v)) return '';
+  const d = v - 3, hc = d >= 0 ? 'var(--t-top)' : 'var(--t-bot)', ha = Math.min(45, Math.round(Math.abs(d) / 2 * 45 + 6)) + '%';
+  return `--hc:${hc};--ha:${ha}`;
+}
+
+let CFG = null;
+let UI = {tab:'peer', group:'poc', cls:'all', mode:'adj', sort:'overall', showDone:{}, fseView:'consolidated', fseFlight:'Alpha'};
+try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || '{}')); }catch(_){}
+const saveUI = () => { try{ localStorage.setItem(UI_KEY, JSON.stringify(UI)); }catch(_){} };
+let PEER = null, PEER_ERR = '', FSE = null, FSE_ERR = '';
+
+/* ---------- unlock ---------- */
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function openVault(pw){
+  const v = await (await fetch('vault.json', {cache:'no-store'})).json();
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(v.salt), iterations:v.iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(v.iv)}, key, b64(v.data))));
+}
+$('#f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const go = $('#go'), err = $('#err');
+  err.textContent = ''; go.disabled = true; go.textContent = 'Unlocking…';
+  try{ await unlock($('#pw').value); }
+  catch(_){
+    err.textContent = "That password didn't work. Try again.";
+    const l = $('#lock'); l.classList.remove('shake'); void l.offsetWidth; l.classList.add('shake');
+  }finally{ go.disabled = false; go.textContent = 'Unlock'; }
+});
+async function unlock(pw){
+  CFG = await openVault(pw);
+  try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
+  $('#lockwrap').hidden = true; $('#app').hidden = false;
+  setTab(UI.tab); refresh();
+}
+$('#lockBtn').addEventListener('click', () => { try{ sessionStorage.removeItem(PASS_KEY); }catch(_){} location.reload(); });
+
+/* ---------- data ---------- */
+async function getJSON(url, opts){
+  let res;
+  try{ res = await fetch(url, opts); }catch(_){ throw new Error("couldn't reach the spreadsheet"); }
+  const out = await res.json().catch(() => ({ok:false, error:'unexpected reply'}));
+  if(!out.ok) throw new Error(out.error || 'request failed');
+  return out;
+}
+async function refresh(){
+  const btn = $('#refresh'); btn.disabled = true; $('#upd').textContent = 'Loading…';
+  await Promise.all([
+    CFG.peer && CFG.peer.url ? getJSON(CFG.peer.url + '?action=results&token=' + encodeURIComponent(CFG.peer.token)).then(d => { PEER = model(d); PEER_ERR = ''; }).catch(e => PEER_ERR = e.message) : (PEER_ERR = 'not connected', null),
+    CFG.fse && CFG.fse.url ? getJSON(CFG.fse.url, {method:'POST', body:JSON.stringify({action:'list', key:CFG.fse.key})}).then(d => { FSE = d.entries || []; FSE_ERR = ''; }).catch(e => FSE_ERR = e.message) : (FSE_ERR = 'not connected', null)
+  ]);
+  btn.disabled = false;
+  $('#upd').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+  render();
+}
+$('#refresh').addEventListener('click', refresh);
+
+/* ---------- tabs ---------- */
+function setTab(t){
+  UI.tab = t; saveUI();
+  document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
+  $('#tPeer').hidden = t !== 'peer'; $('#tFse').hidden = t !== 'fse';
+  render();
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else renderFse(); }
+
+/* =====================================================================
+   PEER FEEDBACK
+   Adjusted score: each rater's scores are turned into z-scores against that
+   rater's own mean and spread (so easy and harsh graders count the same),
+   averaged per cadet and area, then put back on the 1 to 5 scale with the
+   group's mean and spread for that area. Raw = plain average.
+   ===================================================================== */
+function model(d){
+  const people = {}; d.roster.forEach(r => people[r.key] = Object.assign({}, r, {got:[], given:[]}));
+  const rows = d.ratings.filter(r => people[r[0]] && people[r[1]] && r[0] !== r[1]);
+  rows.forEach(r => { people[r[0]].given.push(r); people[r[1]].got.push(r); });
+  const raters = {};
+  Object.values(people).forEach(p => {
+    if(!p.given.length) return;
+    const all = p.given.flatMap(r => r.slice(2, 7));
+    raters[p.key] = {mu:mean(all), sd:sd(all), n:p.given.length};
+  });
+  const z = (r, i) => { const s = raters[r[0]]; return s && s.sd > 0 ? (r[2 + i] - s.mu) / s.sd : 0; };
+  const gstat = {};
+  PEER_GROUPS.forEach(G => {
+    const got = Object.values(people).filter(p => p.group === G.g).flatMap(p => p.got);
+    gstat[G.g] = FACTORS.map((f, i) => { const v = got.map(r => r[2 + i]); return {mu:mean(v), sd:sd(v)}; });
+  });
+  Object.values(people).forEach(p => {
+    const gs = gstat[p.group];
+    p.raw = FACTORS.map((f, i) => mean(p.got.map(r => r[2 + i])));
+    p.adj = FACTORS.map((f, i) => p.got.length ? gs[i].mu + mean(p.got.map(r => z(r, i))) * gs[i].sd : NaN);
+    p.rawO = mean(p.raw.filter(x => !isNaN(x)));
+    p.adjO = mean(p.adj.filter(x => !isNaN(x)));
+    p.dist = [0, 0, 0, 0, 0, 0]; p.got.forEach(r => r.slice(2, 7).forEach(v => p.dist[v]++));
+    p.possible = Object.values(people).filter(q => q.group === p.group && q.key !== p.key).length;
+  });
+  PEER_GROUPS.forEach(G => {
+    const list = Object.values(people).filter(p => p.group === G.g && p.got.length);
+    ['raw', 'adj'].forEach(m => {
+      const key = m + 'O';
+      list.slice().sort((a, b) => b[key] - a[key] || a.name.localeCompare(b.name)).forEach((p, i) => p[m + 'Rank'] = i + 1);
+    });
+  });
+  return {due:d.due, people, raters, gstat, rows};
+}
+const pv = (p, i) => UI.mode === 'adj' ? p.adj[i] : p.raw[i];
+const pO = p => UI.mode === 'adj' ? p.adjO : p.rawO;
+const pRank = p => UI.mode === 'adj' ? p.adjRank : p.rawRank;
+function tierOf(rank, n){ if(!rank) return ''; const a = Math.ceil(n / 3), b = Math.ceil(2 * n / 3); return rank <= a ? 'top' : rank <= b ? 'mid' : 'bot'; }
+
+function renderPeer(){
+  const el = $('#tPeer');
+  if(PEER_ERR && !PEER){ el.innerHTML = `<div class="note ${PEER_ERR === 'not connected' ? '' : 'bad'}">${PEER_ERR === 'not connected' ? 'Peer Feedback is not connected yet. Deploy the Peer Feedback Apps Script, then rebuild the cadre settings.' : `Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.`}</div>`; return; }
+  if(!PEER){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
+  const P = Object.values(PEER.people), closed = Date.now() > new Date(PEER.due).getTime();
+  const subN = P.filter(p => p.submittedAt).length;
+  el.innerHTML = `
+    ${PEER_ERR ? `<div class="note bad">Couldn't refresh (${esc(PEER_ERR)}). Showing the last data loaded.</div>` : ''}
+    <section class="blk">
+      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${subN} of ${P.length} cadets &middot; ${closed ? 'Closed' : 'Due'} ${esc(fmtDue(PEER.due))}</span></div>
+      <div class="comp">${PEER_GROUPS.map((G, gi) => {
+        const ps = P.filter(p => p.group === G.g).sort((a, b) => a.name.localeCompare(b.name));
+        const done = ps.filter(p => p.submittedAt), left = ps.filter(p => !p.submittedAt), show = UI.showDone[G.g];
+        return `<div class="panel compcard" style="--i:${gi}"><div class="panel-bd">
+          <div class="cc-top"><b>${esc(G.label)}</b><span class="cc-n">${done.length}<small> / ${ps.length}</small></span></div>
+          <div class="bar"><i style="width:${ps.length ? done.length / ps.length * 100 : 0}%"></i></div>
+          <span class="label">${show ? 'Submitted' : left.length ? `Still to submit (${left.length})` : 'Everyone has submitted'}</span>
+          <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
+          <div class="cc-tools">
+            <button class="btn small" type="button" data-copy="${G.g}" ${left.length ? '' : 'disabled'}>Copy names still to submit</button>
+            <button class="btn small quiet" type="button" data-showdone="${G.g}">${show ? 'Show still to submit' : 'Show submitted'}</button>
+          </div>
+        </div></div>`; }).join('')}
+      </div>
+    </section>
+
+    <section class="blk">
+      <div class="blk-hd"><h2>Peer rankings</h2><span class="muted">Click a cadet for their breakdown.</span></div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Peer group">${PEER_GROUPS.map(G => `<button type="button" data-group="${G.g}" aria-pressed="${UI.group === G.g}">${esc(G.label)}</button>`).join('')}</div>
+        <div class="seg small" role="group" aria-label="AS level">${['all'].concat(PEER_GROUPS.find(G => G.g === UI.group).classes).map(c => `<button type="button" data-cls="${c}" aria-pressed="${UI.cls === c}">${c === 'all' ? 'All' : esc(CLS_LABEL(c))}</button>`).join('')}</div>
+        <div class="seg small" role="group" aria-label="Score">${[['adj', 'Adjusted for rater'], ['raw', 'Raw average']].map(([m, l]) => `<button type="button" data-mode="${m}" aria-pressed="${UI.mode === m}">${l}</button>`).join('')}</div>
+        <button class="btn small" type="button" id="csv">Download CSV</button>
+      </div>
+      <div class="panel"><div class="tblwrap" id="rkwrap">${rankTable()}</div></div>
+      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${UI.mode === 'adj' ? 'Adjusted: each rater is measured against their own average, so easy and harsh graders count the same.' : 'Raw: plain average of every rating received.'}</span></div>
+    </section>
+
+    <section class="blk">${raterCheck()}</section>`;
+}
+function rankList(){
+  const G = PEER_GROUPS.find(G => G.g === UI.group);
+  let ps = Object.values(PEER.people).filter(p => p.group === G.g);
+  if(UI.cls !== 'all') ps = ps.filter(p => p.cls === UI.cls);
+  const rated = ps.filter(p => p.got.length).sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
+  const s = UI.sort;
+  if(s !== 'overall'){
+    const i = FACTORS.findIndex(f => f.k === s);
+    if(i >= 0) rated.sort((a, b) => pv(b, i) - pv(a, i));
+    if(s === 'name') rated.sort((a, b) => a.name.localeCompare(b.name));
+    if(s === 'raters') rated.sort((a, b) => b.got.length - a.got.length);
+  }
+  const byOverall = rated.slice().sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
+  byOverall.forEach((p, i) => p._r = i + 1);
+  return {rated, unrated:ps.filter(p => !p.got.length).sort((a, b) => a.name.localeCompare(b.name)), n:rated.length};
+}
+function rankTable(){
+  const {rated, unrated, n} = rankList(), sub = UI.cls !== 'all';
+  const th = (k, l, cls = '') => `<th class="${cls}"><button type="button" data-sort="${k}" ${UI.sort === k ? 'aria-sort="descending"' : ''}>${l}</button></th>`;
+  if(!rated.length && !unrated.length) return '<div class="empty-n">No cadets in this group.</div>';
+  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(CLS_LABEL(UI.cls)) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', 'Overall', 'l')}${FACTORS.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}</tr></thead><tbody>${
+    rated.map(p => `<tr class="${tierOf(p._r, n)}" data-key="${esc(p.key)}" tabindex="0">
+      <td class="rank">${p._r}</td>${sub ? `<td>${pRank(p)}</td>` : ''}
+      <td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td>
+      <td class="l"><span class="ov"><b>${f2(pO(p))}</b><span class="bar"><i style="width:${Math.max(0, Math.min(100, (pO(p) - 1) / 4 * 100))}%"></i></span></span></td>
+      ${FACTORS.map((f, i) => `<td><span class="cell" style="${heat(pv(p, i))}">${f2(pv(p, i))}</span></td>`).join('')}
+      <td><span class="${p.got.length < 3 ? 'muted-n' : ''}">${p.got.length}/${p.possible}</span></td></tr>`).join('')}${
+    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td><td class="l muted-n" colspan="${FACTORS.length + 2}">No ratings yet</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function raterCheck(){
+  const R = PEER.raters, P = PEER.people;
+  const list = Object.entries(R).filter(([k]) => P[k].group === UI.group).map(([k, s]) => {
+    const flags = [];
+    if(s.sd === 0) flags.push('Same score for everyone');
+    else if(s.sd < 0.5) flags.push('Very little spread');
+    if(s.mu >= 4.5) flags.push('Rates almost everyone high');
+    if(s.mu <= 2) flags.push('Rates almost everyone low');
+    return {p:P[k], s, flags};
+  }).sort((a, b) => b.flags.length - a.flags.length || a.s.sd - b.s.sd);
+  const flagged = list.filter(x => x.flags.length).length;
+  return `<details class="panel chk"><summary><span>Rater check: ${esc(PEER_GROUPS.find(G => G.g === UI.group).label)}</span><span class="${flagged ? 'flag' : 'muted'}">${flagged ? `${flagged} to look at` : 'Nothing unusual'}</span></summary>
+    <div class="tblwrap">${list.length ? `<table class="rk"><thead><tr><th class="l">Rater</th><th>Average given</th><th>Spread (SD)</th><th class="l">Note</th></tr></thead><tbody>${
+      list.map(x => `<tr><td class="l"><span class="nm">${face(x.p.name, 26)}${esc(x.p.name)}</span></td><td>${f2(x.s.mu)}</td><td>${f2(x.s.sd)}</td><td class="l">${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join(' ') || '<span class="muted-n">–</span>'}</td></tr>`).join('')
+    }</tbody></table>` : '<div class="empty-n">No submissions yet.</div>'}
+    <p class="hint" style="margin:10px 16px 14px">A rater who gives everyone the same score has no effect on the adjusted ranking (it counts as neutral), but still moves the raw average.</p></div></details>`;
+}
+$('#tPeer').addEventListener('click', e => {
+  const t = e.target.closest('button,tr[data-key]'); if(!t) return;
+  const d = t.dataset;
+  if(d.group){ UI.group = d.group; UI.cls = 'all'; }
+  else if(d.cls) UI.cls = d.cls;
+  else if(d.mode) UI.mode = d.mode;
+  else if(d.sort) UI.sort = d.sort;
+  else if(d.showdone) UI.showDone[d.showdone] = !UI.showDone[d.showdone];
+  else if(d.copy){ copyLeft(d.copy); return; }
+  else if(t.id === 'csv'){ csv(); return; }
+  else if(d.key){ detail(d.key); return; }
+  else return;
+  saveUI(); renderPeer();
+});
+$('#tPeer').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-key]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); detail(tr.dataset.key); } });
+async function copyLeft(g){
+  const names = Object.values(PEER.people).filter(p => p.group === g && !p.submittedAt).map(p => p.name).sort();
+  try{ await navigator.clipboard.writeText(names.join('\n')); toast(`Copied ${names.length} names`); }
+  catch(_){ prompt('Copy these names:', names.join('; ')); }
+}
+function csv(){
+  const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
+  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'Overall (adjusted)', 'Overall (raw)'].concat(FACTORS.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
+  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, f2(p.adjO), f2(p.rawO)].concat(FACTORS.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
+  const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function detail(key){
+  const p = PEER.people[key], G = PEER_GROUPS.find(G => G.g === p.group), gs = PEER.gstat[p.group];
+  const classmates = Object.values(PEER.people).filter(q => q.cls === p.cls && q.got.length).sort((a, b) => pO(b) - pO(a));
+  const clsRank = classmates.indexOf(p) + 1, total = p.dist.slice(1).reduce((a, b) => a + b, 0);
+  const groupN = Object.values(PEER.people).filter(q => q.group === p.group && q.got.length).length;
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<div class="dl-hd">${face(p.name, 60)}<div><h3 id="dlgTitle">${esc(p.name)}</h3>${clsChip(p.cls)} <span class="muted" style="font-size:13px">${esc(G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
+    <div class="dl-bd">${p.got.length ? `
+      <div class="stats">
+        <div class="stat"><div class="k">Group rank</div><div class="v">${pRank(p)}<small class="muted" style="font-size:13px"> / ${groupN}</small></div></div>
+        <div class="stat"><div class="k">${esc(CLS_LABEL(p.cls))} rank</div><div class="v">${clsRank}<small class="muted" style="font-size:13px"> / ${classmates.length}</small></div></div>
+        <div class="stat"><div class="k">Overall</div><div class="v">${f2(pO(p))}</div></div>
+        <div class="stat"><div class="k">Raters</div><div class="v">${p.got.length}<small class="muted" style="font-size:13px"> / ${p.possible}</small></div></div>
+      </div>
+      <div><span class="label">By area (${UI.mode === 'adj' ? 'adjusted' : 'raw'}), line = group average</span>
+        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${Math.max(0, Math.min(100, (pv(p, i) - 1) / 4 * 100))}%"></i><em style="left:${(gs[i].mu - 1) / 4 * 100}%"></em></span><b>${f2(pv(p, i))}</b></div>`).join('')}</div></div>
+      <div><span class="label">Every rating received (${total})</span>
+        <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
+        <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>
+      <p class="hint" style="margin:0">Raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ${p.submittedAt ? `Submitted their own ratings ${esc(fmtWhen(p.submittedAt))}.` : 'Has not submitted their own ratings yet.'}</p>`
+      : `<p class="muted">No one has rated ${esc(p.name)} yet.</p>`}
+    </div>`;
+  dlg.showModal();
+}
+$('#dlg').addEventListener('click', e => { if(e.target.closest('[data-close]') || e.target === e.currentTarget) e.currentTarget.close(); });
+
+/* =====================================================================
+   FLIGHT STAFF EVALUATION (read from its own sheet with the admin key)
+   Each entry is the newest submission for a role: {status, at, state}.
+   ===================================================================== */
+const FSE_GROUPS = [{g:'AS200+', label:'AS 200 / 250 / 500'}, {g:'AS100', label:'AS 100'}];
+const fseGroup = cls => cls === 'AS100' ? 'AS100' : 'AS200+';
+function fseScore(st, c){
+  let sum = 0, w = 0;
+  FACTORS.forEach(f => { const v = c[f.k], wt = +((st.weights || {})[f.k]) || 0; if(v && wt > 0){ sum += (v - 1) / 4 * wt; w += wt; } });
+  return w ? Math.round(sum / w * 1000) / 10 : null;
+}
+// One evaluator's lists: rank within each list (AS200+ and AS100), thirds, comments.
+function fseLists(entry){
+  const st = entry.state || {}, cadets = st.cadets || {}, on = id => cadets[id] && !cadets[id].off;
+  const out = {};
+  FSE_GROUPS.forEach(G => {
+    const ids = (st.order || []).filter(id => on(id) && !cadets[id].nb && fseGroup(cadets[id].cls) === G.g);
+    ids.forEach((id, i) => { const c = cadets[id]; out[c.name + '|' + c.flight] = {c, rank:i + 1, n:ids.length, tier:tierOf(i + 1, ids.length), score:fseScore(st, c), list:G.g}; });
+  });
+  (st.order || []).filter(id => on(id) && cadets[id].nb).forEach(id => { const c = cadets[id]; out[c.name + '|' + c.flight] = {c, rank:null, nb:true, list:fseGroup(c.cls)}; });
+  return out;
+}
+function renderFse(){
+  const el = $('#tFse');
+  if(FSE_ERR && !FSE){ el.innerHTML = `<div class="note ${FSE_ERR === 'not connected' ? '' : 'bad'}">${FSE_ERR === 'not connected' ? 'The Flight Staff Evaluation sheet is not connected yet. Add its admin key to the cadre settings.' : `Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}). Try Refresh.`}</div>`; return; }
+  if(!FSE){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
+  const byRole = {}; FSE.forEach(e => { const r = e.state && e.state.role; if(r) byRole[r] = e; });
+  const done = FSE_ROLES.filter(r => byRole[r.id]).length;
+  el.innerHTML = `
+    ${FSE_ERR ? `<div class="note bad">Couldn't refresh (${esc(FSE_ERR)}). Showing the last data loaded.</div>` : ''}
+    <section class="blk">
+      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${done} of ${FSE_ROLES.length} evaluators</span></div>
+      <div class="roles">${FSE_ROLES.map((r, i) => { const e = byRole[r.id];
+        return `<div class="panel role" style="--i:${i}">${face(r.evaluator, 44)}<div><div class="rt">${esc(r.label)}</div><div class="rs">${esc((e && e.state.evaluator) || r.evaluator)}${e ? ` &middot; ${Object.keys(fseLists(e)).length} cadets` : ''}</div></div>
+          <span class="pill ${e ? 'ok' : 'no'}">${e ? 'Submitted ' + esc(fmtWhen(e.at)) : 'Not yet'}</span></div>`; }).join('')}</div>
+    </section>
+    <section class="blk">
+      <div class="blk-hd"><h2>Results</h2><span class="muted">Newest submission from each evaluator.</span></div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="View">${[['consolidated', 'Consolidated'], ['flight', 'By flight']].map(([v, l]) => `<button type="button" data-fview="${v}" aria-pressed="${UI.fseView === v}">${l}</button>`).join('')}</div>
+        ${UI.fseView === 'flight' ? `<div class="seg small" role="group" aria-label="Flight">${['Alpha', 'Bravo', 'Charlie', 'Delta'].map(f => `<button type="button" data-flight="${f}" aria-pressed="${UI.fseFlight === f}">${f}</button>`).join('')}</div>` : ''}
+      </div>
+      ${FSE_GROUPS.map(G => `<h3 class="label" style="margin:14px 0 8px">${esc(G.label)}</h3><div class="panel"><div class="tblwrap">${fseTable(byRole, G.g)}</div></div>`).join('')}
+      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>Consolidated = average of each evaluator's percentile in their own list (Flt/CC and Sq/CC count the same).</span></div>
+    </section>`;
+}
+function fseTable(byRole, g){
+  // gather every cadet seen by the tracked roles
+  const cad = {};
+  FSE_ROLES.forEach(r => { const e = byRole[r.id]; if(!e) return;
+    Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== g) return; (cad[k] = cad[k] || {c:x.c, by:{}}).by[r.id] = x; }); });
+  let list = Object.values(cad);
+  if(UI.fseView === 'flight') list = list.filter(x => x.c.flight === UI.fseFlight);
+  if(!list.length) return '<div class="empty-n">No results yet.</div>';
+  list.forEach(x => {
+    const pct = Object.values(x.by).filter(v => v.rank).map(v => v.n > 1 ? (v.n - v.rank) / (v.n - 1) : 1);
+    x.pct = pct.length ? mean(pct) : null;
+    x.avg = FACTORS.map(f => mean(Object.values(x.by).map(v => v.c[f.k]).filter(Boolean)));
+  });
+  list.sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1) || a.c.name.localeCompare(b.c.name));
+  const ranked = list.filter(x => x.pct != null).length;
+  return `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th>${UI.fseView === 'consolidated' ? '<th>Flight</th>' : ''}<th>Percentile</th><th>Flt/CC rank</th><th>Sq/CC rank</th>${FACTORS.map(f => `<th>${f.short}</th>`).join('')}<th class="l">Comments</th></tr></thead><tbody>${
+    list.map((x, i) => {
+      const r = x.pct != null ? i + 1 : null;
+      const flt = Object.entries(x.by).find(([id]) => !FSE_ROLES.find(r => r.id === id).sq), sq = Object.entries(x.by).find(([id]) => FSE_ROLES.find(r => r.id === id).sq);
+      const rk = v => v ? (v.nb ? '<span class="muted-n">Not ranked</span>' : `${v.rank}<span class="muted-n">/${v.n}</span>`) : '<span class="muted-n">–</span>';
+      const comments = Object.entries(x.by).filter(([, v]) => (v.c.just || '').trim()).map(([id, v]) => `<div><b>${esc(FSE_ROLES.find(r => r.id === id).label)}:</b> ${esc(v.c.just)}</div>`).join('');
+      return `<tr class="${r ? tierOf(r, ranked) : ''}" style="cursor:default"><td class="rank">${r || '–'}</td>
+        <td class="l"><span class="nm">${face(x.c.name, 30)}<span>${esc(x.c.name)}<small>${esc(CLS_LABEL(x.c.cls))}${x.c.role ? ' &middot; ' + esc(x.c.role) : ''}</small></span></span></td>
+        ${UI.fseView === 'consolidated' ? `<td>${esc(x.c.flight)}</td>` : ''}
+        <td>${x.pct == null ? '–' : Math.round(x.pct * 100)}</td>
+        <td>${rk(flt && flt[1])}</td><td>${rk(sq && sq[1])}</td>
+        ${x.avg.map(v => `<td><span class="cell" style="${heat(v)}">${isNaN(v) ? '–' : (Number.isInteger(v) ? v : v.toFixed(1))}</span></td>`).join('')}
+        <td class="l"><div class="cm">${comments || '<span class="muted-n">–</span>'}</div></td></tr>`;
+    }).join('')}</tbody></table>`;
+}
+$('#tFse').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.fview) UI.fseView = b.dataset.fview; else if(b.dataset.flight) UI.fseFlight = b.dataset.flight; else return;
+  saveUI(); renderFse();
+});
+
+/* ---------- start ---------- */
+(async () => {
+  let pw = ''; try{ pw = sessionStorage.getItem(PASS_KEY) || ''; }catch(_){}
+  if(pw){ try{ await unlock(pw); return; }catch(_){ try{ sessionStorage.removeItem(PASS_KEY); }catch(__){} } }
+  $('#pw').focus();
+})();
+</script>
+</body>
+</html>
