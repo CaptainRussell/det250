@@ -69,22 +69,36 @@ try {
 } catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Org chart photo embedded in each slip (so the file stands alone), initials when there is no photo.
+const photo = p => {
+  const f = `org-chart/photos/${p.key}.jpg`;
+  if (existsSync(f)) return `<img src="data:image/jpeg;base64,${readFileSync(f).toString("base64")}" alt="">`;
+  const [last, first = ""] = p.name.split(", ");
+  return `<span>${esc((first[0] || "") + (last[0] || ""))}</span>`;
+};
+// Each slip is credit card size (3.375 x 2.125 in): 2 across, 5 down = 10 per Letter page. Each group starts a new page.
 const slips = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Peer Feedback codes · Storm HQ</title>
 <style>
-body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:16px;color:#1b1b1d}
+@page{size:letter;margin:.18in .5in}
+*{box-sizing:border-box}
+body{font:14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:16px;color:#1b1b1d;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 h1{font-size:18px;margin:0 0 4px} p.note{margin:0 0 14px;color:#55565c}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-.slip{border:1px dashed #9a9aa2;padding:10px 12px;break-inside:avoid;display:flex;align-items:center;gap:10px}
-.slip .w{flex:1;min-width:0}
-.slip .n{font-weight:700;margin:0 0 4px}.slip .c{font:700 20px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;color:#c8102e;white-space:nowrap}
-.slip .u{font-size:10.5px;color:#55565c;margin:0 0 4px;overflow-wrap:anywhere}
-.slip .q{width:76px;height:76px;flex:none}.slip .q svg{width:100%;height:100%;display:block}
-h2{font-size:14px;margin:18px 0 6px;break-after:avoid}
-@media print{body{margin:0}.note{display:none}}
+h2{font-size:14px;margin:18px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(2,3.375in);grid-auto-rows:2.125in;gap:0;justify-content:center}
+.slip{border:1px dashed #9a9aa2;padding:.12in .14in;break-inside:avoid;display:grid;grid-template-columns:.95in 1fr;grid-template-rows:auto 1fr;column-gap:.12in;overflow:hidden}
+.ph{grid-row:1/3;width:.95in;height:1.19in;border-radius:6px;overflow:hidden;background:#e4e4e8;display:flex;align-items:center;justify-content:center;font:700 26px/1 system-ui,sans-serif;color:#55565c;align-self:center}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.top .n{font-weight:700;font-size:13px;line-height:1.2}.top .k{font-size:11px;color:#55565c}
+.bot{display:flex;align-items:flex-end;gap:.08in;min-width:0}
+.bot .w{flex:1;min-width:0}
+.c{font:700 15px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em;color:#c8102e;white-space:nowrap}
+.u{font-size:8.5px;color:#55565c;margin-top:3px;overflow-wrap:anywhere}
+.q{width:.82in;height:.82in;flex:none}.q svg{width:100%;height:100%;display:block}
+@media print{body{margin:0}h1,.note,h2{display:none}.grid+h2+.grid,.grid~.grid{break-before:page}}
 </style></head><body>
-<h1>Peer Feedback personal codes</h1><p class="note">Private. Print and cut, or send each cadet only their own code. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
+<h1>Peer Feedback personal codes</h1><p class="note">Private. Each slip is credit card size: print at 100% (Actual size) and cut on the dashed lines. Each group starts on a new page. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
 ${Object.keys(GROUP_LABEL).map(g => `<h2>${esc(GROUP_LABEL[g])}</h2><div class="grid">${people.filter(p => p.group === g).map(p =>
-  `<div class="slip"><div class="w"><div class="n">${esc(p.name)} (${esc(p.cls)})</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div><div class="c">${esc(p.code)}</div></div><div class="q">${qrSvg}</div></div>`).join("")}</div>`).join("")}
+  `<div class="slip"><div class="ph">${photo(p)}</div><div class="top"><div class="n">${esc(p.name)}</div><div class="k">${esc(p.cls)}</div></div><div class="bot"><div class="w"><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div></div><div class="q">${qrSvg}</div></div></div>`).join("")}</div>`).join("")}
 </body></html>`;
 writeFileSync(path.join(outDir, "code-slips.html"), slips);
 
