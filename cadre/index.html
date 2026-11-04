@@ -239,7 +239,7 @@ function heat(v){ // score 1..5 -> cell colors (red low, gray middle, green high
 }
 
 let CFG = null;
-let UI = {tab:'peer', group:'poc', cls:'all', mode:'adj', sort:'overall', showDone:{}, fseView:'consolidated', fseFlight:'Alpha'};
+let UI = {tab:'peer', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, fseView:'consolidated', fseFlight:'Alpha'};
 try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || '{}')); }catch(_){}
 const saveUI = () => { try{ localStorage.setItem(UI_KEY, JSON.stringify(UI)); }catch(_){} };
 let PEER = null, PEER_ERR = '', FSE = null, FSE_ERR = '';
@@ -377,6 +377,7 @@ function renderPeer(){
       <div class="filters">
         <div class="seg" role="group" aria-label="Peer group">${PEER_GROUPS.map(G => `<button type="button" data-group="${G.g}" aria-pressed="${UI.group === G.g}">${esc(G.label)}</button>`).join('')}</div>
         <div class="seg small" role="group" aria-label="AS level">${['all'].concat(PEER_GROUPS.find(G => G.g === UI.group).classes).map(c => `<button type="button" data-cls="${c}" aria-pressed="${UI.cls === c}">${c === 'all' ? 'All' : esc(CLS_LABEL(c))}</button>`).join('')}</div>
+        ${UI.group === 'poc' && fyList().length ? `<div class="seg small" role="group" aria-label="Fiscal year">${['all'].concat(fyList()).map(y => `<button type="button" data-fy="${y}" aria-pressed="${(fyOn() ? UI.fy : 'all') === y}">${y === 'all' ? 'All FYs' : esc(y)}</button>`).join('')}</div>` : ''}
         <div class="seg small" role="group" aria-label="Score">${[['adj', 'Adjusted for rater'], ['raw', 'Raw average']].map(([m, l]) => `<button type="button" data-mode="${m}" aria-pressed="${UI.mode === m}">${l}</button>`).join('')}</div>
         <button class="btn small" type="button" id="csv">Download CSV</button>
       </div>
@@ -386,10 +387,17 @@ function renderPeer(){
 
     <section class="blk">${raterCheck()}</section>`;
 }
+// Commissioning fiscal year for POC cadets (from the encrypted settings, CFG.fy: cadet key -> "FY27").
+const fyOf = key => (CFG && CFG.fy && CFG.fy[key]) || '';
+const fyList = () => [...new Set(Object.values((CFG && CFG.fy) || {}))].sort();
+const fyOn = () => UI.group === 'poc' && UI.fy !== 'all' && fyList().includes(UI.fy);
+const subLabel = () => [UI.cls !== 'all' ? CLS_LABEL(UI.cls) : '', fyOn() ? UI.fy : ''].filter(Boolean).join(' ');
+const clsLine = p => CLS_LABEL(p.cls) + (fyOf(p.key) ? ' · ' + fyOf(p.key) : '');
 function rankList(){
   const G = PEER_GROUPS.find(G => G.g === UI.group);
   let ps = Object.values(PEER.people).filter(p => p.group === G.g);
   if(UI.cls !== 'all') ps = ps.filter(p => p.cls === UI.cls);
+  if(fyOn()) ps = ps.filter(p => fyOf(p.key) === UI.fy);
   const rated = ps.filter(p => p.got.length).sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
   const s = UI.sort;
   if(s !== 'overall'){
@@ -403,17 +411,17 @@ function rankList(){
   return {rated, unrated:ps.filter(p => !p.got.length).sort((a, b) => a.name.localeCompare(b.name)), n:rated.length};
 }
 function rankTable(){
-  const {rated, unrated, n} = rankList(), sub = UI.cls !== 'all';
+  const {rated, unrated, n} = rankList(), sub = !!subLabel();
   const th = (k, l, cls = '') => `<th class="${cls}"><button type="button" data-sort="${k}" ${UI.sort === k ? 'aria-sort="descending"' : ''}>${l}</button></th>`;
   if(!rated.length && !unrated.length) return '<div class="empty-n">No cadets in this group.</div>';
-  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(CLS_LABEL(UI.cls)) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', 'Overall', 'l')}${PF.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}</tr></thead><tbody>${
+  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(subLabel()) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', 'Overall', 'l')}${PF.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}</tr></thead><tbody>${
     rated.map(p => `<tr class="${tierOf(p._r, n)}" data-key="${esc(p.key)}" tabindex="0">
       <td class="rank">${p._r}</td>${sub ? `<td>${pRank(p)}</td>` : ''}
-      <td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td>
+      <td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(clsLine(p))}</small></span></span></td>
       <td class="l"><span class="ov"><b>${f2(pO(p))}</b><span class="bar"><i style="width:${Math.max(0, Math.min(100, (pO(p) - 1) / 4 * 100))}%"></i></span></span></td>
       ${PF.map((f, i) => `<td><span class="cell" style="${heat(pv(p, i))}">${f2(pv(p, i))}</span></td>`).join('')}
       <td><span class="${p.got.length < 3 ? 'muted-n' : ''}">${p.got.length}/${p.possible}</span></td></tr>`).join('')}${
-    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td><td class="l muted-n" colspan="${PF.length + 2}">No ratings yet</td></tr>`).join('')}
+    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(clsLine(p))}</small></span></span></td><td class="l muted-n" colspan="${PF.length + 2}">No ratings yet</td></tr>`).join('')}
   </tbody></table>`;
 }
 function raterCheck(){
@@ -436,7 +444,8 @@ function raterCheck(){
 $('#tPeer').addEventListener('click', e => {
   const t = e.target.closest('button,tr[data-key]'); if(!t) return;
   const d = t.dataset;
-  if(d.group){ UI.group = d.group; UI.cls = 'all'; }
+  if(d.group){ UI.group = d.group; UI.cls = 'all'; UI.fy = 'all'; }
+  else if(d.fy) UI.fy = d.fy;
   else if(d.cls) UI.cls = d.cls;
   else if(d.mode) UI.mode = d.mode;
   else if(d.sort) UI.sort = d.sort;
@@ -455,11 +464,11 @@ async function copyLeft(g){
 }
 function csv(){
   const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
-  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
+  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
+  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
   const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}${fyOn() ? '_' + UI.fy : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 function detail(key){
