@@ -194,6 +194,41 @@ dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;bord
 .d250-head-icon.ss-cover{width:40px;height:60px;border-radius:6px;overflow:hidden;background:#0b1020;padding:0}
 .d250-head-icon.ss-cover img{display:block;width:100%;height:100%;object-fit:cover}
 @media (max-width:480px){.d250-head-icon.ss-cover{width:36px;height:54px;border-radius:5px}}
+.photo{margin:0 0 16px}
+.photo img{display:block;width:100%;height:auto;border-radius:14px;box-shadow:var(--d250-shadow)}
+.hero .photo{margin:0}
+.symbols{display:flex;align-items:center;justify-content:center;gap:18px;margin:0 0 8px}
+.symbols figure{margin:0;text-align:center}
+.symbols img{display:block;margin:0 auto;width:auto;height:96px}
+.symbols .tile{display:grid;place-items:center;width:110px;height:96px;margin:0 auto;background:#fff;border-radius:14px}
+.symbols .tile img{height:72px}
+.symbols .arrow{font-size:26px;color:var(--d250-gold)}
+.icard{display:flex;gap:14px;align-items:flex-start}
+.icard .ci{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000))}
+.icard .ci svg{width:22px;height:22px}
+.icard h3{margin-top:2px}
+.icard>div{min-width:0}
+.svals{display:flex;flex-wrap:wrap;gap:10px}
+.svals .icard{align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:14px;background:var(--d250-surface);border:1px solid var(--d250-line)}
+.svals b{font-size:15px}
+.moose{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 16px}
+.moose b{width:34px;height:40px;display:grid;place-items:center;border-radius:9px;font-size:19px;font-weight:800;color:var(--d250-gold);background:var(--d250-surface);border:1px solid var(--d250-line)}
+.diags{margin-bottom:12px}
+.diag{margin:0;text-align:center}
+.diag svg{display:block;width:100%;max-width:240px;height:auto;margin:0 auto 8px;fill:none;stroke:var(--d250-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.diag svg text{fill:var(--d250-soft);stroke:none;font:600 11px var(--d250-font);text-anchor:middle}
+.diag svg .sr{stroke:var(--d250-gold)}
+.diag svg .sr text,.diag svg .srt{fill:var(--d250-gold)}
+.diag svg .mv{stroke:var(--tone);stroke-dasharray:4 4}
+.diag svg .ln{stroke:var(--d250-line-strong)}
+.diag svg .seat{fill:color-mix(in srgb,var(--d250-ink) 8%,transparent)}
+.diag svg .lbl{fill:var(--tone-ink,var(--d250-ink))}
+.diag figcaption{margin:0;font-size:13.5px;color:var(--d250-soft);line-height:1.45}
+.diag figcaption b{display:block;color:var(--d250-ink);font-size:14.5px;margin-bottom:2px}
+.mdsph{max-width:520px;margin:0 auto 16px}
+.pyr{list-style:none;margin:14px auto 0;max-width:620px;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pyr li{width:var(--w);max-width:100%;min-width:0;padding:7px 8px;border-radius:8px;text-align:center;font-size:12.5px;font-weight:700;line-height:1.25;color:var(--d250-ink);background:color-mix(in srgb,var(--tone) 22%,var(--d250-surface));border:1px solid color-mix(in srgb,var(--tone) 40%,var(--d250-line))}
+.pyr li:first-child{background:color-mix(in srgb,var(--tone) 45%,var(--d250-surface))}
 @media print{.d250-bar,.d250-head,.side,.d250-foot,.pnav,.steps{display:none!important}.wrap{display:block}}
 </style>
 </head>
@@ -281,6 +316,39 @@ const MAJCOM_SHORT = {
   "ang": "A Total Force component with a dual mission: federal service and service to its state."
 };
 const majcomShort = m => MAJCOM_SHORT[((m.name.match(/\(([^)]+)\)\s*$/) || [])[1] || "").toLowerCase()] || m.mission;
+// Drawn icons (24x24, stroke) for cards without artwork.
+const ICON = {
+  shield: '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M8.5 11.5l2.5 2.5 4.5-5"/>',
+  flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  character: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  hand: '<path d="M7 12l3 3 7-7"/><circle cx="12" cy="12" r="9"/>',
+  flame: '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .3 1.6 1.2 2.6 2.5 3-1-2.6-.6-5.4 0-8z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+  arrow: '<path d="M5 19L19 5"/><path d="M9 5h10v10"/>',
+  mass: '<rect x="4" y="14" width="16" height="6" rx="1"/><rect x="6" y="8" width="12" height="6" rx="1"/><rect x="8" y="3" width="8" height="5" rx="1"/>',
+  scale: '<path d="M12 4v16M7 20h10"/><path d="M5 8h14"/><path d="M5 8l-2.5 6h5zM19 8l-2.5 6h5z"/>',
+  maneuver: '<path d="M4 18c4 0 4-12 9-12h4"/><path d="M14 3l3 3-3 3"/><circle cx="4" cy="18" r="1.6"/>',
+  unity: '<circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="12" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M12 7.2v9.6M12 11l-7 6M12 11l7 6"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  simple: '<path d="M4 12h16"/><circle cx="4" cy="12" r="1.6"/><circle cx="20" cy="12" r="1.6"/>',
+  climb: '<path d="M6 15l6-6 6 6"/><path d="M6 20l6-6 6 6"/><path d="M6 10l6-6 6 6"/>',
+  storm: '<path d="M4 6h16M6 10h12M8 14h8M10 18h4"/>',
+  heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>'
+};
+const svgI = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+const icard = (icon, title, body, k) => `<div class="card icard"><span class="ci">${svgI(icon)}</span><div>${k ? `<span class="k">${k}</span>` : ""}<h3>${title}</h3>${body}</div></div>`;
+const PRINCIPLE_ICON = {"Unity of Command": "unity", "Objective": "target", "Offensive": "arrow", "Mass": "mass", "Maneuver": "maneuver", "Economy of Force": "scale", "Security": "lock", "Surprise": "bolt", "Simplicity": "simple"};
+// Small customs diagrams (drawn, theme aware).
+const fig = (x, y, label, cls) => `<g class="${cls || ""}"><circle cx="${x}" cy="${y - 22}" r="7"/><path d="M${x} ${y - 14}v16M${x - 9} ${y - 6}h18M${x} ${y + 2}l-7 12M${x} ${y + 2}l7 12"/><text x="${x}" y="${y + 30}">${label}</text></g>`;
+const DIAG = {
+  walk: `<svg viewBox="0 0 200 110" role="img" aria-label="The junior walks on the senior's left; the senior is on the right">${fig(70, 50, "Junior")}${fig(130, 50, "Senior", "sr")}<path class="mv" d="M50 100h100"/><path class="mv" d="M144 95l6 5-6 5"/></svg>`,
+  car: `<svg viewBox="0 0 200 110" role="img" aria-label="Junior enters the vehicle first and sits on the senior's left; the senior enters last and exits first"><rect class="ln" x="40" y="14" width="120" height="70" rx="22"/><path class="ln" d="M100 14v70"/><circle class="seat" cx="70" cy="49" r="13"/><circle class="seat sr" cx="130" cy="49" r="13"/><text x="70" y="53">1</text><text x="130" y="53" class="srt">2</text><text x="70" y="102">Junior</text><text x="130" y="102" class="srt">Senior</text></svg>`,
+  report: `<svg viewBox="0 0 200 110" role="img" aria-label="Walk to within two paces of the officer, halt, salute and report">${fig(40, 50, "You")}<path class="mv" d="M58 40h62"/><path class="mv" d="M114 35l6 5-6 5"/><text x="90" y="30" class="lbl">2 paces</text>${fig(160, 50, "Officer", "sr")}</svg>`
+};
 const COCOMS = {
   geo: [["USAFRICOM", "Africa Command", "Stuttgart, Germany"], ["USCENTCOM", "Central Command", "MacDill AFB, FL"], ["USEUCOM", "European Command", "Stuttgart, Germany"], ["USNORTHCOM", "Northern Command", "Peterson SFB, CO"], ["USINDOPACOM", "Indo-Pacific Command", "Camp H.M. Smith, HI"], ["USSOUTHCOM", "Southern Command", "Miami, FL"], ["USSPACECOM", "Space Command", "Peterson SFB, CO"]],
   fun: [["USCYBERCOM", "Cyber Command", "Fort George G. Meade, MD"], ["USSOCOM", "Special Operations Command", "MacDill AFB, FL"], ["USSTRATCOM", "Strategic Command", "Offutt AFB, NE"], ["USTRANSCOM", "Transportation Command", "Scott AFB, IL"]]
@@ -312,18 +380,19 @@ const CH = [
         <div class="card stat"><b>1949</b><span>AFROTC Detachment 250 established</span></div>
         <div class="card stat"><b>843</b><span>Officers commissioned in the first decade</span></div>
         <div class="card stat"><b>~2,000</b><span>Cadets enrolled in the early Cold War</span></div></div>
-      <p style="margin-top:16px">Iowa State is one of only a handful of universities to host Army, Navy and Air ROTC at the same time. <b>Gold Star Hall</b> in the Memorial Union honors the Iowa Staters who died in military service, from World War I through the Global War on Terrorism.</p>`},
+      <div class="hero" style="margin-top:18px"><figure class="photo">${img("official/photo-armory.webp", "Aerial view of the Iowa State Armory", "zoom")}<figcaption>The Armory, Iowa State University (ISU Library, University Archives).</figcaption></figure><div><p style="margin:0">Iowa State is one of only a handful of universities to host Army, Navy and Air ROTC at the same time. <b>Gold Star Hall</b> in the Memorial Union honors the Iowa Staters who died in military service, from World War I through the Global War on Terrorism.</p></div></div>`},
     {id: "patches", title: "The Det 250 patches", page: 10, html: () => `<div class="grid">
       <div class="card patch">${img("patch-usaf.webp", "USAF Det 250 patch", "", 150, 155)}<div><span class="k">USAF Det 250 patch</span><h3>Optimi in Medio Patriae</h3>
         <ul><li><b>Tornado:</b> Iowa State's Cyclone tradition and our identity as "The Storm."</li><li><b>Bald eagle:</b> service to the United States and the ideals of Air and Space Force leadership.</li><li><b>Map with Iowa highlighted:</b> roots in Ames, serving across the nation and the world.</li><li><b>Motto:</b> "The Best in the Heart of the Nation."</li></ul></div></div>
       <div class="card patch">${img("patch-ussf.webp", "USSF Det 250 patch", "", 150, 209)}<div><span class="k">USSF Det 250 patch</span><h3>MCMXLIX</h3>
         <ul><li><b>MCMXLIX:</b> 1949, the year Detachment 250 was established.</li><li><b>Outline of Iowa:</b> the detachment's home state.</li><li><b>Tornado:</b> the Cyclone tradition and "The Storm."</li><li><b>Delta and orbit:</b> from the USSF seal; military space operations, global reach, and the close tie between the USAF and USSF.</li><li><b>Colors:</b> STAR Command, Iowa State and the space domain.</li></ul></div></div></div>`},
     {id: "forward", title: "Carry the legacy forward", page: 13, html: () => `<p class="quote">A storm is not defined by calm skies. It is forged by powerful winds, relentless energy, and the determination to push forward when conditions are at their most demanding.</p>
+      <figure class="photo">${img("official/photo-open-ranks.webp", "POC cadets in service dress during an open ranks inspection", "zoom")}<figcaption>POC cadets during an open ranks inspection.</figcaption></figure>
       <div class="grid g2">
-        ${card("Developing leaders", "<p>Rigorous leadership development, academic excellence, physical fitness and character.</p>")}
-        ${card("Strengthening the Storm", "<p>A culture of professionalism, camaraderie and mutual support.</p>")}
-        ${card("Serving the community", "<p>Volunteer service, color guard and partnerships across Iowa State and Iowa.</p>")}
-        ${card("Embracing innovation", "<p>Iowa State's strength in science and engineering, applied to air, space and cyber.</p>")}</div>
+        ${icard("climb", "Developing leaders", "<p>Rigorous leadership development, academic excellence, physical fitness and character.</p>")}
+        ${icard("storm", "Strengthening the Storm", "<p>A culture of professionalism, camaraderie and mutual support.</p>")}
+        ${icard("heart", "Serving the community", "<p>Volunteer service, color guard and partnerships across Iowa State and Iowa.</p>")}
+        ${icard("bulb", "Embracing innovation", "<p>Iowa State's strength in science and engineering, applied to air, space and cyber.</p>")}</div>
       <p class="quote" style="margin-top:18px">When standards seem high, reach higher. When others seek comfort, choose growth. The challenge is before you. The standard is excellence. The future is yours to shape.</p>`}
   ]},
   {id: "officership", label: "Chapter 2", title: "Officership", subs: [
@@ -333,9 +402,11 @@ const CH = [
       <div class="card"><div class="seals">${img("official/seal-space-force.webp", "Space Force seal", "", 110, 110)}</div><span class="k">Space Force mission</span><h3>Secure our Nation's interests in, from and to space.</h3>
         <ul><li><b>In space:</b> space superiority that protects the joint force.</li><li><b>From space:</b> SATCOM, positioning, navigation and timing, and missile warning.</li><li><b>To space:</b> assured access through launch, range and the control network.</li></ul></div></div>`},
     {id: "values", title: "Core values", page: 19, html: () => `<div class="grid g3">
-      ${card("Integrity First", "<p>Doing the right thing, all the time, whether everyone is watching or no one is watching.</p><div class=\"chips\"><span>Honesty</span><span>Courage</span><span>Accountability</span></div>", "Core value")}
-      ${card("Service Before Self", "<p>Professional duties take precedence over personal desires. We do not work in the Air Force and Space Force; we serve.</p><div class=\"chips\"><span>Duty</span><span>Loyalty</span><span>Respect</span></div>", "Core value")}
-      ${card("Excellence In All We Do", "<p>Not perfection, but a passion to continuously advance our craft and increase our knowledge.</p><div class=\"chips\"><span>Mission</span><span>Discipline</span><span>Teamwork</span></div>", "Core value")}</div>
+      ${icard("shield", "Integrity First", "<p>Doing the right thing, all the time, whether everyone is watching or no one is watching.</p><div class=\"chips\"><span>Honesty</span><span>Courage</span><span>Accountability</span></div>", "Air Force core value")}
+      ${icard("flag", "Service Before Self", "<p>Professional duties take precedence over personal desires. We do not work in the Air Force and Space Force; we serve.</p><div class=\"chips\"><span>Duty</span><span>Loyalty</span><span>Respect</span></div>", "Air Force core value")}
+      ${icard("star", "Excellence In All We Do", "<p>Not perfection, but a passion to continuously advance our craft and increase our knowledge.</p><div class=\"chips\"><span>Mission</span><span>Discipline</span><span>Teamwork</span></div>", "Air Force core value")}</div>
+      <h3 style="margin:22px 0 10px">Space Force values</h3>
+      <div class="svals">${[["character", "Character"], ["link", "Connection"], ["hand", "Commitment"], ["flame", "Courage"]].map(v => `<span class="icard"><span class="ci">${svgI(v[0])}</span><b>${v[1]}</b></span>`).join("")}</div>
       <h3 style="margin:22px 0 10px">A leader of character</h3>
       <div class="grid g3">${card("Lives honorably", "<p>Consistently practices the virtues in our core values.</p>")}${card("Lifts others", "<p>Helps others become their best possible selves.</p>")}${card("Elevates performance", "<p>Toward a common and noble purpose.</p>")}</div>`},
     {id: "chain", title: "Chain of command", page: 16, html: () => `<p class="lead">Each level is responsible for all lower levels and accountable to all higher levels. Resolve problems at the lowest possible level.</p>
@@ -360,11 +431,16 @@ const CH = [
       ["Enlisted", `<div class="grid g2">${paper("rank-enlisted-1.webp", "Enlisted insignia E-1 to E-8, all services")}${paper("rank-enlisted-2.webp", "Enlisted insignia E-9 and special enlisted insignia, all services")}</div>`],
       ["Warrant officer", paper("rank-warrant.webp", "Warrant officer insignia, all services", "In Feb 2024 the Air Force announced it would reintroduce warrant officers in IT and cyber fields.", 620)]])},
     {id: "customs", title: "Customs and courtesies", page: 34, html: () => `<p class="lead">Proven traditions that build morale, esprit de corps, discipline and mission effectiveness.</p>
+      <figure class="photo">${img("official/photo-salute.webp", "Det 250 cadets saluting in flight formation", "zoom")}<figcaption>Cadets render the salute in flight formation.</figcaption></figure>
+      <div class="grid g3 diags">
+        <figure class="card diag">${DIAG.walk}<figcaption><b>Walking</b> The senior walks on the right.</figcaption></figure>
+        <figure class="card diag">${DIAG.car}<figcaption><b>Vehicles</b> Numbers show entry order. The junior enters first and sits on the senior's left. The senior enters last and exits first.</figcaption></figure>
+        <figure class="card diag">${DIAG.report}<figcaption><b>Reporting</b> Walk to within two paces, halt, salute and report.</figcaption></figure></div>
       <div class="grid g2">
         ${card("Everyday courtesies", "<ul><li>Give a verbal greeting when passing: \"Good morning, Sir/Ma'am.\"</li><li>Say \"please\" and \"thank you.\"</li><li>The highest ranking person walks on the right.</li><li>Enter vehicles in reverse order of rank: junior members first.</li></ul>")}
         ${card("The salute", "<p>A courteous exchange of greetings: the junior member salutes the senior first, with a verbal greeting. Salutes are exchanged outdoors, in uniform, upon recognition. Indoors, salute only for formal reporting and ceremonies.</p>")}
         ${card("Respect for the flag", "<p>In uniform and not in formation, face the flag (or the music) and salute from the first note of the national anthem or &ldquo;To the Colors&rdquo; to the last. Vehicles pull over and stop. In civilian clothes, stand at attention with your right hand over your heart.</p>")}</div>`},
-    {id: "creed", title: "The Airman's Creed", page: 47, html: () => `<div class="card creed"><p>I am an American Airman.<br>I am a Warrior.<br>I have answered my Nation's call.</p><p>I am an American Airman.<br>My mission is to Fly, Fight, and Win.<br>I am faithful to a Proud Heritage,<br>A Tradition of Honor,<br>And a Legacy of Valor.</p><p>I am an American Airman.<br>Guardian of Freedom and Justice,<br>My Nation's Sword and Shield,<br>Its Sentry and Avenger.<br>I defend my Country with my Life.</p><p>I am an American Airman.<br>Wingman, Leader, Warrior.<br>I will never leave an Airman behind,<br>I will never falter,<br>And I will not fail.</p></div>
+    {id: "creed", title: "The Airman's Creed", page: 47, html: () => `<div class="symbols"><figure>${img("official/hap-arnold-wings.webp", "Hap Arnold wings of the Army Air Forces", "", 120, 120)}<figcaption>Hap Arnold wings</figcaption></figure><span class="arrow" aria-hidden="true">&rarr;</span><figure><span class="tile">${img("official/air-force-symbol.webp", "The Air Force Symbol", "", 100, 89)}</span><figcaption>Air Force Symbol</figcaption></figure></div><p class="muted small" style="text-align:center;margin:0 0 16px">The Air Force Symbol honors the Hap Arnold wings worn by the Army Air Forces.</p><div class="card creed"><p>I am an American Airman.<br>I am a Warrior.<br>I have answered my Nation's call.</p><p>I am an American Airman.<br>My mission is to Fly, Fight, and Win.<br>I am faithful to a Proud Heritage,<br>A Tradition of Honor,<br>And a Legacy of Valor.</p><p>I am an American Airman.<br>Guardian of Freedom and Justice,<br>My Nation's Sword and Shield,<br>Its Sentry and Avenger.<br>I defend my Country with my Life.</p><p>I am an American Airman.<br>Wingman, Leader, Warrior.<br>I will never leave an Airman behind,<br>I will never falter,<br>And I will not fail.</p></div>
       <p class="muted small">Introduced in 2007 by Gen T. Michael Moseley, Chief of Staff of the Air Force. Everyone present stands at attention when it is recited.</p>`},
     {id: "conduct", title: "Code of Conduct", page: 54, html: () => `${sealRow(SERVICES)}
       <p class="muted">First published by President Eisenhower on 17 August 1955. Its six articles guide every member of every service who is captured or detained.</p>
@@ -382,8 +458,9 @@ const CH = [
   ]},
   {id: "strategy", label: "Chapter 4", title: "Military Strategy", subs: [
     {id: "principles", title: "Principles of war", page: 88, html: () => `<p class="lead">Fundamental, interconnected aspects that tend to lead to military victory. Not a checklist, but a tool for weighing courses of action.</p>
-      <div class="grid g3">${PRINCIPLES.map(p => card(esc(p[0]), `<p>${esc(p[1])}</p>`)).join("")}</div>`},
-    {id: "cocoms", title: "Combatant commands", page: 89, html: () => `<h3 style="margin:0 0 8px">Geographic</h3><p class="muted small" style="margin:0 0 10px">Clearly delineated areas with a regional military focus.</p>${list(COCOMS.geo)}
+      <div class="moose" aria-label="MOOSEMUSS: Maneuver, Objective, Offensive, Surprise, Economy of force, Mass, Unity of command, Security, Simplicity">${"MOOSEMUSS".split("").map(c => `<b>${c}</b>`).join("")}</div>
+      <div class="grid g3">${PRINCIPLES.map(p => icard(PRINCIPLE_ICON[p[0]], esc(p[0]), `<p>${esc(p[1])}</p>`)).join("")}</div>`},
+    {id: "cocoms", title: "Combatant commands", page: 89, html: () => `${paper("official/cocom-map.webp", "Map of the geographic combatant command areas of responsibility", "Geographic areas of responsibility. USINDOPACOM was named USPACOM until 2018.", 960)}<h3 style="margin:18px 0 8px">Geographic</h3><p class="muted small" style="margin:0 0 10px">Clearly delineated areas with a regional military focus.</p>${list(COCOMS.geo)}
       <h3 style="margin:18px 0 8px">Functional</h3><p class="muted small" style="margin:0 0 10px">World-wide capabilities that support the geographic commands and the Services.</p>${list(COCOMS.fun)}`},
     {id: "departments", title: "The military departments", page: 90, html: () => `<div class="grid g3">
       <div class="card seal">${img("official/seal-air-force.webp", "Department of the Air Force seal", "", 110, 110)} ${img("official/seal-space-force.webp", "Space Force seal", "", 110, 110)}<span class="k">Department of the Air Force</span><h3>Air Force and Space Force</h3><p>Air, space and cyberspace capabilities for theater-wide and national objectives. The Space Force was established 20 December 2019.</p></div>
@@ -394,6 +471,7 @@ const CH = [
   ]},
   {id: "resources", label: "Chapter 5", title: "Military Resources", subs: [
     {id: "mds", title: "Mission design series", page: 106, html: () => `<p class="lead">Every aircraft designation tells you what it is. Example: <b>NKC-135R</b>.</p>
+      <figure class="photo mdsph">${img("inv-kc-135r-t-stratotanker.webp", "KC-135R Stratotanker", "zoom")}<figcaption>KC-135 Stratotanker. The N prefix on NKC-135R marks an airframe permanently modified for special testing.</figcaption></figure>
       <div class="mds"><div><b>N</b><span>Status prefix<br>Special test, permanent</span></div><div><b>K</b><span>Modified mission<br>Tanker</span></div><div><b>C</b><span>Basic mission<br>Transport</span></div><div><b>135</b><span>Design<br>number</span></div><div><b>R</b><span>Series<br>(model)</span></div></div>
       <div class="grid g3">${card("Basic mission", "<p>A Attack · B Bomber · C Transport · E Special electronic · F Fighter · L Laser · O Observation · P Patrol · R Reconnaissance · S Antisubmarine · T Trainer · U Utility · X Research</p>")}
       ${card("Modified mission", "<p>Adds to the basic mission, for example K Tanker, M Multi-mission, Q Drone, H Search and rescue, W Weather.</p>")}
@@ -410,8 +488,8 @@ const CH = [
       <div class="row"><a class="btn" href="The_Storm_Standard.pdf" download>Download the full PDF</a><a class="btn ghost" href="#start/cover">Back to the cover</a></div></div></div>`},
     {id: "about", title: "Edition and authority", page: 3, html: () => `<div class="grid g2">
       ${card("First Edition, Sep 2026", `<p>Owner: AFROTC Detachment 250. OPR: Education Officer. Approval: Detachment Commander.</p><p>A consolidated reference of selected Air Force and Space Force doctrine, officership, heritage, Det 250 history and study material, to support cadet education and leadership development.</p>`, "Edition")}
-      ${card("Official publications win", `<p>The Storm Standard does not replace official publications. Where they conflict, these take precedence, in order:</p><ul><li>United States Code</li><li>Department of War directives and instructions</li><li>Department of the Air Force publications</li><li>Air Force and Space Force doctrine</li><li>AFROTC instructions and guidance</li><li>Detachment Commander policy memoranda</li></ul>`, "Authority")}
-      ${card("Recommend a change", `<p>Send recommended changes through the cadet chain of command to the publication owner.</p>`, "Changes")}</div>`}
+      ${card("Recommend a change", `<p>Send recommended changes through the cadet chain of command to the publication owner.</p>`, "Changes")}</div>
+      <div style="margin-top:12px">${card("Official publications win", `<p>The Storm Standard does not replace official publications. Where they conflict, the higher one wins:</p><ol class="pyr">${["United States Code", "Department of War directives and instructions", "Department of the Air Force publications", "Air Force and Space Force doctrine", "AFROTC instructions and guidance", "Detachment Commander policy memoranda"].map((t, i) => `<li style="--w:${40 + i * 12}%"><span>${t}</span></li>`).join("")}</ol>`, "Authority")}</div>`}
   ]}
 ];
 
