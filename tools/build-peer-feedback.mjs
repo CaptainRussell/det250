@@ -58,15 +58,15 @@ ${roster.map(r => "  " + JSON.stringify(r)).join(",\n")}
 ` + readFileSync("tools/peer-feedback/Code.gs", "utf8");
 writeFileSync(path.join(outDir, "PeerFeedback.gs"), gs);
 
-// One QR code (same link on every slip), drawn as inline SVG so the slips print offline.
+// Each slip gets its own QR code: the page link with #code=<that cadet's code>, so scanning signs them in
+// (the page reads the code after the #, which never leaves the phone, and then clears it from the address bar).
+// Drawn as inline SVG so the slips print offline.
 // Needs qrcode-generator: npm i qrcode-generator, then run with NODE_PATH=<that folder>/node_modules.
 const PAGE_URL = "https://captainrussell.github.io/det250/peer-feedback/";
-let qrSvg;
-try {
-  const qrcode = (await import("node:module")).createRequire(import.meta.url)("qrcode-generator");
-  const q = qrcode(0, "M"); q.addData(PAGE_URL); q.make();
-  qrSvg = q.createSvgTag({ cellSize: 2, margin: 0, scalable: true });
-} catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
+let qrcode;
+try { qrcode = (await import("node:module")).createRequire(import.meta.url)("qrcode-generator"); }
+catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
+const qrSvgFor = p => { const q = qrcode(0, "M"); q.addData(`${PAGE_URL}#code=${p.code}`); q.make(); return q.createSvgTag({ cellSize: 2, margin: 0, scalable: true }); };
 
 // Flights (code slips are grouped by flight): FLIGHTS + FLIGHTS_POC members, plus each FLT/CC and FLT/CD seat.
 const FLIGHT_NAMES = { afl: "Alpha", bfl: "Bravo", cfl: "Charlie", dfl: "Delta" };
@@ -112,7 +112,7 @@ h2{font-size:14px;margin:18px 0 6px}
 </style></head><body>
 <h1>Peer Feedback personal codes</h1><p class="note">Private. Each slip is credit card size: print at 100% (Actual size) and cut on the dashed lines. Grouped by flight; each flight starts on a new page. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
 ${FLIGHT_ORDER.map(f => [f, people.filter(p => (flightOf[p.key] || "none") === f)]).filter(([, list]) => list.length).map(([f, list]) => `<h2>${esc(f === "none" ? "No flight" : FLIGHT_NAMES[f] + " Flight")}</h2><div class="grid">${list.map(p =>
-  `<div class="slip"><div class="ph">${photo(p)}</div><div class="top"><div class="n">${esc(p.name)}</div><div class="k">${esc(p.cls)} · ${esc(flightName(p))}</div></div><div class="bot"><div class="w"><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div></div><div class="q">${qrSvg}</div></div></div>`).join("")}</div>`).join("")}
+  `<div class="slip"><div class="ph">${photo(p)}</div><div class="top"><div class="n">${esc(p.name)}</div><div class="k">${esc(p.cls)} · ${esc(flightName(p))}</div></div><div class="bot"><div class="w"><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div></div><div class="q">${qrSvgFor(p)}</div></div></div>`).join("")}</div>`).join("")}
 </body></html>`;
 writeFileSync(path.join(outDir, "code-slips.html"), slips);
 

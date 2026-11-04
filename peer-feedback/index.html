@@ -473,6 +473,14 @@ renderDue();
 setInterval(() => { renderDue(); if(ME && !$('#vReview').hidden) renderStatus(); }, 60000);
 if(isClosed()) $('#codeForm .muted').textContent = 'Peer Feedback is closed. You can still sign in to see whether your ratings were submitted.';
 (async () => {
+  // Personal QR links end in #code=XXXX-XXXX: fill it in, sign in, and wipe it from the address bar.
+  const linked = (location.hash.match(/(?:^#|&)code=([A-Za-z0-9-]+)/) || [])[1];
+  if(linked){
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(_){}
+    codeIn.value = linked; codeIn.dispatchEvent(new Event('input'));
+    $('#codeForm').requestSubmit();
+    return;
+  }
   let saved = ''; try{ saved = sessionStorage.getItem(CODE_KEY) || ''; }catch(_){}
   if(saved && SUBMIT_URL){ codeIn.value = saved; try{ await signIn(saved); }catch(_){ try{ sessionStorage.removeItem(CODE_KEY); }catch(__){} } }
 })();
