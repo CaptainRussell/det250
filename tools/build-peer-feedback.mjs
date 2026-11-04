@@ -77,13 +77,14 @@ h1{font-size:18px;margin:0 0 4px} p.note{margin:0 0 14px;color:#55565c}
 .slip{border:1px dashed #9a9aa2;padding:10px 12px;break-inside:avoid;display:flex;align-items:center;gap:10px}
 .slip .w{flex:1;min-width:0}
 .slip .n{font-weight:700;margin:0 0 4px}.slip .c{font:700 20px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;color:#c8102e;white-space:nowrap}
+.slip .u{font-size:10.5px;color:#55565c;margin:0 0 4px;overflow-wrap:anywhere}
 .slip .q{width:76px;height:76px;flex:none}.slip .q svg{width:100%;height:100%;display:block}
 h2{font-size:14px;margin:18px 0 6px;break-after:avoid}
 @media print{body{margin:0}.note{display:none}}
 </style></head><body>
 <h1>Peer Feedback personal codes</h1><p class="note">Private. Print and cut, or send each cadet only their own code. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
 ${Object.keys(GROUP_LABEL).map(g => `<h2>${esc(GROUP_LABEL[g])}</h2><div class="grid">${people.filter(p => p.group === g).map(p =>
-  `<div class="slip"><div class="w"><div class="n">${esc(p.name)} (${esc(p.cls)})</div><div class="c">${esc(p.code)}</div></div><div class="q">${qrSvg}</div></div>`).join("")}</div>`).join("")}
+  `<div class="slip"><div class="w"><div class="n">${esc(p.name)} (${esc(p.cls)})</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div><div class="c">${esc(p.code)}</div></div><div class="q">${qrSvg}</div></div>`).join("")}</div>`).join("")}
 </body></html>`;
 writeFileSync(path.join(outDir, "code-slips.html"), slips);
 
