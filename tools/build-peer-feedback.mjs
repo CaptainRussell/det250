@@ -68,6 +68,20 @@ try {
   qrSvg = q.createSvgTag({ cellSize: 2, margin: 0, scalable: true });
 } catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
 
+// Flights (code slips are grouped by flight): FLIGHTS + FLIGHTS_POC members, plus each FLT/CC and FLT/CD seat.
+const FLIGHT_NAMES = { afl: "Alpha", bfl: "Bravo", cfl: "Charlie", dfl: "Delta" };
+const flightOf = {};
+for (const name of ["FLIGHTS", "FLIGHTS_POC"]) {
+  const m = html.match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n\\};`));
+  if (!m) throw new Error(`${name} not found in org-chart/index.html`);
+  for (const [, fl, list] of m[1].matchAll(/(\w+):\[([^\]]*)\]/g)) for (const [, k] of list.matchAll(/"(\w+)"/g)) flightOf[k] = fl;
+}
+for (const [, id, k] of html.matchAll(/\{id:"([abcd]f[ld])",[^\n]*?poc:\["(\w+)"/g)) flightOf[k] ??= id[0] + "fl";
+const noFlight = people.filter(p => !flightOf[p.key]);
+if (noFlight.length) console.warn("No flight found (slips go under No flight):", noFlight.map(p => p.name).join("; "));
+const FLIGHT_ORDER = [...Object.keys(FLIGHT_NAMES), "none"];
+const flightName = p => FLIGHT_NAMES[flightOf[p.key]] ? `${FLIGHT_NAMES[flightOf[p.key]]} Flight` : "No flight";
+
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Org chart photo embedded in each slip (so the file stands alone), initials when there is no photo.
 const photo = p => {
@@ -76,7 +90,7 @@ const photo = p => {
   const [last, first = ""] = p.name.split(", ");
   return `<span>${esc((first[0] || "") + (last[0] || ""))}</span>`;
 };
-// Each slip is credit card size (3.375 x 2.125 in): 2 across, 5 down = 10 per Letter page. Each group starts a new page.
+// Each slip is credit card size (3.375 x 2.125 in): 2 across, 5 down = 10 per Letter page. Each flight starts a new page.
 const slips = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Peer Feedback codes · Storm HQ</title>
 <style>
 @page{size:letter;margin:.18in .5in}
@@ -96,9 +110,9 @@ h2{font-size:14px;margin:18px 0 6px}
 .q{width:.82in;height:.82in;flex:none}.q svg{width:100%;height:100%;display:block}
 @media print{body{margin:0}h1,.note,h2{display:none}.grid+h2+.grid,.grid~.grid{break-before:page}}
 </style></head><body>
-<h1>Peer Feedback personal codes</h1><p class="note">Private. Each slip is credit card size: print at 100% (Actual size) and cut on the dashed lines. Each group starts on a new page. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
-${Object.keys(GROUP_LABEL).map(g => `<h2>${esc(GROUP_LABEL[g])}</h2><div class="grid">${people.filter(p => p.group === g).map(p =>
-  `<div class="slip"><div class="ph">${photo(p)}</div><div class="top"><div class="n">${esc(p.name)}</div><div class="k">${esc(p.cls)}</div></div><div class="bot"><div class="w"><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div></div><div class="q">${qrSvg}</div></div></div>`).join("")}</div>`).join("")}
+<h1>Peer Feedback personal codes</h1><p class="note">Private. Each slip is credit card size: print at 100% (Actual size) and cut on the dashed lines. Grouped by flight; each flight starts on a new page. Due ${esc(new Date(DUE).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" }))} Central.</p>
+${FLIGHT_ORDER.map(f => [f, people.filter(p => (flightOf[p.key] || "none") === f)]).filter(([, list]) => list.length).map(([f, list]) => `<h2>${esc(f === "none" ? "No flight" : FLIGHT_NAMES[f] + " Flight")}</h2><div class="grid">${list.map(p =>
+  `<div class="slip"><div class="ph">${photo(p)}</div><div class="top"><div class="n">${esc(p.name)}</div><div class="k">${esc(p.cls)} · ${esc(flightName(p))}</div></div><div class="bot"><div class="w"><div class="c">${esc(p.code)}</div><div class="u">captainrussell.github.io/<wbr>det250/<wbr>peer-feedback</div></div><div class="q">${qrSvg}</div></div></div>`).join("")}</div>`).join("")}
 </body></html>`;
 writeFileSync(path.join(outDir, "code-slips.html"), slips);
 
