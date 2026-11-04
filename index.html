@@ -112,7 +112,7 @@ section{margin-top:26px}
 <script>
 /* =====================================================================
    TOOLS: add a new tool by dropping its folder in the repo and adding
-   one entry here. section: "cadets", "evaluators", "instructors" or "cadre". locked: true (password) or the pill text. tone: card color.
+   one entry here. section: "cadets", "evaluators" or "instructors". locked: true ("Password") or the pill text. tone: card color.
    icon: one of the keys in ICONS below.
    ===================================================================== */
 const TOOLS = [
@@ -126,10 +126,12 @@ const TOOLS = [
    blurb:"Check the AFROTC ribbons you've earned and get your rack in order of precedence, with devices. Print it or share it."},
   {href:"documents/", name:"Documents and Policy", tone:"#0369a1", icon:"book", section:"cadets",
    blurb:"The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, and the locked Fall 2026 plans and OPORDs."},
-  {href:"peer-feedback/", name:"Peer Feedback", tone:"#be185d", icon:"peers", section:"cadets", locked:"Personal code",
-   blurb:"Rate every cadet in your peer group 1 to 5 in five areas. Due Fri 20 Nov, 1700. Only cadre see the results."},
-  {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tone:"#a06f00", icon:"chart", section:"evaluators", locked:true,
+  {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tone:"#a06f00", icon:"chart", section:"evaluators", locked:"Cadet password",
    blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
+  {href:"peer-feedback/", name:"Peer Feedback", tone:"#be185d", icon:"peers", section:"evaluators", locked:"Personal code",
+   blurb:"Rate every cadet in your peer group 1 to 5 in five areas. Due Fri 20 Nov, 1700. Only cadre see the results."},
+  {href:"cadre/", name:"Cadre Dashboard", tone:"#475569", icon:"shield", section:"evaluators", locked:"Cadre password",
+   blurb:"Peer Feedback and Flight Staff Evaluation results: rankings by AS level, charts and who still owes theirs."},
   {href:"spin-the-wheel/", name:"Spin the Wheel", tone:"#b45309", icon:"wheel", section:"instructors",
    blurb:"Seating chart and name wheel. Add your class, set up the room, and spin to call on a student."},
   {href:"make-the-call/", name:"Make the Call", tone:"#0f766e", icon:"scale", section:"instructors",
@@ -137,11 +139,9 @@ const TOOLS = [
   {href:"battle-buddy-recon/", name:"Battle Buddy Recon", tone:"#4a5a36", icon:"binoculars", section:"instructors",
    blurb:"OPSEC practical exercise: pair cadets on a wheel, run the open-source recon clock, then brief out."},
   {href:"practicum-adventure/", name:"Practicum Adventure", tone:"#6d28d9", icon:"dice", section:"instructors",
-   blurb:"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."},
-  {href:"cadre/", name:"Cadre Dashboard", tone:"#475569", icon:"shield", section:"cadre", locked:true,
-   blurb:"Peer Feedback and Flight Staff Evaluation results: rankings by AS level, charts and who still owes theirs."}
+   blurb:"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."}
 ];
-const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools", cadre:"Cadre tools"};
+const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
 
 const ICONS = {
   peers:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.5"/><path d="M2.5 19c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2M14 14.2c.9-.5 1.9-.7 3-.7 2.5 0 4.5 1.8 4.5 4.5"/>',
