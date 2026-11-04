@@ -121,7 +121,7 @@ input{font:inherit;color:inherit}
 :root[data-theme="light"] .tool.open .lock{color:#2b8a3e}
 .tool.open .lock .shackle{transform:translate(4px,-2px) rotate(16deg);transition-delay:var(--d,0s)}
 .tool.open .lock .lt::before{content:"Unlocked"}
-.lock .lt::before{content:"Password"}
+.lock .lt::before{content:"Cadet password"}
 .tool.pop{animation:pop .55s var(--ease) var(--d,0s) both}
 @keyframes pop{40%{transform:translateY(-3px) scale(1.02);border-color:#2f9e44}}
 .tool.locked{cursor:pointer}
@@ -221,8 +221,8 @@ function rcard(f, s){
 }
 const VAULT_BOX = `<div class="vault" id="vault">
   <span class="vi" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-  <div><h2 id="vaultTitle">Enter password to unlock</h2><p id="vaultSub">Plans and OPORDs include locations, dates and names. One password unlocks all of them for this browser tab.</p></div>
-  <form id="unlock" autocomplete="off"><label class="sr" for="pw">Password</label><input id="pw" type="password" placeholder="Password" required autocomplete="current-password"><button class="go" id="go" type="submit">Unlock</button></form>
+  <div><h2 id="vaultTitle">Enter cadet password to unlock</h2><p id="vaultSub">Plans and OPORDs include locations, dates and names. One password unlocks all of them for this browser tab.</p></div>
+  <form id="unlock" autocomplete="off"><label class="sr" for="pw">Password</label><input id="pw" type="password" placeholder="Cadet password" required autocomplete="current-password"><button class="go" id="go" type="submit">Unlock</button></form>
   <button class="relock" id="relock" type="button">Lock again</button>
   <p class="err" id="err" role="alert"></p>
 </div>`;
@@ -280,7 +280,7 @@ function nudge(){
 function setUnlocked(on, animate){
   UNLOCKED = on;
   document.getElementById("main").classList.toggle("unlocked", on);
-  document.getElementById("vaultTitle").textContent = on ? "Unlocked" : "Enter password to unlock";
+  document.getElementById("vaultTitle").textContent = on ? "Unlocked" : "Enter cadet password to unlock";
   document.getElementById("vaultSub").textContent = on ? "Every plan and OPORD is open for this browser tab. Do not repost these files publicly." : "Plans and OPORDs include locations, dates and names. One password unlocks all of them for this browser tab.";
   const cards = [...document.querySelectorAll(".rtool")];
   if(on && animate && !reduce){
