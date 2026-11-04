@@ -16,7 +16,7 @@
      GET  ?action=whoami&code=XXXX-XXXX   -> who the code belongs to + the peers to rate
      GET  ?action=results&token=...      -> everything the Cadre page needs
      POST {action:"peer", code, ratings:{peerKey:[lead,prof,team,comm]}}
-   Tabs it keeps: Ratings (one row per rater and peer, latest submission only),
+   Tabs it keeps: Ratings (one row per rater and peer). ONE submission per cadet: to let a cadet redo it, delete their rows in Submissions and Ratings,
    Submissions (one row per cadet), Log (every accepted submit). */
 
 var CATS = ['lead', 'prof', 'team', 'comm'];
@@ -84,6 +84,7 @@ function doPost(e) {
     var me = byCode_(body.code);
     if (!me) return out_({ ok: false, error: 'That code was not found.' });
     if (closed_()) return out_({ ok: false, error: 'Peer Feedback closed at the suspense.' });
+    if (submittedMap_()[me.key]) return out_({ ok: false, error: 'You already submitted. Each cadet submits once; see Capt Russell if something needs to change.' });
     var peers = peersOf_(me), r = body.ratings || {};
     if (r[me.key]) return out_({ ok: false, error: 'You cannot rate yourself.' });
     var keys = Object.keys(r);
@@ -95,7 +96,7 @@ function doPost(e) {
     }
     lock.waitLock(20000);
     var now = new Date(), sh = ratingsSheet_(), data = sh.getDataRange().getValues();
-    // Latest submission wins: drop this rater's earlier rows (bottom up).
+    // Clear any leftover rows for this rater (e.g. after cadre deleted their Submissions row to allow a redo).
     for (var k = data.length - 1; k >= 1; k--) if (data[k][0] === me.key) sh.deleteRow(k + 1);
     var rows = peers.map(function (p) { return [me.key, me.name, me.cls, GROUP_LABELS[me.group], p.key, p.name, p.cls].concat(r[p.key].map(Number)).concat([now]); });
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);

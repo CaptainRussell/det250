@@ -91,6 +91,10 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
 .status.ok{color:#2f9e5a}.status.warn{color:var(--d250-gold)}.status.bad{color:var(--d250-cardinal)}
 :root{--s1:#c8372d;--s2:#d9822b;--s3:#8a8b92;--s4:#3a8f5c;--s5:#1f7a8c}
 
+.donebox{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:36px 16px}
+.donebox h2{font-size:22px;font-weight:800}
+.donebox p{max-width:52ch}
+.donecheck{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#2f9e5a;color:#fff;font-size:28px;font-weight:900}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--d250-ink);color:var(--d250-page);padding:10px 16px;border-radius:10px;font-weight:700;font-size:14px;transition:.3s var(--d250-ease);z-index:60;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .closed{border-left:4px solid var(--d250-cardinal)}
@@ -149,7 +153,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
           <div><b>AS 200 / 250 / 500</b><span class="muted">Rate every AS 200, AS 250 and AS 500.</span></div>
           <div><b>AS 100</b><span class="muted">Rate every AS 100.</span></div>
         </div>
-        <p class="hint">You don't rate yourself, and there are no comments. Your ratings save on this device as you go, and you can submit again until the suspense. Cadre see your latest.</p>
+        <p class="hint">You don't rate yourself, and there are no comments. Your ratings save on this device as you go. You can submit only once, so review before you send.</p>
       </form>
     </div>
   </section>
@@ -165,6 +169,14 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
       </div>
       <button class="linkbtn" id="resetAll" type="button">Reset all ratings</button>
       <button class="linkbtn" id="signout" type="button">Not you? Sign out</button>
+    </div>
+
+    <div id="vDone" class="panel" hidden>
+      <div class="panel-bd donebox">
+        <span class="donecheck" aria-hidden="true">✓</span>
+        <h2>Submitted</h2>
+        <p id="doneTxt" class="muted"></p>
+      </div>
     </div>
 
     <div id="vRate" class="rate">
@@ -288,15 +300,15 @@ async function signIn(code){
   // keep only peers who are still in the group
   const keys = new Set(ME.peers.map(p => p.key));
   Object.keys(S.ratings).forEach(k => { if(!keys.has(k)) delete S.ratings[k]; });
-  if(out.submittedAt && !S.submittedAt){ S.submittedAt = out.submittedAt; }
+  S.submittedAt = out.submittedAt || null;   // the server decides whether this cadet already submitted
   S.cur = Math.min(S.cur || 0, ME.peers.length - 1);
   save();
   $('#vSignin').hidden = true; $('#vWork').hidden = false;
-  renderWho(); setView(doneCount() === ME.peers.length ? 'review' : 'rate');
+  renderWho(); if(S.submittedAt) showDone(); else setView(doneCount() === ME.peers.length ? 'review' : 'rate');
 }
 $('#resetAll').addEventListener('click', () => {
   if(!S || !doneCount() && !Object.keys(S.ratings).length) return toast('Nothing to reset yet');
-  if(!confirm(`Clear every rating you've given all ${ME.peers.length} cadets and start over?` + (S.submittedAt ? ' What you already submitted stays with cadre until you submit again.' : ''))) return;
+  if(!confirm(`Clear every rating you've given all ${ME.peers.length} cadets and start over?`)) return;
   S.ratings = {}; S.cur = 0; save();
   const box = $('.plist'); if(box) box.scrollTop = 0;
   setView('rate'); toast('All ratings cleared');
@@ -328,6 +340,7 @@ function renderProgress(){
 /* ---------- views ---------- */
 function setView(v){
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  $('#vDone').hidden = true; $('.tabs').hidden = false; $('#resetAll').hidden = false;
   $('#vRate').hidden = v !== 'rate'; $('#vReview').hidden = v !== 'review';
   renderProgress();
   if(v === 'rate'){ renderList(); renderCard(); } else renderReview();
@@ -425,12 +438,11 @@ function renderStatus(){
   el.className = 'status';
   if(isClosed()){ el.classList.add('bad'); el.textContent = `Peer Feedback closed at ${fmtDue(DUE)}.` + (S.submittedAt ? ` Cadre have your ratings from ${fmtWhen(S.submittedAt)}.` : ''); return; }
   if(left){ el.classList.add('warn'); el.textContent = `${left} cadet${left === 1 ? '' : 's'} still need ratings. Every cadet needs all four areas.`; return; }
-  if(S.submittedAt && S.sig === sig()){ el.classList.add('ok'); el.textContent = `Submitted ${fmtWhen(S.submittedAt)}. Cadre have your ratings. If you change anything, submit again.`; btn.textContent = 'Submit again'; return; }
-  if(S.submittedAt){ el.classList.add('warn'); el.textContent = `You changed ratings since you submitted at ${fmtWhen(S.submittedAt)}. Submit again so cadre get the latest.`; btn.textContent = 'Submit changes'; return; }
-  el.textContent = 'All set. Submit when you are happy with your ratings.'; btn.textContent = 'Submit to cadre';
+  el.textContent = 'All set. You can submit only once, so check your ratings before you send them.'; btn.textContent = 'Submit to cadre';
 }
 $('#submit').addEventListener('click', async () => {
   const btn = $('#submit'), el = $('#status');
+  if(!confirm(`Submit your ratings for all ${ME.peers.length} cadets? You can submit only once, and you won't be able to change them after this.`)) return;
   btn.disabled = true; btn.textContent = 'Sending…';
   const ratings = Object.fromEntries(ME.peers.map(p => [p.key, FACTORS.map(f => rOf(p.key)[f.k])]));
   try{
@@ -441,13 +453,20 @@ $('#submit').addEventListener('click', async () => {
     if(!out.ok) throw new Error(out.error || 'not saved');
     S.submittedAt = out.received || new Date().toISOString(); S.sig = sig(); save();
     toast('Submitted. Thank you!');
-    renderStatus();
+    showDone();
   }catch(ex){
     renderStatus();
     el.className = 'status bad';
     el.textContent = `Couldn't submit (${ex.message}). Your ratings are still saved here. Check your connection and try again.`;
   }
 });
+
+function showDone(){
+  ['#vRate', '#vReview', '.tabs', '#resetAll'].forEach(q => $(q).hidden = true);
+  $('#vDone').hidden = false;
+  $('#pfill').style.width = '100%'; $('#ptxt').textContent = 'Submitted';
+  $('#doneTxt').textContent = `Cadre received your ratings for all ${ME.peers.length} cadets on ${fmtWhen(S.submittedAt)}. Thank you. Peer Feedback takes one submission per cadet, so there is nothing more to do. If something needs to change, see Capt Russell.`;
+}
 
 /* ---------- start ---------- */
 renderDue();
