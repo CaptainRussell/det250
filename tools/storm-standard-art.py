@@ -93,7 +93,6 @@ FIG = [
     ("rank-warrant", 31, "tables", dict(width=1100)),
     ("rank-officer-1", 32, "tables", dict(width=1100)),
     ("rank-officer-2", 33, "tables", dict(width=1100)),
-    ("prop-wings-monument", 62, (50, 86, 237, 266), dict(width=900)),
 ]
 for name, n, box, opt in FIG:
     if box == "tables":
