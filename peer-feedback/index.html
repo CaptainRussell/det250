@@ -124,7 +124,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
       <h1>Peer Feedback</h1>
-      <p class="d250-head-sub">Rate every cadet in your peer group 1 to 5 in five areas. Only cadre see the results.</p>
+      <p class="d250-head-sub">Rate every cadet in your peer group 1 to 5 in four areas. Only cadre see the results.</p>
     </div>
     <span class="due" id="due"></span>
   </div>
@@ -205,7 +205,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Cadet tool. Ratings go to a private cadre spreadsheet, not to this site, and are combined with every other cadet's to help cadre with internal rankings. The five areas match the Flight Staff Evaluation.</p>
+  <p class="source-line">Cadet tool. Ratings go to a private cadre spreadsheet, not to this site, and are combined with every other cadet's to help cadre with internal rankings. The areas are Leadership, Professionalism, Teamwork and Communication.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
@@ -218,12 +218,11 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
    Codes and the roster live in that script (built by tools/build-peer-feedback.mjs), not here. */
 const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwymHFvh3hGsDVgc2iT6GOOnLJCWzQVdosvHWb4VziUNCt1C-WeQmUj2Ppy7rj4TDTZ/exec";
 const DUE = "2026-11-20T17:00:00-06:00";   // 1700 Central, Fri 20 Nov 2026
-const FACTORS = [  // same five areas as the Flight Staff Evaluation
-  {k:'lead', short:'Lead', label:'Leadership / initiative',    desc:'Takes charge, volunteers, and gets things done without being told.'},
-  {k:'prof', short:'Prof', label:'Professionalism / bearing',  desc:'Uniform wear, customs and courtesies, conduct, and attitude.'},
-  {k:'team', short:'Team', label:'Teamwork / followership',    desc:'Supports peers, accepts direction, and follows through.'},
-  {k:'comm', short:'Comm', label:'Communication',              desc:'Clear, timely, and professional in writing and in person.'},
-  {k:'part', short:'Part', label:'Participation / attendance', desc:'On time and engaged at LLAB, PT, and Det events.'}
+const FACTORS = [  // four of the Flight Staff Evaluation areas (Participation dropped: cadre already track attendance)
+  {k:'lead', short:'Lead', label:'Leadership',      desc:'Takes charge, volunteers, and gets things done without being told.'},
+  {k:'prof', short:'Prof', label:'Professionalism', desc:'Uniform wear, customs and courtesies, conduct, and attitude.'},
+  {k:'team', short:'Team', label:'Teamwork',        desc:'Supports peers, accepts direction, and follows through.'},
+  {k:'comm', short:'Comm', label:'Communication',   desc:'Clear, timely, and professional in writing and in person.'}
 ];
 const HINT = {1:'Well below',2:'Below',3:'On par',4:'Above',5:'Top'};
 const STORE = 'd250-peer-feedback-v1', CODE_KEY = 'd250-peer-code';
@@ -331,7 +330,7 @@ document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click'
 function renderList(){
   $('#plist').innerHTML = ME.peers.map((p, i) => {
     const f = filled(p.key), cls = f === FACTORS.length ? 'done' : f ? 'part' : '';
-    return `<li><button type="button" data-go="${i}" ${i === S.cur ? 'aria-current="true"' : ''}>${face(p.name, 30)}<span class="nm">${esc(p.name)}</span><span class="st ${cls}" aria-label="${f === FACTORS.length ? 'done' : f + ' of 5'}">✓</span></button></li>`;
+    return `<li><button type="button" data-go="${i}" ${i === S.cur ? 'aria-current="true"' : ''}>${face(p.name, 30)}<span class="nm">${esc(p.name)}</span><span class="st ${cls}" aria-label="${f === FACTORS.length ? 'done' : f + ' of ' + FACTORS.length}">✓</span></button></li>`;
   }).join('');
 }
 $('#plist').addEventListener('click', e => {
@@ -408,7 +407,7 @@ function renderStatus(){
   btn.disabled = left > 0 || isClosed();
   el.className = 'status';
   if(isClosed()){ el.classList.add('bad'); el.textContent = `Peer Feedback closed at ${fmtDue(DUE)}.` + (S.submittedAt ? ` Cadre have your ratings from ${fmtWhen(S.submittedAt)}.` : ''); return; }
-  if(left){ el.classList.add('warn'); el.textContent = `${left} cadet${left === 1 ? '' : 's'} still need ratings. Every cadet needs all five areas.`; return; }
+  if(left){ el.classList.add('warn'); el.textContent = `${left} cadet${left === 1 ? '' : 's'} still need ratings. Every cadet needs all four areas.`; return; }
   if(S.submittedAt && S.sig === sig()){ el.classList.add('ok'); el.textContent = `Submitted ${fmtWhen(S.submittedAt)}. Cadre have your ratings. If you change anything, submit again.`; btn.textContent = 'Submit again'; return; }
   if(S.submittedAt){ el.classList.add('warn'); el.textContent = `You changed ratings since you submitted at ${fmtWhen(S.submittedAt)}. Submit again so cadre get the latest.`; btn.textContent = 'Submit changes'; return; }
   el.textContent = 'All set. Submit when you are happy with your ratings.'; btn.textContent = 'Submit to cadre';

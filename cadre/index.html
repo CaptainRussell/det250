@@ -196,6 +196,14 @@ const FACTORS = [
   {k:'comm', short:'Comm', label:'Communication'},
   {k:'part', short:'Part', label:'Participation / attendance'}
 ];
+// Peer Feedback rates four areas (no Participation); the Flight Staff Evaluation keeps all five (FACTORS).
+const PF = [
+  {k:'lead', short:'Lead', label:'Leadership'},
+  {k:'prof', short:'Prof', label:'Professionalism'},
+  {k:'team', short:'Team', label:'Teamwork'},
+  {k:'comm', short:'Comm', label:'Communication'}
+];
+const NPF = PF.length;
 const PEER_GROUPS = [
   {g:'poc', label:'POC', classes:['AS300','AS400','Graybeard']},
   {g:'gmc', label:'AS 200 / 250 / 500', classes:['AS200','AS250','AS500']},
@@ -306,22 +314,22 @@ function model(d){
   const raters = {};
   Object.values(people).forEach(p => {
     if(!p.given.length) return;
-    const all = p.given.flatMap(r => r.slice(2, 7));
+    const all = p.given.flatMap(r => r.slice(2, 2 + NPF));
     raters[p.key] = {mu:mean(all), sd:sd(all), n:p.given.length};
   });
   const z = (r, i) => { const s = raters[r[0]]; return s && s.sd > 0 ? (r[2 + i] - s.mu) / s.sd : 0; };
   const gstat = {};
   PEER_GROUPS.forEach(G => {
     const got = Object.values(people).filter(p => p.group === G.g).flatMap(p => p.got);
-    gstat[G.g] = FACTORS.map((f, i) => { const v = got.map(r => r[2 + i]); return {mu:mean(v), sd:sd(v)}; });
+    gstat[G.g] = PF.map((f, i) => { const v = got.map(r => r[2 + i]); return {mu:mean(v), sd:sd(v)}; });
   });
   Object.values(people).forEach(p => {
     const gs = gstat[p.group];
-    p.raw = FACTORS.map((f, i) => mean(p.got.map(r => r[2 + i])));
-    p.adj = FACTORS.map((f, i) => p.got.length ? gs[i].mu + mean(p.got.map(r => z(r, i))) * gs[i].sd : NaN);
+    p.raw = PF.map((f, i) => mean(p.got.map(r => r[2 + i])));
+    p.adj = PF.map((f, i) => p.got.length ? gs[i].mu + mean(p.got.map(r => z(r, i))) * gs[i].sd : NaN);
     p.rawO = mean(p.raw.filter(x => !isNaN(x)));
     p.adjO = mean(p.adj.filter(x => !isNaN(x)));
-    p.dist = [0, 0, 0, 0, 0, 0]; p.got.forEach(r => r.slice(2, 7).forEach(v => p.dist[v]++));
+    p.dist = [0, 0, 0, 0, 0, 0]; p.got.forEach(r => r.slice(2, 2 + NPF).forEach(v => p.dist[v]++));
     p.possible = Object.values(people).filter(q => q.group === p.group && q.key !== p.key).length;
   });
   PEER_GROUPS.forEach(G => {
@@ -385,7 +393,7 @@ function rankList(){
   const rated = ps.filter(p => p.got.length).sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
   const s = UI.sort;
   if(s !== 'overall'){
-    const i = FACTORS.findIndex(f => f.k === s);
+    const i = PF.findIndex(f => f.k === s);
     if(i >= 0) rated.sort((a, b) => pv(b, i) - pv(a, i));
     if(s === 'name') rated.sort((a, b) => a.name.localeCompare(b.name));
     if(s === 'raters') rated.sort((a, b) => b.got.length - a.got.length);
@@ -398,14 +406,14 @@ function rankTable(){
   const {rated, unrated, n} = rankList(), sub = UI.cls !== 'all';
   const th = (k, l, cls = '') => `<th class="${cls}"><button type="button" data-sort="${k}" ${UI.sort === k ? 'aria-sort="descending"' : ''}>${l}</button></th>`;
   if(!rated.length && !unrated.length) return '<div class="empty-n">No cadets in this group.</div>';
-  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(CLS_LABEL(UI.cls)) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', 'Overall', 'l')}${FACTORS.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}</tr></thead><tbody>${
+  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(CLS_LABEL(UI.cls)) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', 'Overall', 'l')}${PF.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}</tr></thead><tbody>${
     rated.map(p => `<tr class="${tierOf(p._r, n)}" data-key="${esc(p.key)}" tabindex="0">
       <td class="rank">${p._r}</td>${sub ? `<td>${pRank(p)}</td>` : ''}
       <td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td>
       <td class="l"><span class="ov"><b>${f2(pO(p))}</b><span class="bar"><i style="width:${Math.max(0, Math.min(100, (pO(p) - 1) / 4 * 100))}%"></i></span></span></td>
-      ${FACTORS.map((f, i) => `<td><span class="cell" style="${heat(pv(p, i))}">${f2(pv(p, i))}</span></td>`).join('')}
+      ${PF.map((f, i) => `<td><span class="cell" style="${heat(pv(p, i))}">${f2(pv(p, i))}</span></td>`).join('')}
       <td><span class="${p.got.length < 3 ? 'muted-n' : ''}">${p.got.length}/${p.possible}</span></td></tr>`).join('')}${
-    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td><td class="l muted-n" colspan="${FACTORS.length + 2}">No ratings yet</td></tr>`).join('')}
+    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(CLS_LABEL(p.cls))}</small></span></span></td><td class="l muted-n" colspan="${PF.length + 2}">No ratings yet</td></tr>`).join('')}
   </tbody></table>`;
 }
 function raterCheck(){
@@ -447,8 +455,8 @@ async function copyLeft(g){
 }
 function csv(){
   const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'Overall (adjusted)', 'Overall (raw)'].concat(FACTORS.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
-  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, f2(p.adjO), f2(p.rawO)].concat(FACTORS.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
+  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
+  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
   const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
@@ -469,7 +477,7 @@ function detail(key){
         <div class="stat"><div class="k">Raters</div><div class="v">${p.got.length}<small class="muted" style="font-size:13px"> / ${p.possible}</small></div></div>
       </div>
       <div><span class="label">By area (${UI.mode === 'adj' ? 'adjusted' : 'raw'}), line = group average</span>
-        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${Math.max(0, Math.min(100, (pv(p, i) - 1) / 4 * 100))}%"></i><em style="left:${(gs[i].mu - 1) / 4 * 100}%"></em></span><b>${f2(pv(p, i))}</b></div>`).join('')}</div></div>
+        <div class="catbars" style="margin-top:10px">${PF.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${Math.max(0, Math.min(100, (pv(p, i) - 1) / 4 * 100))}%"></i><em style="left:${(gs[i].mu - 1) / 4 * 100}%"></em></span><b>${f2(pv(p, i))}</b></div>`).join('')}</div></div>
       <div><span class="label">Every rating received (${total})</span>
         <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
         <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>
