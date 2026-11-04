@@ -163,6 +163,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
         <button type="button" data-view="rate" aria-pressed="true">Rate</button>
         <button type="button" data-view="review" aria-pressed="false">Review &amp; submit</button>
       </div>
+      <button class="linkbtn" id="resetAll" type="button">Reset all ratings</button>
       <button class="linkbtn" id="signout" type="button">Not you? Sign out</button>
     </div>
 
@@ -293,6 +294,13 @@ async function signIn(code){
   $('#vSignin').hidden = true; $('#vWork').hidden = false;
   renderWho(); setView(doneCount() === ME.peers.length ? 'review' : 'rate');
 }
+$('#resetAll').addEventListener('click', () => {
+  if(!S || !doneCount() && !Object.keys(S.ratings).length) return toast('Nothing to reset yet');
+  if(!confirm(`Clear every rating you've given all ${ME.peers.length} cadets and start over?` + (S.submittedAt ? ' What you already submitted stays with cadre until you submit again.' : ''))) return;
+  S.ratings = {}; S.cur = 0; save();
+  const box = $('.plist'); if(box) box.scrollTop = 0;
+  setView('rate'); toast('All ratings cleared');
+});
 $('#signout').addEventListener('click', () => {
   if(S && !S.submittedAt && doneCount() > 0 && !confirm('Sign out? Your ratings stay saved on this device until you sign in again.')) return;
   try{ sessionStorage.removeItem(CODE_KEY); }catch(_){}
@@ -341,7 +349,14 @@ $('#plist').addEventListener('click', e => {
 function go(i){
   S.cur = Math.max(0, Math.min(ME.peers.length - 1, i)); save();
   renderList(); renderCard();
-  const cur = $('#plist [aria-current="true"]'); if(cur && !matchMedia('(max-width:860px)').matches) cur.scrollIntoView({block:'nearest'});
+  // Keep the current cadet visible by scrolling only the list itself, never the page,
+  // so the rating buttons stay where they are on screen.
+  const cur = $('#plist [aria-current="true"]'), box = $('.plist');
+  if(cur && !matchMedia('(max-width:860px)').matches){
+    const c = cur.getBoundingClientRect(), b = box.getBoundingClientRect();
+    if(c.top < b.top + 6) box.scrollTop -= b.top - c.top + 6;
+    else if(c.bottom > b.bottom - 6) box.scrollTop += c.bottom - b.bottom + 6;
+  }
 }
 function renderCard(){
   const p = ME.peers[S.cur], r = rOf(p.key);
