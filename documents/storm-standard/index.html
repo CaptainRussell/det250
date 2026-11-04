@@ -208,11 +208,6 @@ dialog.lb button{position:absolute;top:8px;right:8px;width:40px;height:40px;bord
 .icard .ci svg{width:22px;height:22px}
 .icard h3{margin-top:2px}
 .icard>div{min-width:0}
-.svals{display:flex;flex-wrap:wrap;gap:10px}
-.svals .icard{align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:14px;background:var(--d250-surface);border:1px solid var(--d250-line)}
-.svals b{font-size:15px}
-.moose{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 16px}
-.moose b{width:34px;height:40px;display:grid;place-items:center;border-radius:9px;font-size:19px;font-weight:800;color:var(--d250-gold);background:var(--d250-surface);border:1px solid var(--d250-line)}
 .diags{margin-bottom:12px}
 .diag{margin:0;text-align:center}
 .diag svg{display:block;width:100%;max-width:240px;height:auto;margin:0 auto 8px;fill:none;stroke:var(--d250-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -355,12 +350,14 @@ const COCOMS = {
 };
 const list = rows => `<div class="grid g2">${rows.map(r => `<div class="card cmd">${img("official/cocom-" + r[0].toLowerCase().replace("uspacom", "usindopacom") + ".webp", r[1] + " seal", "", 72, 72)}<div><span class="k">${esc(r[0])}</span><h3>${esc(r[1])}</h3><p>${esc(r[2])}</p></div></div>`).join("")}</div>`;
 
+// Sharp photos supplied by Captain Russell (Nov 2026) replace the PDF crops; they live in art/official/aircraft/ under the same file name.
+const INV_PHOTOS = new Set(["inv-t-6a-texan-ii.webp", "inv-t-1a-jayhawk.webp", "inv-t-38a-c-and-at-38b-talon.webp", "inv-a-10a-c-thunderbolt-ii.webp", "inv-b-1b-lancer.webp", "inv-b-2a-spirit.webp", "inv-b-52h-stratofortress.webp", "inv-c-5m-galaxy.webp", "inv-c-17a-globemaster-iii.webp", "inv-c-32.webp", "inv-c-37a-b-gulfstream-v.webp", "inv-c-40b-c-clipper.webp", "inv-c-130-hercules.webp", "inv-e-3b-c-g-sentry-awacs.webp", "inv-e-4b.webp", "inv-f-15a-b-c-d-eagle.webp", "inv-f-15e-strike-eagle.webp", "inv-f-16a-b-c-d-fighting-falcon.webp", "inv-f-22a-raptor.webp", "inv-f-35-lightning-ii.webp", "inv-kc-135r-t-stratotanker.webp", "inv-kc-46a-pegasus.webp", "inv-vc-25-air-force-one.webp", "inv-cv-22a-osprey.webp", "inv-hh-60g-pave-hawk.webp", "inv-uh-1n-huey.webp", "inv-mh-139a-grey-wolf.webp", "inv-u-2s-and-tr-1-dragon-lady.webp", "inv-mq-9-reaper.webp", "inv-rq-4a-global-hawk.webp"]);
 function invGrid(kind){
   const items = ART.inventory.filter(x => x.kind === kind);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${esc(v)}</dd>` : "";
   return `<label class="sr" for="f-${kind}" style="position:absolute;left:-9999px">Filter</label><input class="filter" id="f-${kind}" type="search" placeholder="Filter ${items.length} ${kind === "air" ? "aircraft" : "systems"} (e.g. ${kind === "air" ? "bomber" : "GPS"})" data-filter="${kind}">
   <div class="grid g3" data-list="${kind}">${items.map(x => `<article class="card inv" data-q="${esc((x.name + " " + x.function + " " + x.manufacturer).toLowerCase())}">
-    ${x.img ? img(x.img, x.name) : ""}<div class="in"><h3>${esc(x.name)}</h3>${x.function ? `<div class="fn">${esc(x.function)}</div>` : ""}
+    ${x.img ? img((INV_PHOTOS.has(x.img) ? "official/aircraft/" : "") + x.img, x.name) : ""}<div class="in"><h3>${esc(x.name)}</h3>${x.function ? `<div class="fn">${esc(x.function)}</div>` : ""}
     <dl>${row("Maker", x.manufacturer)}${row("In service", x.service)}${row("Speed", x.speed)}${row("Crew", x.crew)}${row("Inventory", x.inventory)}${row("Constellation", x.constellation)}${row("Orbit", x.orbit)}</dl>
     ${x.note ? `<details><summary>More</summary><p>${esc(x.note)}</p></details>` : ""}</div></article>`).join("")}</div>`;
 }
@@ -405,8 +402,6 @@ const CH = [
       ${icard("shield", "Integrity First", "<p>Doing the right thing, all the time, whether everyone is watching or no one is watching.</p><div class=\"chips\"><span>Honesty</span><span>Courage</span><span>Accountability</span></div>", "Air Force core value")}
       ${icard("flag", "Service Before Self", "<p>Professional duties take precedence over personal desires. We do not work in the Air Force and Space Force; we serve.</p><div class=\"chips\"><span>Duty</span><span>Loyalty</span><span>Respect</span></div>", "Air Force core value")}
       ${icard("star", "Excellence In All We Do", "<p>Not perfection, but a passion to continuously advance our craft and increase our knowledge.</p><div class=\"chips\"><span>Mission</span><span>Discipline</span><span>Teamwork</span></div>", "Air Force core value")}</div>
-      <h3 style="margin:22px 0 10px">Space Force values</h3>
-      <div class="svals">${[["character", "Character"], ["link", "Connection"], ["hand", "Commitment"], ["flame", "Courage"]].map(v => `<span class="icard"><span class="ci">${svgI(v[0])}</span><b>${v[1]}</b></span>`).join("")}</div>
       <h3 style="margin:22px 0 10px">A leader of character</h3>
       <div class="grid g3">${card("Lives honorably", "<p>Consistently practices the virtues in our core values.</p>")}${card("Lifts others", "<p>Helps others become their best possible selves.</p>")}${card("Elevates performance", "<p>Toward a common and noble purpose.</p>")}</div>`},
     {id: "chain", title: "Chain of command", page: 16, html: () => `<p class="lead">Each level is responsible for all lower levels and accountable to all higher levels. Resolve problems at the lowest possible level.</p>
@@ -458,7 +453,6 @@ const CH = [
   ]},
   {id: "strategy", label: "Chapter 4", title: "Military Strategy", subs: [
     {id: "principles", title: "Principles of war", page: 88, html: () => `<p class="lead">Fundamental, interconnected aspects that tend to lead to military victory. Not a checklist, but a tool for weighing courses of action.</p>
-      <div class="moose" aria-label="MOOSEMUSS: Maneuver, Objective, Offensive, Surprise, Economy of force, Mass, Unity of command, Security, Simplicity">${"MOOSEMUSS".split("").map(c => `<b>${c}</b>`).join("")}</div>
       <div class="grid g3">${PRINCIPLES.map(p => icard(PRINCIPLE_ICON[p[0]], esc(p[0]), `<p>${esc(p[1])}</p>`)).join("")}</div>`},
     {id: "cocoms", title: "Combatant commands", page: 89, html: () => `${paper("official/cocom-map.webp", "Map of the geographic combatant command areas of responsibility", "Geographic areas of responsibility. USINDOPACOM was named USPACOM until 2018.", 960)}<h3 style="margin:18px 0 8px">Geographic</h3><p class="muted small" style="margin:0 0 10px">Clearly delineated areas with a regional military focus.</p>${list(COCOMS.geo)}
       <h3 style="margin:18px 0 8px">Functional</h3><p class="muted small" style="margin:0 0 10px">World-wide capabilities that support the geographic commands and the Services.</p>${list(COCOMS.fun)}`},
@@ -471,7 +465,7 @@ const CH = [
   ]},
   {id: "resources", label: "Chapter 5", title: "Military Resources", subs: [
     {id: "mds", title: "Mission design series", page: 106, html: () => `<p class="lead">Every aircraft designation tells you what it is. Example: <b>NKC-135R</b>.</p>
-      <figure class="photo mdsph">${img("inv-kc-135r-t-stratotanker.webp", "KC-135R Stratotanker", "zoom")}<figcaption>KC-135 Stratotanker. The N prefix on NKC-135R marks an airframe permanently modified for special testing.</figcaption></figure>
+      <figure class="photo mdsph">${img("official/aircraft/inv-kc-135r-t-stratotanker.webp", "KC-135R Stratotanker refueling an F-15", "zoom")}<figcaption>KC-135 Stratotanker. The N prefix on NKC-135R marks an airframe permanently modified for special testing.</figcaption></figure>
       <div class="mds"><div><b>N</b><span>Status prefix<br>Special test, permanent</span></div><div><b>K</b><span>Modified mission<br>Tanker</span></div><div><b>C</b><span>Basic mission<br>Transport</span></div><div><b>135</b><span>Design<br>number</span></div><div><b>R</b><span>Series<br>(model)</span></div></div>
       <div class="grid g3">${card("Basic mission", "<p>A Attack · B Bomber · C Transport · E Special electronic · F Fighter · L Laser · O Observation · P Patrol · R Reconnaissance · S Antisubmarine · T Trainer · U Utility · X Research</p>")}
       ${card("Modified mission", "<p>Adds to the basic mission, for example K Tanker, M Multi-mission, Q Drone, H Search and rescue, W Weather.</p>")}
