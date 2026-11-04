@@ -363,10 +363,12 @@ $('#cats').addEventListener('click', e => {
   rate(p, cat, +b.dataset.v);
 });
 function rate(p, cat, v){
+  const wasDone = filled(p.key) === FACTORS.length;
   setRating(p.key, cat, v);
   renderCard(); renderList(); renderProgress();
-  if(filled(p.key) === FACTORS.length && FACTORS[FACTORS.length - 1].k === cat){
-    // finished the last area of this cadet: move on to the next one that still needs work
+  if(!wasDone && filled(p.key) === FACTORS.length){
+    // this rating just finished the cadet (whichever area came last): move on to the next one that
+    // still needs work. Changing a cadet who was already finished stays put.
     const nxt = nextOpen(S.cur);
     if(nxt !== null) setTimeout(() => { if(ME && ME.peers[S.cur] === p) go(nxt); }, 260);
     else { toast('Everyone rated. Review and submit.'); setTimeout(() => setView('review'), 500); }
