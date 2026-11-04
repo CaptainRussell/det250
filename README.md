@@ -9,12 +9,10 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
 - **Documents and Policy** (`documents/`): The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, with links to the official sources. The Fall 2026 OPLAN, Policy Packet, cadre duties roster and OPORDs are encrypted and open with the detachment password in a built-in viewer.
 - **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
-- **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in the five Flight Staff Evaluation areas. Results go to a private cadre spreadsheet.
 
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
-
-## Cadre Tools
+- **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in the five Flight Staff Evaluation areas. Results go to a private cadre spreadsheet.
 - **Cadre Dashboard** (`cadre/`): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
 
 ## Instructor Tools
