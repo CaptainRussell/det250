@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Peer Feedback · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+.wrap{--d250-measure:1100px}
+.d250-head{--d250-measure:1100px}
+.due{display:inline-flex;align-items:center;gap:6px;background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px;white-space:nowrap}
+.due.late{background:color-mix(in srgb,var(--d250-cardinal) 18%,transparent);color:var(--d250-cardinal)}
+
+/* sign in */
+.signin{max-width:520px;margin:12px auto 0}
+.signin .panel-bd{display:flex;flex-direction:column;gap:14px}
+.codebox{display:flex;gap:10px;flex-wrap:wrap}
+.codebox input{flex:1 1 200px;min-width:0;font:700 22px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;padding:10px 14px;text-align:center}
+.err{min-height:20px;color:var(--d250-cardinal);font-weight:600;font-size:13.5px}
+.groups{display:grid;gap:8px}
+.groups div{display:flex;gap:10px;align-items:baseline;font-size:13.5px}
+.groups b{min-width:150px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* who am I + progress */
+.mebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:14px}
+.mebar .who{display:flex;align-items:center;gap:10px;font-weight:700}
+.mebar .who small{display:block;font-weight:600;color:var(--d250-soft);font-size:12.5px}
+.prog{flex:1 1 220px;display:flex;align-items:center;gap:10px;min-width:0}
+.prog .track{flex:1;height:8px;border-radius:99px;background:var(--d250-surface-2);overflow:hidden}
+.prog .fill{height:100%;width:0;background:var(--d250-gold);border-radius:99px;transition:width .35s var(--d250-ease)}
+.prog .txt{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tabs{display:inline-flex;background:var(--d250-surface-2);border:1px solid var(--d250-line-strong);border-radius:12px;padding:3px;gap:3px}
+.tabs button{border:0;background:transparent;border-radius:9px;padding:7px 14px;font-weight:700;color:var(--d250-soft);cursor:pointer;min-height:38px}
+.tabs button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
+
+/* rate */
+.rate{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+.plist{position:sticky;top:calc(var(--d250-bar-h,42px) + 12px);max-height:calc(100vh - var(--d250-bar-h,42px) - 40px);overflow:auto}
+.plist ul{list-style:none;margin:0;padding:6px}
+.plist li button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;border-radius:9px;padding:6px 8px;text-align:left;cursor:pointer;color:var(--d250-ink);font-weight:600;font-size:13.5px}
+.plist li button:hover{background:var(--d250-surface-2)}
+.plist li button[aria-current="true"]{background:var(--d250-gold-bg);color:var(--d250-gold)}
+.plist .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist .st{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;border:2px solid var(--d250-line-strong);color:transparent}
+.plist .st.part{border-color:var(--d250-gold)}
+.plist .st.done{background:#2f9e5a;border-color:#2f9e5a;color:#fff}
+.plist summary{display:none}
+
+.card .panel-bd{display:flex;flex-direction:column;gap:6px}
+.peerhd{display:flex;align-items:center;gap:16px;padding:16px;border-bottom:1px solid var(--d250-line)}
+.peerhd h2{font-size:22px;font-weight:800}
+.peerhd .count{margin-left:auto;font-size:13px;color:var(--d250-soft);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.clsc{display:inline-block;margin-top:4px;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:800;color:var(--d250-page);background:var(--c,var(--d250-soft))}
+.cat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--d250-line)}
+.cat:last-child{border-bottom:0}
+.cat h3{font-size:15px;font-weight:800}
+.cat p{font-size:12.5px;color:var(--d250-soft)}
+.scale{display:flex;gap:6px}
+.scale button{width:62px;min-height:52px;border-radius:10px;border:1px solid var(--d250-line-strong);background:var(--d250-surface-2);color:var(--d250-ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:transform .15s var(--d250-ease),background .15s,border-color .15s}
+.scale button b{font-size:18px;line-height:1}
+.scale button span{font-size:10px;font-weight:700;color:var(--d250-soft);letter-spacing:.02em}
+.scale button:hover{border-color:var(--d250-gold)}
+.scale button[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:#fff;transform:translateY(-1px)}
+.scale button[aria-pressed="true"] span{color:#fff;opacity:.9}
+.cat.missing h3::after{content:" \2022 needed";color:var(--d250-gold);font-size:12px}
+.nav{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--d250-line);flex-wrap:wrap}
+.keys{font-size:12px;color:var(--d250-faint)}
+
+/* review */
+.revtools{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dist{display:flex;align-items:flex-end;gap:6px;min-height:64px}
+.dist div{width:30px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--d250-soft)}
+.dist i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--sc);min-height:2px}
+.tblwrap{overflow-x:auto}
+table.rev{width:100%;border-collapse:collapse;font-size:13.5px}
+table.rev th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--d250-soft);text-align:center;padding:8px 6px;border-bottom:1px solid var(--d250-line);white-space:nowrap}
+table.rev th:first-child{text-align:left}
+table.rev td{padding:6px 4px;border-bottom:1px solid var(--d250-line);text-align:center}
+table.rev td:first-child{text-align:left}
+table.rev tr:hover td{background:var(--d250-surface-2)}
+.pn{display:flex;align-items:center;gap:8px;border:0;background:none;color:inherit;font-weight:700;cursor:pointer;padding:0;text-align:left}
+.sv{display:inline-grid;place-items:center;width:30px;height:28px;border-radius:7px;font-weight:800;color:#fff;background:var(--sc)}
+.sv.none{background:transparent;border:1px dashed var(--d250-line-strong);color:var(--d250-faint)}
+.submitbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:16px}
+.status{font-size:13.5px;font-weight:600;max-width:60ch}
+.status.ok{color:#2f9e5a}.status.warn{color:var(--d250-gold)}.status.bad{color:var(--d250-cardinal)}
+:root{--s1:#c8372d;--s2:#d9822b;--s3:#8a8b92;--s4:#3a8f5c;--s5:#1f7a8c}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--d250-ink);color:var(--d250-page);padding:10px 16px;border-radius:10px;font-weight:700;font-size:14px;transition:.3s var(--d250-ease);z-index:60;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.closed{border-left:4px solid var(--d250-cardinal)}
+
+@media (max-width:860px){
+  .rate{grid-template-columns:1fr}
+  .plist{position:static;max-height:none}
+  .plist summary{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;font-weight:700;cursor:pointer;list-style:none}
+  .plist summary::-webkit-details-marker{display:none}
+  .plist details:not([open]) ul{display:none}
+  .plist ul{max-height:50vh;overflow:auto;border-top:1px solid var(--d250-line)}
+}
+@media (max-width:560px){
+  .cat{grid-template-columns:1fr}
+  .scale{width:100%}
+  .scale button{flex:1;width:auto;min-height:50px}
+  .peerhd{padding:12px}
+  .peerhd h2{font-size:19px}
+  .keys{display:none}
+  .groups b{min-width:0}
+  .groups div{flex-direction:column;gap:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<header class="d250-head" style="--tone:#be185d">
+  <div class="d250-head-in">
+    <span class="d250-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.5"/><path d="M2.5 19c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2M14 14.2c.9-.5 1.9-.7 3-.7 2.5 0 4.5 1.8 4.5 4.5"/><path d="M12.5 3.5l1 .9 1.6-1.8" stroke-width="1.6"/></svg></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
+      <h1>Peer Feedback</h1>
+      <p class="d250-head-sub">Rate every cadet in your peer group 1 to 5 in five areas. Only cadre see the results.</p>
+    </div>
+    <span class="due" id="due"></span>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <!-- sign in -->
+  <section id="vSignin" class="signin">
+    <div class="panel">
+      <div class="panel-hd"><span class="label">Sign in with your personal code</span></div>
+      <form class="panel-bd" id="codeForm" autocomplete="off">
+        <p class="muted">Cadre gave each cadet a personal code. It signs you in as yourself, so keep it to yourself.</p>
+        <div class="codebox">
+          <label for="code" class="sr" hidden>Personal code</label>
+          <input id="code" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="9" placeholder="XXXX-XXXX" aria-label="Personal code" required>
+          <button class="btn primary big" id="go" type="submit">Start</button>
+        </div>
+        <div class="err" id="err" role="alert"></div>
+        <div class="groups">
+          <span class="label">Who you rate</span>
+          <div><b>POC</b><span class="muted">AS 300's, AS 400's and Graybeards rate every POC cadet.</span></div>
+          <div><b>AS 200 / 250 / 500</b><span class="muted">Rate every AS 200, AS 250 and AS 500.</span></div>
+          <div><b>AS 100</b><span class="muted">Rate every AS 100.</span></div>
+        </div>
+        <p class="hint">You don't rate yourself, and there are no comments. Your ratings save on this device as you go, and you can submit again until the suspense. Cadre see your latest.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- rating -->
+  <section id="vWork" hidden>
+    <div class="mebar">
+      <div class="who" id="who"></div>
+      <div class="prog"><div class="track"><div class="fill" id="pfill"></div></div><span class="txt" id="ptxt"></span></div>
+      <div class="tabs" role="group" aria-label="View">
+        <button type="button" data-view="rate" aria-pressed="true">Rate</button>
+        <button type="button" data-view="review" aria-pressed="false">Review &amp; submit</button>
+      </div>
+      <button class="linkbtn" id="signout" type="button">Not you? Sign out</button>
+    </div>
+
+    <div id="vRate" class="rate">
+      <nav class="panel plist" aria-label="Cadets to rate"><details id="pdet" open><summary><span id="psum"></span><span aria-hidden="true">▾</span></summary><ul id="plist"></ul></details></nav>
+      <div class="panel card">
+        <div class="peerhd" id="peerhd"></div>
+        <div class="panel-bd" id="cats"></div>
+        <div class="nav">
+          <button class="btn" id="prev" type="button">← Previous</button>
+          <span class="keys">Keys: 1 to 5 rate the next area, ← → change cadet</span>
+          <button class="btn primary" id="next" type="button">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="vReview" hidden>
+      <div class="panel">
+        <div class="panel-hd"><span class="label">Review your ratings</span><span class="hint" style="margin:0">Click a name to change their ratings.</span></div>
+        <div class="panel-bd">
+          <div class="revtools">
+            <p class="muted" style="max-width:56ch">Use the whole scale. A 3 means on par with the rest of your group. If most of your ratings are the same number, cadre can't tell your peers apart.</p>
+            <div class="dist" id="dist" aria-label="How many of each rating you gave"></div>
+          </div>
+          <div class="tblwrap"><table class="rev" id="rev"></table></div>
+          <div class="submitbar">
+            <p class="status" id="status" role="status"></p>
+            <button class="btn primary big" id="submit" type="button">Submit to cadre</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Cadet tool. Ratings go to a private cadre spreadsheet, not to this site, and are combined with every other cadet's to help cadre with internal rankings. The five areas match the Flight Staff Evaluation.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../shared/cadet-groups.js"></script>
+<script src="../shared/instructor.js"></script>
+<script>
+/* ===== settings =====
+   SUBMIT_URL: the Peer Feedback Google Apps Script web app (/exec). It checks each
+   personal code, the suspense and the ratings, and keeps everything in a private Sheet.
+   Codes and the roster live in that script (built by tools/build-peer-feedback.mjs), not here. */
+const SUBMIT_URL = "";
+const DUE = "2026-11-20T17:00:00-06:00";   // 1700 Central, Fri 20 Nov 2026
+const FACTORS = [  // same five areas as the Flight Staff Evaluation
+  {k:'lead', short:'Lead', label:'Leadership / initiative',    desc:'Takes charge, volunteers, and gets things done without being told.'},
+  {k:'prof', short:'Prof', label:'Professionalism / bearing',  desc:'Uniform wear, customs and courtesies, conduct, and attitude.'},
+  {k:'team', short:'Team', label:'Teamwork / followership',    desc:'Supports peers, accepts direction, and follows through.'},
+  {k:'comm', short:'Comm', label:'Communication',              desc:'Clear, timely, and professional in writing and in person.'},
+  {k:'part', short:'Part', label:'Participation / attendance', desc:'On time and engaged at LLAB, PT, and Det events.'}
+];
+const HINT = {1:'Well below',2:'Below',3:'On par',4:'Above',5:'Top'};
+const STORE = 'd250-peer-feedback-v1', CODE_KEY = 'd250-peer-code';
+const CLS_COLOR = {AS100:'--as100',AS200:'--as200',AS250:'--as250',AS300:'--as300',AS400:'--as400',AS500:'--as500',Graybeard:'--gb'};
+const CLS_LABEL = c => c === 'Graybeard' ? 'Graybeard' : c.replace('AS', 'AS ');
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const face = (name, sz) => window.D250Face ? D250Face.html(name, sz) : '';
+const fmtDue = d => new Date(d).toLocaleString('en-US', {timeZone:'America/Chicago', weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) + ' CT';
+const fmtWhen = d => new Date(d).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+const isClosed = () => Date.now() > new Date(DUE).getTime();
+
+let ME = null;      // {me:{key,name,cls}, peers:[...], group, groupLabel, submittedAt}
+let S = null;       // {key, ratings:{peerKey:{lead:..}}, cur, submittedAt, sig}
+let CODE = '';
+
+// One saved draft per cadet, so two cadets can share a computer.
+function all(){ try{ return JSON.parse(localStorage.getItem(STORE) || '{}') || {}; }catch(_){ return {}; } }
+function load(key){ return all()[key] || null; }
+function save(){ if(!S) return; try{ const a = all(); a[S.key] = S; localStorage.setItem(STORE, JSON.stringify(a)); }catch(_){} }
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2400); }
+
+/* ---------- suspense ---------- */
+function renderDue(){
+  const el = $('#due');
+  el.textContent = (isClosed() ? 'Closed ' : 'Due ') + fmtDue(DUE);
+  el.classList.toggle('late', isClosed());
+}
+
+/* ---------- sign in ---------- */
+const codeIn = $('#code');
+codeIn.addEventListener('input', () => {
+  let v = codeIn.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  codeIn.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
+});
+$('#codeForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#err'), go = $('#go');
+  err.textContent = '';
+  if(!SUBMIT_URL){ err.textContent = 'Peer Feedback is not open yet. Check back soon.'; return; }
+  const code = codeIn.value.trim();
+  if(code.replace(/[^A-Z0-9]/gi, '').length < 8){ err.textContent = 'Codes are 8 letters and numbers, like ABCD-2345.'; return; }
+  go.disabled = true; go.textContent = 'Checking…';
+  try{
+    await signIn(code);
+  }catch(ex){
+    err.textContent = ex.message;
+    const p = $('#vSignin .panel'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake');
+  }finally{ go.disabled = false; go.textContent = 'Start'; }
+});
+async function signIn(code){
+  let res;
+  try{ res = await fetch(SUBMIT_URL + '?action=whoami&code=' + encodeURIComponent(code)); }
+  catch(_){ throw new Error("Couldn't reach the server. Check your internet connection and try again."); }
+  const out = await res.json().catch(() => ({ok:false, error:'Unexpected reply from the server.'}));
+  if(!out.ok) throw new Error(out.error || 'That code did not work.');
+  ME = out; CODE = code;
+  try{ sessionStorage.setItem(CODE_KEY, code); }catch(_){}
+  const old = load(out.me.key);
+  S = (old && old.ratings) ? old : {key:out.me.key, ratings:{}, cur:0, submittedAt:null, sig:null};
+  // keep only peers who are still in the group
+  const keys = new Set(ME.peers.map(p => p.key));
+  Object.keys(S.ratings).forEach(k => { if(!keys.has(k)) delete S.ratings[k]; });
+  if(out.submittedAt && !S.submittedAt){ S.submittedAt = out.submittedAt; }
+  S.cur = Math.min(S.cur || 0, ME.peers.length - 1);
+  save();
+  $('#vSignin').hidden = true; $('#vWork').hidden = false;
+  renderWho(); setView(doneCount() === ME.peers.length ? 'review' : 'rate');
+}
+$('#signout').addEventListener('click', () => {
+  if(S && !S.submittedAt && doneCount() > 0 && !confirm('Sign out? Your ratings stay saved on this device until you sign in again.')) return;
+  try{ sessionStorage.removeItem(CODE_KEY); }catch(_){}
+  ME = null; S = null; CODE = ''; codeIn.value = '';
+  $('#vWork').hidden = true; $('#vSignin').hidden = false; codeIn.focus();
+});
+
+/* ---------- helpers ---------- */
+const rOf = k => S.ratings[k] || {};
+const filled = k => FACTORS.filter(f => rOf(k)[f.k]).length;
+const doneCount = () => ME.peers.filter(p => filled(p.key) === FACTORS.length).length;
+const sig = () => JSON.stringify(ME.peers.map(p => FACTORS.map(f => rOf(p.key)[f.k] || 0)));
+function setRating(k, f, v){ (S.ratings[k] = S.ratings[k] || {})[f] = v; save(); }
+
+function renderWho(){
+  $('#who').innerHTML = `${face(ME.me.name, 40)}<span>${esc(ME.me.name)}<small>${esc(CLS_LABEL(ME.me.cls))} &middot; rating ${esc(ME.groupLabel)} (${ME.peers.length} cadets)</small></span>`;
+}
+function renderProgress(){
+  const d = doneCount(), n = ME.peers.length;
+  $('#pfill').style.width = (d / n * 100) + '%';
+  $('#ptxt').textContent = `${d} of ${n} done`;
+  $('#psum').textContent = `All cadets (${d} of ${n} done)`;
+}
+
+/* ---------- views ---------- */
+function setView(v){
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  $('#vRate').hidden = v !== 'rate'; $('#vReview').hidden = v !== 'review';
+  renderProgress();
+  if(v === 'rate'){ renderList(); renderCard(); } else renderReview();
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+/* ---------- rate ---------- */
+function renderList(){
+  $('#plist').innerHTML = ME.peers.map((p, i) => {
+    const f = filled(p.key), cls = f === FACTORS.length ? 'done' : f ? 'part' : '';
+    return `<li><button type="button" data-go="${i}" ${i === S.cur ? 'aria-current="true"' : ''}>${face(p.name, 30)}<span class="nm">${esc(p.name)}</span><span class="st ${cls}" aria-label="${f === FACTORS.length ? 'done' : f + ' of 5'}">✓</span></button></li>`;
+  }).join('');
+}
+$('#plist').addEventListener('click', e => {
+  const b = e.target.closest('[data-go]'); if(!b) return;
+  go(+b.dataset.go);
+  if(matchMedia('(max-width:860px)').matches){ $('#pdet').open = false; $('.card').scrollIntoView({behavior:'smooth', block:'start'}); }
+});
+function go(i){
+  S.cur = Math.max(0, Math.min(ME.peers.length - 1, i)); save();
+  renderList(); renderCard();
+  const cur = $('#plist [aria-current="true"]'); if(cur && !matchMedia('(max-width:860px)').matches) cur.scrollIntoView({block:'nearest'});
+}
+function renderCard(){
+  const p = ME.peers[S.cur], r = rOf(p.key);
+  $('#peerhd').innerHTML = `${face(p.name, 76)}<div><h2>${esc(p.name)}</h2><span class="clsc" style="--c:var(${CLS_COLOR[p.cls] || '--d250-soft'})">${esc(CLS_LABEL(p.cls))}</span></div><span class="count">Cadet ${S.cur + 1}<br>of ${ME.peers.length}</span>`;
+  $('#cats').innerHTML = FACTORS.map(f => `
+    <div class="cat ${r[f.k] ? '' : 'missing'}" data-cat="${f.k}">
+      <div><h3>${esc(f.label)}</h3><p>${esc(f.desc)}</p></div>
+      <div class="scale" role="group" aria-label="${esc(f.label)} for ${esc(p.name)}">
+        ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}" style="--sc:var(--s${v})" aria-pressed="${r[f.k] === v}" aria-label="${v}, ${HINT[v]}"><b>${v}</b><span>${HINT[v]}</span></button>`).join('')}
+      </div>
+    </div>`).join('');
+  $('#prev').disabled = S.cur === 0;
+  const last = S.cur === ME.peers.length - 1;
+  $('#next').textContent = last ? 'Review →' : 'Next →';
+}
+$('#cats').addEventListener('click', e => {
+  const b = e.target.closest('[data-v]'); if(!b) return;
+  const cat = b.closest('[data-cat]').dataset.cat, p = ME.peers[S.cur];
+  rate(p, cat, +b.dataset.v);
+});
+function rate(p, cat, v){
+  setRating(p.key, cat, v);
+  renderCard(); renderList(); renderProgress();
+  if(filled(p.key) === FACTORS.length && FACTORS[FACTORS.length - 1].k === cat){
+    // finished the last area of this cadet: move on to the next one that still needs work
+    const nxt = nextOpen(S.cur);
+    if(nxt !== null) setTimeout(() => { if(ME && ME.peers[S.cur] === p) go(nxt); }, 260);
+    else { toast('Everyone rated. Review and submit.'); setTimeout(() => setView('review'), 500); }
+  }
+}
+function nextOpen(from){
+  const n = ME.peers.length;
+  for(let i = 1; i <= n; i++){ const j = (from + i) % n; if(filled(ME.peers[j].key) < FACTORS.length) return j; }
+  return null;
+}
+$('#prev').addEventListener('click', () => go(S.cur - 1));
+$('#next').addEventListener('click', () => S.cur === ME.peers.length - 1 ? setView('review') : go(S.cur + 1));
+document.addEventListener('keydown', e => {
+  if(!ME || $('#vRate').hidden || e.target.matches('input,textarea,select') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(/^[1-5]$/.test(e.key)){
+    const p = ME.peers[S.cur], r = rOf(p.key);
+    const f = FACTORS.find(f => !r[f.k]) || FACTORS[FACTORS.length - 1];
+    rate(p, f.k, +e.key); e.preventDefault();
+  } else if(e.key === 'ArrowRight'){ go(S.cur + 1); e.preventDefault(); }
+  else if(e.key === 'ArrowLeft'){ go(S.cur - 1); e.preventDefault(); }
+});
+
+/* ---------- review ---------- */
+function renderReview(){
+  const counts = [0,0,0,0,0,0];
+  ME.peers.forEach(p => FACTORS.forEach(f => { const v = rOf(p.key)[f.k]; if(v) counts[v]++; }));
+  const max = Math.max(1, ...counts.slice(1));
+  $('#dist').innerHTML = [1,2,3,4,5].map(v => `<div title="${counts[v]} rating${counts[v] === 1 ? '' : 's'} of ${v}">${counts[v]}<i style="--sc:var(--s${v});height:${Math.round(counts[v] / max * 34) + 2}px"></i>${v}</div>`).join('');
+  $('#rev').innerHTML = `<thead><tr><th>Cadet</th>${FACTORS.map(f => `<th title="${esc(f.label)}">${esc(f.short)}</th>`).join('')}</tr></thead><tbody>${
+    ME.peers.map((p, i) => `<tr><td><button class="pn" type="button" data-edit="${i}">${face(p.name, 28)}${esc(p.name)}</button></td>${
+      FACTORS.map(f => { const v = rOf(p.key)[f.k]; return `<td>${v ? `<span class="sv" style="--sc:var(--s${v})">${v}</span>` : '<span class="sv none">–</span>'}</td>`; }).join('')}</tr>`).join('')}</tbody>`;
+  renderStatus();
+}
+$('#rev').addEventListener('click', e => { const b = e.target.closest('[data-edit]'); if(!b) return; S.cur = +b.dataset.edit; save(); setView('rate'); });
+
+function renderStatus(){
+  const left = ME.peers.length - doneCount(), el = $('#status'), btn = $('#submit');
+  btn.disabled = left > 0 || isClosed();
+  el.className = 'status';
+  if(isClosed()){ el.classList.add('bad'); el.textContent = `Peer Feedback closed at ${fmtDue(DUE)}.` + (S.submittedAt ? ` Cadre have your ratings from ${fmtWhen(S.submittedAt)}.` : ''); return; }
+  if(left){ el.classList.add('warn'); el.textContent = `${left} cadet${left === 1 ? '' : 's'} still need ratings. Every cadet needs all five areas.`; return; }
+  if(S.submittedAt && S.sig === sig()){ el.classList.add('ok'); el.textContent = `Submitted ${fmtWhen(S.submittedAt)}. Cadre have your ratings. If you change anything, submit again.`; btn.textContent = 'Submit again'; return; }
+  if(S.submittedAt){ el.classList.add('warn'); el.textContent = `You changed ratings since you submitted at ${fmtWhen(S.submittedAt)}. Submit again so cadre get the latest.`; btn.textContent = 'Submit changes'; return; }
+  el.textContent = 'All set. Submit when you are happy with your ratings.'; btn.textContent = 'Submit to cadre';
+}
+$('#submit').addEventListener('click', async () => {
+  const btn = $('#submit'), el = $('#status');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const ratings = Object.fromEntries(ME.peers.map(p => [p.key, FACTORS.map(f => rOf(p.key)[f.k])]));
+  try{
+    let res;
+    try{ res = await fetch(SUBMIT_URL, {method:'POST', body:JSON.stringify({action:'peer', code:CODE, ratings})}); }
+    catch(_){ throw new Error("couldn't reach the server"); }
+    const out = await res.json().catch(() => ({ok:false, error:'unexpected reply from the server'}));
+    if(!out.ok) throw new Error(out.error || 'not saved');
+    S.submittedAt = out.received || new Date().toISOString(); S.sig = sig(); save();
+    toast('Submitted. Thank you!');
+    renderStatus();
+  }catch(ex){
+    renderStatus();
+    el.className = 'status bad';
+    el.textContent = `Couldn't submit (${ex.message}). Your ratings are still saved here. Check your connection and try again.`;
+  }
+});
+
+/* ---------- start ---------- */
+renderDue();
+setInterval(() => { renderDue(); if(ME && !$('#vReview').hidden) renderStatus(); }, 60000);
+if(isClosed()) $('#codeForm .muted').textContent = 'Peer Feedback is closed. You can still sign in to see whether your ratings were submitted.';
+(async () => {
+  let saved = ''; try{ saved = sessionStorage.getItem(CODE_KEY) || ''; }catch(_){}
+  if(saved && SUBMIT_URL){ codeIn.value = saved; try{ await signIn(saved); }catch(_){ try{ sessionStorage.removeItem(CODE_KEY); }catch(__){} } }
+})();
+</script>
+</body>
+</html>
