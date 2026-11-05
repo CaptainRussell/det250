@@ -67,6 +67,8 @@ section{margin-top:26px}
 .tool:hover::after{transform:translateX(100%)}
 .icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--ease)}
 .tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.icon.art{background:none;overflow:hidden}
+.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
 .body{min-width:0;flex:1}
 .name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
 .blurb{margin:4px 0 0;color:var(--soft);font-size:14px}
@@ -158,13 +160,16 @@ const ICONS = {
   dice:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/>'
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
+const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure"]);
+const art = t => { const k = t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
 let i = 0;
 document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, title]) => {
   const list = TOOLS.filter(t => t.section === key);
   if(!list.length) return "";
   return `<section aria-labelledby="h-${key}"><div class="sechead"><h2 id="h-${key}">${title}</h2></div><div class="grid">${
     list.map(t => `<a class="tool" href="${esc(t.href)}" style="--tone:${t.tone};--i:${i++}">
-      <span class="icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg></span>
+      <span class="icon${art(t) ? " art" : ""}" aria-hidden="true">${art(t) ? `<img src="${esc(art(t))}" alt="" width="56" height="56">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg>`}</span>
       <span class="body"><span class="name">${esc(t.name)}</span><p class="blurb">${esc(t.blurb)}</p>
       ${t.locked ? `<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : ""}</span></a>`).join("")
   }</div></section>`;
