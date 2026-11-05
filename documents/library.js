@@ -19,8 +19,8 @@
   const EPUB_INDEX = "https://www.e-publishing.af.mil/Product-Index/";
   // Card icons (24px stroke paths), chosen by subject. Each DOCS entry names one with icon.
   window.D250_DOC_ICONS = {
-    // Same icon as the PFRA Calculator card on the Storm HQ hub (root index.html ICONS.stopwatch).
-    stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/>',
+    // Same icon as the PFRA Calculator card on the Storm HQ hub (root index.html ICONS.calculator).
+    calculator:'<rect x="5" y="2.5" width="14" height="19" rx="2.2"/><rect x="8" y="5.5" width="8" height="3.5" rx=".6"/><path d="M8.5 12.5h.01M12 12.5h.01M15.5 12.5h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5v3M8.5 18.5h.01M12 18.5h.01"/>',
     uniform:'<path d="M9 3l3 3 3-3 5 3-2 5h-2v10H8V11H6L4 6z"/><path d="M12 6v4"/>',
     medal:'<path d="M8 3h8l-2.5 6h-3z"/><circle cx="12" cy="15" r="5.5"/><path d="M12 12.4l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/>',
     feedback:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5l2 2 4-4"/>',
@@ -65,7 +65,7 @@
      src:"../ribbon-rack/references/dafi36-2903-afrotcsup.pdf"},
 
     // ---- Fitness ----
-    {sec:"fitness", id:"pfra-calculator", icon:"stopwatch", num:"PFRA Calculator", title:"Score your PFRA",
+    {sec:"fitness", id:"pfra-calculator", icon:"calculator", num:"PFRA Calculator", title:"Score your PFRA",
      what:"Score a PFRA against DAFMAN 36-2905 and the 2026 USAF scoring charts, with goal pace and track marks.",
      href:"../pfra/", tool:true},
     {sec:"fitness", id:"af-form-4446", icon:"scorecard", num:"AF Form 4446", title:"PFRA Scorecard",
