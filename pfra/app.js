@@ -2000,7 +2000,8 @@ function buildShareLink() {
     if (track.customLength != null) {
       params.set('tlc', String(track.customEntry));
       if (track.customUnit === 'ft') params.set('tlu', 'ft');
-    } else if (TRACK_LENGTHS[track.lengthIndex] !== 400) {
+    } else {
+      // Always written, so a link keeps its track if the default changes again.
       params.set('tl', String(TRACK_LENGTHS[track.lengthIndex]));
     }
   }
@@ -2896,8 +2897,9 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /** What the two sliders are currently on. */
 const track = {
-  distanceIndex: 0,
-  lengthIndex: TRACK_LENGTHS.indexOf(400),
+  // Opens on the 2 mile run on a 300 m track (Captain Russell, Nov 2026).
+  distanceIndex: Math.max(0, TRACK_DISTANCES.findIndex((d) => d.id === 'mile2')),
+  lengthIndex: TRACK_LENGTHS.indexOf(300),
   // A lap the member measured, which wins over the slider while it is set,
   // kept in metres whatever it was typed in.
   customLength: null,
@@ -3302,7 +3304,7 @@ function resetTrack() {
   $('pace-readout').hidden = true;
   $('slider-pace').hidden = true;
   paceBounds = null;
-  track.lengthIndex = TRACK_LENGTHS.indexOf(400);
+  track.lengthIndex = TRACK_LENGTHS.indexOf(300);
   closeTrackPanel();
 }
 
