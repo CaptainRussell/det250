@@ -67,7 +67,7 @@
     // ---- Fitness ----
     {sec:"fitness", id:"pfra-calculator", icon:"calculator", num:"PFRA Calculator", title:"Score your PFRA",
      what:"Score a PFRA against DAFMAN 36-2905 and the 2026 USAF scoring charts, with goal pace and track marks.",
-     href:"../pfra/", tool:true},
+     href:"../pfra/", tool:true, art:"../shared/card-art/pfra.webp"},
     {sec:"fitness", id:"af-form-4446", icon:"scorecard", num:"AF Form 4446", title:"PFRA Scorecard",
      what:"The scorecard filled out at every PFRA. Download gives the fillable form.",
      src:"../pfra/references/af-form-4446-flat.pdf", dl:"../pfra/references/af-form-4446.pdf"},

@@ -71,6 +71,8 @@ input{font:inherit;color:inherit}
 .tool:hover::after{transform:translateX(100%)}
 .icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--ease);font-size:12px;font-weight:800;letter-spacing:.02em}
 .tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.icon.art{background:none;overflow:hidden}
+.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
 .body{min-width:0;flex:1}
 .name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
 .name svg{flex:none;color:var(--soft)}
@@ -204,7 +206,7 @@ function card(d, s){
   // a link to a Storm HQ tool looks different from a document
   const kind = d.tool ? '<span class="meta"><span class="toolpill">Storm HQ tool <span aria-hidden="true">&rarr;</span></span></span>' : "";
   return `<a class="tool${d.tool ? " is-tool" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${d.tool ? "#a06f00" : s.tone};--i:${n++}">
-    <span class="icon" aria-hidden="true">${icon}</span>
+    <span class="icon${d.art ? " art" : ""}" aria-hidden="true">${d.art ? `<img src="${esc(d.art)}" alt="" width="56" height="56">` : icon}</span>
     <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p>${kind}</span></a>`;
 }
 const PLAN_BLURBS = {

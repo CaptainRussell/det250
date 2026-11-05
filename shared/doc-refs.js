@@ -74,7 +74,7 @@
     const paths = (window.D250_DOC_ICONS || {})[d.icon];
     const icon = paths ? SVG(paths) : (ICON[d.sec] || ICON.afrotc);
     return `<a class="d250r-card" href="${esc(href(item.id, from, item.page))}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone || "#0369a1"}">
-      <span class="d250r-ic">${icon}</span>
+      <span class="d250r-ic"${d.art ? ' style="background:none;overflow:hidden;padding:0"' : ""}>${d.art ? `<img src="${esc(d.art)}" alt="" style="display:block;width:100%;height:100%;border-radius:inherit">` : icon}</span>
       <span class="d250r-b"><span class="d250r-n">${esc(d.num)}${ext ? EXT : ""}</span><span class="d250r-t">${esc(d.title)}</span><p class="d250r-w">${esc(item.note || d.what)}</p></span></a>`;
   }
 
