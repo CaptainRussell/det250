@@ -137,6 +137,9 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
   box-shadow: 0 6px 14px color-mix(in srgb, var(--tone) 30%, transparent);
 }
 .d250-head-icon svg { width: 26px; height: 26px; }
+/* the tool's card picture (shared/card-art/<tool>.webp), same as its hub card */
+.d250-head-icon.art { background: none; overflow: hidden; padding: 0; }
+.d250-head-icon.art img { display: block; width: 100%; height: 100%; border-radius: inherit; }
 .d250-head-text { flex: 1 1 220px; min-width: 0; }
 .d250-head .d250-eyebrow {
   margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--d250-gold);
