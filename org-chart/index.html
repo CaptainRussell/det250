@@ -562,7 +562,7 @@ const SEATS = [
   {id:"wgcc",  des:"WG/CC",   title:"Wing Commander",        poc:["CerfogliCeliaA","C/Col"],  flip:"ReidElijahB",     parent:"russell"},
   {id:"wgcd",  des:"WG/CD",   title:"Deputy Wing Commander", poc:["LuhringBlayneD","C/Col"],  flip:"HemauerJulia",    parent:"wgcc"},
   {id:"wgcos", des:"WG/COS",  title:"Chief of Staff",        poc:["AltTyceW","C/Lt Col"],     flip:"SandersonWyattE", parent:"wgcc"},
-  {id:"poca",  des:"WG/POCA", title:"POC Advisor",           poc:["PlassmanSimonE","C/Maj"],  flip:"MuellerCyR",      parent:"wgcd", flipDes:"POCA"},
+  {id:"poca",  des:"WG/POCA", title:"POC Advisor",           poc:["PlassmanSimonE","C/Maj"],  flip:"MuellerCyR",      parent:"wgcd", flipDes:"WG/GMCA", flipTitle:"GMC Advisor", flipRole:"gmca"},
   {id:"gmca",  des:"WG/GMCA", title:"GMC Advisor",           poc:["FennelHarperR","C/3C"],    flip:"FennelHarperR",   parent:"wgcd", flipDes:"GMCIC", flipTitle:"LLab GMC In Charge"},
   /* Group */
   {id:"gpcc",  des:"GP/CC",   title:"Group Commander",          poc:["MetzBakerA","C/Lt Col"],   flip:"BuddeCashJ",       parent:"wgcc"},
@@ -988,7 +988,8 @@ function positionDescription(seat){
   if(seat.proposal) return window.renderProposedDuties(seat);
   if(seat.member) return "";
   const roleKey = ({sq1:"squadron",sq2:"squadron",afl:"flight",bfl:"flight",cfl:"flight",dfl:"flight",
-    afd:"flightDeputy",bfd:"flightDeputy",cfd:"flightDeputy",dfd:"flightDeputy",dparo1:"deputyParo",dparo2:"deputyParo"})[seat.id] || seat.id;
+    afd:"flightDeputy",bfd:"flightDeputy",cfd:"flightDeputy",dfd:"flightDeputy",dparo1:"deputyParo",dparo2:"deputyParo"})[seat.id] || (MODE === "flip" && seat.flipRole) || seat.id;
+  /* Flip Week has no POCA: that seat holds the GMCA (flipRole), and the GMCA seat becomes GMCIC. */
   // GMCIC has a different title and no separate OPLAN description.
   if(MODE === "flip" && seat.id === "gmca")
     return `<section class="role-description" aria-label="Position description"><h3 class="dh">Position description</h3><p class="role-note">The OPLAN describes the GMC Advisor role. It does not provide a separate duty description for LLAB GMC In Charge during Flip Week.</p><p class="role-source">Source: Fall 2026 OPLAN, Section B, GMC Advisor, PDF pp. 9-10.</p></section>`;
