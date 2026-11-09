@@ -114,7 +114,7 @@ section{margin-top:26px}
 <script>
 /* =====================================================================
    TOOLS: add a new tool by dropping its folder in the repo and adding
-   one entry here. section: "cadets", "evaluators" or "instructors". locked: true ("Password") or the pill text. tone: card color.
+   one entry here. ext: true opens an outside link (like the Cadet SharePoint) in a new tab; art names its card-art file. section: "cadets", "evaluators" or "instructors". locked: true ("Password") or the pill text. tone: card color.
    icon: one of the keys in ICONS below.
    ===================================================================== */
 const TOOLS = [
@@ -128,6 +128,8 @@ const TOOLS = [
    blurb:"Check the AFROTC ribbons you've earned and get your rack in order of precedence, with devices. Print it or share it."},
   {href:"documents/", name:"Documents and Policy", tone:"#0369a1", icon:"book", section:"cadets",
    blurb:"The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, and the locked Fall 2026 plans and OPORDs."},
+  {href:"https://iowastate.sharepoint.com/:u:/r/sites/ISUAFROTC/SitePages/HomePage.aspx?d=web46a0478697483ba07db070fdb6b592&csf=1&web=2&share=IQBHoEbrl4Y7SKB9sHD9trWSAWYRIl7_IfMf5TGoI0MbHjk&e=qoKj8p", ext:true, art:"sharepoint", name:"Cadet SharePoint", tone:"#036c70", icon:"book", section:"cadets",
+   blurb:"Cadet access and forms: Wing Feedback, Warrior and Honor Points, Supply Room, Morale Shop, and the GMC and POC files."},
   {href:"flight-staff-eval/", name:"Flight Staff Evaluation", tone:"#a06f00", icon:"chart", section:"evaluators", locked:"Flight Staff password",
    blurb:"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
   {href:"peer-feedback/", name:"Peer Feedback", tone:"#be185d", icon:"peers", section:"evaluators",
@@ -161,14 +163,14 @@ const ICONS = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
-const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure"]);
-const art = t => { const k = t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
+const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint"]);
+const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
 let i = 0;
 document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, title]) => {
   const list = TOOLS.filter(t => t.section === key);
   if(!list.length) return "";
   return `<section aria-labelledby="h-${key}"><div class="sechead"><h2 id="h-${key}">${title}</h2></div><div class="grid">${
-    list.map(t => `<a class="tool" href="${esc(t.href)}" style="--tone:${t.tone};--i:${i++}">
+    list.map(t => `<a class="tool" href="${esc(t.href)}"${t.ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${t.tone};--i:${i++}">
       <span class="icon${art(t) ? " art" : ""}" aria-hidden="true">${art(t) ? `<img src="${esc(art(t))}" alt="" width="56" height="56">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg>`}</span>
       <span class="body"><span class="name">${esc(t.name)}</span><p class="blurb">${esc(t.blurb)}</p>
       ${t.locked ? `<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : ""}</span></a>`).join("")
