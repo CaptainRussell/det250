@@ -83,7 +83,7 @@ The ODT Module page holds everything for each ODT: details and things to know, i
 
 **Fill in an ODT.** Pick it in the **ODT** box, then use the tabs:
 
-- **Details:** Edit details (name, dates, place, note, room sections) and **Things to know** (uniform, what to bring, anything else).
+- **Details:** Edit details (name, dates, place, note, room sections) and **Things to know** (uniform, what to bring, anything else). **Supporting documents** are PDFs cadets open or download from the Overview, such as the class excusal letter: **Add a document**, give it a title and an optional note, choose the PDF (up to 25 MB). It is locked with the cadet password when you publish.
 - **Itinerary** and **Meals:** add each item with its day and time (24-hour, like 0600). They sort by day and time on their own.
 - **Roster:** who is going. **Add cadets** has a search and "All AS 100" style buttons. If someone has a room but isn't on the roster, a button adds them.
 - **Rooms:** press **Edit** on a room to change its number, section or cadets. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room. The tab warns about roster cadets without a room, anyone in two rooms, and rooms that mix POC with GMC. Gender isn't in the roster, so keep each section to one gender yourself.
@@ -150,6 +150,7 @@ These still need someone comfortable with the technical side, or Claude Code wor
 | `data/hub.js` | Hub cards |
 | `data/documents.js` | Documents and Policy cards |
 | `odt/vault.json` | The ODT Module, locked with the cadet password |
+| `odt/files/` | The ODT supporting documents (PDFs), each locked with the cadet password |
 | `org-chart/photos/` | 240 px photos, named by each person's key |
 | `whos-that-cadet/photos/` | 600 px photos for Know Your Wing |
 | `admin/vault.json` | The GitHub access key and the saved site passwords, locked with the admin password |

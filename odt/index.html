@@ -121,6 +121,11 @@ input[type="password"],input[type="search"]{font:inherit}
 .card .kv dt{color:var(--d250-soft);font-weight:700}
 .card .kv dd{margin:0;overflow-wrap:anywhere}
 .card a{color:var(--d250-gold);font-weight:700}
+.card.doc{display:flex;gap:14px;align-items:flex-start}
+.card.doc .dico{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--d250-gold) 16%,transparent);color:var(--d250-gold)}
+.card.doc .dtx{min-width:0;flex:1}
+.card.doc .dbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.card.doc .derr{color:var(--d250-cardinal-2,#ef4054);font-size:13px}
 /* itinerary + meals */
 .day{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;overflow:hidden;box-shadow:var(--d250-shadow);break-inside:avoid}
 .day+.day{margin-top:12px}

@@ -343,7 +343,7 @@ async function loadAll(){
   renderPub();
 }
 function dirtyFiles(){ return Object.keys(F).filter(n => JSON.stringify(F[n].data) !== F[n].orig); }
-const odtDirty = () => !!(OD.data && JSON.stringify(OD.data) !== OD.orig);
+const odtDirty = () => !!(OD.data && (JSON.stringify(OD.data) !== OD.orig || Object.keys(OD.files).length));
 function renderPub(){
   const n = dirtyFiles().length + Object.keys(PHOTOS).length + Object.keys(UPLOADS).length + (odtDirty() ? 1 : 0);
   $("#pub").hidden = !n;
@@ -356,6 +356,7 @@ $("#discard").addEventListener("click", () => {
   if (!confirm("Throw away every change that isn't published?")) return;
   for (const n of Object.keys(F)) F[n].data = JSON.parse(F[n].orig);
   if (OD.data){ if (OD.orig){ OD.data = JSON.parse(OD.orig); } else { OD.data = null; OD.pw = OD.savedPw; } }
+  OD.files = {};
   PHOTOS = {}; UPLOADS = {}; LOG = []; renderPub(); render(); toast("Changes discarded.");
 });
 $("#publish").addEventListener("click", async () => {
@@ -377,6 +378,9 @@ $("#publish").addEventListener("click", async () => {
       const now = await GH.readText(ODT_PATH);
       if ((now ? now.sha : null) !== OD.sha) throw new Error("Someone else changed the ODT Module since you opened this page. Copy down your changes, reload, and make them again.");
       files.push({path:ODT_PATH, text:await sealOdt(OD.pw, OD.data)});
+      const keep = docIds(OD.data);
+      for (const [id, f] of Object.entries(OD.files)) if (keep.has(id)) files.push({path:odtFile(id), text:JSON.stringify(await sealRaw(OD.pw, f.bytes)) + "\n"});
+      for (const id of docIds(OD.orig ? JSON.parse(OD.orig) : null)) if (!keep.has(id)) files.push({path:odtFile(id), remove:true});
       if (!OD.exists && await GH.readText("data/rooms.js")) files.push({path:"data/rooms.js", remove:true});   // the old public room list moves into the locked file
       if (CFG.locks.docs !== OD.pw){ cfgAfter = {...CFG, locks:{...CFG.locks, docs:OD.pw}}; files.push({path:"admin/vault.json", text:await sealVault(ADMIN_PW, cfgAfter)}); }
     }
@@ -779,11 +783,13 @@ function docDialog(i, sec){
    seals it again on Publish. See odt/app.js for the data layout.
    ===================================================================== */
 const ODT_PATH = "odt/vault.json";
-let OD = {exists:false, sha:null, pw:"", savedPw:"", orig:"", data:null, seed:null};
+let OD = {exists:false, sha:null, pw:"", savedPw:"", orig:"", data:null, seed:null, files:{}};
+const odtFile = id => `odt/files/${id}.json`;      // one locked file per supporting document
+const docIds = data => new Set((data ? data.events : []).flatMap(e => (e.docs || []).map(d => d.id)));
 async function sealOdt(pw, data){ return JSON.stringify(await sealRaw(pw, enc.encode(JSON.stringify(data)))) + "\n"; }
 async function openOdt(pw, v){ return JSON.parse(dec.decode(await openRaw(pw, v))); }
 async function loadOdt(){
-  OD = {exists:false, sha:null, pw:"", savedPw:"", orig:"", data:null, seed:null};
+  OD = {exists:false, sha:null, pw:"", savedPw:"", orig:"", data:null, seed:null, files:{}};
   const f = await GH.readText(ODT_PATH);
   if (f){
     OD.exists = true; OD.sha = f.sha; OD.vault = JSON.parse(f.text);
@@ -798,7 +804,7 @@ function seedData(x){
   const out = {title:"ODT Module", former:{}, events:[]};
   if (!x) return out;
   out.former = x.former || {};
-  const blank = {info:[], itinerary:[], lodging:[], meals:[]};
+  const blank = {info:[], itinerary:[], lodging:[], meals:[], docs:[]};
   if (Array.isArray(x.events)){
     for (const e of x.events){
       const rooms = (x.rooms || []).filter(r => r.event === e.id).map(r => ({room:r.room, sec:r.sec, cadets:r.cadets}));
@@ -907,9 +913,53 @@ function subDetails(e, body){
       <div class="t2">${esc([evDates(e), e.place].filter(Boolean).join(" · ") || "No dates or place yet")}${e.note ? " · " + esc(e.note) : ""}</div>
       <div class="t2">Room sections: ${esc((e.sections || []).join(", ") || "none")}</div></div>
       <div class="acts"><button class="btn small" type="button" id="editEv">Edit details</button></div></div>
-    <div id="infoList"></div>`;
+    <div id="infoList"></div><div id="docList" style="margin-top:18px"></div>`;
   $("#editEv").addEventListener("click", () => eventDialog(e.id));
   subList(e, "info", $("#infoList"));
+  subDocs(e, $("#docList"));
+}
+const mb = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
+function subDocs(e, box){
+  const docs = e.docs = e.docs || [];
+  box.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Supporting documents <span class="tag">${docs.length}</span></h3><p class="hint" style="margin:4px 0 0">PDFs cadets open from the ODT Overview, such as the excusal letter for professors. Each one is locked with the cadet password, like the rest of the ODT.</p></div>
+      <div class="tools"><button class="btn small primary" type="button" id="docAdd">Add a document</button></div></div>
+    <div class="list">${docs.map((d, i) => `<div class="item"><div class="txt"><div class="t1">${esc(d.title)}${OD.files[d.id] ? ` <span class="tag gold">Not published</span>` : ""}</div><div class="t2">${esc([d.name, d.size ? mb(d.size) : "", d.note].filter(Boolean).join(" · "))}</div></div>
+      <div class="acts"><button class="btn small" type="button" data-dup="${i}" ${i ? "" : "disabled"} aria-label="Move up">↑</button><button class="btn small" type="button" data-ddown="${i}" ${i < docs.length - 1 ? "" : "disabled"} aria-label="Move down">↓</button><button class="btn small" type="button" data-dedit="${i}">Edit</button></div></div>`).join("") || `<p class="muted">Nothing yet.</p>`}</div>`;
+  box.querySelector("#docAdd").addEventListener("click", () => docDialog(e, -1));
+  box.querySelectorAll("[data-dedit]").forEach(b => b.addEventListener("click", () => docDialog(e, +b.dataset.dedit)));
+  const mv = (i, d) => { const j = i + d; [docs[i], docs[j]] = [docs[j], docs[i]]; changed(`${evName(e)}: reordered documents`); render(); };
+  box.querySelectorAll("[data-dup]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.dup, -1)));
+  box.querySelectorAll("[data-ddown]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.ddown, 1)));
+}
+function docDialog(e, i){
+  const docs = e.docs, isNew = i < 0, d = isNew ? {title:"", note:""} : docs[i];
+  let pick = null;
+  openDialog(`${isNew ? "Add" : "Edit"} a document · ${evName(e)}`, `
+    <div class="field"><label class="label" for="oTitle">Title</label><input id="oTitle" type="text" value="${esc(d.title)}" placeholder="Class excusal letter" required></div>
+    <div class="field"><label class="label" for="oNote">Note (optional)</label><input id="oNote" type="text" value="${esc(d.note || "")}" placeholder="Print it and give it to each of your professors."></div>
+    <div class="field"><span class="label">PDF</span>${d.name ? `<p class="hint">Now: ${esc(d.name)}</p>` : ""}<label class="btn" style="align-self:flex-start">${d.name ? "Replace the PDF" : "Choose a PDF"}<input id="oPdf" type="file" accept="application/pdf" class="sr"></label><p class="hint" id="oPdfName">Up to 25 MB. It is locked with the cadet password when you publish.</p></div>
+    <p class="hint">No em dashes.</p>`,
+    `${isNew ? "" : `<button class="btn danger" id="oDel" type="button">Remove</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="oSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
+  dlg.querySelector("#oPdf").addEventListener("change", async ev => {
+    const file = ev.target.files[0], out = dlg.querySelector("#oPdfName"); pick = null; if (!file) return;
+    if (file.size > 25 * 1048576){ out.textContent = "That file is over 25 MB."; return; }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (dec.decode(bytes.subarray(0, 5)) !== "%PDF-"){ out.textContent = "That isn't a PDF."; return; }
+    pick = {bytes, name:file.name, size:file.size}; out.textContent = `Ready: ${file.name} (${mb(file.size)})`;
+  });
+  dlg.querySelector("#oSave").addEventListener("click", () => {
+    const title = val("oTitle").trim(), note = val("oNote").trim();
+    if (!title){ alert("A title is required."); return; }
+    if (isNew && !pick){ alert("Choose the PDF."); return; }
+    const n = {...d, title, note}; if (!note) delete n.note;
+    if (isNew){ const all = docIds(O()), base = slug(e.id + " " + title); let id = base, k = 2; while (all.has(id)) id = base + "-" + k++; n.id = id; }
+    if (pick){ n.name = pick.name; n.size = pick.size; OD.files[n.id] = {bytes:pick.bytes}; }
+    if (isNew){ docs.push(n); changed(`${evName(e)}: added the document ${title}`); }
+    else if (JSON.stringify(n) !== JSON.stringify(d) || pick){ docs[i] = n; changed(`${evName(e)}: updated the document ${title}${pick ? " (new PDF)" : ""}`); }
+    dlg.close(); render();
+  });
+  const del = dlg.querySelector("#oDel");
+  if (del) del.addEventListener("click", () => { if (!confirm(`Remove ${d.title}? Cadets won't see it any more.`)) return; docs.splice(i, 1); delete OD.files[d.id]; dlg.close(); changed(`${evName(e)}: removed the document ${d.title}`); render(); });
 }
 function subList(e, key, box){
   const L = LISTS[key], items = e[key] = e[key] || [];
@@ -1023,7 +1073,7 @@ function eventDialog(id){
     if (!id){
       let base = slug(name + " " + start.slice(0, 7)), nid = base, i = 2;
       while (X.events.some(x => x.id === nid)) nid = base + "-" + i++;
-      Object.assign(e, {id:nid, info:[], itinerary:[], roster:[], rooms:[], lodging:[], meals:[]});
+      Object.assign(e, {id:nid, info:[], itinerary:[], roster:[], rooms:[], lodging:[], meals:[], docs:[]});
       const from = val("eCopy"), src = from && X.events.find(x => x.id === from);
       if (src){
         const live = k => !!R().people[k];
@@ -1223,6 +1273,11 @@ const REKEY = {
     if (odt){
       let data; try{ data = await openOdt(oldPw, JSON.parse(odt.text)); }catch(_){ throw new Error("The ODT Module file doesn't open with this password. Ask a technical person to check odt/vault.json."); }
       out.push({path:ODT_PATH, text:await sealOdt(newPw, data)});
+      for (const id of docIds(data)){                  // and its supporting documents
+        const f = await GH.readText(odtFile(id)); if (!f) continue;
+        progress(`Re-locking ODT document ${id}…`);
+        out.push({path:odtFile(id), text:JSON.stringify(await sealRaw(newPw, await openRaw(oldPw, JSON.parse(f.text)))) + "\n"});
+      }
     }
     return out;
   },

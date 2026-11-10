@@ -11,7 +11,9 @@
                info:[{title, text}], itinerary:[{date, time, end, what, where, note}],
                roster:[roster keys], sections:[room groups], rooms:[{room, sec, cadets:[keys]}],
                lodging:[{name, address, phone, checkin, checkout, note}],
-               meals:[{date, meal, time, where, note}] }] }
+               meals:[{date, meal, time, where, note}],
+               docs:[{id, title, note, name, size}] }] }
+   Each supporting document is its own locked file, files/<doc id>.json, same layout, opened on click.
    Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms, lodging, meals), #all. */
 (function(){
 const $ = s => document.querySelector(s);
@@ -31,11 +33,23 @@ let D = null, EVENTS = [], EV = "", TAB = "overview";
 
 /* ---------- crypto ---------- */
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-async function open(pw, v){
+async function openBytes(pw, v){
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
   const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(v.salt), iterations:v.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
-  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(v.iv)}, key, b64(v.data))));
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(v.iv)}, key, b64(v.data)));
 }
+const open = async (pw, v) => JSON.parse(new TextDecoder().decode(await openBytes(pw, v)));
+let PW = "";
+const BLOBS = {};
+async function docUrl(id){
+  if (!BLOBS[id]){
+    const r = await fetch(`files/${encodeURIComponent(id)}.json`, {cache:"no-store"});
+    if (!r.ok) throw new Error("missing");
+    BLOBS[id] = URL.createObjectURL(new Blob([await openBytes(PW, await r.json())], {type:"application/pdf"}));
+  }
+  return BLOBS[id];
+}
+const PDF_ICON = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>`;
 
 /* ---------- dates ---------- */
 const day = s => { const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(s || ""); return m ? new Date(+m[1], m[2] - 1, +m[3]) : null; };
@@ -102,6 +116,7 @@ function overview(e){
       ${tile("rooms", "Rooms", rooms.length ? `${rooms.length} rooms` : "Not posted", rooms.length ? "Find your room" : "")}
       ${tile("lodging", "Lodging", lodge ? lodge.name : "Not posted", lodge ? lodge.address : "")}
     </div>
+    ${(e.docs || []).length ? `<section class="sec"><h2>Documents<span>${e.docs.length}</span></h2><div class="cards">${e.docs.map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
     ${(e.info || []).length ? `<section class="sec"><h2>Things to know<span>${e.info.length}</span></h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : ""}`;
 }
 function byDay(list, row){
@@ -191,6 +206,17 @@ function wireView(){
   document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => go(`${EV}/${b.dataset.go}`)));
   document.querySelectorAll("[data-ev]").forEach(b => b.addEventListener("click", () => go(`${b.dataset.ev}/overview`)));
   const pr = $("#print"); if (pr) pr.addEventListener("click", () => window.print());
+  const fail = b => { const m = b.parentNode.querySelector(".derr"); if (m) m.textContent = "Couldn't open it. Reload and try again."; };
+  document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", async () => {
+    const w = window.open("", "_blank");             // opened now, so the browser doesn't block it
+    if (w) w.document.title = "Opening…";
+    try{ const u = await docUrl(b.dataset.doc); if (w) w.location.href = u; else location.href = u; }
+    catch(_){ if (w) w.close(); fail(b); }
+  }));
+  document.querySelectorAll("[data-dl]").forEach(b => b.addEventListener("click", async () => {
+    try{ const a = document.createElement("a"); a.href = await docUrl(b.dataset.dl); a.download = b.dataset.name; document.body.appendChild(a); a.click(); a.remove(); }
+    catch(_){ fail(b); }
+  }));
   const q = $("#q"); if (!q) return;
   const e = EVENTS.find(x => x.id === EV);
   if (TAB === "rooms"){
@@ -250,14 +276,14 @@ async function start(){
   $("#loading").hidden = true;
   if (!V){ $("#lockwrap").hidden = false; $("#unlock").hidden = true; $("#lockMsg").textContent = "The ODT Module isn't set up yet. Cadre set it up on the Cadre Admin page (ODT tab)."; return; }
   let saved = ""; try{ saved = sessionStorage.getItem(PASS_KEY) || ""; }catch(_){}
-  if (saved){ try{ show(await open(saved, V)); return; }catch(_){} }
+  if (saved){ try{ const data = await open(saved, V); PW = saved; show(data); return; }catch(_){} }
   $("#lockwrap").hidden = false; $("#pw").focus();
 }
 $("#unlock").addEventListener("submit", async ev => {
   ev.preventDefault();
   const go_ = $("#go"); $("#err").textContent = ""; go_.disabled = true; go_.textContent = "Checking…";
   try{
-    const data = await open($("#pw").value, V);
+    const data = await open($("#pw").value, V); PW = $("#pw").value;
     try{ sessionStorage.setItem(PASS_KEY, $("#pw").value); }catch(_){}
     show(data);
   }catch(_){
