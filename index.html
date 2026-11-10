@@ -137,7 +137,7 @@ const ICONS = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
-const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt-rooms"]);
+const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt"]);
 const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
 let i = 0;
 document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, title]) => {
