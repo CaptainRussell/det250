@@ -116,7 +116,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
       <h1>Cadre Admin</h1>
-      <p class="d250-head-sub">Update the roster, photos, org chart, hub cards and document links without touching code.</p>
+      <p class="d250-head-sub">Update the roster, photos, org chart, hub cards, document links and ODT rooms without touching code.</p>
     </div>
   </div>
 </header>
@@ -176,6 +176,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
         <button type="button" data-tab="chart" aria-pressed="false">Org chart</button>
         <button type="button" data-tab="hub" aria-pressed="false">Hub cards</button>
         <button type="button" data-tab="docs" aria-pressed="false">Documents</button>
+        <button type="button" data-tab="rooms" aria-pressed="false">Rooms</button>
         <button type="button" data-tab="history" aria-pressed="false">History and settings</button>
       </div>
       <div class="who"><span id="repoLine"></span><a class="linkbtn" id="guideLink" href="#" target="_blank" rel="noopener">Admin guide</a><button class="linkbtn" id="signOut" type="button">Sign out</button></div>
@@ -185,6 +186,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
     <section id="tab-chart" hidden></section>
     <section id="tab-hub" hidden></section>
     <section id="tab-docs" hidden></section>
+    <section id="tab-rooms" hidden></section>
     <section id="tab-history" hidden></section>
     <div class="pub" id="pub" hidden>
       <div><b id="pubCount"></b><ul id="pubList"></ul></div>
@@ -220,7 +222,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const PASS_KEY = "d250-admin-pass", UI_KEY = "d250-admin-ui-v1";
-const FILES = { roster:"data/roster.js", hub:"data/hub.js", docs:"data/documents.js" };
+const FILES = { roster:"data/roster.js", hub:"data/hub.js", docs:"data/documents.js", rooms:"data/rooms.js" };
 const CLASSES = ["AS100","AS200","AS250","AS500","AS300","AS400","Graybeard","Cadre"];
 const CLASS_LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS500:"AS 500",AS300:"AS 300",AS400:"AS 400",Graybeard:"Graybeard",Cadre:"Cadre"};
 const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",AS500:"r500",Graybeard:"rgb"};
@@ -243,7 +245,7 @@ let LOG = [];           // what changed, in words (for the publish bar and the c
 /* ---------- small helpers ---------- */
 function toast(t, ms = 3200){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), ms); }
 function note(html, bad){ $("#msg").innerHTML = html ? `<div class="note${bad ? " bad" : ""}" role="status">${html}</div>` : ""; }
-const R = () => F.roster.data, H = () => F.hub.data, D = () => F.docs.data;
+const R = () => F.roster.data, H = () => F.hub.data, D = () => F.docs.data, RM = () => F.rooms.data;
 const fullName = p => p ? (p[1] ? `${p[1]} ${p[0]}` : p[0]) : "(nobody)";
 const sortName = p => `${p[0]}, ${p[1]}`;
 function changed(what){ LOG.push(what); renderPub(); }
@@ -380,12 +382,12 @@ document.querySelectorAll(".seg [data-tab]").forEach(b => b.addEventListener("cl
 function setTab(t){
   UI.tab = t; saveUI(); note("");
   document.querySelectorAll(".seg [data-tab]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
-  for (const id of ["people","chart","hub","docs","history"]) $("#tab-" + id).hidden = id !== t;
+  for (const id of ["people","chart","hub","docs","rooms","history"]) $("#tab-" + id).hidden = id !== t;
   render();
 }
 function render(){
   if (!F.roster) return;
-  ({people:renderPeople, chart:renderChart, hub:renderHub, docs:renderDocs, history:renderHistory})[UI.tab]();
+  ({people:renderPeople, chart:renderChart, hub:renderHub, docs:renderDocs, rooms:renderRooms, history:renderHistory})[UI.tab]();
 }
 
 /* ---------- dialog ---------- */
@@ -474,6 +476,8 @@ function personDialog(key){
     delete R().people[key];
     for (const list of [R().flights, R().flightsPoc]) for (const f of Object.keys(list)) list[f] = list[f].filter(k => k !== key);
     delete PHOTOS[key];
+    for (const rm of RM().rooms) rm.cadets = rm.cadets.filter(k => k !== key);
+    RM().rooms = RM().rooms.filter(rm => rm.cadets.length);
     dlg.close(); changed(`Removed ${fullName(p)}`); render();
   });
 }
@@ -756,12 +760,104 @@ function docDialog(i, sec){
 }
 
 /* =====================================================================
+   ODT ROOMS  (data/rooms.js, shown on odt-rooms/)
+   ===================================================================== */
+const GMC = c => /^AS(100|200|250|500)$/.test(c);
+function roomIssues(r){
+  const P = R().people, cls = (r.cadets || []).map(k => (P[k] || [])[2]).filter(Boolean), out = [];
+  if ((r.cadets || []).some(k => !P[k])) out.push("someone here is no longer on the roster");
+  if (cls.some(POC) && cls.some(GMC)) out.push("POC with GMC");
+  else if (new Set(cls).size > 1) out.push("mixed AS classes");
+  return out;
+}
+function renderRooms(){
+  const X = RM(), rooms = X.rooms, secs = [...X.sections]; for (const r of rooms) if (!secs.includes(r.sec)) secs.push(r.sec);
+  const P = R().people, seen = {};
+  for (const r of rooms) for (const k of r.cadets) seen[k] = (seen[k] || 0) + 1;
+  const dup = Object.keys(seen).filter(k => seen[k] > 1);
+  const loose = [...new Set(JSON.parse(F.rooms.orig).rooms.flatMap(r => r.cadets))].filter(k => !seen[k] && P[k]);
+  const n = rooms.reduce((t, r) => t + r.cadets.length, 0);
+  const nextIn = (i, d) => { for (let j = i + d; j >= 0 && j < rooms.length; j += d) if (rooms[j].sec === rooms[i].sec) return j; return -1; };
+  $("#tab-rooms").innerHTML = `
+    <div class="tabhd"><div><h2>ODT rooms</h2><p>The rooms on the <a class="linkbtn" href="../odt-rooms/" target="_blank" rel="noopener">ODT Room Assignments</a> page. Pick cadets from the roster; their photos, ranks and positions fill in on their own. Gender isn't in the roster, so keep each section to one gender yourself.</p></div>
+      <div class="tools"><button class="btn primary" id="addRoom" type="button">Add a room</button></div></div>
+    <div class="panel" style="margin-bottom:14px"><div class="panel-bd grid2">
+      <div class="field"><label class="label" for="rmTitle">Page title</label><input id="rmTitle" type="text" value="${esc(X.title || "")}" placeholder="ODT Room Assignments"></div>
+      <div class="field"><label class="label" for="rmNote">Line under the title</label><input id="rmNote" type="text" value="${esc(X.note || "")}" placeholder="Dates, place, or how rooms were set"></div>
+    </div></div>
+    ${loose.length ? `<div class="note">No room right now: ${esc(loose.map(k => P[k] ? fullName(P[k]) : k).join(", "))}. Edit a room to put them in one.</div>` : ""}
+    ${dup.length ? `<div class="note bad">In more than one room: ${esc(dup.map(k => fullName(P[k])).join(", "))}.</div>` : ""}
+    <p class="hint" style="margin:0 0 10px">${n} cadets in ${rooms.length} rooms. A room with one cadet shows as a bonus room.</p>
+    ${secs.map(s => { const list = rooms.map((r, i) => [r, i]).filter(([r]) => r.sec === s); if (!list.length) return "";
+      return `<h3 class="grp">${esc(s)} <span class="tag">${list.length} rooms</span></h3><div class="list">${list.map(([r, i]) => { const iss = roomIssues(r);
+        return `<div class="item"><span class="tile" style="--tone:#16161a;display:grid;place-items:center;color:#f1be48;font-weight:800;font-size:${String(r.room).length > 3 ? 12 : 17}px">${esc(r.room)}</span>
+          <div class="txt"><div class="t1" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">${r.cadets.map(k => `<span style="display:inline-flex;gap:8px;align-items:center">${face(k, 32)}${esc(P[k] ? fullName(P[k]) : k)}</span>`).join("") || `<span class="t2">Empty</span>`}</div>
+          <div class="t2">${r.cadets.map(k => P[k] ? CLASS_LABEL[P[k][2]] : "?").join(" + ")}${r.cadets.length === 1 ? `<span class="tag gold">Bonus room</span>` : ""}${iss.map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div></div>
+          <div class="acts"><button class="btn small" type="button" data-rup="${i}" ${nextIn(i, -1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} up">↑</button><button class="btn small" type="button" data-rdown="${i}" ${nextIn(i, 1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} down">↓</button><button class="btn small" type="button" data-room="${i}">Edit</button></div></div>`; }).join("")}</div>`; }).join("") || `<p class="muted">No rooms yet. Add one.</p>`}`;
+  const setTxt = (id, k, label) => $(id).addEventListener("change", e => { const v = e.target.value.trim(); if (v !== (X[k] || "")){ X[k] = v; changed(`Rooms: ${label} set to ${v || "(blank)"}`); } });
+  setTxt("#rmTitle", "title", "page title"); setTxt("#rmNote", "note", "line under the title");
+  const move = (i, d) => { const j = nextIn(i, d); if (j < 0) return; [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; changed(`Moved room ${rooms[j].room} ${d < 0 ? "up" : "down"}`); render(); };
+  document.querySelectorAll("[data-rup]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rup, -1)));
+  document.querySelectorAll("[data-rdown]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rdown, 1)));
+  document.querySelectorAll("[data-room]").forEach(b => b.addEventListener("click", () => roomDialog(+b.dataset.room)));
+  $("#addRoom").addEventListener("click", () => roomDialog(-1));
+}
+function roomDialog(i){
+  const X = RM(), isNew = i < 0, P = R().people;
+  const nums = X.rooms.map(r => +r.room).filter(n => n > 0);
+  const r = isNew ? {room:String((nums.length ? Math.max(...nums) : 0) + 1), sec:X.sections[0] || "Rooms", cadets:[]} : X.rooms[i];
+  const secs = [...new Set([...X.sections, ...X.rooms.map(x => x.sec)])];
+  const where = {}; X.rooms.forEach((x, j) => { if (j !== i) for (const k of x.cadets) where[k] = x.room; });
+  const cadetOpts = sel => opt("", "(nobody)", !sel) + Object.keys(P).filter(k => P[k][2] !== "Cadre" || k === sel)
+    .sort((a, b) => sortName(P[a]).localeCompare(sortName(P[b])))
+    .map(k => opt(k, `${sortName(P[k])} (${CLASS_LABEL[P[k][2]]})${where[k] ? ` · now in room ${where[k]}` : ""}`, k === sel)).join("");
+  openDialog(isNew ? "Add a room" : `Edit room ${r.room}`, `
+    <div class="grid2">
+      <div class="field"><label class="label" for="rRoom">Room number or name</label><input id="rRoom" type="text" value="${esc(r.room)}" required></div>
+      <div class="field"><label class="label" for="rSec">Section</label><select id="rSec">${secs.map(s => opt(s, s, s === r.sec)).join("")}${opt("__new", "New section…", false)}</select></div>
+    </div>
+    <div class="field" id="rNewWrap" hidden><label class="label" for="rNew">New section name</label><input id="rNew" type="text" placeholder="Women · POC"></div>
+    ${[0,1,2,3].map(n => `<div class="field"><label class="label" for="rC${n}">Cadet ${n + 1}${n > 1 ? " (optional)" : ""}</label><select id="rC${n}">${cadetOpts(r.cadets[n] || "")}</select></div>`).join("")}
+    <p class="hint">Picking someone who is already in another room moves them here. Leave cadet 2 empty for a bonus (single) room.</p>`,
+    `${isNew ? "" : `<button class="btn danger" id="rDel" type="button">Remove room</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="rSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
+  const secSel = dlg.querySelector("#rSec"); secSel.addEventListener("change", () => { $("#rNewWrap").hidden = secSel.value !== "__new"; });
+  dlg.querySelector("#rSave").addEventListener("click", () => {
+    const label = val("rRoom").trim(); let sec = val("rSec");
+    if (sec === "__new") sec = val("rNew").trim();
+    const cadets = [...new Set([0,1,2,3].map(n => val("rC" + n)).filter(Boolean))];
+    if (!label || !sec){ alert("A room number and a section are required."); return; }
+    if (!cadets.length){ alert("Pick at least one cadet, or remove the room."); return; }
+    if (X.rooms.some((x, j) => j !== i && String(x.room) === label) && !confirm(`There is already a room ${label}. Use the same number anyway?`)) return;
+    const moved = cadets.filter(k => where[k]);
+    for (const x of X.rooms) if (x !== r) x.cadets = x.cadets.filter(k => !cadets.includes(k));
+    const before = JSON.stringify(r);
+    r.room = label; r.sec = sec; r.cadets = cadets;
+    if (!X.sections.includes(sec)) X.sections.push(sec);
+    if (isNew) X.rooms.push(r);
+    for (const x of X.rooms) if (!x.cadets.length) changed(`Removed room ${x.room} (now empty)`);
+    X.rooms = X.rooms.filter(x => x.cadets.length);
+    X.sections = X.sections.filter(s => X.rooms.some(x => x.sec === s));
+    const names = cadets.map(k => fullName(P[k])).join(" and ");
+    if (isNew) changed(`Added room ${label}: ${names}`);
+    else if (before !== JSON.stringify(r)) changed(`Room ${label}: ${names}`);
+    if (moved.length) changed(`Moved ${moved.map(k => fullName(P[k])).join(", ")} to room ${label}`);
+    dlg.close(); render();
+  });
+  const del = dlg.querySelector("#rDel");
+  if (del) del.addEventListener("click", () => {
+    if (!confirm(`Remove room ${r.room}? ${r.cadets.map(k => fullName(P[k])).join(" and ") || "Nobody"} will have no room.`)) return;
+    X.rooms.splice(i, 1); X.sections = X.sections.filter(s => X.rooms.some(x => x.sec === s));
+    dlg.close(); changed(`Removed room ${r.room}`); render();
+  });
+}
+
+/* =====================================================================
    HISTORY AND SETTINGS
    ===================================================================== */
 async function renderHistory(){
   const el = $("#tab-history");
   el.innerHTML = `
-    <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards and documents. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
+    <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards, documents and rooms. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
     <div class="list hist" id="hist"><p class="muted">Loading…</p></div>
     <h3 class="grp" style="margin-top:28px">Site passwords</h3>
     <p class="hint" style="margin:0 0 10px">The passwords cadets and cadre type to open locked parts of Storm HQ. Any admin can see or change them here without knowing the old one. Changing one locks the files again with the new password; the old one stops working about a minute later. The Cadre Dashboard always uses the admin password, so it changes with it.</p>
