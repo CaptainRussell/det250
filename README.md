@@ -22,8 +22,9 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
 ## Notes
+- Editable data lives in `data/`: `roster.js` (the one detachment roster used by the Org Chart, instructor tools and Peer Feedback) and `hub.js` (the hub cards). Change people and cards there, not in page code.
 - Hosted on GitHub Pages from `main`. Pushed changes go live in a few minutes.
-- To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `TOOLS` in the root `index.html`. Full details are in `CLAUDE.md`.
+- To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `data/hub.js`. Full details are in `CLAUDE.md`.
 - Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
 - Flight Staff Evaluation is password encrypted. Keep decrypted source outside the public repo. To rebuild its lock: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
 - Restricted documents are encrypted. Keep the plain PDFs outside the repo. To rebuild: `node tools/encrypt-files.mjs <password> <list.json> documents/restricted` (see the script header for the list format).

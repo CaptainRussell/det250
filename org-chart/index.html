@@ -500,149 +500,20 @@ section.band{margin-top:26px}
   <div class="dbody" id="dbody"></div>
 </aside>
 
+<script src="../data/roster.js"></script>
 <script src="../documents/library.js"></script>
 <script src="../shared/doc-refs.js"></script>
 <script src="position-descriptions.js"></script>
 <script>
 /* =====================================================================
-   DATA: edit names here.
-   PEOPLE: photo key -> [last name, first name, AS class]   (photo file: photos/<key>.jpg)
-   SEATS: one row per position on the POC chart.
-     des / title : POC chart designator and title
-     poc         : [person key, rank] who holds it on the POC chart
-     flip        : person key during Flip Week (rank is automatic: AS100 = C/4C, others C/3C).
-                   Leave flip out and the seat is hidden during Flip Week.
-     flipDes / flipTitle : only if the seat is labeled differently during Flip Week
-     parent      : seat id this position reports to
-   CADRE seats and FLIGHTS (GMC flight rosters) are listed further down.
+   DATA: the roster, seats and flights live in ../data/roster.js (one list
+   shared with the instructor tools and Peer Feedback). Edit them there.
    ===================================================================== */
-const PEOPLE = {
-  /* POC */
-  CerfogliCeliaA:["Cerfogli","Celia","AS400"], LuhringBlayneD:["Luhring","Blayne","AS400"], AltTyceW:["Alt","Tyce","AS400"],
-  PlassmanSimonE:["Plassman","Simon","Graybeard"], MetzBakerA:["Metz","Baker","Graybeard"], HymanNathanT:["Hyman","Nathan","AS400"],
-  KingeryAlexL:["Kingery","Alex","Graybeard"], HelleNicolasD:["Helle","Nicolas","AS300"], BourekAkrynJ:["Bourek","Akryn","AS300"],
-  BarszczCadenN:["Barszcz","Caden","AS300"], MarschangAllissaA:["Marschang","Allissa","AS300"], GrossDylanG:["Gross","Dylan","AS400"],
-  JalodiaAnika:["Jalodia","Anika","AS300"], DavilaJoaquinD:["Davila","Joaquin","AS300"], AshbackerMiloK:["Ashbacker","Milo","AS300"],
-  AlbertJosephI:["Albert","Joseph","AS400"], BradleeColinR:["Bradlee","Colin","AS300"], SalasAlfredoE:["Salas","Alfredo","AS400"],
-  HumistonVictoriaR:["Humiston","Victoria","AS300"], CurtisRobertT:["Curtis","Robert","AS300"], TuMicahJ:["Tu","Micah","AS300"],
-  GaulStephenJ:["Gaul","Stephen","AS300"], FigueroaBacaAngel:["Figueroa-Baca","Angel","Graybeard"], CoulthardNikalo:["Coulthard","Nikalo","AS300"],
-  DonahoeWilliamJ:["Donahoe","William","Graybeard"], CooperTylerL:["Cooper","Tyler","AS300"], HaderAshtenM:["Hader","Ashten","AS300"],
-  CollierJonathanG:["Collier","Jonathan","AS300"], ChienJohnJ:["Chien","John","AS400"], EdwardsonClaytonM:["Edwardson","Clayton","AS400"],
-  WarnerNicole:["Warner","Nicole","Graybeard"], DavisMartiG:["Davis","Marti","AS300"], VanDevanderDonC:["Van Devander","Don","AS300"],
-  /* AS500 */
-  BradyLoraleiD:["Brady","Loralei","AS500"], EstesIsellaM:["Estes","Isella","AS500"], MartinezToddM:["Martinez","Todd","AS500"],
-  CondonMatzkeIsabella:["Condon-Matzke","Isabella","AS500"],
-  /* GMC */
-  ReidElijahB:["Reid","Elijah","AS250"], HemauerJulia:["Hemauer","Julia","AS200"], SandersonWyattE:["Sanderson","Wyatt","AS200"],
-  FennelHarperR:["Fennel","Harper","AS200"], MuellerCyR:["Mueller","Cy","AS200"], BuddeCashJ:["Budde","Cash","AS200"],
-  JordanCooperS:["Jordan","Cooper","AS200"], StatesEricD:["States","Eric","AS200"], WheelerAndrewT:["Wheeler","Andrew","AS100"],
-  GeorgeWilliamD:["George","William","AS100"], RuehleMayIsaiahH:["Ruehle-May","Isaiah","AS100"], GardnerLaceyI:["Gardner","Lacey","AS100"],
-  PeterJulia:["Peter","Julia","AS250"], CallTysonD:["Call","Tyson","AS250"], JonsErickL:["Jons","Erick","AS200"],
-  WentholdAddisonE:["Wenthold","Addison","AS200"], TjadenAndrewJ:["Tjaden","Andrew","AS200"], McJannetMiloG:["McJannet","Milo","AS100"],
-  BennettLiamB:["Bennett","Liam","AS200"], SheldonElijahD:["Sheldon","Elijah","AS100"], SchnuteIanW:["Schnute","Ian","AS200"],
-  NelsenOliverU:["Nelsen","Oliver","AS100"], UtterbackChristopherD:["Utterback","Christopher","AS250"], HoangLinhY:["Hoang","Linh","AS200"],
-  ReedMaxC:["Reed","Max","AS250"], MorenoRyanA:["Moreno","Ryan","AS200"], HutchinsonScottC:["Hutchinson","Scott","AS200"],
-  KasparekCamdenL:["Kasparek","Camden","AS200"], RamseyKyleT:["Ramsey","Kyle","AS200"], PetersonMadelineM:["Peterson","Madeline","AS100"],
-  BendingerMatthewS:["Bendinger","Matthew","AS200"], McNamaraZacharyA:["McNamara","Zachary","AS200"], UrbanowiczCharlesL:["Urbanowicz","Charles","AS200"],
-  ChandlerAmeliaM:["Chandler","Amelia","AS100"], OTooleFinnP:["O'Toole","Finn","AS100"],
-  AldanaCastroGeorgioF:["Aldana Castro","Georgio","AS100"], JohnsonZionJ:["Johnson","Zion","AS100"], McCarthyCalumJ:["McCarthy","Calum","AS100"],
-  AndersenSamuelE:["Andersen","Samuel","AS100"], KluesnerAidenC:["Kluesner","Aiden","AS100"], MafnasMaxC:["Mafnas","Max","AS100"],
-  MalinLanceA:["Malin","Lance","AS100"], TidgewellCharlesA:["Tidgewell","Charles","AS100"], BurdickNathanielB:["Burdick","Nathaniel","AS100"],
-  DobbsPaxtonJ:["Dobbs","Paxton","AS100"], GoodinEleanorK:["Goodin","Eleanor","AS100"], McConnellLaurenL:["McConnell","Liam","AS100"],
-  PhanTaraT:["Phan","Tara","AS100"], TheisJakeA:["Theis","Jake","AS100"], JohnsonZariahA:["Johnson","Zariah","AS100"],
-  KilkerSamuelJ:["Kilker","Samuel","AS100"], MillerMasonD:["Miller","Mason","AS100"], SinclairHaydenH:["Sinclair","Hayden","AS100"],
-  /* Cadre (photo files: photos/<key>.jpg; initials show until a photo is added) */
-  CacicJohn:["Cacic","John","Cadre"], RussellScott:["Russell","Scott","Cadre"], OrrTy:["Orr","Ty","Cadre"],
-  MatthewsJordan:["Matthews","Jordan","Cadre"], TinaMs:["Tina","","Cadre"], CabralMatthew:["Cabral","Matthew","Cadre"],
-  MooreGabrielle:["Moore","Gabrielle","Cadre"]
-};
-
-const SEATS = [
-  /* Wing Command Team + Advisory Staff */
-  {id:"wgcc",  des:"WG/CC",   title:"Wing Commander",        poc:["CerfogliCeliaA","C/Col"],  flip:"ReidElijahB",     parent:"russell"},
-  {id:"wgcd",  des:"WG/CD",   title:"Deputy Wing Commander", poc:["LuhringBlayneD","C/Col"],  flip:"HemauerJulia",    parent:"wgcc"},
-  {id:"wgcos", des:"WG/COS",  title:"Chief of Staff",        poc:["AltTyceW","C/Lt Col"],     flip:"SandersonWyattE", parent:"wgcc"},
-  {id:"poca",  des:"WG/POCA", title:"POC Advisor",           poc:["PlassmanSimonE","C/Maj"],  flip:"MuellerCyR",      parent:"wgcd", flipDes:"WG/GMCA", flipTitle:"GMC Advisor", flipRole:"gmca"},
-  {id:"gmca",  des:"WG/GMCA", title:"GMC Advisor",           poc:["FennelHarperR","C/3C"],    flip:"FennelHarperR",   parent:"wgcd", flipDes:"GMCIC", flipTitle:"LLab GMC In Charge"},
-  /* Group */
-  {id:"gpcc",  des:"GP/CC",   title:"Group Commander",          poc:["MetzBakerA","C/Lt Col"],   flip:"BuddeCashJ",       parent:"wgcc"},
-  {id:"sq1",   des:"1 SQ/CC", title:"Squadron 1 Commander",     poc:["HymanNathanT","C/Maj"],    flip:"JordanCooperS",    parent:"gpcc"},
-  {id:"sq2",   des:"2 SQ/CC", title:"Squadron 2 Commander",     poc:["KingeryAlexL","C/Maj"],    flip:"StatesEricD",      parent:"gpcc"},
-  {id:"afl",   des:"Alpha FLT/CC",   title:"Alpha Flight Commander",   poc:["HelleNicolasD","C/Capt"],     flip:"WheelerAndrewT",   parent:"sq1", flipDes:"A FLT/CC"},
-  {id:"afd",   des:"Alpha FLT/CD",   title:"Alpha Flight Deputy",      poc:["BradyLoraleiD","C/3C"],       parent:"afl"},
-  {id:"bfl",   des:"Bravo FLT/CC",   title:"Bravo Flight Commander",   poc:["BourekAkrynJ","C/Capt"],      flip:"GeorgeWilliamD",   parent:"sq1", flipDes:"B FLT/CC"},
-  {id:"bfd",   des:"Bravo FLT/CD",   title:"Bravo Flight Deputy",      poc:["EstesIsellaM","C/3C"],        parent:"bfl"},
-  {id:"cfl",   des:"Charlie FLT/CC", title:"Charlie Flight Commander", poc:["BarszczCadenN","C/Capt"],     flip:"RuehleMayIsaiahH", parent:"sq2", flipDes:"C FLT/CC"},
-  {id:"cfd",   des:"Charlie FLT/CD", title:"Charlie Flight Deputy",    poc:["MartinezToddM","C/3C"],       parent:"cfl"},
-  {id:"dfl",   des:"Delta FLT/CC",   title:"Delta Flight Commander",   poc:["MarschangAllissaA","C/Capt"], flip:"GardnerLaceyI",    parent:"sq2", flipDes:"D FLT/CC"},
-  {id:"dfd",   des:"Delta FLT/CD",   title:"Delta Flight Deputy",      poc:["CondonMatzkeIsabella","C/3C"],parent:"dfl"},
-  /* A1 */
-  {id:"a1",    des:"A1/DT",     title:"Personnel Director",                  poc:["GrossDylanG","C/Maj"],      flip:"PeterJulia",        parent:"wgcos", dir:"A1"},
-  {id:"a11",   des:"A11/ACDO",  title:"Academic Officer",                    poc:["JalodiaAnika","C/Capt"],    flip:"CallTysonD",        parent:"a1"},
-  {id:"a12",   des:"A12/PARO",  title:"Public Affairs & Recruiting Officer", poc:["DavilaJoaquinD","C/Capt"],  flip:"JonsErickL",        parent:"a1"},
-  {id:"dparo1",des:"Dep PARO",  title:"Deputy PARO",                         poc:["JordanCooperS","C/3C"],                               parent:"a12"},
-  {id:"dparo2",des:"Dep PARO",  title:"Deputy PARO",                         poc:["UrbanowiczCharlesL","C/3C"],                          parent:"a12"},
-  {id:"a13",   des:"A13/DEVO",  title:"Development Officer",                 poc:["AshbackerMiloK","C/Capt"],  flip:"WentholdAddisonE",  parent:"a1"},
-  /* A2 */
-  {id:"a2",    des:"A2/DT",     title:"Intelligence Director",               poc:["AlbertJosephI","C/Maj"],    flip:"TjadenAndrewJ",     parent:"wgcos", dir:"A2"},
-  {id:"a22",   des:"A22/HISTO", title:"Historical Officer",                  poc:["BradleeColinR","C/Capt"],   flip:"McJannetMiloG",     parent:"a2"},
-  {id:"dhisto",des:"Dep HISTO", title:"Deputy Historical Officer",           poc:["McNamaraZacharyA","C/3C"],                            parent:"a22"},
-  {id:"a23",   des:"A23/FLI",   title:"Flight Simulator Instructor",                         poc:["BuddeCashJ","C/3C"],                                  parent:"a2"},
-  /* A3 */
-  {id:"a3",    des:"A3/DT",     title:"Operations Director",                 poc:["SalasAlfredoE","C/Maj"],    flip:"BennettLiamB",      parent:"wgcos", dir:"A3"},
-  {id:"a31",   des:"A31/SPO",   title:"Special Projects Officer",            poc:["HumistonVictoriaR","C/Capt"], flip:"SheldonElijahD",  parent:"a3"},
-  {id:"a32",   des:"A32 D&C/CC",title:"Drill and Ceremony Commander",        poc:["CurtisRobertT","C/Capt"],   flip:"SchnuteIanW",       parent:"a3", flipDes:"A32/D&C", flipTitle:"Drill and Ceremony Officer"},
-  {id:"ddc",   des:"Dep D&C/CC",title:"Deputy D&C Commander",                poc:["MorenoRyanA","C/3C"],                                 parent:"a32"},
-  {id:"a33",   des:"A33/TSO",   title:"Tri-Service Officer",                 poc:["TuMicahJ","C/Capt"],        flip:"NelsenOliverU",     parent:"a3"},
-  {id:"a34",   des:"A34/SEO",   title:"Special Events Officer",              poc:["GaulStephenJ","C/Capt"],    flip:"UtterbackChristopherD", parent:"a3"},
-  {id:"dseo",  des:"Dep SEO",   title:"Deputy Special Events Officer",       poc:["StatesEricD","C/3C"],                                 parent:"a34"},
-  /* A4 */
-  {id:"a4",    des:"A4/DT",     title:"Logistics Director",                  poc:["FigueroaBacaAngel","C/Maj"], flip:"HoangLinhY",       parent:"wgcos", dir:"A4"},
-  {id:"a41",   des:"A41/FUNO",  title:"Fundraising Officer",                 poc:["CoulthardNikalo","C/Capt"], flip:"ReedMaxC",          parent:"a4"},
-  /* A5 */
-  {id:"a5",    des:"A5/DT",     title:"Planning Director",                   poc:["DonahoeWilliamJ","C/Maj"],  flip:"MorenoRyanA",       parent:"wgcos", dir:"A5"},
-  {id:"a5d",   des:"Dep A5/DT", title:"Deputy Planning Director",            poc:["CooperTylerL","C/Capt"],    flip:"HutchinsonScottC",  parent:"a5", flipDes:"A5/DPT", flipTitle:"Planning Director Deputy"},
-  {id:"a51",   des:"A51/CTO",   title:"Chief of Training Officer",           poc:["HaderAshtenM","C/Capt"],    flip:"KasparekCamdenL",   parent:"a5"},
-  {id:"a52",   des:"A52/PFO",   title:"Physical Fitness Officer",            poc:["CollierJonathanG","C/Capt"], flip:"RamseyKyleT",      parent:"a5"},
-  {id:"pfod",  des:"Dep PFO",   title:"Deputy Physical Fitness Officer",     poc:["HutchinsonScottC","C/3C"],  flip:"PetersonMadelineM", parent:"a52", flipDes:"PFOD", flipTitle:"Physical Fitness Officer Deputy"},
-  {id:"a53",   des:"A53/CONO",  title:"CONOPS Officer",                      poc:["ChienJohnJ","C/Capt"],      flip:"BendingerMatthewS", parent:"a5"},
-  /* A6 */
-  {id:"a6",    des:"A6/DT",     title:"Communications Director",             poc:["EdwardsonClaytonM","C/Maj"], flip:"McNamaraZacharyA", parent:"wgcos", dir:"A6"},
-  /* A9 */
-  {id:"a9",    des:"A9/DT",     title:"Assessment and Improvement Director", poc:["WarnerNicole","C/Maj"],     flip:"UrbanowiczCharlesL",parent:"wgcos", dir:"A9"},
-  {id:"da9",   des:"Dep A9/DT", title:"Deputy Assessment and Improvement Director", poc:["PeterJulia","C/3C"],                           parent:"a9"},
-  {id:"a91",   des:"A91/INVO",  title:"Innovation Officer",                  poc:["DavisMartiG","C/Capt"],     flip:"ChandlerAmeliaM",   parent:"a9"},
-  {id:"a92",   des:"A92/WELLO", title:"Wellness Officer",                    poc:["VanDevanderDonC","C/Capt"], flip:"OTooleFinnP",       parent:"a9"}
-];
-/* Cadre: shown above the Wing Command Team in both views */
-SEATS.push(
-  {id:"cacic",    cadre:true, des:"DET 250/CC", title:"Detachment Commander",        poc:["CacicJohn","Lt Col"],     parent:null},
-  {id:"matthews", cadre:true, des:"DET 250/EO",       title:"Education Officer",                       poc:["MatthewsJordan","Maj"],   parent:"cacic"},
-  {id:"russell",  cadre:true, des:"DET 250/OFC",       title:"Operations Flight Commander", poc:["RussellScott","Capt"],    parent:"cacic"},
-  {id:"orr",      cadre:true, des:"DET 250/RO",       title:"Recruiting Officer",                       poc:["OrrTy","Capt"],           parent:"cacic"},
-  {id:"tina",     cadre:true, des:"",       title:"Detachment Secretary", fullName:"Tina Schmalzried",                       poc:["TinaMs","Ms."],           parent:"cacic"},
-  {id:"cabral",   cadre:true, des:"DET 250/OAI",       title:"Officer Accessions Instructor",                       poc:["CabralMatthew","TSgt"],   parent:"orr"},
-  {id:"moore",    cadre:true, des:"DET 250/HRA",       title:"NCOIC, Administration",       poc:["MooreGabrielle","SSgt"],  parent:"cabral"}
-);
-
-/* GMC flight assignments (POC chart only): listed under each FLT/CC */
-const FLIGHTS = {
-  afl:["BendingerMatthewS","HutchinsonScottC","JordanCooperS","McNamaraZacharyA","RamseyKyleT","ReedMaxC","ReidElijahB","SchnuteIanW",
-       "AldanaCastroGeorgioF","ChandlerAmeliaM","JohnsonZionJ","McCarthyCalumJ","NelsenOliverU","PetersonMadelineM","WheelerAndrewT"],
-  bfl:["BuddeCashJ","FennelHarperR","MorenoRyanA","MuellerCyR","SandersonWyattE","UrbanowiczCharlesL","UtterbackChristopherD",
-       "AndersenSamuelE","GeorgeWilliamD","KluesnerAidenC","MafnasMaxC","MalinLanceA","TidgewellCharlesA"],
-  cfl:["HemauerJulia","HoangLinhY","KasparekCamdenL","WentholdAddisonE",
-       "BurdickNathanielB","DobbsPaxtonJ","GoodinEleanorK","McConnellLaurenL","PhanTaraT","RuehleMayIsaiahH","SheldonElijahD","TheisJakeA"],
-  dfl:["BennettLiamB","CallTysonD","JonsErickL","PeterJulia","StatesEricD","TjadenAndrewJ",
-       "GardnerLaceyI","JohnsonZariahA","KilkerSamuelJ","McJannetMiloG","MillerMasonD","OTooleFinnP","SinclairHaydenH"]
-};
-/* POC flight assignments (shown on the POC tab of each flight window) */
-const FLIGHTS_POC = {
-  afl:["DonahoeWilliamJ","LuhringBlayneD","HymanNathanT","AshbackerMiloK","CooperTylerL","CoulthardNikalo","DavisMartiG"],
-  bfl:["FigueroaBacaAngel","MetzBakerA","PlassmanSimonE","AltTyceW","CollierJonathanG","GaulStephenJ","VanDevanderDonC"],
-  cfl:["KingeryAlexL","AlbertJosephI","CerfogliCeliaA","ChienJohnJ","EdwardsonClaytonM","SalasAlfredoE","HaderAshtenM","TuMicahJ"],
-  dfl:["WarnerNicole","GrossDylanG","BradleeColinR","CurtisRobertT","DavilaJoaquinD","HumistonVictoriaR","JalodiaAnika"]
-};
+const R = window.D250_ROSTER;
+const PEOPLE = R.people;
+const SEATS = R.seats.map(s => ({...s}));
+const FLIGHTS = R.flights;
+const FLIGHTS_POC = R.flightsPoc;
 for(const [fl, keys] of Object.entries(FLIGHTS)){
   const name = SEATS.find(x => x.id === fl).title.split(" ")[0];
   keys.forEach(k => SEATS.push({id:`m-${fl}-${k}`, member:true, des:`${name} FLT`, title:`${name} Flight Member`,

@@ -20,11 +20,10 @@ const DUE = "2026-11-20T17:00:00-06:00"; // 1700 Central, Fri 20 Nov 2026
 const GROUP = { AS300: "poc", AS400: "poc", Graybeard: "poc", AS200: "gmc", AS250: "gmc", AS500: "gmc", AS100: "as100" };
 const GROUP_LABEL = { poc: "POC", gmc: "AS 200 / 250 / 500", as100: "AS 100" };
 
-const html = readFileSync("org-chart/index.html", "utf8");
-const block = html.match(/const PEOPLE = \{([\s\S]*?)\n\};/);
-if (!block) throw new Error("PEOPLE not found in org-chart/index.html");
-const people = [...block[1].matchAll(/(\w+):\["([^"]*)","([^"]*)","([^"]*)"\]/g)]
-  .map(m => ({ key: m[1], name: m[3] ? `${m[2]}, ${m[3]}` : m[2], cls: m[4] }))
+// The shared roster (data/roster.js): people, seats, flights.
+const ROSTER_DATA = (() => { const w = {}; new Function("window", readFileSync("data/roster.js", "utf8"))(w); return w.D250_ROSTER; })();
+const people = Object.entries(ROSTER_DATA.people)
+  .map(([key, [last, first, cls]]) => ({ key, name: first ? `${last}, ${first}` : last, cls }))
   .filter(p => GROUP[p.cls]).map(p => ({ ...p, group: GROUP[p.cls] }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -68,15 +67,11 @@ try { qrcode = (await import("node:module")).createRequire(import.meta.url)("qrc
 catch { console.error("qrcode-generator not found: npm i qrcode-generator and set NODE_PATH (see the comment above)"); process.exit(1); }
 const qrSvgFor = p => { const q = qrcode(0, "M"); q.addData(`${PAGE_URL}#code=${p.code}`); q.make(); return q.createSvgTag({ cellSize: 2, margin: 0, scalable: true }); };
 
-// Flights (code slips are grouped by flight): FLIGHTS + FLIGHTS_POC members, plus each FLT/CC and FLT/CD seat.
+// Flights (code slips are grouped by flight): flights + flightsPoc members, plus each FLT/CC and FLT/CD seat.
 const FLIGHT_NAMES = { afl: "Alpha", bfl: "Bravo", cfl: "Charlie", dfl: "Delta" };
 const flightOf = {};
-for (const name of ["FLIGHTS", "FLIGHTS_POC"]) {
-  const m = html.match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n\\};`));
-  if (!m) throw new Error(`${name} not found in org-chart/index.html`);
-  for (const [, fl, list] of m[1].matchAll(/(\w+):\[([^\]]*)\]/g)) for (const [, k] of list.matchAll(/"(\w+)"/g)) flightOf[k] = fl;
-}
-for (const [, id, k] of html.matchAll(/\{id:"([abcd]f[ld])",[^\n]*?poc:\["(\w+)"/g)) flightOf[k] ??= id[0] + "fl";
+for (const list of [ROSTER_DATA.flights, ROSTER_DATA.flightsPoc]) for (const [fl, keys] of Object.entries(list)) for (const k of keys) flightOf[k] = fl;
+for (const seat of ROSTER_DATA.seats) if (/^[abcd]f[ld]$/.test(seat.id) && seat.poc) flightOf[seat.poc[0]] ??= seat.id[0] + "fl";
 const noFlight = people.filter(p => !flightOf[p.key]);
 if (noFlight.length) console.warn("No flight found (slips go under No flight):", noFlight.map(p => p.name).join("; "));
 const FLIGHT_ORDER = [...Object.keys(FLIGHT_NAMES), "none"];
