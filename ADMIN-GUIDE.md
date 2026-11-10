@@ -7,7 +7,7 @@ This guide is for the cadre member who keeps Storm HQ up to date. You don't need
 
 ## How it works
 
-Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits four data files and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
+Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits three data files, the locked ODT Module and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
 
 | What you edit | Where it shows up |
 | --- | --- |
@@ -15,7 +15,7 @@ Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage
 | Org chart positions | Org Chart (POC chart and Flip Week), Know Your Wing ranks and positions |
 | Hub cards | The Storm HQ home page |
 | Documents | Documents and Policy, and every tool that cites a regulation |
-| Rooms | ODT Room Assignments |
+| ODT | The ODT Module (every ODT, current and past, behind the cadet password) |
 
 Every change is kept in the history, so nothing you do is permanent. You can undo any change from the **History and settings** tab.
 
@@ -69,15 +69,27 @@ On the Hub cards tab, press **Hide** on its card. Hide a tool nobody maintains, 
 
 On the Documents tab, press **Edit** on the card. Air Force publications should be outside links to e-Publishing, so cadets always get the current version. Upload a PDF only for detachment or HQ AFROTC files that have no official link. Keep PDFs under 50 MB.
 
-### Change ODT room assignments
+### The ODT Module
 
-The ODT Room Assignments page shows each room with the cadets' Org Chart photos, ranks and positions. Those come from the roster, so you only pick who is in each room.
+The ODT Module page holds everything for each ODT: details and things to know, itinerary, who's going, rooms, lodging and meals. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
 
-1. Rooms tab. Press **Edit** on a room to change its number, its section (for example "Women" or "Men · POC") or who is in it. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room.
-2. **Add a room** for a new one. A room left with nobody in it is removed.
-3. The arrows move a room up or down within its section. Change the page title or the line under it at the top of the tab.
-4. The tab warns about anyone who no longer has a room, anyone in two rooms, and rooms that mix POC with GMC. Gender isn't in the roster, so keep each section to one gender yourself.
-5. Publish. Cadets can search for their name on the page, and **Print** makes a two-page paper copy.
+**First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. Publish.
+
+**Add a new ODT**
+
+1. ODT tab, **New ODT**. Enter the name, place, first and last day, the line under the name (for example "Same Gender Mandatory.") and the room sections.
+2. Under **Start from**, pick an earlier ODT to copy its roster, rooms and things to know, or start empty.
+3. Fill in each tab (below), then publish.
+
+**Fill in an ODT.** Pick it in the **ODT** box, then use the tabs:
+
+- **Details:** Edit details (name, dates, place, note, room sections) and **Things to know** (uniform, what to bring, anything else).
+- **Itinerary** and **Meals:** add each item with its day and time (24-hour, like 0600). They sort by day and time on their own.
+- **Roster:** who is going. **Add cadets** has a search and "All AS 100" style buttons. If someone has a room but isn't on the roster, a button adds them.
+- **Rooms:** press **Edit** on a room to change its number, section or cadets. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room. The tab warns about roster cadets without a room, anyone in two rooms, and rooms that mix POC with GMC. Gender isn't in the roster, so keep each section to one gender yourself.
+- **Lodging:** name, address (cadets get a map link), phone, check in and check out.
+
+**Remove this ODT** deletes it and everything in it. Removing a cadet from the roster keeps them in past ODTs, so history stays complete. Changing the cadet password (History and settings) locks the ODT Module again with the new password too.
 
 ### Change a site password
 
@@ -137,7 +149,7 @@ These still need someone comfortable with the technical side, or Claude Code wor
 | `data/roster.js` | People, positions and flights |
 | `data/hub.js` | Hub cards |
 | `data/documents.js` | Documents and Policy cards |
-| `data/rooms.js` | ODT room assignments |
+| `odt/vault.json` | The ODT Module, locked with the cadet password |
 | `org-chart/photos/` | 240 px photos, named by each person's key |
 | `whos-that-cadet/photos/` | 600 px photos for Know Your Wing |
 | `admin/vault.json` | The GitHub access key and the saved site passwords, locked with the admin password |
