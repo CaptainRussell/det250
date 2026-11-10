@@ -8,7 +8,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Ribbon Rack Builder** (`ribbon-rack/`): builds your AFROTC rack in order of precedence (DAFI 36-2903 AFROTC Sup), with devices and the wear and award criteria for each ribbon.
 - **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
 - **Documents and Policy** (`documents/`): The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, with links to the official sources. The Fall 2026 OPLAN, Policy Packet, cadre duties roster and OPORDs are encrypted and open with the detachment password in a built-in viewer.
-- **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
+- **Know Your Wing** (`whos-that-cadet/`, formerly Who's That Cadet!): memorization game for cadet and cadre faces, with printable cards. Uses the shared roster.
 
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.

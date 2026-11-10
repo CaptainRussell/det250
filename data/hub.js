@@ -11,7 +11,7 @@
 window.D250_HUB = {
 "tools": [
   {"href":"pfra/","name":"PFRA Calculator","tone":"#c8102e","icon":"calculator","section":"cadets","blurb":"Score a Physical Fitness Readiness Assessment against DAFMAN 36-2905 and the 2026 USAF scoring charts."},
-  {"href":"whos-that-cadet/","name":"Who's That Cadet!","tone":"#1f4e9c","icon":"faces","section":"cadets","blurb":"Learn every face in the wing with flashcard drills, shadow mode and printable cards."},
+  {"href":"whos-that-cadet/","name":"Know Your Wing","tone":"#1f4e9c","icon":"faces","section":"cadets","blurb":"Learn every face in the wing with flashcard drills, shadow mode and printable cards."},
   {"href":"org-chart/","name":"Det 250 Org Chart","tone":"#2f7d32","icon":"tree","section":"cadets","blurb":"Fall 2026 250th Cadet Wing: cadre, wing staff, flights and the Flip Week view."},
   {"href":"ribbon-rack/","name":"Ribbon Rack Builder","tone":"#4338ca","icon":"ribbons","section":"cadets","blurb":"Check the AFROTC ribbons you've earned and get your rack in order of precedence, with devices. Print it or share it."},
   {"href":"documents/","name":"Documents and Policy","tone":"#0369a1","icon":"book","section":"cadets","blurb":"The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, and the locked Fall 2026 plans and OPORDs."},
