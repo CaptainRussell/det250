@@ -43,6 +43,7 @@ textarea.short{min-height:84px}
 .seg button:hover{color:var(--d250-ink)}
 .seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
 .who{font-size:12.5px;color:var(--d250-soft);display:flex;gap:10px;align-items:center}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--d250-ink)}
 .note{background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
 .note.bad{background:color-mix(in srgb,var(--d250-cardinal) 15%,transparent);color:var(--d250-cardinal)}
 .tabhd{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 14px;margin:0 0 12px}
@@ -310,9 +311,10 @@ $("#setupForm").addEventListener("submit", async e => {
   }catch(x){ err.textContent = x.message || String(x); shake("#setup"); }
   finally{ go.disabled = false; go.textContent = "Save and sign in"; }
 });
+let ADMIN_PW = "", CFG = null;   // the admin password and the decrypted settings (key, repo, saved lock passwords)
 async function signIn(pw){
   const cfg = await openVault(pw, VAULT);
-  GH = D250GitHub(cfg);
+  GH = D250GitHub(cfg); ADMIN_PW = pw; CFG = cfg; CFG.locks = CFG.locks || {};
   await loadAll();
   try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
   $("#lockwrap").hidden = true; $("#setupwrap").hidden = true; $("#app").hidden = false;
@@ -761,12 +763,23 @@ async function renderHistory(){
   el.innerHTML = `
     <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards and documents. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
     <div class="list hist" id="hist"><p class="muted">Loading…</p></div>
-    <h3 class="grp" style="margin-top:28px">Settings</h3>
+    <h3 class="grp" style="margin-top:28px">Site passwords</h3>
+    <p class="hint" style="margin:0 0 10px">The passwords cadets and cadre type to open locked parts of Storm HQ. Changing one locks the files again with the new password; the old one stops working about a minute later. Once changed here, each password is saved (encrypted) with the admin settings so the next admin can see it.</p>
+    <div class="list">${Object.entries(LOCKS).map(([id, L]) => `
+      <div class="item"><div class="txt"><div class="t1">${esc(L.label)}</div><div class="t2">${esc(L.what)}</div>
+        <div class="t2" id="lk-${id}">${CFG.locks[id] ? `Password: <span class="mono" data-secret="${esc(CFG.locks[id])}">••••••••</span> <button class="linkbtn" type="button" data-show="${id}">Show</button>` : "Not saved here yet. Change it once to save it."}</div></div>
+        <div class="acts"><button class="btn small" type="button" data-lock="${id}">Change</button></div></div>`).join("")}</div>
+    <h3 class="grp" style="margin-top:28px">Admin settings</h3>
     <div class="list">
       <div class="item"><div class="txt"><div class="t1">Change the admin password</div><div class="t2">Do this whenever someone who knew it leaves.</div></div><div class="acts"><button class="btn small" type="button" id="chgPw">Change</button></div></div>
-      <div class="item"><div class="txt"><div class="t1">Replace the GitHub access key</div><div class="t2">Fine-grained keys expire (at most 1 year). When publishing says the key expired, make a new one the same way as in setup and paste it here. Use this too after the site moves to a new GitHub home.</div></div><div class="acts"><button class="btn small" type="button" id="chgKey">Replace</button></div></div>
+      <div class="item"><div class="txt"><div class="t1">Replace the GitHub access key</div><div class="t2">When publishing says the key expired, or a new person takes over the site, make a new key the same way as in setup and paste it here. Use this too after the site moves to a new GitHub home.</div></div><div class="acts"><button class="btn small" type="button" id="chgKey">Replace</button></div></div>
     </div>`;
   $("#chgPw").addEventListener("click", () => vaultDialog(false));
+  document.querySelectorAll("[data-show]").forEach(b => b.addEventListener("click", () => {
+    const sp = b.previousElementSibling, shown = b.textContent === "Hide";
+    sp.textContent = shown ? "••••••••" : sp.dataset.secret; b.textContent = shown ? "Show" : "Hide";
+  }));
+  document.querySelectorAll("[data-lock]").forEach(b => b.addEventListener("click", () => lockDialog(b.dataset.lock)));
   $("#chgKey").addEventListener("click", () => vaultDialog(true));
   try{
     const list = await GH.history("data", 15);
@@ -797,15 +810,98 @@ function vaultDialog(newKey){
     const err = dlg.querySelector("#vErr"), pw = val("vPw");
     if (pw.length < 10){ err.textContent = "Use at least 10 characters."; return; }
     if (pw !== val("vPw2")){ err.textContent = "The two passwords don't match."; return; }
-    const cfg = newKey ? {token:val("vTok").trim(), owner:val("vOwner").trim(), repo:val("vRepo").trim(), branch:val("vBranch").trim()} : GH.cfg;
+    const cfg = newKey ? {token:val("vTok").trim(), owner:val("vOwner").trim(), repo:val("vRepo").trim(), branch:val("vBranch").trim(), locks:CFG.locks} : CFG;
     const btn = dlg.querySelector("#vSave"); btn.disabled = true; btn.textContent = "Saving…";
     try{
       const gh = D250GitHub(cfg); await gh.check();
       const text = await sealVault(pw, cfg);
       await gh.commit(newKey ? "Admin: replace the GitHub access key" : "Admin: change the admin password", [{path:"admin/vault.json", text}]);
-      GH = gh; VAULT = JSON.parse(text); try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
+      GH = gh; CFG = cfg; ADMIN_PW = pw; VAULT = JSON.parse(text); try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
       dlg.close(); toast("Saved. Use the new password from now on.", 5000);
     }catch(x){ err.textContent = x.message; btn.disabled = false; btn.textContent = "Save"; }
+  });
+}
+
+/* ---------- site passwords (re-lock the encrypted files with a new password) ---------- */
+const LOCKS = {
+  docs:  {label:"Documents and Policy (cadet password)", what:"Opens the OPLAN, Policy Packet, cadre duties roster and weekly OPORDs."},
+  fse:   {label:"Flight Staff Evaluation", what:"Opens the Flight Staff Evaluation page."},
+  cadre: {label:"Cadre Dashboard", what:"Opens the Peer Feedback and Flight Staff Evaluation results."},
+};
+const enc = new TextEncoder(), dec = new TextDecoder();
+const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const bytesB64 = u => { let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+async function sealRaw(pw, bytes){         // same layout as tools/encrypt.mjs and tools/build-cadre-vault.mjs
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pw, salt, 310000, "encrypt");
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, bytes));
+  return {v:1, iter:310000, salt:bytesB64(salt), iv:bytesB64(iv), data:bytesB64(ct)};
+}
+async function openRaw(pw, v){
+  const key = await deriveKey(pw, fromB64(v.salt), v.iter, "decrypt");
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:fromB64(v.iv)}, key, fromB64(v.data)));
+}
+const WRONG = "The current password is wrong.";
+const REKEY = {
+  async cadre(oldPw, newPw){
+    const f = await GH.readText("cadre/vault.json");
+    let plain; try{ plain = await openRaw(oldPw, JSON.parse(f.text)); }catch(_){ throw new Error(WRONG); }
+    return [{path:"cadre/vault.json", text:JSON.stringify(await sealRaw(newPw, plain), null, 1) + "\n"}];
+  },
+  async fse(oldPw, newPw){
+    const f = await GH.readText("flight-staff-eval/index.html");
+    const m = /const P = (\{"v":1[^;]*?\});/.exec(f.text);
+    if (!m) throw new Error("Couldn't find the locked page data in flight-staff-eval/index.html.");
+    let plain; try{ plain = await openRaw(oldPw, JSON.parse(m[1])); }catch(_){ throw new Error(WRONG); }
+    const text = f.text.slice(0, m.index) + "const P = " + JSON.stringify(await sealRaw(newPw, plain)) + ";" + f.text.slice(m.index + m[0].length);
+    return [{path:"flight-staff-eval/index.html", text}];
+  },
+  async docs(oldPw, newPw, progress){        // one key for every file, as in tools/encrypt-files.mjs
+    const V = JSON.parse((await GH.readText("documents/restricted/vault.json")).text);
+    const oldKey = await deriveKey(oldPw, fromB64(V.salt), V.iter, "decrypt");
+    const open = async u => new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:u.subarray(0, 12)}, oldKey, u.subarray(12)));
+    try{ await open(fromB64(V.check)); }catch(_){ throw new Error(WRONG); }
+    const salt = crypto.getRandomValues(new Uint8Array(16)), newKey = await deriveKey(newPw, salt, 310000, "encrypt");
+    const seal = async bytes => { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, newKey, bytes)); const o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12); return o; };
+    const out = [];
+    for (const [i, f] of V.files.entries()){
+      progress(`Re-locking ${f.title} (${i + 1} of ${V.files.length})…`);
+      const b = await GH.readBase64(`documents/restricted/${f.id}.bin`);
+      if (!b) throw new Error(`documents/restricted/${f.id}.bin is missing.`);
+      out.push({path:`documents/restricted/${f.id}.bin`, base64:bytesB64(await seal(await open(fromB64(b))))});
+    }
+    const vault = {...V, iter:310000, salt:bytesB64(salt), check:bytesB64(await seal(enc.encode("storm-hq-vault-ok")))};
+    out.push({path:"documents/restricted/vault.json", text:JSON.stringify(vault, null, 1) + "\n"});
+    return out;
+  },
+};
+function lockDialog(id){
+  const L = LOCKS[id], known = CFG.locks[id] || "";
+  openDialog(`Change the ${L.label} password`, `
+    <p class="muted">${esc(L.what)}</p>
+    <div class="field"><label class="label" for="lOld">Current password</label><input id="lOld" type="password" autocomplete="off" value="${esc(known)}"></div>
+    <div class="grid2"><div class="field"><label class="label" for="lNew">New password</label><input id="lNew" type="password" minlength="8" autocomplete="new-password"></div>
+      <div class="field"><label class="label" for="lNew2">Type it again</label><input id="lNew2" type="password" autocomplete="new-password"></div></div>
+    <p class="hint">At least 8 characters. Tell everyone who uses it, because the old password stops working once this publishes.</p>
+    <div class="err" id="lErr" role="alert"></div>`,
+    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="lSave" type="button">Change password</button></div>`);
+  dlg.querySelector("#lSave").addEventListener("click", async () => {
+    const err = dlg.querySelector("#lErr"), oldPw = val("lOld"), newPw = val("lNew");
+    if (!$("#pub").hidden){ err.textContent = "Publish or discard your other changes first."; return; }
+    if (newPw.length < 8){ err.textContent = "Use at least 8 characters."; return; }
+    if (newPw !== val("lNew2")){ err.textContent = "The two new passwords don't match."; return; }
+    const btn = dlg.querySelector("#lSave"); btn.disabled = true; err.textContent = "";
+    const progress = t => { btn.textContent = t; };
+    try{
+      progress("Checking…");
+      const files = await REKEY[id](oldPw, newPw, progress);
+      const cfg = {...CFG, locks:{...CFG.locks, [id]:newPw}};
+      files.push({path:"admin/vault.json", text:await sealVault(ADMIN_PW, cfg)});
+      progress("Publishing…");
+      await GH.commit(`Admin: change the ${L.label} password`, files);
+      CFG = cfg; VAULT = JSON.parse(files[files.length - 1].text);
+      dlg.close(); toast("Password changed. It takes effect on the live site in about a minute.", 5000); renderHistory();
+    }catch(x){ err.textContent = x.message || String(x); btn.disabled = false; btn.textContent = "Change password"; }
   });
 }
 

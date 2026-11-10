@@ -68,6 +68,16 @@ On the Hub cards tab, press **Hide** on its card. Hide a tool nobody maintains, 
 
 On the Documents tab, press **Edit** on the card. Air Force publications should be outside links to e-Publishing, so cadets always get the current version. Upload a PDF only for detachment or HQ AFROTC files that have no official link. Keep PDFs under 50 MB.
 
+### Change a site password
+
+Some parts of Storm HQ are locked with their own password: the Documents and Policy plans and OPORDs (the cadet password), Flight Staff Evaluation, and the Cadre Dashboard. To change one:
+
+1. History and settings tab, under **Site passwords**, press **Change** next to it.
+2. Enter the current password and the new one (at least 8 characters), then press **Change password**.
+3. Tell everyone who uses it. The old password stops working when the live site updates, about a minute later.
+
+The page saves each password you set here with the admin settings (locked with the admin password), so the next admin can press **Show** to see it. A password shows "Not saved here yet" until it has been changed once from this page.
+
 ### Undo a mistake
 
 On the History and settings tab, press **Undo** next to the change. Every file that change touched goes back to how it was before it. The undo is a new change too, so you can undo it as well.
@@ -76,8 +86,8 @@ On the History and settings tab, press **Undo** next to the change. Every file t
 
 | When | What | How |
 | --- | --- | --- |
-| Once a year (the key expires) | Replace the GitHub access key | History and settings, then **Replace the GitHub access key**. Make the key the same way as in setup (below). |
-| When someone who knows the password leaves | Change the admin password | History and settings, then **Change the admin password** |
+| When the key expires, or at each handover | Replace the GitHub access key | History and settings, then **Replace the GitHub access key**. Make the key the same way as in setup (below). The current key was made without an expiration, so replace it with the new maintainer's own key at handover, then the old owner deletes theirs on GitHub. |
+| When someone who knows the password leaves | Change the admin password, and the site passwords they knew | History and settings, then **Change the admin password** and the **Site passwords** |
 | At each PCS | Hand over GitHub access | The new maintainer needs edit access to the repository on GitHub (or ownership, if the site moves) |
 
 ### Making a GitHub access key
@@ -103,8 +113,8 @@ These still need someone comfortable with the technical side, or Claude Code wor
 
 - **Peer Feedback codes and back end.** After a roster change, rebuild the codes and the Apps Script with `tools/build-peer-feedback.mjs`, paste the script into the Peer Feedback sheet, and redeploy. Existing cadets keep their codes.
 - **Flight Staff Evaluation roster.** It is inside the password-encrypted page, so it is edited outside the repository and then locked again with `tools/encrypt.mjs`.
-- **Locked plans and OPORDs.** These are encrypted with `tools/encrypt-files.mjs`.
-- **Cadre Dashboard connection settings,** built with `tools/build-cadre-vault.mjs`.
+- **Adding or replacing locked plans and OPORDs.** These are encrypted with `tools/encrypt-files.mjs`. (Changing their password is on the admin page.)
+- **Cadre Dashboard connection settings,** built with `tools/build-cadre-vault.mjs`. (Changing its password is on the admin page.)
 - **Position descriptions** in the Org Chart drawer (`org-chart/position-descriptions.js`), which keep their OPLAN citations.
 - **New tools,** new hub sections and page design.
 
@@ -117,5 +127,5 @@ These still need someone comfortable with the technical side, or Claude Code wor
 | `data/documents.js` | Documents and Policy cards |
 | `org-chart/photos/` | 240 px photos, named by each person's key |
 | `whos-that-cadet/photos/` | 600 px photos for Know Your Wing |
-| `admin/vault.json` | The GitHub access key, locked with the admin password |
+| `admin/vault.json` | The GitHub access key and the saved site passwords, locked with the admin password |
 | `CLAUDE.md` | Full technical notes for the whole site |
