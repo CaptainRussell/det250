@@ -5,6 +5,7 @@
    const gh = D250GitHub({ token, owner, repo, branch })
    gh.check()                      -> repo info; throws a readable error if the key can't write
    gh.readText(path)               -> { text, sha } of a file on the branch (null if missing)
+   gh.readBase64(path)             -> a binary file's bytes as base64 (null if missing)
    gh.commit(message, files)       -> commit sha. files: [{ path, text } | { path, base64 } | { path, remove:true }]
    gh.history(path, n)             -> recent commits that touched path
    gh.undo(sha)                    -> new commit putting every file that commit changed back to its parent's version */
@@ -53,6 +54,12 @@
       const blob = await call(`/git/blobs/${f.sha}`);              // files over 1 MB come back without content
       return { text: b64ToText(blob.content), sha: f.sha };
     }
+    async function readBase64(path) {                          // binary files (encrypted documents)
+      const f = await call(`/contents/${encPath(path)}?ref=${encodeURIComponent(cfg.branch)}`, { allow404: true });
+      if (!f) return null;
+      if (f.content) return f.content.replace(/\s/g, "");
+      return (await call(`/git/blobs/${f.sha}`)).content.replace(/\s/g, "");
+    }
     async function head() {
       const ref = await call(`/git/ref/heads/${encodeURIComponent(cfg.branch)}`);
       const c = await call(`/git/commits/${ref.object.sha}`);
@@ -88,7 +95,7 @@
       const first = (c.commit.message || "").split("\n")[0];
       return commit(`Undo: ${first}`, files);
     }
-    return { check, readText, commit, history, undo, cfg };
+    return { check, readText, readBase64, commit, history, undo, cfg };
   }
   D250GitHub.textToB64 = textToB64;
   root.D250GitHub = D250GitHub;
