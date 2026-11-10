@@ -21,6 +21,9 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
 - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
+## Cadre Admin
+- **Cadre Admin** (`admin/`, admin password): update the roster and photos, org chart positions, hub cards and document links without code. Each Publish is one change on GitHub and can be undone. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
+
 ## Notes
 - Editable data lives in `data/`: `roster.js` (the one detachment roster used by the Org Chart, instructor tools and Peer Feedback) and `hub.js` (the hub cards). Change people and cards there, not in page code.
 - Hosted on GitHub Pages from `main`. Pushed changes go live in a few minutes.
