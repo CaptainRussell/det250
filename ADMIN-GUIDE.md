@@ -15,7 +15,7 @@ Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage
 | Org chart positions | Org Chart (POC chart and Flip Week), Know Your Wing ranks and positions |
 | Hub cards | The Storm HQ home page |
 | Documents | Documents and Policy, and every tool that cites a regulation |
-| Rooms | ODT Room Assignments |
+| Rooms | ODT Room Assignments (every ODT, current and past) |
 
 Every change is kept in the history, so nothing you do is permanent. You can undo any change from the **History and settings** tab.
 
@@ -69,15 +69,25 @@ On the Hub cards tab, press **Hide** on its card. Hide a tool nobody maintains, 
 
 On the Documents tab, press **Edit** on the card. Air Force publications should be outside links to e-Publishing, so cadets always get the current version. Upload a PDF only for detachment or HQ AFROTC files that have no official link. Keep PDFs under 50 MB.
 
-### Change ODT room assignments
+### ODT room assignments
 
-The ODT Room Assignments page shows each room with the cadets' Org Chart photos, ranks and positions. Those come from the roster, so you only pick who is in each room.
+The ODT Room Assignments page keeps one room assignment per ODT. Cadets see the next ODT first, and the **All assignments** tab lists every ODT, upcoming and past. Each room shows the cadets' Org Chart photos, ranks and positions. Those come from the roster, so you only pick who is in each room.
 
-1. Rooms tab. Press **Edit** on a room to change its number, its section (for example "Women" or "Men · POC") or who is in it. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room.
-2. **Add a room** for a new one. A room left with nobody in it is removed.
-3. The arrows move a room up or down within its section. Change the page title or the line under it at the top of the tab.
+**Add a new ODT**
+
+1. Rooms tab, **New assignment**. Enter the name, place, first and last day, and the line under the name (for example "Same Gender Mandatory.").
+2. Under **Start from**, pick an earlier ODT to copy its pairs and then edit them, or start with no rooms.
+3. Press **Add**, change the rooms (below), then publish.
+
+**Change rooms**
+
+1. Pick the ODT in the **Assignment** box. **Edit details** changes its name, dates, place, note or sections. **Remove** deletes it and its rooms.
+2. Press **Edit** on a room to change its number, its section (for example "Women" or "Men · POC") or who is in it. Picking a cadet who is already in another room of that ODT moves them. Leave cadet 2 empty for a bonus (single) room.
+3. **Add a room** for a new one. A room left with nobody in it is removed. The arrows move a room up or down within its section.
 4. The tab warns about anyone who no longer has a room, anyone in two rooms, and rooms that mix POC with GMC. Gender isn't in the roster, so keep each section to one gender yourself.
-5. Publish. Cadets can search for their name on the page, and **Print** makes a two-page paper copy.
+5. Publish. Cadets can search for their name on the page, and **Print** makes a two-page paper copy of the ODT on screen.
+
+Removing a cadet from the roster keeps them in past ODTs (their name is saved), so history stays complete.
 
 ### Change a site password
 
@@ -137,7 +147,7 @@ These still need someone comfortable with the technical side, or Claude Code wor
 | `data/roster.js` | People, positions and flights |
 | `data/hub.js` | Hub cards |
 | `data/documents.js` | Documents and Policy cards |
-| `data/rooms.js` | ODT room assignments |
+| `data/rooms.js` | ODT room assignments, one entry per ODT plus its rooms |
 | `org-chart/photos/` | 240 px photos, named by each person's key |
 | `whos-that-cadet/photos/` | 600 px photos for Know Your Wing |
 | `admin/vault.json` | The GitHub access key and the saved site passwords, locked with the admin password |

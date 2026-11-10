@@ -476,8 +476,8 @@ function personDialog(key){
     delete R().people[key];
     for (const list of [R().flights, R().flightsPoc]) for (const f of Object.keys(list)) list[f] = list[f].filter(k => k !== key);
     delete PHOTOS[key];
-    for (const rm of RM().rooms) rm.cadets = rm.cadets.filter(k => k !== key);
-    RM().rooms = RM().rooms.filter(rm => rm.cadets.length);
+    // keep them in past room assignments: save the name so those pages still show it
+    if (RM().rooms.some(rm => rm.cadets.includes(key))){ RM().former = RM().former || {}; RM().former[key] = p.slice(0, 3); }
     dlg.close(); changed(`Removed ${fullName(p)}`); render();
   });
 }
@@ -761,64 +761,140 @@ function docDialog(i, sec){
 
 /* =====================================================================
    ODT ROOMS  (data/rooms.js, shown on odt-rooms/)
+   events = one per ODT; rooms point at an event by id. The page opens on the next
+   ODT that hasn't ended and lists every event on its All assignments tab.
    ===================================================================== */
 const GMC = c => /^AS(100|200|250|500)$/.test(c);
+const evName = e => e ? e.name || e.id : "";
+function evDates(e){ return [e.start, e.end && e.end !== e.start ? e.end : ""].filter(Boolean).join(" to "); }
+function personRow(k){ const P = R().people, f = (RM().former || {})[k]; return P[k] || f || null; }
 function roomIssues(r){
-  const P = R().people, cls = (r.cadets || []).map(k => (P[k] || [])[2]).filter(Boolean), out = [];
-  if ((r.cadets || []).some(k => !P[k])) out.push("someone here is no longer on the roster");
+  const cls = r.cadets.map(k => (personRow(k) || [])[2]).filter(Boolean), out = [];
+  if (r.cadets.some(k => !personRow(k))) out.push("someone here isn't on the roster");
   if (cls.some(POC) && cls.some(GMC)) out.push("POC with GMC");
   else if (new Set(cls).size > 1) out.push("mixed AS classes");
   return out;
 }
+function curEvent(){
+  const E = RM().events;
+  if (!E.some(e => e.id === UI.ev)){
+    const today = new Date().toISOString().slice(0, 10);
+    const up = E.filter(e => (e.end || e.start || "") >= today).sort((x, y) => (x.start || "").localeCompare(y.start || ""));
+    UI.ev = (up[0] || [...E].sort((x, y) => (y.start || "").localeCompare(x.start || ""))[0] || {}).id || "";
+  }
+  return E.find(e => e.id === UI.ev) || null;
+}
 function renderRooms(){
-  const X = RM(), rooms = X.rooms, secs = [...X.sections]; for (const r of rooms) if (!secs.includes(r.sec)) secs.push(r.sec);
-  const P = R().people, seen = {};
-  for (const r of rooms) for (const k of r.cadets) seen[k] = (seen[k] || 0) + 1;
-  const dup = Object.keys(seen).filter(k => seen[k] > 1);
-  const loose = [...new Set(JSON.parse(F.rooms.orig).rooms.flatMap(r => r.cadets))].filter(k => !seen[k] && P[k]);
-  const n = rooms.reduce((t, r) => t + r.cadets.length, 0);
-  const nextIn = (i, d) => { for (let j = i + d; j >= 0 && j < rooms.length; j += d) if (rooms[j].sec === rooms[i].sec) return j; return -1; };
-  $("#tab-rooms").innerHTML = `
-    <div class="tabhd"><div><h2>ODT rooms</h2><p>The rooms on the <a class="linkbtn" href="../odt-rooms/" target="_blank" rel="noopener">ODT Room Assignments</a> page. Pick cadets from the roster; their photos, ranks and positions fill in on their own. Gender isn't in the roster, so keep each section to one gender yourself.</p></div>
-      <div class="tools"><button class="btn primary" id="addRoom" type="button">Add a room</button></div></div>
-    <div class="panel" style="margin-bottom:14px"><div class="panel-bd grid2">
-      <div class="field"><label class="label" for="rmTitle">Page title</label><input id="rmTitle" type="text" value="${esc(X.title || "")}" placeholder="ODT Room Assignments"></div>
-      <div class="field"><label class="label" for="rmNote">Line under the title</label><input id="rmNote" type="text" value="${esc(X.note || "")}" placeholder="Dates, place, or how rooms were set"></div>
-    </div></div>
-    ${loose.length ? `<div class="note">No room right now: ${esc(loose.map(k => P[k] ? fullName(P[k]) : k).join(", "))}. Edit a room to put them in one.</div>` : ""}
-    ${dup.length ? `<div class="note bad">In more than one room: ${esc(dup.map(k => fullName(P[k])).join(", "))}.</div>` : ""}
-    <p class="hint" style="margin:0 0 10px">${n} cadets in ${rooms.length} rooms. A room with one cadet shows as a bonus room.</p>
-    ${secs.map(s => { const list = rooms.map((r, i) => [r, i]).filter(([r]) => r.sec === s); if (!list.length) return "";
-      return `<h3 class="grp">${esc(s)} <span class="tag">${list.length} rooms</span></h3><div class="list">${list.map(([r, i]) => { const iss = roomIssues(r);
+  const X = RM(), E = X.events, e = curEvent(), P = R().people;
+  const name = k => { const p = personRow(k); return p ? fullName(p) : k; };
+  const sorted = [...E].sort((x, y) => (y.start || "").localeCompare(x.start || ""));
+  let body = `<p class="muted">No assignments yet. Press <b>New assignment</b> to add the first ODT.</p>`;
+  if (e){
+    const idx = X.rooms.map((r, i) => i).filter(i => X.rooms[i].event === e.id), rooms = idx.map(i => X.rooms[i]);
+    const secs = [...e.sections]; for (const r of rooms) if (!secs.includes(r.sec)) secs.push(r.sec);
+    const seen = {}; for (const r of rooms) for (const k of r.cadets) seen[k] = (seen[k] || 0) + 1;
+    const dup = Object.keys(seen).filter(k => seen[k] > 1);
+    const was = JSON.parse(F.rooms.orig).rooms.filter(r => r.event === e.id).flatMap(r => r.cadets);
+    const loose = [...new Set(was)].filter(k => !seen[k] && P[k]);
+    const n = rooms.reduce((t, r) => t + r.cadets.length, 0);
+    const nextIn = (i, d) => { for (let j = i + d; j >= 0 && j < X.rooms.length; j += d) if (X.rooms[j].event === e.id && X.rooms[j].sec === X.rooms[i].sec) return j; return -1; };
+    body = `
+    ${loose.length ? `<div class="note">No room right now: ${esc(loose.map(name).join(", "))}. Edit a room to put them in one.</div>` : ""}
+    ${dup.length ? `<div class="note bad">In more than one room: ${esc(dup.map(name).join(", "))}.</div>` : ""}
+    <p class="hint" style="margin:0 0 10px">${esc(evName(e))}: ${esc([evDates(e), e.place].filter(Boolean).join(" · "))}. ${n} cadets in ${rooms.length} rooms. A room with one cadet shows as a bonus room.</p>
+    ${secs.map(s => { const list = idx.filter(i => X.rooms[i].sec === s); if (!list.length) return "";
+      return `<h3 class="grp">${esc(s)} <span class="tag">${list.length} rooms</span></h3><div class="list">${list.map(i => { const r = X.rooms[i], iss = roomIssues(r);
         return `<div class="item"><span class="tile" style="--tone:#16161a;display:grid;place-items:center;color:#f1be48;font-weight:800;font-size:${String(r.room).length > 3 ? 12 : 17}px">${esc(r.room)}</span>
-          <div class="txt"><div class="t1" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">${r.cadets.map(k => `<span style="display:inline-flex;gap:8px;align-items:center">${face(k, 32)}${esc(P[k] ? fullName(P[k]) : k)}</span>`).join("") || `<span class="t2">Empty</span>`}</div>
-          <div class="t2">${r.cadets.map(k => P[k] ? CLASS_LABEL[P[k][2]] : "?").join(" + ")}${r.cadets.length === 1 ? `<span class="tag gold">Bonus room</span>` : ""}${iss.map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div></div>
-          <div class="acts"><button class="btn small" type="button" data-rup="${i}" ${nextIn(i, -1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} up">↑</button><button class="btn small" type="button" data-rdown="${i}" ${nextIn(i, 1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} down">↓</button><button class="btn small" type="button" data-room="${i}">Edit</button></div></div>`; }).join("")}</div>`; }).join("") || `<p class="muted">No rooms yet. Add one.</p>`}`;
-  const setTxt = (id, k, label) => $(id).addEventListener("change", e => { const v = e.target.value.trim(); if (v !== (X[k] || "")){ X[k] = v; changed(`Rooms: ${label} set to ${v || "(blank)"}`); } });
-  setTxt("#rmTitle", "title", "page title"); setTxt("#rmNote", "note", "line under the title");
-  const move = (i, d) => { const j = nextIn(i, d); if (j < 0) return; [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; changed(`Moved room ${rooms[j].room} ${d < 0 ? "up" : "down"}`); render(); };
-  document.querySelectorAll("[data-rup]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rup, -1)));
-  document.querySelectorAll("[data-rdown]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rdown, 1)));
-  document.querySelectorAll("[data-room]").forEach(b => b.addEventListener("click", () => roomDialog(+b.dataset.room)));
-  $("#addRoom").addEventListener("click", () => roomDialog(-1));
+          <div class="txt"><div class="t1" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">${r.cadets.map(k => `<span style="display:inline-flex;gap:8px;align-items:center">${P[k] ? face(k, 32) : ""}${esc(name(k))}</span>`).join("")}</div>
+          <div class="t2">${r.cadets.map(k => { const p = personRow(k); return p ? CLASS_LABEL[p[2]] || p[2] : "?"; }).join(" + ")}${r.cadets.length === 1 ? `<span class="tag gold">Bonus room</span>` : ""}${iss.map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div></div>
+          <div class="acts"><button class="btn small" type="button" data-rup="${i}" ${nextIn(i, -1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} up">↑</button><button class="btn small" type="button" data-rdown="${i}" ${nextIn(i, 1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} down">↓</button><button class="btn small" type="button" data-room="${i}">Edit</button></div></div>`; }).join("")}</div>`; }).join("") || `<p class="muted">No rooms in this assignment yet. Press <b>Add a room</b>.</p>`}`;
+    renderRooms.move = (i, d) => { const j = nextIn(i, d); if (j < 0) return; [X.rooms[i], X.rooms[j]] = [X.rooms[j], X.rooms[i]]; changed(`${evName(e)}: moved room ${X.rooms[j].room} ${d < 0 ? "up" : "down"}`); render(); };
+  }
+  $("#tab-rooms").innerHTML = `
+    <div class="tabhd"><div><h2>ODT rooms</h2><p>Room assignments on the <a class="linkbtn" href="../odt-rooms/" target="_blank" rel="noopener">ODT Room Assignments</a> page, one assignment per ODT. Cadets see the next ODT first, and every past one stays on the All assignments tab. Pick cadets from the roster; their photos, ranks and positions fill in on their own. Gender isn't in the roster, so keep each section to one gender yourself.</p></div>
+      <div class="tools"><button class="btn" id="addEv" type="button">New assignment</button>${e ? `<button class="btn primary" id="addRoom" type="button">Add a room</button>` : ""}</div></div>
+    <div class="panel" style="margin-bottom:14px"><div class="panel-bd row" style="gap:12px;align-items:flex-end">
+      <div class="field" style="flex:1;min-width:220px"><label class="label" for="rmEv">Assignment</label><select id="rmEv">${sorted.map(x => opt(x.id, `${evName(x)}${x.start ? " (" + x.start + ")" : ""}`, e && x.id === e.id)).join("") || opt("", "None yet", true)}</select></div>
+      ${e ? `<button class="btn" id="editEv" type="button">Edit details</button><button class="btn danger" id="delEv" type="button">Remove</button>` : ""}
+      <div class="field" style="flex:1;min-width:200px"><label class="label" for="rmTitle">Tool name in the header</label><input id="rmTitle" type="text" value="${esc(X.title || "")}" placeholder="ODT Room Assignments"></div>
+    </div></div>
+    ${body}`;
+  $("#rmTitle").addEventListener("change", ev => { const v = ev.target.value.trim(); if (v !== (X.title || "")){ X.title = v; changed(`Rooms: tool name set to ${v || "(blank)"}`); } });
+  $("#rmEv").addEventListener("change", ev => { UI.ev = ev.target.value; saveUI(); render(); });
+  $("#addEv").addEventListener("click", () => eventDialog(null));
+  if (e){
+    $("#editEv").addEventListener("click", () => eventDialog(e.id));
+    $("#delEv").addEventListener("click", () => {
+      const n = X.rooms.filter(r => r.event === e.id).length;
+      if (!confirm(`Remove ${evName(e)} and its ${n} rooms? Cadets won't see it any more, even under All assignments. (You can undo it from the History tab after publishing.)`)) return;
+      X.events = X.events.filter(x => x.id !== e.id); X.rooms = X.rooms.filter(r => r.event !== e.id); UI.ev = ""; saveUI();
+      changed(`Removed the ${evName(e)} room assignment`); render();
+    });
+    $("#addRoom").addEventListener("click", () => roomDialog(-1));
+    document.querySelectorAll("[data-rup]").forEach(b => b.addEventListener("click", () => renderRooms.move(+b.dataset.rup, -1)));
+    document.querySelectorAll("[data-rdown]").forEach(b => b.addEventListener("click", () => renderRooms.move(+b.dataset.rdown, 1)));
+    document.querySelectorAll("[data-room]").forEach(b => b.addEventListener("click", () => roomDialog(+b.dataset.room)));
+  }
+}
+function eventDialog(id){
+  const X = RM(), e = id ? X.events.find(x => x.id === id) : {id:"", name:"", place:"", start:"", end:"", note:"", sections:["Men · POC","Women","Men · GMC"]};
+  const others = [...X.events].sort((x, y) => (y.start || "").localeCompare(x.start || ""));
+  openDialog(id ? `Edit ${evName(e)}` : "New assignment", `
+    <div class="field"><label class="label" for="eName">Name</label><input id="eName" type="text" value="${esc(e.name)}" placeholder="Offutt Dec 3-4 ODT" required></div>
+    <div class="grid3">
+      <div class="field"><label class="label" for="ePlace">Place</label><input id="ePlace" type="text" value="${esc(e.place || "")}" placeholder="Offutt AFB, Nebraska"></div>
+      <div class="field"><label class="label" for="eStart">First day</label><input id="eStart" type="date" value="${esc(e.start || "")}" required></div>
+      <div class="field"><label class="label" for="eEnd">Last day</label><input id="eEnd" type="date" value="${esc(e.end || "")}"></div>
+    </div>
+    <div class="field"><label class="label" for="eNote">Line under the name</label><input id="eNote" type="text" value="${esc(e.note || "")}" placeholder="Same Gender Mandatory."></div>
+    <div class="field"><label class="label" for="eSecs">Sections, in order</label><input id="eSecs" type="text" value="${esc(e.sections.join(", "))}"><p class="hint">Room groups on the page, separated by commas, for example Men · POC, Women, Men · GMC.</p></div>
+    ${id ? "" : `<div class="field"><label class="label" for="eCopy">Start from</label><select id="eCopy">${opt("", "No rooms (add them one by one)", true)}${others.map(x => opt(x.id, `A copy of the ${evName(x)} rooms`, false)).join("")}</select><p class="hint">Copying gives you the same pairs to edit. Cadets who have left the roster are skipped.</p></div>`}`,
+    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="eSave" type="button">${id ? "Save" : "Add"}</button></div>`);
+  dlg.querySelector("#eSave").addEventListener("click", () => {
+    const name = val("eName").trim(), start = val("eStart"), end = val("eEnd") || start;
+    if (!name || !start){ alert("A name and the first day are required."); return; }
+    if (end < start){ alert("The last day is before the first day."); return; }
+    const secs = [...new Set(val("eSecs").split(",").map(x => x.trim()).filter(Boolean))];
+    if (!secs.length){ alert("Add at least one section."); return; }
+    const before = JSON.stringify(e);
+    Object.assign(e, {name, place:val("ePlace").trim(), start, end, note:val("eNote").trim()});
+    // a section that still has rooms stays, at the end
+    const used = X.rooms.filter(r => r.event === e.id).map(r => r.sec);
+    e.sections = [...secs, ...[...new Set(used)].filter(x => !secs.includes(x))];
+    if (!id){
+      let base = slug(name + " " + start.slice(0, 7)), nid = base, i = 2;
+      while (X.events.some(x => x.id === nid)) nid = base + "-" + i++;
+      e.id = nid; X.events.push(e);
+      const from = val("eCopy");
+      if (from){
+        const src = X.rooms.filter(r => r.event === from).map(r => ({event:nid, room:r.room, sec:r.sec, cadets:r.cadets.filter(k => R().people[k])})).filter(r => r.cadets.length);
+        X.rooms.push(...src);
+        for (const r of src) if (!e.sections.includes(r.sec)) e.sections.push(r.sec);
+      }
+      UI.ev = nid; saveUI();
+      changed(`Added the ${name} room assignment${from ? ` (copied from ${evName(X.events.find(x => x.id === from))})` : ""}`);
+    } else if (before !== JSON.stringify(e)) changed(`Updated the ${name} details`);
+    dlg.close(); render();
+  });
 }
 function roomDialog(i){
-  const X = RM(), isNew = i < 0, P = R().people;
-  const nums = X.rooms.map(r => +r.room).filter(n => n > 0);
-  const r = isNew ? {room:String((nums.length ? Math.max(...nums) : 0) + 1), sec:X.sections[0] || "Rooms", cadets:[]} : X.rooms[i];
-  const secs = [...new Set([...X.sections, ...X.rooms.map(x => x.sec)])];
-  const where = {}; X.rooms.forEach((x, j) => { if (j !== i) for (const k of x.cadets) where[k] = x.room; });
-  const cadetOpts = sel => opt("", "(nobody)", !sel) + Object.keys(P).filter(k => P[k][2] !== "Cadre" || k === sel)
-    .sort((a, b) => sortName(P[a]).localeCompare(sortName(P[b])))
-    .map(k => opt(k, `${sortName(P[k])} (${CLASS_LABEL[P[k][2]]})${where[k] ? ` · now in room ${where[k]}` : ""}`, k === sel)).join("");
-  openDialog(isNew ? "Add a room" : `Edit room ${r.room}`, `
+  const X = RM(), e = curEvent(), isNew = i < 0, P = R().people;
+  const mine = X.rooms.filter(r => r.event === e.id), nums = mine.map(r => +r.room).filter(n => n > 0);
+  const r = isNew ? {event:e.id, room:String((nums.length ? Math.max(...nums) : 0) + 1), sec:e.sections[0] || "Rooms", cadets:[]} : X.rooms[i];
+  const secs = [...new Set([...e.sections, ...mine.map(x => x.sec)])];
+  const where = {}; for (const x of mine) if (x !== r) for (const k of x.cadets) where[k] = x.room;
+  const name = k => { const p = personRow(k); return p ? fullName(p) : k; };
+  const cadetOpts = sel => opt("", "(nobody)", !sel) + [...new Set([...Object.keys(P).filter(k => P[k][2] !== "Cadre"), ...(sel ? [sel] : [])])]
+    .sort((a, b) => sortName(personRow(a) || [a, ""]).localeCompare(sortName(personRow(b) || [b, ""])))
+    .map(k => { const p = personRow(k) || [k, "", ""]; return opt(k, `${sortName(p)} (${CLASS_LABEL[p[2]] || p[2] || "not on roster"})${where[k] ? ` · now in room ${where[k]}` : ""}`, k === sel); }).join("");
+  openDialog(isNew ? `Add a room to ${evName(e)}` : `Edit room ${r.room}`, `
     <div class="grid2">
       <div class="field"><label class="label" for="rRoom">Room number or name</label><input id="rRoom" type="text" value="${esc(r.room)}" required></div>
-      <div class="field"><label class="label" for="rSec">Section</label><select id="rSec">${secs.map(s => opt(s, s, s === r.sec)).join("")}${opt("__new", "New section…", false)}</select></div>
+      <div class="field"><label class="label" for="rSec">Section</label><select id="rSec">${secs.map(x => opt(x, x, x === r.sec)).join("")}${opt("__new", "New section…", false)}</select></div>
     </div>
     <div class="field" id="rNewWrap" hidden><label class="label" for="rNew">New section name</label><input id="rNew" type="text" placeholder="Women · POC"></div>
     ${[0,1,2,3].map(n => `<div class="field"><label class="label" for="rC${n}">Cadet ${n + 1}${n > 1 ? " (optional)" : ""}</label><select id="rC${n}">${cadetOpts(r.cadets[n] || "")}</select></div>`).join("")}
-    <p class="hint">Picking someone who is already in another room moves them here. Leave cadet 2 empty for a bonus (single) room.</p>`,
+    <p class="hint">Picking someone who is already in another room of this ODT moves them here. Leave cadet 2 empty for a bonus (single) room.</p>`,
     `${isNew ? "" : `<button class="btn danger" id="rDel" type="button">Remove room</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="rSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
   const secSel = dlg.querySelector("#rSec"); secSel.addEventListener("change", () => { $("#rNewWrap").hidden = secSel.value !== "__new"; });
   dlg.querySelector("#rSave").addEventListener("click", () => {
@@ -827,27 +903,26 @@ function roomDialog(i){
     const cadets = [...new Set([0,1,2,3].map(n => val("rC" + n)).filter(Boolean))];
     if (!label || !sec){ alert("A room number and a section are required."); return; }
     if (!cadets.length){ alert("Pick at least one cadet, or remove the room."); return; }
-    if (X.rooms.some((x, j) => j !== i && String(x.room) === label) && !confirm(`There is already a room ${label}. Use the same number anyway?`)) return;
+    if (mine.some(x => x !== r && String(x.room) === label) && !confirm(`There is already a room ${label}. Use the same number anyway?`)) return;
     const moved = cadets.filter(k => where[k]);
-    for (const x of X.rooms) if (x !== r) x.cadets = x.cadets.filter(k => !cadets.includes(k));
+    for (const x of mine) if (x !== r) x.cadets = x.cadets.filter(k => !cadets.includes(k));
     const before = JSON.stringify(r);
     r.room = label; r.sec = sec; r.cadets = cadets;
-    if (!X.sections.includes(sec)) X.sections.push(sec);
+    if (!e.sections.includes(sec)) e.sections.push(sec);
     if (isNew) X.rooms.push(r);
-    for (const x of X.rooms) if (!x.cadets.length) changed(`Removed room ${x.room} (now empty)`);
+    for (const x of mine) if (x !== r && !x.cadets.length) changed(`${evName(e)}: removed room ${x.room} (now empty)`);
     X.rooms = X.rooms.filter(x => x.cadets.length);
-    X.sections = X.sections.filter(s => X.rooms.some(x => x.sec === s));
-    const names = cadets.map(k => fullName(P[k])).join(" and ");
-    if (isNew) changed(`Added room ${label}: ${names}`);
-    else if (before !== JSON.stringify(r)) changed(`Room ${label}: ${names}`);
-    if (moved.length) changed(`Moved ${moved.map(k => fullName(P[k])).join(", ")} to room ${label}`);
+    const names = cadets.map(name).join(" and ");
+    if (isNew) changed(`${evName(e)}: added room ${label}, ${names}`);
+    else if (before !== JSON.stringify(r)) changed(`${evName(e)}: room ${label}, ${names}`);
+    if (moved.length) changed(`${evName(e)}: moved ${moved.map(name).join(", ")} to room ${label}`);
     dlg.close(); render();
   });
   const del = dlg.querySelector("#rDel");
   if (del) del.addEventListener("click", () => {
-    if (!confirm(`Remove room ${r.room}? ${r.cadets.map(k => fullName(P[k])).join(" and ") || "Nobody"} will have no room.`)) return;
-    X.rooms.splice(i, 1); X.sections = X.sections.filter(s => X.rooms.some(x => x.sec === s));
-    dlg.close(); changed(`Removed room ${r.room}`); render();
+    if (!confirm(`Remove room ${r.room}? ${r.cadets.map(name).join(" and ")} will have no room.`)) return;
+    X.rooms.splice(i, 1);
+    dlg.close(); changed(`${evName(e)}: removed room ${r.room}`); render();
   });
 }
 
