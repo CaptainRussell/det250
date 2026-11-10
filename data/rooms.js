@@ -7,8 +7,8 @@
              sections), cadets (1 to 4 roster keys from data/roster.js; photos, ranks and
              positions come from the roster). A room with one cadet shows as a bonus room. */
 window.D250_ROOMS = {
-"title": "ODT Room Assignments",
-"note": "Same gender in every room, then POC with POC and GMC with GMC, then same AS class.",
+"title": "Offutt Dec 3-4 ODT",
+"note": "Same Gender Mandatory.",
 "sections": [
   "Men · POC",
   "Women",
