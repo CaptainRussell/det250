@@ -764,14 +764,14 @@ async function renderHistory(){
     <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards and documents. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
     <div class="list hist" id="hist"><p class="muted">Loading…</p></div>
     <h3 class="grp" style="margin-top:28px">Site passwords</h3>
-    <p class="hint" style="margin:0 0 10px">The passwords cadets and cadre type to open locked parts of Storm HQ. Changing one locks the files again with the new password; the old one stops working about a minute later. Once changed here, each password is saved (encrypted) with the admin settings so the next admin can see it.</p>
+    <p class="hint" style="margin:0 0 10px">The passwords cadets and cadre type to open locked parts of Storm HQ. Any admin can see or change them here without knowing the old one. Changing one locks the files again with the new password; the old one stops working about a minute later. The Cadre Dashboard always uses the admin password, so it changes with it.</p>
     <div class="list">${Object.entries(LOCKS).map(([id, L]) => `
       <div class="item"><div class="txt"><div class="t1">${esc(L.label)}</div><div class="t2">${esc(L.what)}</div>
-        <div class="t2" id="lk-${id}">${CFG.locks[id] ? `Password: <span class="mono" data-secret="${esc(CFG.locks[id])}">••••••••</span> <button class="linkbtn" type="button" data-show="${id}">Show</button>` : "Not saved here yet. Change it once to save it."}</div></div>
-        <div class="acts"><button class="btn small" type="button" data-lock="${id}">Change</button></div></div>`).join("")}</div>
+        <div class="t2" id="lk-${id}">${id === "cadre" ? "Same as the admin password. Change the admin password below to change it." : CFG.locks[id] ? `Password: <span class="mono" data-secret="${esc(CFG.locks[id])}">••••••••</span> <button class="linkbtn" type="button" data-show="${id}">Show</button>` : "Not saved here yet. Enter it once, and from then on any admin can change it without knowing it."}</div></div>
+        <div class="acts">${id === "cadre" ? "" : `${CFG.locks[id] ? "" : `<button class="btn small" type="button" data-save="${id}">Enter it once</button>`}<button class="btn small" type="button" data-lock="${id}">Change</button>`}</div></div>`).join("")}</div>
     <h3 class="grp" style="margin-top:28px">Admin settings</h3>
     <div class="list">
-      <div class="item"><div class="txt"><div class="t1">Change the admin password</div><div class="t2">Do this whenever someone who knew it leaves.</div></div><div class="acts"><button class="btn small" type="button" id="chgPw">Change</button></div></div>
+      <div class="item"><div class="txt"><div class="t1">Change the admin password</div><div class="t2">Do this whenever someone who knew it leaves. The Cadre Dashboard password changes with it.</div></div><div class="acts"><button class="btn small" type="button" id="chgPw">Change</button></div></div>
       <div class="item"><div class="txt"><div class="t1">Replace the GitHub access key</div><div class="t2">When publishing says the key expired, or a new person takes over the site, make a new key the same way as in setup and paste it here. Use this too after the site moves to a new GitHub home.</div></div><div class="acts"><button class="btn small" type="button" id="chgKey">Replace</button></div></div>
     </div>`;
   $("#chgPw").addEventListener("click", () => vaultDialog(false));
@@ -780,6 +780,7 @@ async function renderHistory(){
     sp.textContent = shown ? "••••••••" : sp.dataset.secret; b.textContent = shown ? "Show" : "Hide";
   }));
   document.querySelectorAll("[data-lock]").forEach(b => b.addEventListener("click", () => lockDialog(b.dataset.lock)));
+  document.querySelectorAll("[data-save]").forEach(b => b.addEventListener("click", () => lockDialog(b.dataset.save, true)));
   $("#chgKey").addEventListener("click", () => vaultDialog(true));
   try{
     const list = await GH.history("data", 15);
@@ -804,20 +805,28 @@ function vaultDialog(newKey){
       <div class="field"><label class="label" for="vBranch">Branch</label><input id="vBranch" type="text" value="${esc(GH.cfg.branch)}"></div></div>` : ""}
     <div class="grid2"><div class="field"><label class="label" for="vPw">${newKey ? "Admin password" : "New admin password"}</label><input id="vPw" type="password" minlength="10" autocomplete="new-password"></div>
       <div class="field"><label class="label" for="vPw2">Type it again</label><input id="vPw2" type="password" autocomplete="new-password"></div></div>
-    <p class="hint">At least 10 characters.</p><div class="err" id="vErr" role="alert"></div>`,
+    <p class="hint">At least 10 characters. The Cadre Dashboard password changes to match.</p><div class="err" id="vErr" role="alert"></div>`,
     `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="vSave" type="button">Save</button></div>`);
   dlg.querySelector("#vSave").addEventListener("click", async () => {
     const err = dlg.querySelector("#vErr"), pw = val("vPw");
     if (pw.length < 10){ err.textContent = "Use at least 10 characters."; return; }
     if (pw !== val("vPw2")){ err.textContent = "The two passwords don't match."; return; }
-    const cfg = newKey ? {token:val("vTok").trim(), owner:val("vOwner").trim(), repo:val("vRepo").trim(), branch:val("vBranch").trim(), locks:CFG.locks} : CFG;
+    const base = newKey ? {token:val("vTok").trim(), owner:val("vOwner").trim(), repo:val("vRepo").trim(), branch:val("vBranch").trim()} : CFG;
+    const cfg = {...base, locks:{...CFG.locks}};
     const btn = dlg.querySelector("#vSave"); btn.disabled = true; btn.textContent = "Saving…";
     try{
       const gh = D250GitHub(cfg); await gh.check();
+      const files = [];
+      if (pw !== ADMIN_PW){                     // the Cadre Dashboard uses the admin password: re-lock it too
+        btn.textContent = "Updating the Cadre Dashboard…";
+        try{ files.push(...await REKEY.cadre(CFG.locks.cadre || ADMIN_PW, pw, null, gh)); cfg.locks.cadre = pw; }
+        catch(x){ if (x.message !== WRONG) throw x; }   // dashboard on a different password: leave it alone
+      }
       const text = await sealVault(pw, cfg);
-      await gh.commit(newKey ? "Admin: replace the GitHub access key" : "Admin: change the admin password", [{path:"admin/vault.json", text}]);
+      files.push({path:"admin/vault.json", text});
+      await gh.commit(newKey ? "Admin: replace the GitHub access key" : "Admin: change the admin password", files);
       GH = gh; CFG = cfg; ADMIN_PW = pw; VAULT = JSON.parse(text); try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
-      dlg.close(); toast("Saved. Use the new password from now on.", 5000);
+      dlg.close(); toast("Saved. Use the new password from now on.", 5000); renderHistory();
     }catch(x){ err.textContent = x.message; btn.disabled = false; btn.textContent = "Save"; }
   });
 }
@@ -843,9 +852,10 @@ async function openRaw(pw, v){
 }
 const WRONG = "The current password is wrong.";
 const REKEY = {
-  async cadre(oldPw, newPw){
-    const f = await GH.readText("cadre/vault.json");
+  async cadre(oldPw, newPw, _p, gh = GH){
+    const f = await gh.readText("cadre/vault.json");
     let plain; try{ plain = await openRaw(oldPw, JSON.parse(f.text)); }catch(_){ throw new Error(WRONG); }
+    if (newPw == null) return [];
     return [{path:"cadre/vault.json", text:JSON.stringify(await sealRaw(newPw, plain), null, 1) + "\n"}];
   },
   async fse(oldPw, newPw){
@@ -853,6 +863,7 @@ const REKEY = {
     const m = /const P = (\{"v":1[^;]*?\});/.exec(f.text);
     if (!m) throw new Error("Couldn't find the locked page data in flight-staff-eval/index.html.");
     let plain; try{ plain = await openRaw(oldPw, JSON.parse(m[1])); }catch(_){ throw new Error(WRONG); }
+    if (newPw == null) return [];
     const text = f.text.slice(0, m.index) + "const P = " + JSON.stringify(await sealRaw(newPw, plain)) + ";" + f.text.slice(m.index + m[0].length);
     return [{path:"flight-staff-eval/index.html", text}];
   },
@@ -861,6 +872,7 @@ const REKEY = {
     const oldKey = await deriveKey(oldPw, fromB64(V.salt), V.iter, "decrypt");
     const open = async u => new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:u.subarray(0, 12)}, oldKey, u.subarray(12)));
     try{ await open(fromB64(V.check)); }catch(_){ throw new Error(WRONG); }
+    if (newPw == null) return [];
     const salt = crypto.getRandomValues(new Uint8Array(16)), newKey = await deriveKey(newPw, salt, 310000, "encrypt");
     const seal = async bytes => { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, newKey, bytes)); const o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12); return o; };
     const out = [];
@@ -875,33 +887,40 @@ const REKEY = {
     return out;
   },
 };
-function lockDialog(id){
+function lockDialog(id, saveOnly){
   const L = LOCKS[id], known = CFG.locks[id] || "";
-  openDialog(`Change the ${L.label} password`, `
+  const askOld = !known;
+  openDialog(saveOnly ? `Enter the ${L.label} password` : `Change the ${L.label} password`, `
     <p class="muted">${esc(L.what)}</p>
-    <div class="field"><label class="label" for="lOld">Current password</label><input id="lOld" type="password" autocomplete="off" value="${esc(known)}"></div>
-    <div class="grid2"><div class="field"><label class="label" for="lNew">New password</label><input id="lNew" type="password" minlength="8" autocomplete="new-password"></div>
+    ${askOld ? `<div class="field"><label class="label" for="lOld">Current password</label><input id="lOld" type="password" autocomplete="off"></div>
+    <p class="hint">${saveOnly ? "The page checks it against the locked files and saves it, so no admin needs to know it after this." : "Needed only this once. After this the page remembers it."}</p>` : ""}
+    ${saveOnly ? "" : `<div class="grid2"><div class="field"><label class="label" for="lNew">New password</label><input id="lNew" type="password" minlength="8" autocomplete="new-password"></div>
       <div class="field"><label class="label" for="lNew2">Type it again</label><input id="lNew2" type="password" autocomplete="new-password"></div></div>
-    <p class="hint">At least 8 characters. Tell everyone who uses it, because the old password stops working once this publishes.</p>
+    <p class="hint">At least 8 characters. Tell everyone who uses it, because the old password stops working once this publishes.</p>`}
     <div class="err" id="lErr" role="alert"></div>`,
-    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="lSave" type="button">Change password</button></div>`);
+    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="lSave" type="button">${saveOnly ? "Save" : "Change password"}</button></div>`);
+  const label = saveOnly ? "Save" : "Change password";
   dlg.querySelector("#lSave").addEventListener("click", async () => {
-    const err = dlg.querySelector("#lErr"), oldPw = val("lOld"), newPw = val("lNew");
+    const err = dlg.querySelector("#lErr"), oldPw = askOld ? val("lOld") : known, newPw = saveOnly ? null : val("lNew");
     if (!$("#pub").hidden){ err.textContent = "Publish or discard your other changes first."; return; }
-    if (newPw.length < 8){ err.textContent = "Use at least 8 characters."; return; }
-    if (newPw !== val("lNew2")){ err.textContent = "The two new passwords don't match."; return; }
+    if (!oldPw){ err.textContent = "Enter the current password."; return; }
+    if (!saveOnly){
+      if (newPw.length < 8){ err.textContent = "Use at least 8 characters."; return; }
+      if (newPw !== val("lNew2")){ err.textContent = "The two new passwords don't match."; return; }
+    }
     const btn = dlg.querySelector("#lSave"); btn.disabled = true; err.textContent = "";
     const progress = t => { btn.textContent = t; };
     try{
       progress("Checking…");
       const files = await REKEY[id](oldPw, newPw, progress);
-      const cfg = {...CFG, locks:{...CFG.locks, [id]:newPw}};
-      files.push({path:"admin/vault.json", text:await sealVault(ADMIN_PW, cfg)});
+      const cfg = {...CFG, locks:{...CFG.locks, [id]:saveOnly ? oldPw : newPw}};
+      const vault = await sealVault(ADMIN_PW, cfg);
+      files.push({path:"admin/vault.json", text:vault});
       progress("Publishing…");
-      await GH.commit(`Admin: change the ${L.label} password`, files);
-      CFG = cfg; VAULT = JSON.parse(files[files.length - 1].text);
-      dlg.close(); toast("Password changed. It takes effect on the live site in about a minute.", 5000); renderHistory();
-    }catch(x){ err.textContent = x.message || String(x); btn.disabled = false; btn.textContent = "Change password"; }
+      await GH.commit(saveOnly ? `Admin: save the ${L.label} password` : `Admin: change the ${L.label} password`, files);
+      CFG = cfg; VAULT = JSON.parse(vault);
+      dlg.close(); toast(saveOnly ? "Saved. Any admin can now change it without knowing it." : "Password changed. It takes effect on the live site in about a minute.", 5000); renderHistory();
+    }catch(x){ err.textContent = x.message || String(x); btn.disabled = false; btn.textContent = label; }
   });
 }
 
