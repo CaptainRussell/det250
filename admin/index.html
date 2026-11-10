@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cadre Admin · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+.wrap,.d250-head{--d250-measure:1100px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+input[type="password"],input[type="url"],input[type="search"],input[type="text"]{background:var(--d250-page);color:var(--d250-ink);border:1px solid var(--d250-line-strong);border-radius:9px;padding:8px 10px;min-height:40px;width:100%}
+select{min-height:40px;width:100%}
+textarea.short{min-height:84px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field .hint{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+
+/* lock + setup (same look as the Cadre Dashboard lock) */
+.lockwrap{min-height:calc(100vh - 360px);display:grid;place-items:center;padding:32px 0}
+.lock{width:min(420px,100%);background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:18px;padding:28px 24px 24px;text-align:center;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:pop .45s var(--d250-ease) both}
+.lock.wide{width:min(620px,100%);text-align:left}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.lock img.patch{width:84px;height:auto;display:block;margin:0 auto}
+.lock h2{font-size:20px;margin:12px 0 4px;text-align:center}
+.lock p{color:var(--d250-soft);font-size:14px}
+.lock form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.lock .btn{min-height:46px}
+.lock ol{margin:12px 0 0;padding-left:20px;color:var(--d250-soft);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.lock ol b{color:var(--d250-ink)}
+.lock a{color:var(--d250-gold)}
+.err{min-height:20px;color:var(--d250-cardinal);font-size:13px;font-weight:600}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* tabs */
+.topbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.seg{display:inline-flex;background:var(--d250-surface-2);border:1px solid var(--d250-line-strong);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:9px;padding:7px 14px;font-weight:700;color:var(--d250-soft);cursor:pointer;min-height:38px}
+.seg button:hover{color:var(--d250-ink)}
+.seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
+.who{font-size:12.5px;color:var(--d250-soft);display:flex;gap:10px;align-items:center}
+.note{background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
+.note.bad{background:color-mix(in srgb,var(--d250-cardinal) 15%,transparent);color:var(--d250-cardinal)}
+.tabhd{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 14px;margin:0 0 12px}
+.tabhd h2{font-size:20px;font-weight:800}
+.tabhd p{color:var(--d250-soft);font-size:14px;max-width:640px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools input[type="search"]{width:220px}
+.tools select{width:auto}
+h3.grp{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft);margin:18px 2px 8px}
+
+/* list rows */
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:12px;min-width:0}
+.item.changed{border-color:var(--d250-gold)}
+.item.off{opacity:.55}
+.item .txt{flex:1;min-width:0}
+.item .t1{font-weight:700;overflow-wrap:anywhere}
+.item .t2{font-size:12.5px;color:var(--d250-soft);overflow-wrap:anywhere}
+.item .acts{display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;background:var(--d250-surface-2);color:var(--d250-soft);margin-left:6px;vertical-align:1px}
+.tag.gold{background:var(--d250-gold-bg);color:var(--d250-gold)}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.docico{flex:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:#fff;background:var(--tone,#475569)}
+.tile{flex:none;width:40px;height:40px;border-radius:10px;background:var(--tone,#475569)}
+
+/* publish bar */
+.pub{position:sticky;bottom:0;z-index:40;margin-top:18px;padding:12px 16px;background:var(--d250-surface);border:1px solid var(--d250-gold);border-radius:14px 14px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.3);display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.pub b{color:var(--d250-gold)}
+.pub ul{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--d250-soft);max-height:84px;overflow:auto}
+
+/* dialog */
+dialog{border:1px solid var(--d250-line);border-radius:16px;background:var(--d250-surface);color:var(--d250-ink);padding:0;width:min(620px,calc(100vw - 32px));max-height:calc(100vh - 40px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dl-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--d250-line)}
+.dl-hd h3{font-size:18px;font-weight:800}
+.dl-hd .x{margin-left:auto}
+.dl-bd{padding:16px;display:flex;flex-direction:column;gap:14px}
+.dl-ft{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--d250-line)}
+.dl-ft .r{display:flex;gap:8px;margin-left:auto}
+
+/* photo cropper */
+.crop{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.crop canvas{width:200px;height:200px;border-radius:50%;background:var(--d250-surface-2);touch-action:none;cursor:grab;border:3px solid var(--d250-line-strong)}
+.crop canvas:active{cursor:grabbing}
+.crop .side{flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px}
+input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
+
+/* history */
+.hist .t2 a{color:var(--d250-gold)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);opacity:0;background:var(--d250-ink);color:var(--d250-page);padding:10px 16px;border-radius:10px;font-weight:700;transition:opacity .3s;pointer-events:none;z-index:80;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{opacity:1}
+
+@media (max-width:700px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .topbar{flex-direction:column;align-items:stretch}
+  .seg button{flex:1 1 auto}
+  .tools input[type="search"]{width:100%}
+  .tools,.tools select{width:100%}
+  .item{flex-wrap:wrap}
+  .item .acts{width:100%;justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<header class="d250-head" style="--tone:#475569">
+  <div class="d250-head-in">
+    <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/det250-patch-icon.png" alt="" width="56" height="56"></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
+      <h1>Cadre Admin</h1>
+      <p class="d250-head-sub">Update the roster, photos, org chart, hub cards and document links without touching code.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <p class="muted" id="loading" style="text-align:center;padding:40px 0">Loading…</p>
+
+  <!-- First time: no admin vault yet -->
+  <div class="lockwrap" id="setupwrap" hidden>
+    <div class="lock wide" id="setup">
+      <img class="patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch">
+      <h2>Set up Cadre Admin</h2>
+      <p>Do this once. Storm HQ is stored on GitHub, so the admin page needs a GitHub access key that can change the site. You lock that key behind an admin password, and cadre then sign in with only the password.</p>
+      <ol>
+        <li>Sign in to GitHub with the account that owns the site, then open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">New fine-grained token</a>.</li>
+        <li>Name it <b>Storm HQ admin</b>, set an expiration (up to 1 year), and under <b>Repository access</b> pick <b>Only select repositories</b> and the Storm HQ repository.</li>
+        <li>Under <b>Permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Nothing else is needed.</li>
+        <li>Generate the token, copy it and paste it below.</li>
+      </ol>
+      <form id="setupForm" autocomplete="off">
+        <div class="field"><label class="label" for="sToken">GitHub access key</label><input id="sToken" type="password" required autocomplete="off" spellcheck="false"></div>
+        <div class="grid3">
+          <div class="field"><label class="label" for="sOwner">Owner</label><input id="sOwner" type="text" required value="CaptainRussell" spellcheck="false"></div>
+          <div class="field"><label class="label" for="sRepo">Repository</label><input id="sRepo" type="text" required value="det250" spellcheck="false"></div>
+          <div class="field"><label class="label" for="sBranch">Branch</label><input id="sBranch" type="text" required value="main" spellcheck="false"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="label" for="sPw">Admin password</label><input id="sPw" type="password" required minlength="10" autocomplete="new-password"></div>
+          <div class="field"><label class="label" for="sPw2">Type it again</label><input id="sPw2" type="password" required autocomplete="new-password"></div>
+        </div>
+        <p class="hint">At least 10 characters. Share it only with cadre who maintain Storm HQ.</p>
+        <div class="err" id="setupErr" role="alert"></div>
+        <button class="btn primary" id="setupGo" type="submit">Save and sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sign in -->
+  <div class="lockwrap" id="lockwrap" hidden>
+    <div class="lock" id="lock">
+      <img class="patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch">
+      <h2>Cadre Admin</h2>
+      <p>Cadre only. Enter the admin password to edit Storm HQ.</p>
+      <form id="f" autocomplete="off">
+        <label class="label" for="pw">Admin password</label>
+        <input id="pw" type="password" required autocomplete="current-password">
+        <div class="err" id="err" role="alert"></div>
+        <button class="btn primary" id="go" type="submit">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="topbar">
+      <div class="seg" role="group" aria-label="What to edit">
+        <button type="button" data-tab="people" aria-pressed="true">People</button>
+        <button type="button" data-tab="chart" aria-pressed="false">Org chart</button>
+        <button type="button" data-tab="hub" aria-pressed="false">Hub cards</button>
+        <button type="button" data-tab="docs" aria-pressed="false">Documents</button>
+        <button type="button" data-tab="history" aria-pressed="false">History and settings</button>
+      </div>
+      <div class="who"><span id="repoLine"></span><a class="linkbtn" id="guideLink" href="#" target="_blank" rel="noopener">Admin guide</a><button class="linkbtn" id="signOut" type="button">Sign out</button></div>
+    </div>
+    <div id="msg"></div>
+    <section id="tab-people"></section>
+    <section id="tab-chart" hidden></section>
+    <section id="tab-hub" hidden></section>
+    <section id="tab-docs" hidden></section>
+    <section id="tab-history" hidden></section>
+    <div class="pub" id="pub" hidden>
+      <div><b id="pubCount"></b><ul id="pubList"></ul></div>
+      <div class="row"><button class="btn" id="discard" type="button">Discard</button><button class="btn primary" id="publish" type="button">Publish to the live site</button></div>
+    </div>
+  </div>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Cadre tool. Every Publish is saved as one change in the site's GitHub history, and any change can be undone from the History tab. The live site updates about a minute later.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../data/documents.js"></script>
+<script src="../documents/library.js"></script>
+<script src="datafile.js"></script>
+<script src="github.js"></script>
+<script>
+/* =====================================================================
+   Cadre Admin. Edits the data files in data/ (roster, hub cards, documents)
+   plus photos and PDFs, then publishes them to GitHub as one commit.
+   The GitHub access key is encrypted in admin/vault.json with the admin
+   password (PBKDF2-SHA256 310k -> AES-256-GCM, the same as the Cadre
+   Dashboard vault). Everything else on this page is public code.
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PASS_KEY = "d250-admin-pass", UI_KEY = "d250-admin-ui-v1";
+const FILES = { roster:"data/roster.js", hub:"data/hub.js", docs:"data/documents.js" };
+const CLASSES = ["AS100","AS200","AS250","AS500","AS300","AS400","Graybeard","Cadre"];
+const CLASS_LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS500:"AS 500",AS300:"AS 300",AS400:"AS 400",Graybeard:"Graybeard",Cadre:"Cadre"};
+const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",AS500:"r500",Graybeard:"rgb"};
+const POC = c => c === "AS300" || c === "AS400" || c === "Graybeard";
+const FLIGHTS = [["afl","Alpha"],["bfl","Bravo"],["cfl","Charlie"],["dfl","Delta"]];
+const CADET_RANKS = ["C/Col","C/Lt Col","C/Maj","C/Capt","C/1st Lt","C/2d Lt","C/3C","C/4C"];
+const CADRE_RANKS = ["Col","Lt Col","Maj","Capt","1st Lt","2d Lt","CMSgt","SMSgt","MSgt","TSgt","SSgt","SrA","Mr.","Ms.","Mrs.","Dr."];
+const SECTION_LABEL = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
+
+let UI = {tab:"people", q:"", cls:"all"};
+try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || "{}")); }catch(_){}
+const saveUI = () => { try{ localStorage.setItem(UI_KEY, JSON.stringify(UI)); }catch(_){} };
+
+let GH = null;          // GitHub client
+let F = {};             // name -> { path, sha, file (parsed head/name), orig (JSON string), data }
+let PHOTOS = {};        // person key -> { small, large (base64 JPEG), url (preview) }
+let UPLOADS = {};       // repo path -> { base64, name }
+let LOG = [];           // what changed, in words (for the publish bar and the commit message)
+
+/* ---------- small helpers ---------- */
+function toast(t, ms = 3200){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), ms); }
+function note(html, bad){ $("#msg").innerHTML = html ? `<div class="note${bad ? " bad" : ""}" role="status">${html}</div>` : ""; }
+const R = () => F.roster.data, H = () => F.hub.data, D = () => F.docs.data;
+const fullName = p => p ? (p[1] ? `${p[1]} ${p[0]}` : p[0]) : "(nobody)";
+const sortName = p => `${p[0]}, ${p[1]}`;
+function changed(what){ LOG.push(what); renderPub(); }
+function slug(s){ return String(s).toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "item"; }
+function photoURL(key){ return PHOTOS[key] ? PHOTOS[key].url : `../org-chart/photos/${encodeURIComponent(key)}.jpg`; }
+function face(key, size = 40){
+  const p = R().people[key]; const ini = p ? ((p[1] || "")[0] || "") + (p[0][0] || "") : "?";
+  return `<span class="d250-face ${p ? RING[p[2]] || "" : ""}" style="--sz:${size}px" aria-hidden="true"><b>${esc(ini.toUpperCase())}</b><img src="${esc(photoURL(key))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+function svgIcon(k){ const s = (window.D250_DOC_ICONS || {})[k]; return s ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${s}</svg>` : ""; }
+
+/* ---------- vault ---------- */
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const toB64 = u => { let s = ""; for (const x of u) s += String.fromCharCode(x); return btoa(s); };
+async function deriveKey(pw, salt, iter, use){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, [use]);
+}
+async function openVault(pw, v){
+  const key = await deriveKey(pw, b64(v.salt), v.iter, "decrypt");
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(v.iv)}, key, b64(v.data))));
+}
+async function sealVault(pw, cfg){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 310000;
+  const key = await deriveKey(pw, salt, iter, "encrypt");
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(JSON.stringify(cfg))));
+  return JSON.stringify({v:1, iter, salt:toB64(salt), iv:toB64(iv), data:toB64(ct)}, null, 1) + "\n";
+}
+let VAULT = null;
+async function start(){
+  try{
+    const r = await fetch("vault.json", {cache:"no-store"});
+    VAULT = r.ok ? await r.json() : null;
+  }catch(_){ VAULT = null; }
+  $("#loading").hidden = true;
+  if (!VAULT){ $("#setupwrap").hidden = false; return; }
+  let saved = ""; try{ saved = sessionStorage.getItem(PASS_KEY) || ""; }catch(_){}
+  if (saved){ try{ await signIn(saved); return; }catch(_){ try{ sessionStorage.removeItem(PASS_KEY); }catch(__){} } }
+  $("#lockwrap").hidden = false; $("#pw").focus();
+}
+function shake(id){ const l = $(id); l.classList.remove("shake"); void l.offsetWidth; l.classList.add("shake"); }
+$("#f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const go = $("#go"); $("#err").textContent = ""; go.disabled = true; go.textContent = "Signing in…";
+  try{ await signIn($("#pw").value); }
+  catch(x){ $("#err").textContent = x && x.status ? x.message : "That password didn't work. Try again."; shake("#lock"); }
+  finally{ go.disabled = false; go.textContent = "Sign in"; }
+});
+$("#setupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#setupErr"), go = $("#setupGo"); err.textContent = "";
+  if ($("#sPw").value !== $("#sPw2").value){ err.textContent = "The two passwords don't match."; shake("#setup"); return; }
+  go.disabled = true; go.textContent = "Checking the key…";
+  const cfg = {token:$("#sToken").value.trim(), owner:$("#sOwner").value.trim(), repo:$("#sRepo").value.trim(), branch:$("#sBranch").value.trim()};
+  try{
+    const gh = D250GitHub(cfg); await gh.check();
+    const existing = await gh.readText("admin/vault.json");
+    if (existing){ throw new Error("An admin password is already set for this site. Sign in instead (reload the page)."); }
+    go.textContent = "Saving…";
+    const text = await sealVault($("#sPw").value, cfg);
+    await gh.commit("Admin: set up Cadre Admin", [{path:"admin/vault.json", text}]);
+    VAULT = JSON.parse(text);
+    await signIn($("#sPw").value);
+    toast("Cadre Admin is set up. You're signed in.");
+  }catch(x){ err.textContent = x.message || String(x); shake("#setup"); }
+  finally{ go.disabled = false; go.textContent = "Save and sign in"; }
+});
+async function signIn(pw){
+  const cfg = await openVault(pw, VAULT);
+  GH = D250GitHub(cfg);
+  await loadAll();
+  try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
+  $("#lockwrap").hidden = true; $("#setupwrap").hidden = true; $("#app").hidden = false;
+  $("#repoLine").textContent = `${cfg.owner}/${cfg.repo}`;
+  $("#guideLink").href = `https://github.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/blob/${encodeURIComponent(cfg.branch)}/ADMIN-GUIDE.md`;
+  setTab(UI.tab);
+}
+$("#signOut").addEventListener("click", () => {
+  if (LOG.length && !confirm("You have changes that aren't published. Sign out anyway?")) return;
+  try{ sessionStorage.removeItem(PASS_KEY); }catch(_){}
+  location.reload();
+});
+
+/* ---------- load / publish ---------- */
+async function loadAll(){
+  for (const [name, path] of Object.entries(FILES)){
+    const r = await GH.readText(path);
+    if (!r) throw Object.assign(new Error(`${path} is missing from the site.`), {status:1});
+    const file = D250DataFile.parse(r.text);
+    F[name] = {path, sha:r.sha, file, orig:JSON.stringify(file.data), data:JSON.parse(JSON.stringify(file.data))};
+  }
+  PHOTOS = {}; UPLOADS = {}; LOG = [];
+  renderPub();
+}
+function dirtyFiles(){ return Object.keys(F).filter(n => JSON.stringify(F[n].data) !== F[n].orig); }
+function renderPub(){
+  const n = dirtyFiles().length + Object.keys(PHOTOS).length + Object.keys(UPLOADS).length;
+  $("#pub").hidden = !n;
+  if (!n){ LOG = []; return; }
+  $("#pubCount").textContent = `Not published yet (${LOG.length} change${LOG.length === 1 ? "" : "s"})`;
+  $("#pubList").innerHTML = LOG.map(x => `<li>${esc(x)}</li>`).join("");
+}
+window.addEventListener("beforeunload", e => { if (!$("#pub").hidden){ e.preventDefault(); e.returnValue = ""; } });
+$("#discard").addEventListener("click", () => {
+  if (!confirm("Throw away every change that isn't published?")) return;
+  for (const n of Object.keys(F)) F[n].data = JSON.parse(F[n].orig);
+  PHOTOS = {}; UPLOADS = {}; LOG = []; renderPub(); render(); toast("Changes discarded.");
+});
+$("#publish").addEventListener("click", async () => {
+  const btn = $("#publish"); btn.disabled = true; btn.textContent = "Publishing…";
+  try{
+    const files = [];
+    for (const n of dirtyFiles()){
+      const now = await GH.readText(F[n].path);
+      if (now && now.sha !== F[n].sha) throw new Error(`Someone else changed ${F[n].path} since you opened this page. Copy down your changes, reload, and make them again.`);
+      files.push({path:F[n].path, text:D250DataFile.write(F[n].file, F[n].data)});
+    }
+    for (const [key, ph] of Object.entries(PHOTOS)){
+      files.push({path:`org-chart/photos/${key}.jpg`, base64:ph.small});
+      files.push({path:`whos-that-cadet/photos/${key}.jpg`, base64:ph.large});
+    }
+    for (const [path, up] of Object.entries(UPLOADS)) files.push({path, base64:up.base64});
+    const summary = LOG.length === 1 ? LOG[0] : `${LOG.length} changes`;
+    await GH.commit(`Admin: ${summary}`.slice(0, 100) + "\n\n" + LOG.map(x => "- " + x).join("\n"), files);
+    await loadAll(); render();
+    toast("Published. The live site updates in about a minute.", 5000);
+  }catch(x){ note(esc(x.message || String(x)), true); }
+  finally{ btn.disabled = false; btn.textContent = "Publish to the live site"; }
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".seg [data-tab]").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+function setTab(t){
+  UI.tab = t; saveUI(); note("");
+  document.querySelectorAll(".seg [data-tab]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
+  for (const id of ["people","chart","hub","docs","history"]) $("#tab-" + id).hidden = id !== t;
+  render();
+}
+function render(){
+  if (!F.roster) return;
+  ({people:renderPeople, chart:renderChart, hub:renderHub, docs:renderDocs, history:renderHistory})[UI.tab]();
+}
+
+/* ---------- dialog ---------- */
+const dlg = $("#dlg");
+function openDialog(title, body, foot){
+  dlg.innerHTML = `<div class="dl-hd"><h3 id="dlgTitle">${esc(title)}</h3><button class="btn small x" type="button" data-close>Close</button></div><div class="dl-bd">${body}</div><div class="dl-ft">${foot}</div>`;
+  dlg.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => dlg.close()));
+  dlg.showModal();
+  const first = dlg.querySelector(".dl-bd input, .dl-bd select, .dl-bd textarea"); if (first) first.focus();
+}
+const val = id => (dlg.querySelector("#" + id) || {}).value;
+const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? " selected" : ""}>${esc(label)}</option>`;
+
+/* =====================================================================
+   PEOPLE
+   ===================================================================== */
+function seatsOf(key){ return R().seats.filter(s => s.poc && s.poc[0] === key || s.flip === key); }
+function flightOf(key){
+  for (const [list, kind] of [[R().flights, "gmc"], [R().flightsPoc, "poc"]])
+    for (const [f, ks] of Object.entries(list)) if (ks.includes(key)) return f;
+  return "";
+}
+function renderPeople(){
+  const P = R().people, q = UI.q.trim().toLowerCase();
+  const keys = Object.keys(P).filter(k => (UI.cls === "all" || P[k][2] === UI.cls) && (!q || sortName(P[k]).toLowerCase().includes(q)))
+    .sort((a, b) => sortName(P[a]).localeCompare(sortName(P[b])));
+  $("#tab-people").innerHTML = `
+    <div class="tabhd"><div><h2>People</h2><p>The one Det 250 roster. The Org Chart, Know Your Wing, the instructor tools and Peer Feedback all use it, so change a person here once. A new cadet also needs a Peer Feedback code (see the admin guide).</p></div>
+      <div class="tools"><button class="btn primary" id="addPerson" type="button">Add a person</button></div></div>
+    <div class="panel" style="margin-bottom:14px"><div class="panel-bd row" style="gap:14px">
+      <div class="field" style="flex:1;min-width:200px"><label class="label" for="term">Semester shown on the tools</label><input id="term" type="text" value="${esc(R().term || "")}" placeholder="Spring 2027"></div>
+      <div class="field" style="flex:1;min-width:200px"><label class="label" for="pq">Find</label><input id="pq" type="search" value="${esc(UI.q)}" placeholder="Last or first name"></div>
+      <div class="field" style="min-width:160px"><label class="label" for="pcls">Class</label><select id="pcls">${opt("all","Everyone",UI.cls==="all")}${CLASSES.map(c => opt(c, CLASS_LABEL[c], UI.cls === c)).join("")}</select></div>
+    </div></div>
+    <p class="hint" style="margin:0 0 10px">${keys.length} of ${Object.keys(P).length} people</p>
+    <div class="people">${keys.map(k => {
+      const p = P[k], seats = seatsOf(k).filter(s => s.poc[0] === k).map(s => s.des).filter(Boolean), fl = flightOf(k);
+      return `<button type="button" class="item${PHOTOS[k] ? " changed" : ""}" data-person="${esc(k)}" style="text-align:left;cursor:pointer;font:inherit;color:inherit">
+        ${face(k)}<span class="txt"><span class="t1">${esc(sortName(p))}</span>
+        <span class="t2">${esc(CLASS_LABEL[p[2]] || p[2])}${fl ? " · " + esc(FLIGHTS.find(f => f[0] === fl)[1]) : ""}${seats.length ? " · " + esc(seats.join(", ")) : ""}</span></span></button>`;
+    }).join("") || `<p class="muted">Nobody matches.</p>`}</div>`;
+  $("#term").addEventListener("change", e => { const v = e.target.value.trim(); if (v !== (R().term || "")){ R().term = v; changed(`Semester set to ${v || "(blank)"}`); } });
+  $("#pq").addEventListener("input", e => { UI.q = e.target.value; saveUI(); const pos = e.target.selectionStart; renderPeople(); const el = $("#pq"); el.focus(); el.setSelectionRange(pos, pos); });
+  $("#pcls").addEventListener("change", e => { UI.cls = e.target.value; saveUI(); renderPeople(); });
+  $("#addPerson").addEventListener("click", () => personDialog(null));
+  document.querySelectorAll("[data-person]").forEach(b => b.addEventListener("click", () => personDialog(b.dataset.person)));
+}
+
+let CROP = null;   // { img, zoom, x, y } while a new photo is being placed
+function personDialog(key){
+  const p = key ? R().people[key] : ["", "", "AS100"];
+  const x = (p[3] || {}), fl = key ? flightOf(key) : "";
+  CROP = null;
+  const held = key ? seatsOf(key) : [];
+  openDialog(key ? `Edit ${fullName(p)}` : "Add a person", `
+    <div class="grid3">
+      <div class="field"><label class="label" for="pLast">Last name</label><input id="pLast" type="text" value="${esc(p[0])}" required></div>
+      <div class="field"><label class="label" for="pFirst">First name</label><input id="pFirst" type="text" value="${esc(p[1])}"></div>
+      <div class="field"><label class="label" for="pMi">Middle initial</label><input id="pMi" type="text" value="${esc(x.mi || "")}" maxlength="4" placeholder="J."></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label class="label" for="pCls">Class</label><select id="pCls">${CLASSES.map(c => opt(c, CLASS_LABEL[c], p[2] === c)).join("")}</select></div>
+      <div class="field" id="pAsWrap"><label class="label" for="pAs">AS year</label><select id="pAs">${opt("AS700","AS 700",x.as === "AS700")}${opt("AS800","AS 800",x.as !== "AS700")}</select></div>
+      <div class="field" id="pFlWrap"><label class="label" for="pFl">Flight</label><select id="pFl">${opt("","No flight",!fl)}${FLIGHTS.map(([id, n]) => opt(id, n, fl === id)).join("")}</select></div>
+    </div>
+    <div class="field"><span class="label">Photo</span>
+      <div class="crop">
+        <canvas id="cropCv" width="480" height="480" tabindex="0" aria-label="Photo. Drag or use the arrow keys to move it."></canvas>
+        <div class="side">
+          <label class="btn" style="align-self:flex-start">Choose a photo<input id="pPhoto" type="file" accept="image/*" class="sr"></label>
+          <div class="field" id="zoomWrap" hidden><label class="label" for="pZoom">Zoom</label><input id="pZoom" type="range" min="1" max="4" step="0.01" value="1"></div>
+          <p class="hint">Drag the photo so the face fills the circle, eyes about a third of the way down. Saved as a 240 px chart photo and a 600 px card photo.</p>
+        </div>
+      </div>
+    </div>
+    ${held.length ? `<p class="hint">Holds: ${esc(held.map(s => `${s.des || s.title}${s.flip === key && s.poc[0] !== key ? " (Flip Week)" : ""}`).join(", "))}. Change seats on the Org chart tab.</p>` : ""}`,
+    `${key ? `<button class="btn danger" id="pDel" type="button">Remove from roster</button>` : ""}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="pSave" type="button">${key ? "Save" : "Add"}</button></div>`);
+  const syncCls = () => { const c = val("pCls"); $("#pAsWrap").hidden = c !== "Graybeard"; $("#pFlWrap").hidden = c === "Cadre"; };
+  dlg.querySelector("#pCls").addEventListener("change", syncCls); syncCls();
+  setupCrop(key);
+  dlg.querySelector("#pSave").addEventListener("click", () => savePerson(key));
+  const del = dlg.querySelector("#pDel");
+  if (del) del.addEventListener("click", () => {
+    if (held.length){ alert(`${fullName(p)} still holds ${held.map(s => s.des || s.title).join(", ")}. Put someone else in those seats on the Org chart tab first.`); return; }
+    if (!confirm(`Remove ${fullName(p)} from the roster? They leave every tool when you publish.`)) return;
+    delete R().people[key];
+    for (const list of [R().flights, R().flightsPoc]) for (const f of Object.keys(list)) list[f] = list[f].filter(k => k !== key);
+    delete PHOTOS[key];
+    dlg.close(); changed(`Removed ${fullName(p)}`); render();
+  });
+}
+function savePerson(key){
+  const last = val("pLast").trim(), first = val("pFirst").trim(), mi = val("pMi").trim(), cls = val("pCls");
+  if (!last){ alert("Last name is required."); return; }
+  if (!key && !CROP){ if (!confirm("No photo chosen. Add without a photo (initials show instead)?")) return; }
+  const extras = {};
+  if (mi) extras.mi = /\.$/.test(mi) || mi.length > 1 ? mi : mi + ".";
+  if (cls === "Graybeard") extras.as = val("pAs");
+  const entry = [last, first, cls]; if (Object.keys(extras).length) entry.push(extras);
+  let k = key;
+  if (!k){
+    const baseKey = (last + first + (extras.mi || "")).normalize("NFD").replace(/[^A-Za-z]/g, "") || "Person";
+    k = baseKey; let n = 2; while (R().people[k]) k = baseKey + n++;
+  }
+  const before = key ? JSON.stringify(R().people[key]) : "";
+  R().people[k] = entry;
+  // flight
+  const oldFl = key ? flightOf(key) : "", newFl = cls === "Cadre" ? "" : val("pFl");
+  const list = POC(cls) ? R().flightsPoc : R().flights, other = POC(cls) ? R().flights : R().flightsPoc;
+  for (const L of [list, other]) for (const f of Object.keys(L)) L[f] = L[f].filter(x => x !== k);
+  if (newFl){ (list[newFl] = list[newFl] || []).push(k); }
+  if (CROP) PHOTOS[k] = cropOut();
+  const name = fullName(entry);
+  if (!key) changed(`Added ${name} (${CLASS_LABEL[cls]})`);
+  else {
+    if (before !== JSON.stringify(entry)) changed(`Updated ${name}`);
+    if (oldFl !== newFl) changed(`${name}: flight ${newFl ? FLIGHTS.find(f => f[0] === newFl)[1] : "none"}`);
+    if (CROP) changed(`New photo for ${name}`);
+  }
+  dlg.close(); render();
+}
+function setupCrop(key){
+  const cv = dlg.querySelector("#cropCv"), ctx = cv.getContext("2d");
+  const draw = () => {
+    ctx.fillStyle = "#26262e"; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (CROP){
+      const {img, zoom, x, y} = CROP, s = Math.max(cv.width / img.width, cv.height / img.height) * zoom;
+      ctx.drawImage(img, cv.width / 2 - img.width * s / 2 + x, cv.height / 2 - img.height * s / 2 + y, img.width * s, img.height * s);
+    } else if (cur.complete && cur.naturalWidth){ ctx.drawImage(cur, 0, 0, cv.width, cv.height); }
+  };
+  const cur = new Image(); cur.onload = draw; if (key) cur.src = photoURL(key); draw();
+  dlg.querySelector("#pPhoto").addEventListener("change", e => {
+    const file = e.target.files[0]; if (!file) return;
+    const img = new Image();
+    img.onload = () => { CROP = {img, zoom:1, x:0, y:0}; dlg.querySelector("#pZoom").value = 1; dlg.querySelector("#zoomWrap").hidden = false; draw(); };
+    img.onerror = () => alert("That file isn't a photo this browser can open. Try a JPG or PNG.");
+    img.src = URL.createObjectURL(file);
+  });
+  dlg.querySelector("#pZoom").addEventListener("input", e => { if (CROP){ CROP.zoom = +e.target.value; draw(); } });
+  let drag = null;
+  cv.addEventListener("pointerdown", e => { if (!CROP) return; drag = {x:e.clientX, y:e.clientY, ox:CROP.x, oy:CROP.y}; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!drag) return; const k = cv.width / cv.clientWidth; CROP.x = drag.ox + (e.clientX - drag.x) * k; CROP.y = drag.oy + (e.clientY - drag.y) * k; draw(); });
+  cv.addEventListener("pointerup", () => { drag = null; });
+  cv.addEventListener("keydown", e => {
+    if (!CROP) return; const d = {ArrowLeft:[-8,0], ArrowRight:[8,0], ArrowUp:[0,-8], ArrowDown:[0,8]}[e.key];
+    if (d){ e.preventDefault(); CROP.x += d[0]; CROP.y += d[1]; draw(); }
+  });
+  setupCrop.draw = draw; setupCrop.cv = cv;
+}
+function cropOut(){
+  const src = setupCrop.cv, out = size => {
+    const c = document.createElement("canvas"); c.width = c.height = size;
+    const x = c.getContext("2d"); x.imageSmoothingQuality = "high";
+    const {img, zoom} = CROP, s = Math.max(src.width / img.width, src.height / img.height) * zoom * size / src.width;
+    x.fillStyle = "#fff"; x.fillRect(0, 0, size, size);
+    x.drawImage(img, size / 2 - img.width * s / 2 + CROP.x * size / src.width, size / 2 - img.height * s / 2 + CROP.y * size / src.width, img.width * s, img.height * s);
+    return c.toDataURL("image/jpeg", size > 300 ? .85 : .82);
+  };
+  const small = out(240), large = out(600);
+  return {small:small.split(",")[1], large:large.split(",")[1], url:small};
+}
+
+/* =====================================================================
+   ORG CHART
+   ===================================================================== */
+function seatGroup(s){
+  if (s.cadre) return "Cadre";
+  let x = s, guard = 0;
+  while (x && guard++ < 20){ if (x.dir) return `${x.dir} directorate`; x = R().seats.find(y => y.id === x.parent); }
+  if (/^(gpcc|sq\d|[abcd]f[ld])$/.test(s.id) || /SQ\/CC|FLT\//.test(s.des)) return "Group, squadrons and flights";
+  return "Wing command and advisors";
+}
+function renderChart(){
+  const S = R().seats, P = R().people, groups = {};
+  for (const s of S) (groups[seatGroup(s)] = groups[seatGroup(s)] || []).push(s);
+  const order = ["Cadre","Wing command and advisors","Group, squadrons and flights", ...Object.keys(groups).filter(g => /directorate/.test(g)).sort()];
+  $("#tab-chart").innerHTML = `
+    <div class="tabhd"><div><h2>Org chart</h2><p>Who holds each position on the POC chart and during Flip Week. Flight members are set on each person (People tab).</p></div>
+      <div class="tools"><button class="btn primary" id="addSeat" type="button">Add a position</button></div></div>
+    ${order.filter(g => groups[g]).map(g => `<h3 class="grp">${esc(g)}</h3><div class="list">${groups[g].map(s => `
+      <div class="item">${face(s.poc[0])}<div class="txt"><div class="t1">${esc(s.des || s.title)} <span class="t2">${esc(s.des ? s.title : "")}</span></div>
+        <div class="t2">${esc(s.poc[1])} ${esc(fullName(P[s.poc[0]]))}${s.cadre ? "" : ` · Flip Week: ${s.flip ? esc(fullName(P[s.flip])) : "hidden"}`}</div></div>
+        <div class="acts"><button class="btn small" type="button" data-seat="${esc(s.id)}">Edit</button></div></div>`).join("")}</div>`).join("")}`;
+  $("#addSeat").addEventListener("click", () => seatDialog(null));
+  document.querySelectorAll("[data-seat]").forEach(b => b.addEventListener("click", () => seatDialog(b.dataset.seat)));
+}
+function personOptions(sel, allowNone, filter){
+  const P = R().people;
+  return (allowNone ? opt("", allowNone, !sel) : "") + Object.keys(P).filter(k => !filter || filter(P[k]) || k === sel)
+    .sort((a, b) => sortName(P[a]).localeCompare(sortName(P[b]))).map(k => opt(k, `${sortName(P[k])} (${CLASS_LABEL[P[k][2]]})`, k === sel)).join("");
+}
+function seatDialog(id){
+  const s = id ? R().seats.find(x => x.id === id) : {id:"", des:"", title:"", poc:["", "C/Capt"], parent:"wgcos"};
+  const cadre = !!s.cadre, ranks = cadre ? CADRE_RANKS : CADET_RANKS;
+  const kids = id ? R().seats.filter(x => x.parent === id) : [];
+  openDialog(id ? `Edit ${s.des || s.title}` : "Add a position", `
+    <div class="grid2">
+      <div class="field"><label class="label" for="sDes">Designator</label><input id="sDes" type="text" value="${esc(s.des)}" placeholder="A14/XXO"></div>
+      <div class="field"><label class="label" for="sTitle">Title</label><input id="sTitle" type="text" value="${esc(s.title)}" required></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="sWho">Held by</label><select id="sWho">${personOptions(s.poc[0], id ? "" : "Choose…", p => cadre ? p[2] === "Cadre" : p[2] !== "Cadre")}</select></div>
+      <div class="field"><label class="label" for="sRank">Rank</label><select id="sRank">${[...new Set([s.poc[1], ...ranks])].filter(Boolean).map(r => opt(r, r, r === s.poc[1])).join("")}</select></div>
+    </div>
+    ${cadre ? "" : `<div class="grid2">
+      <div class="field"><label class="label" for="sFlip">Flip Week</label><select id="sFlip">${personOptions(s.flip || "", "Hidden during Flip Week", p => p[2] !== "Cadre" && !POC(p[2]))}</select></div>
+      <div class="field"><label class="label" for="sParent">Reports to</label><select id="sParent">${R().seats.filter(x => x.id !== id && !x.member).map(x => opt(x.id, `${x.des || x.title} (${fullName(R().people[x.poc[0]])})`, x.id === s.parent)).join("")}</select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="sFlipDes">Flip Week designator (if different)</label><input id="sFlipDes" type="text" value="${esc(s.flipDes || "")}"></div>
+      <div class="field"><label class="label" for="sFlipTitle">Flip Week title (if different)</label><input id="sFlipTitle" type="text" value="${esc(s.flipTitle || "")}"></div>
+    </div>`}
+    <p class="hint">Flip Week ranks are automatic (AS 100 = C/4C, everyone else C/3C). Position descriptions in the drawer are kept with the OPLAN citations and are not edited here.</p>`,
+    `${id && !cadre ? `<button class="btn danger" id="sDel" type="button">Remove position</button>` : ""}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="sSave" type="button">${id ? "Save" : "Add"}</button></div>`);
+  dlg.querySelector("#sSave").addEventListener("click", () => {
+    const title = val("sTitle").trim(), who = val("sWho");
+    if (!title || !who){ alert("A title and the person who holds it are required."); return; }
+    const before = JSON.stringify(s);
+    const n = id ? s : {id:"", des:"", title:"", poc:["",""], parent:""};
+    n.des = val("sDes").trim(); n.title = title; n.poc = [who, val("sRank")];
+    if (!cadre){
+      const flip = val("sFlip"); if (flip) n.flip = flip; else delete n.flip;
+      n.parent = val("sParent");
+      for (const k of ["flipDes","flipTitle"]){ const v = val(k === "flipDes" ? "sFlipDes" : "sFlipTitle").trim(); if (v) n[k] = v; else delete n[k]; }
+    }
+    if (!id){
+      let base = slug(n.des || n.title).replace(/-/g, ""), nid = base, i = 2;
+      while (R().seats.some(x => x.id === nid)) nid = base + i++;
+      n.id = nid;
+      const at = R().seats.findIndex(x => x.cadre); R().seats.splice(at < 0 ? R().seats.length : at, 0, n);
+      changed(`Added position ${n.des || n.title} (${fullName(R().people[who])})`);
+    } else if (before !== JSON.stringify(n)) changed(`${n.des || n.title}: ${n.poc[1]} ${fullName(R().people[who])}${n.flip ? ", Flip Week " + fullName(R().people[n.flip]) : ""}`);
+    dlg.close(); render();
+  });
+  const del = dlg.querySelector("#sDel");
+  if (del) del.addEventListener("click", () => {
+    if (kids.length){ alert(`${kids.map(k => k.des || k.title).join(", ")} report to this position. Move them first.`); return; }
+    if (/^[abcd]f[ld]$/.test(id) || /^(wgcc|gpcc)$/.test(id)){ alert("Commander and flight seats can't be removed here."); return; }
+    if (!confirm(`Remove ${s.des || s.title} from the org chart?`)) return;
+    R().seats = R().seats.filter(x => x.id !== id);
+    dlg.close(); changed(`Removed position ${s.des || s.title}`); render();
+  });
+}
+
+/* =====================================================================
+   HUB CARDS
+   ===================================================================== */
+function renderHub(){
+  const T = H().tools;
+  $("#tab-hub").innerHTML = `
+    <div class="tabhd"><div><h2>Hub cards</h2><p>The cards on the Storm HQ home page, in order. Hide a card for a tool nobody maintains instead of leaving it broken. A brand new tool needs its own folder first, so ask whoever maintains the code.</p></div></div>
+    <div class="list">${T.map((t, i) => `
+      <div class="item${t.hidden ? " off" : ""}"><span class="tile" style="--tone:${esc(t.tone)}"></span><div class="txt"><div class="t1">${esc(t.name)}${t.hidden ? `<span class="tag">Hidden</span>` : ""}${t.locked ? `<span class="tag gold">${esc(t.locked === true ? "Password" : t.locked)}</span>` : ""}</div>
+        <div class="t2">${esc(SECTION_LABEL[t.section] || t.section)} · ${esc(t.blurb)}</div></div>
+        <div class="acts"><button class="btn small" type="button" data-up="${i}" ${i ? "" : "disabled"} aria-label="Move ${esc(t.name)} up">↑</button><button class="btn small" type="button" data-down="${i}" ${i < T.length - 1 ? "" : "disabled"} aria-label="Move ${esc(t.name)} down">↓</button>
+        <button class="btn small" type="button" data-hide="${i}">${t.hidden ? "Show" : "Hide"}</button><button class="btn small" type="button" data-card="${i}">Edit</button></div></div>`).join("")}</div>`;
+  const move = (i, d) => { const j = i + d; [T[i], T[j]] = [T[j], T[i]]; changed(`Moved ${T[j].name} ${d < 0 ? "up" : "down"}`); render(); };
+  document.querySelectorAll("[data-up]").forEach(b => b.addEventListener("click", () => move(+b.dataset.up, -1)));
+  document.querySelectorAll("[data-down]").forEach(b => b.addEventListener("click", () => move(+b.dataset.down, 1)));
+  document.querySelectorAll("[data-hide]").forEach(b => b.addEventListener("click", () => { const t = T[+b.dataset.hide]; if (t.hidden) delete t.hidden; else t.hidden = true; changed(`${t.hidden ? "Hid" : "Showed"} the ${t.name} card`); render(); }));
+  document.querySelectorAll("[data-card]").forEach(b => b.addEventListener("click", () => cardDialog(+b.dataset.card)));
+}
+function cardDialog(i){
+  const t = H().tools[i];
+  openDialog(`Edit ${t.name}`, `
+    <div class="field"><label class="label" for="cName">Name</label><input id="cName" type="text" value="${esc(t.name)}"></div>
+    <div class="field"><label class="label" for="cBlurb">Description</label><textarea id="cBlurb" class="short">${esc(t.blurb)}</textarea><p class="hint">One or two sentences. No em dashes.</p></div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="cSec">Section</label><select id="cSec">${Object.entries(SECTION_LABEL).map(([k, v]) => opt(k, v, t.section === k)).join("")}</select></div>
+      <div class="field"><label class="label" for="cLock">Password pill</label><input id="cLock" type="text" value="${esc(t.locked === true ? "Password" : t.locked || "")}" placeholder="Leave blank for none"></div>
+    </div>
+    ${t.ext ? `<div class="field"><label class="label" for="cHref">Link</label><input id="cHref" type="url" value="${esc(t.href)}"></div>` : ""}`,
+    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="cSave" type="button">Save</button></div>`);
+  dlg.querySelector("#cSave").addEventListener("click", () => {
+    const before = JSON.stringify(t);
+    t.name = val("cName").trim() || t.name; t.blurb = val("cBlurb").trim(); t.section = val("cSec");
+    const lock = val("cLock").trim(); if (lock) t.locked = lock; else delete t.locked;
+    if (t.ext){ const h = val("cHref").trim(); if (/^https:\/\//.test(h)) t.href = h; else { alert("The link must start with https://"); return; } }
+    if (before !== JSON.stringify(t)) changed(`Updated the ${t.name} card`);
+    dlg.close(); render();
+  });
+}
+
+/* =====================================================================
+   DOCUMENTS
+   ===================================================================== */
+function renderDocs(){
+  const secs = D().sections.filter(s => !s.locked), docs = D().docs;
+  $("#tab-docs").innerHTML = `
+    <div class="tabhd"><div><h2>Documents</h2><p>Every regulation, form and link on Documents and Policy. Other tools cite documents from this list, so update a link here and every tool follows. The password-protected plans and OPORDs are not edited here.</p></div></div>
+    ${secs.map(sec => { const list = docs.filter(d => d.sec === sec.id); return `
+      <h3 class="grp">${esc(sec.title)}</h3>
+      <div class="list">${list.map(d => { const i = docs.indexOf(d), up = UPLOADS[`documents/references/${d.id}.pdf`]; return `
+        <div class="item"><span class="docico" style="--tone:${esc(sec.tone)}">${svgIcon(d.icon)}</span><div class="txt"><div class="t1">${esc(d.num)} <span class="t2">${esc(d.title)}</span>${d.tool ? `<span class="tag gold">Storm HQ tool</span>` : ""}${up ? `<span class="tag gold">New PDF</span>` : ""}</div>
+          <div class="t2">${esc(d.what)}</div><div class="t2">${d.href ? `Link: ${esc(d.href)}` : `PDF: ${esc(d.src)}`}</div></div>
+          <div class="acts"><button class="btn small" type="button" data-dup="${i}" aria-label="Move ${esc(d.num)} up">↑</button><button class="btn small" type="button" data-ddown="${i}" aria-label="Move ${esc(d.num)} down">↓</button><button class="btn small" type="button" data-doc="${i}">Edit</button></div></div>`; }).join("")}
+        <button class="btn" type="button" data-newdoc="${esc(sec.id)}" style="align-self:flex-start">Add to ${esc(sec.title)}</button></div>`; }).join("")}`;
+  const move = (i, d) => {
+    const sec = docs[i].sec; let j = i + d;
+    while (j >= 0 && j < docs.length && docs[j].sec !== sec) j += d;
+    if (j < 0 || j >= docs.length) return;
+    [docs[i], docs[j]] = [docs[j], docs[i]]; changed(`Moved ${docs[j].num} ${d < 0 ? "up" : "down"}`); render();
+  };
+  document.querySelectorAll("[data-dup]").forEach(b => b.addEventListener("click", () => move(+b.dataset.dup, -1)));
+  document.querySelectorAll("[data-ddown]").forEach(b => b.addEventListener("click", () => move(+b.dataset.ddown, 1)));
+  document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", () => docDialog(+b.dataset.doc)));
+  document.querySelectorAll("[data-newdoc]").forEach(b => b.addEventListener("click", () => docDialog(-1, b.dataset.newdoc)));
+}
+function docDialog(i, sec){
+  const d = i >= 0 ? D().docs[i] : {sec, id:"", icon:"shield", num:"", title:"", what:"", href:"https://"};
+  const icons = Object.keys(window.D250_DOC_ICONS || {});
+  let pdf = null;
+  openDialog(i >= 0 ? `Edit ${d.num}` : "Add a document", `
+    <div class="grid2">
+      <div class="field"><label class="label" for="dNum">Number</label><input id="dNum" type="text" value="${esc(d.num)}" placeholder="DAFI 36-2903"></div>
+      <div class="field"><label class="label" for="dTitle">Title</label><input id="dTitle" type="text" value="${esc(d.title)}"></div>
+    </div>
+    <div class="field"><label class="label" for="dWhat">Description</label><textarea id="dWhat" class="short">${esc(d.what)}</textarea></div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="dIcon">Icon</label><div class="row" style="flex-wrap:nowrap"><span class="docico" id="dIconPrev" style="--tone:#475569">${svgIcon(d.icon)}</span><select id="dIcon">${icons.map(k => opt(k, k, k === d.icon)).join("")}</select></div></div>
+      <div class="field"><label class="label" for="dSec">Category</label><select id="dSec">${D().sections.filter(s => !s.locked).map(s => opt(s.id, s.title, s.id === d.sec)).join("")}</select></div>
+    </div>
+    ${d.tool ? `<p class="hint">This card links to a Storm HQ tool (${esc(d.href)}).</p>` : `
+    <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="label">Where it opens</legend>
+      <label class="row"><input type="radio" name="dKind" value="link" ${d.href ? "checked" : ""}> Outside link (official e-Publishing page, opens in a new tab)</label>
+      <label class="row"><input type="radio" name="dKind" value="pdf" ${d.src ? "checked" : ""}> PDF hosted on Storm HQ (opens in the built-in viewer)</label>
+    </fieldset>
+    <div class="field" id="dLinkWrap"><label class="label" for="dHref">Link</label><input id="dHref" type="url" value="${esc(d.href || "https://")}"></div>
+    <div class="field" id="dPdfWrap"><span class="label">PDF</span>${d.src ? `<p class="hint">Now: ${esc(d.src)}</p>` : ""}<label class="btn" style="align-self:flex-start">${d.src ? "Replace the PDF" : "Choose a PDF"}<input id="dPdf" type="file" accept="application/pdf" class="sr"></label><p class="hint" id="dPdfName">Up to 50 MB. Prefer an outside link for Air Force publications so cadets always get the current version.</p></div>`}
+    ${i >= 0 ? `<p class="hint">Card id: ${esc(d.id)} (other tools cite it by this id, so it never changes).</p>` : ""}`,
+    `${i >= 0 && !d.tool ? `<button class="btn danger" id="dDel" type="button">Remove</button>` : ""}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="dSave" type="button">${i >= 0 ? "Save" : "Add"}</button></div>`);
+  dlg.querySelector("#dIcon").addEventListener("change", e => { dlg.querySelector("#dIconPrev").innerHTML = svgIcon(e.target.value); });
+  const kind = () => (dlg.querySelector('input[name="dKind"]:checked') || {}).value;
+  const syncKind = () => { if (d.tool) return; dlg.querySelector("#dLinkWrap").hidden = kind() !== "link"; dlg.querySelector("#dPdfWrap").hidden = kind() !== "pdf"; };
+  dlg.querySelectorAll('input[name="dKind"]').forEach(r => r.addEventListener("change", syncKind)); syncKind();
+  const pf = dlg.querySelector("#dPdf");
+  if (pf) pf.addEventListener("change", e => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 50 * 1024 * 1024){ alert("That PDF is over 50 MB. Link to the official copy instead."); e.target.value = ""; return; }
+    const r = new FileReader(); r.onload = () => { pdf = {base64:String(r.result).split(",")[1], name:file.name}; dlg.querySelector("#dPdfName").textContent = `Ready: ${file.name} (${(file.size / 1048576).toFixed(1)} MB)`; };
+    r.readAsDataURL(file);
+  });
+  dlg.querySelector("#dSave").addEventListener("click", () => {
+    const num = val("dNum").trim(), title = val("dTitle").trim();
+    if (!num || !title){ alert("A number and a title are required."); return; }
+    const before = JSON.stringify(d), n = i >= 0 ? d : {sec:"", id:""};
+    Object.assign(n, {sec:val("dSec"), icon:val("dIcon"), num, title, what:val("dWhat").trim()});
+    if (!n.id){ let base = slug(num), id = base, k = 2; while (D().docs.some(x => x.id === id)) id = base + "-" + k++; n.id = id; }
+    if (!d.tool){
+      if (kind() === "link"){
+        const h = val("dHref").trim(); if (!/^https:\/\/.+/.test(h)){ alert("The link must start with https://"); return; }
+        n.href = h; delete n.src; delete n.dl;
+      } else {
+        if (!pdf && !n.src){ alert("Choose a PDF, or switch to an outside link."); return; }
+        if (pdf){ const path = `documents/references/${n.id}.pdf`; UPLOADS[path] = pdf; n.src = `references/${n.id}.pdf`; delete n.dl; }
+        delete n.href;
+      }
+    }
+    if (i < 0){ D().docs.push(n); changed(`Added ${num} to Documents`); }
+    else if (before !== JSON.stringify(n) || pdf) changed(`Updated ${num}${pdf ? " (new PDF)" : ""}`);
+    dlg.close(); render();
+  });
+  const del = dlg.querySelector("#dDel");
+  if (del) del.addEventListener("click", () => {
+    if (!confirm(`Remove ${d.num} from Documents and Policy? A tool that cites it will show it as missing.`)) return;
+    D().docs.splice(i, 1); dlg.close(); changed(`Removed ${d.num} from Documents`); render();
+  });
+}
+
+/* =====================================================================
+   HISTORY AND SETTINGS
+   ===================================================================== */
+async function renderHistory(){
+  const el = $("#tab-history");
+  el.innerHTML = `
+    <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards and documents. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
+    <div class="list hist" id="hist"><p class="muted">Loading…</p></div>
+    <h3 class="grp" style="margin-top:28px">Settings</h3>
+    <div class="list">
+      <div class="item"><div class="txt"><div class="t1">Change the admin password</div><div class="t2">Do this whenever someone who knew it leaves.</div></div><div class="acts"><button class="btn small" type="button" id="chgPw">Change</button></div></div>
+      <div class="item"><div class="txt"><div class="t1">Replace the GitHub access key</div><div class="t2">Fine-grained keys expire (at most 1 year). When publishing says the key expired, make a new one the same way as in setup and paste it here. Use this too after the site moves to a new GitHub home.</div></div><div class="acts"><button class="btn small" type="button" id="chgKey">Replace</button></div></div>
+    </div>`;
+  $("#chgPw").addEventListener("click", () => vaultDialog(false));
+  $("#chgKey").addEventListener("click", () => vaultDialog(true));
+  try{
+    const list = await GH.history("data", 15);
+    $("#hist").innerHTML = list.map((c, i) => `
+      <div class="item"><div class="txt"><div class="t1">${esc(c.commit.message.split("\n")[0])}</div>
+        <div class="t2">${esc(new Date(c.commit.author.date).toLocaleString())} · ${esc(c.commit.author.name)} · <a href="${esc(c.html_url)}" target="_blank" rel="noopener">details</a></div></div>
+        <div class="acts"><button class="btn small" type="button" data-undo="${esc(c.sha)}" data-msg="${esc(c.commit.message.split("\n")[0])}">Undo</button></div></div>`).join("") || `<p class="muted">No changes yet.</p>`;
+    document.querySelectorAll("[data-undo]").forEach(b => b.addEventListener("click", async () => {
+      if (!$("#pub").hidden){ alert("Publish or discard your current changes first."); return; }
+      if (!confirm(`Undo "${b.dataset.msg}"? Everything that change touched goes back to how it was before it.`)) return;
+      b.disabled = true; b.textContent = "Undoing…";
+      try{ await GH.undo(b.dataset.undo); await loadAll(); toast("Undone. The live site updates in about a minute.", 5000); renderHistory(); }
+      catch(x){ note(esc(x.message), true); b.disabled = false; b.textContent = "Undo"; }
+    }));
+  }catch(x){ $("#hist").innerHTML = `<p class="muted">${esc(x.message)}</p>`; }
+}
+function vaultDialog(newKey){
+  openDialog(newKey ? "Replace the GitHub access key" : "Change the admin password", `
+    ${newKey ? `<div class="field"><label class="label" for="vTok">New GitHub access key</label><input id="vTok" type="password" autocomplete="off" spellcheck="false"></div>
+    <div class="grid3"><div class="field"><label class="label" for="vOwner">Owner</label><input id="vOwner" type="text" value="${esc(GH.cfg.owner)}"></div>
+      <div class="field"><label class="label" for="vRepo">Repository</label><input id="vRepo" type="text" value="${esc(GH.cfg.repo)}"></div>
+      <div class="field"><label class="label" for="vBranch">Branch</label><input id="vBranch" type="text" value="${esc(GH.cfg.branch)}"></div></div>` : ""}
+    <div class="grid2"><div class="field"><label class="label" for="vPw">${newKey ? "Admin password" : "New admin password"}</label><input id="vPw" type="password" minlength="10" autocomplete="new-password"></div>
+      <div class="field"><label class="label" for="vPw2">Type it again</label><input id="vPw2" type="password" autocomplete="new-password"></div></div>
+    <p class="hint">At least 10 characters.</p><div class="err" id="vErr" role="alert"></div>`,
+    `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="vSave" type="button">Save</button></div>`);
+  dlg.querySelector("#vSave").addEventListener("click", async () => {
+    const err = dlg.querySelector("#vErr"), pw = val("vPw");
+    if (pw.length < 10){ err.textContent = "Use at least 10 characters."; return; }
+    if (pw !== val("vPw2")){ err.textContent = "The two passwords don't match."; return; }
+    const cfg = newKey ? {token:val("vTok").trim(), owner:val("vOwner").trim(), repo:val("vRepo").trim(), branch:val("vBranch").trim()} : GH.cfg;
+    const btn = dlg.querySelector("#vSave"); btn.disabled = true; btn.textContent = "Saving…";
+    try{
+      const gh = D250GitHub(cfg); await gh.check();
+      const text = await sealVault(pw, cfg);
+      await gh.commit(newKey ? "Admin: replace the GitHub access key" : "Admin: change the admin password", [{path:"admin/vault.json", text}]);
+      GH = gh; VAULT = JSON.parse(text); try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
+      dlg.close(); toast("Saved. Use the new password from now on.", 5000);
+    }catch(x){ err.textContent = x.message; btn.disabled = false; btn.textContent = "Save"; }
+  });
+}
+
+start();
+</script>
+</body>
+</html>

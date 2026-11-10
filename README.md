@@ -8,7 +8,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Ribbon Rack Builder** (`ribbon-rack/`): builds your AFROTC rack in order of precedence (DAFI 36-2903 AFROTC Sup), with devices and the wear and award criteria for each ribbon.
 - **Det 250 Org Chart** (`org-chart/`): cadre, wing staff, flights and the Flip Week view. *Reflects Fall 2026 and may be out of date.*
 - **Documents and Policy** (`documents/`): The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, with links to the official sources. The Fall 2026 OPLAN, Policy Packet, cadre duties roster and OPORDs are encrypted and open with the detachment password in a built-in viewer.
-- **Who's That Cadet!** (`whos-that-cadet/`): memorization game for cadet faces, with printable cards.
+- **Know Your Wing** (`whos-that-cadet/`, formerly Who's That Cadet!): memorization game for cadet and cadre faces, with printable cards. Uses the shared roster.
 
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
@@ -21,9 +21,13 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
 - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
+## Cadre Admin
+- **Cadre Admin** (`admin/`, admin password): update the roster and photos, org chart positions, hub cards and document links without code. Each Publish is one change on GitHub and can be undone. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
+
 ## Notes
+- Editable data lives in `data/`: `roster.js` (the one detachment roster used by the Org Chart, instructor tools and Peer Feedback) and `hub.js` (the hub cards). Change people and cards there, not in page code.
 - Hosted on GitHub Pages from `main`. Pushed changes go live in a few minutes.
-- To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `TOOLS` in the root `index.html`. Full details are in `CLAUDE.md`.
+- To add a tool: give it its own folder with `index.html`, add the shared bar (`shared/det250.css`, copy the bar from `org-chart/index.html`), and add one entry to `data/hub.js`. Full details are in `CLAUDE.md`.
 - Award criteria change year to year. When sources conflict, follow the DAFI 36-2903 AFROTC Supplement.
 - Flight Staff Evaluation is password encrypted. Keep decrypted source outside the public repo. To rebuild its lock: `node tools/encrypt.mjs plain.html <folder>/index.html <password> tools/locked-template.html`
 - Restricted documents are encrypted. Keep the plain PDFs outside the repo. To rebuild: `node tools/encrypt-files.mjs <password> <list.json> documents/restricted` (see the script header for the list format).

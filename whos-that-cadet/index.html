@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Who's that Cadet! · Storm HQ</title>
+<title>Know Your Wing · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <link rel="apple-touch-icon" href="../shared/det250-patch-icon.png">
 <meta name="robots" content="noindex, nofollow">
@@ -187,7 +187,7 @@
     .who, .rv-name { font-size:21px; }
   }
 
-  /* ===== Who's That Cadet: game touches on the Hub Standard look ===== */
+  /* ===== Know Your Wing: game touches on the Hub Standard look ===== */
   body > .wrap { padding-top:4px; }
   .mode[aria-pressed="true"] { background:color-mix(in srgb, var(--accent) 10%, var(--panel)); }
   .go { transition:transform .15s, filter .2s; }
@@ -235,8 +235,8 @@
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/whos-that-cadet.webp" alt="" width="56" height="56"></span>
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
-      <h1>Who's That Cadet!</h1>
-      <p class="d250-head-sub">250th Cadet Wing &middot; Fall 2026 &middot; <span id="totalCount"></span></p>
+      <h1>Know Your Wing</h1>
+      <p class="d250-head-sub">250th Cadet Wing &middot; <span id="term">Fall 2026</span> &middot; <span id="totalCount"></span></p>
     </div>
   </div>
 </header>
@@ -322,41 +322,51 @@
     <p class="motto">Optimi In Medio Patrae</p>
     <p class="tagline">We Are The Storm</p>
     <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-    <p class="source-line">Cadet ranks, flights and wing positions from the <strong>Fall 2026 250th Cadet Wing</strong> org chart and flight roster.
-      Cadre from <strong>airforce.iastate.edu/cadre</strong>.</p>
+    <p class="source-line">Names, ranks, flights and duty positions come from the shared Det 250 roster, the same list the Org Chart uses.</p>
     <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
   </footer>
 </div>
 <div id="printArea"></div>
 
+<script src="../data/roster.js"></script>
 <script>
-const CADETS = [{"Last":"Aldana Castro","First":"Georgio F.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"002_AldanaCastroGeorgioF.jpg"},{"Last":"Andersen","First":"Samuel E.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"004_AndersenSamuelE.jpg"},{"Last":"Burdick","First":"Nathaniel B.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"013_BurdickNathanielB.jpg"},{"Last":"Call","First":"Tyson D.","AS":"AS250","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"014_CallTysonD.jpg"},{"Last":"Chandler","First":"Amelia M.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"015_ChandlerAmeliaM.jpg"},{"Last":"Cohorst","First":"Aliyah P.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"016_CohorstAliyahP.jpg"},{"Last":"Dobbs","First":"Paxton J.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"024_DobbsPaxtonJ.jpg"},{"Last":"Dybvig","First":"Jackson R.","AS":"AS250","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"025_DybvigJacksonR.jpg"},{"Last":"Gardner","First":"Lacey I.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"030_GardnerLaceyI.jpg"},{"Last":"George","First":"William D.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"032_GeorgeWilliamD.jpg"},{"Last":"Goodin","First":"Eleanor K.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"033_GoodinEleanorK.jpg"},{"Last":"Johnson","First":"Zariah A.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"043_JohnsonZariahA.jpg"},{"Last":"Johnson","First":"Zion J.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"044_JohnsonZionJ.jpg"},{"Last":"Kilker","First":"Samuel J.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"047_KilkerSamuelJ.jpg"},{"Last":"Kluesner","First":"Aiden C.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"048_KluesnerAidenC.jpg"},{"Last":"Mafnas","First":"Max C.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"050_MafnasMaxC.jpg"},{"Last":"Malin","First":"Lance A.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"051_MalinLanceA.jpg"},{"Last":"McCarthy","First":"Calum J.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"054_McCarthyCalumJ.jpg"},{"Last":"McConnell","First":"Lauren L.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"Liam","Rank":"Cadet Fourth Class","Img":"055_McConnellLaurenL.jpg"},{"Last":"McJannet","First":"Milo G.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"056_McJannetMiloG.jpg"},{"Last":"Miller","First":"Mason D.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"059_MillerMasonD.jpg"},{"Last":"Nelsen","First":"Oliver U.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"062_NelsenOliverU.jpg"},{"Last":"O\u0027Toole","First":"Finn P.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"063_OTooleFinnP.jpg"},{"Last":"Peter","First":"Julia","AS":"AS250","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"064_PeterJulia.jpg"},{"Last":"Peterson","First":"Madeline M.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"065_PetersonMadelineM.jpg"},{"Last":"Phan","First":"Tara T.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"066_PhanTaraT.jpg"},{"Last":"Reed","First":"Max C.","AS":"AS250","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"068_ReedMaxC.jpg"},{"Last":"Ruehle-May","First":"Isaiah H.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"069_RuehleMayIsaiahH.jpg"},{"Last":"Sheldon","First":"Elijah D.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"072_SheldonElijahD.jpg"},{"Last":"Sinclair","First":"Hayden H.","AS":"AS100","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"073_SinclairHaydenH.jpg"},{"Last":"Theis","First":"Jake A.","AS":"AS100","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"075_TheisJakeA.jpg"},{"Last":"Tidgewell","First":"Charles A.","AS":"AS100","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"076_TidgewellCharlesA.jpg"},{"Last":"Utterback","First":"Christopher D.","AS":"AS250","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"080_UtterbackChristopherD.jpg"},{"Last":"Wheeler","First":"Andrew T.","AS":"AS100","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Fourth Class","Img":"084_WheelerAndrewT.jpg"},{"Last":"Bendinger","First":"Matthew S.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"007_BendingerMatthewS.jpg"},{"Last":"Bennett","First":"Liam B.","AS":"AS200","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"008_BennettLiamB.jpg"},{"Last":"Budde","First":"Cash J.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"012_BuddeCashJ.jpg"},{"Last":"Fennel","First":"Harper R.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"028_FennelHarperR.jpg"},{"Last":"Hemauer","First":"Julia","AS":"AS200","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"037_HemauerJulia.jpg"},{"Last":"Hoang","First":"Linh Y.","AS":"AS200","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"038_HoangLinhY.jpg"},{"Last":"Hutchinson","First":"Scott C.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"040_HutchinsonScottC.jpg"},{"Last":"Jons","First":"Erick L.","AS":"AS200","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"085_JonsErickL.jpg"},{"Last":"Jordan","First":"Cooper S.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"045_JordanCooperS.jpg"},{"Last":"Kasparek","First":"Camden L.","AS":"AS200","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"046_KasparekCamdenL.jpg"},{"Last":"McNamara","First":"Zachary A.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"057_McNamaraZacharyA.jpg"},{"Last":"Moreno","First":"Ryan A.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"060_MorenoRyanA.jpg"},{"Last":"Mueller","First":"Cy R.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"061_MuellerCyR.jpg"},{"Last":"Ramsey","First":"Kyle T.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"067_RamseyKyleT.jpg"},{"Last":"Reid","First":"Elijah B.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"086_ReidElijahB.jpg"},{"Last":"Sanderson","First":"Wyatt E.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"070_SandersonWyattE.jpg"},{"Last":"Schnute","First":"Ian W.","AS":"AS200","Flight":"Alpha","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"071_SchnuteIanW.jpg"},{"Last":"States","First":"Eric D.","AS":"AS200","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"074_StatesEricD.jpg"},{"Last":"Tjaden","First":"Andrew J.","AS":"AS200","Flight":"Delta","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"077_TjadenAndrewJ.jpg"},{"Last":"Urbanowicz","First":"Charles L.","AS":"AS200","Flight":"Bravo","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"079_UrbanowiczCharlesL.jpg"},{"Last":"Wenthold","First":"Addison E.","AS":"AS200","Flight":"Charlie","Role":"","Goes":"","Rank":"Cadet Third Class","Img":"083_WentholdAddisonE.jpg"},{"Last":"Ashbacker","First":"Milo K.","AS":"AS300","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"005_AshbackerMiloK.jpg"},{"Last":"Barszcz","First":"Caden N.","AS":"AS300","Flight":"Charlie","Role":"FLT/CC","Goes":"","Rank":"Cadet Captain","Img":"006_BarszczCadenN.jpg"},{"Last":"Bourek","First":"Akryn J.","AS":"AS300","Flight":"Bravo","Role":"FLT/CC","Goes":"","Rank":"Cadet Captain","Img":"009_BourekAkrynJ.jpg"},{"Last":"Bradlee","First":"Colin R.","AS":"AS300","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"010_BradleeColinR.jpg"},{"Last":"Collier","First":"Jonathan G.","AS":"AS300","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"017_CollierJonathanG.jpg"},{"Last":"Cooper","First":"Tyler L.","AS":"AS300","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"019_CooperTylerL.jpg"},{"Last":"Coulthard","First":"Nikalo","AS":"AS300","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"020_CoulthardNikalo.jpg"},{"Last":"Curtis","First":"Robert T.","AS":"AS300","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"021_CurtisRobertT.jpg"},{"Last":"Davila","First":"Joaquin D.","AS":"AS300","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"022_DavilaJoaquinD.jpg"},{"Last":"Davis","First":"Marti G.","AS":"AS300","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"023_DavisMartiG.jpg"},{"Last":"Gaul","First":"Stephen J.","AS":"AS300","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"031_GaulStephenJ.jpg"},{"Last":"Hader","First":"Ashten M.","AS":"AS300","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"035_HaderAshtenM.jpg"},{"Last":"Helle","First":"Nicolas D.","AS":"AS300","Flight":"Alpha","Role":"FLT/CC","Goes":"","Rank":"Cadet Captain","Img":"036_HelleNicolasD.jpg"},{"Last":"Humiston","First":"Victoria R.","AS":"AS300","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"039_HumistonVictoriaR.jpg"},{"Last":"Jalodia","First":"Anika","AS":"AS300","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"042_JalodiaAnika.jpg"},{"Last":"Marschang","First":"Allissa A.","AS":"AS300","Flight":"Delta","Role":"FLT/CC","Goes":"","Rank":"Cadet Captain","Img":"052_MarschangAllissaA.jpg"},{"Last":"Tu","First":"Micah J.","AS":"AS300","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"078_TuMicahJ.jpg"},{"Last":"Van Devander","First":"Don C.","AS":"AS300","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"081_VanDevanderDonC.jpg"},{"Last":"Albert","First":"Joseph I.","AS":"AS400","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"001_AlbertJosephI.jpg"},{"Last":"Alt","First":"Tyce W.","AS":"AS400","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Lieutenant Colonel","Img":"003_AltTyceW.jpg"},{"Last":"Bienfang","First":"Mitchell","AS":"AS400","Flight":"Deployed","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"087_BienfangMitchell.jpg"},{"Last":"Cerfogli","First":"Celia A.","AS":"AS400","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Colonel","Img":"088_CerfogliCeliaA.jpg"},{"Last":"Chien","First":"John J.","AS":"AS400","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Captain","Img":"089_ChienJohnJ.jpg"},{"Last":"Edwardson","First":"Clayton M.","AS":"AS400","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"026_EdwardsonClaytonM.jpg"},{"Last":"Gross","First":"Dylan G.","AS":"AS400","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"034_GrossDylanG.jpg"},{"Last":"Hyman","First":"Nathan T.","AS":"AS400","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"041_HymanNathanT.jpg"},{"Last":"Luhring","First":"Blayne D.","AS":"AS400","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Colonel","Img":"049_LuhringBlayneD.jpg"},{"Last":"Salas","First":"Alfredo E.","AS":"AS400","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"090_SalasAlfredoE.jpg"},{"Last":"Brady","First":"Loralei D.","AS":"AS500","Flight":"Alpha","Role":"FLT/CD","Goes":"","Rank":"Cadet Third Class","Img":"011_BradyLoraleiD.jpg"},{"Last":"Condon-Matzke","First":"Isabella","AS":"AS500","Flight":"Delta","Role":"FLT/CD","Goes":"","Rank":"Cadet Third Class","Img":"018_CondonMatzkeIsabella.jpg"},{"Last":"Estes","First":"Isella M.","AS":"AS500","Flight":"Bravo","Role":"FLT/CD","Goes":"","Rank":"Cadet Third Class","Img":"027_EstesIsellaM.jpg"},{"Last":"Martinez","First":"Todd M.","AS":"AS500","Flight":"Charlie","Role":"FLT/CD","Goes":"","Rank":"Cadet Third Class","Img":"053_MartinezToddM.jpg"},{"Last":"Metz","First":"Baker A.","AS":"AS700","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Lieutenant Colonel","Img":"058_MetzBakerA.jpg"},{"Last":"Donahoe","First":"William J.","AS":"AS800","Flight":"Alpha","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"091_DonahoeWilliamJ.jpg"},{"Last":"Figueroa-Baca","First":"Angel","AS":"AS800","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"029_FigueroaBacaAngel.jpg"},{"Last":"Kingery","First":"Alex L.","AS":"AS800","Flight":"Charlie","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"092_KingeryAlexL.jpg"},{"Last":"Plassman","First":"Simon E.","AS":"AS800","Flight":"Bravo","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"093_PlassmanSimonE.jpg"},{"Last":"Warner","First":"Nicole","AS":"AS800","Flight":"Delta","Role":"POC","Goes":"","Rank":"Cadet Major","Img":"082_WarnerNicole.jpg"}];
+// Everyone comes from the shared detachment roster (data/roster.js), the same list
+// the Org Chart, instructor tools and Peer Feedback use. Change people there (or on
+// the admin page), never here. Ranks, flights and duty positions come from its seats.
+const ROSTER = window.D250_ROSTER;
+document.getElementById('term').textContent = ROSTER.term || '';
+const RANK_LONG = {'C/Col':'Cadet Colonel','C/Lt Col':'Cadet Lieutenant Colonel','C/Maj':'Cadet Major','C/Capt':'Cadet Captain',
+  'C/1st Lt':'Cadet First Lieutenant','C/2d Lt':'Cadet Second Lieutenant','C/3C':'Cadet Third Class','C/4C':'Cadet Fourth Class',
+  'Col':'Colonel','Lt Col':'Lieutenant Colonel','Maj':'Major','Capt':'Captain','1st Lt':'First Lieutenant','2d Lt':'Second Lieutenant',
+  'CMSgt':'Chief Master Sergeant','SMSgt':'Senior Master Sergeant','MSgt':'Master Sergeant','TSgt':'Technical Sergeant','SSgt':'Staff Sergeant','SrA':'Senior Airman'};
+const FLIGHT_NAME = {afl:'Alpha', bfl:'Bravo', cfl:'Charlie', dfl:'Delta'};
+const flightOf = {}, seatOf = {};
+[ROSTER.flights, ROSTER.flightsPoc].forEach(function (list) {
+  Object.keys(list).forEach(function (f) { list[f].forEach(function (k) { flightOf[k] = FLIGHT_NAME[f]; }); });
+});
+ROSTER.seats.forEach(function (s) {
+  const k = s.poc && s.poc[0]; if (!k) return;
+  if (!seatOf[k]) seatOf[k] = s;                                   // first seat listed is the main one
+  if (/^[abcd]f[ld]$/.test(s.id) && !flightOf[k]) flightOf[k] = FLIGHT_NAME[s.id[0] + 'fl'];
+});
+const withMi = function (first, x) { return x && x.mi ? first + ' ' + x.mi : first; };
 
-// Duty positions from the Fall 2026 250th Cadet Wing org chart
-const POS = {
-  'Cerfogli':'WG/CC','Luhring':'WG/CD','Alt':'WG/COS','Plassman':'WG/POCA','Fennel':'WG/GMCA',
-  'Gross':'A1/DT','Jalodia':'A11/ACDO','Davila':'A12/PARO','Ashbacker':'A13/DEVO','Jordan':'Dep PARO','Urbanowicz':'Dep PARO',
-  'Albert':'A2/DT','Bradlee':'A22/HISTO','Budde':'A23/FLI','McNamara':'Dep HISTO',
-  'Salas':'A3/DT','Humiston':'A31/SPO','Curtis':'A32 D&C/CC','Tu':'A33/TSO','Gaul':'A34/SEO','Moreno':'Dep D&C/CC','States':'Dep SEO',
-  'Figueroa-Baca':'A4/DT','Coulthard':'A41/FUNO',
-  'Donahoe':'A5/DT','Cooper':'Dep A5/DT','Hader':'A51/CTO','Collier':'A52/PFO','Chien':'A53/CONO','Hutchinson':'Dep PFO',
-  'Edwardson':'A6/DT','Warner':'A9/DT','Peter':'Dep A9/DT','Davis':'A91/INVO','Van Devander':'A92/WELLO',
-  'Metz':'GP/CC','Hyman':'SQ/CC','Kingery':'SQ/CC',
-  'Helle':'Alpha FLT/CC','Bourek':'Bravo FLT/CC','Barszcz':'Charlie FLT/CC','Marschang':'Delta FLT/CC',
-  'Brady':'Alpha FLT/CD','Estes':'Bravo FLT/CD','Martinez':'Charlie FLT/CD','Condon-Matzke':'Delta FLT/CD'
-};
-
-// Det 250 cadre, from airforce.iastate.edu/cadre (photos load from that site)
-const U = 'https://www.airforce.iastate.edu/wp-content/uploads/sites/597/';
-const CADRE = [
-  { rank:'Lieutenant Colonel', first:'John',        last:'Cacic',       pos:'Detachment Commander',            img:U+'2025/06/john-cacic.jpg' },
-  { rank:'Major',              first:'Jordan',      last:'Matthews',    pos:'Education Officer',               img:U+'2025/07/capt-matthews.jpg' },
-  { rank:'Captain',            first:'Scott',       last:'Russell',     pos:'Operations Flight Commander',     img:U+'2024/06/scott-russell-e1725570913205.jpg' },
-  { rank:'Captain',            first:'Ty',          last:'Orr',         pos:'Recruiting Officer',              img:U+'2025/07/cpt-orr.jpg' },
-  { rank:'Technical Sergeant', first:'Matthew J.',  last:'Cabral',      pos:'Officer Accessions Instructor',   img:U+'2024/06/matthew-cabral-e1725631697982.jpg' },
-  { rank:'Staff Sergeant',     first:'Gabrielle L.',last:'Moore',       pos:'NCOIC, Administration',           img:U+'2025/10/Moore-480x600.jpg' },
-  { rank:'',                   first:'Tina',        last:'Schmalzried', pos:'Detachment Secretary',            img:U+'2022/07/aftina-e1726078399256.jpg' }
-];
+const CADETS = [], CADRE = [];
+Object.keys(ROSTER.people).forEach(function (key) {
+  const p = ROSTER.people[key], last = p[0], first = p[1], cls = p[2], x = p[3] || {}, s = seatOf[key];
+  if (cls === 'Cadre') {
+    if (!s) return;
+    const full = s.fullName ? s.fullName.split(' ') : null;           // e.g. the secretary: "Tina Schmalzried"
+    CADRE.push({ key:key, rank:RANK_LONG[s.poc[1]] || '', first:full ? full[0] : withMi(first, x), last:full ? full.slice(1).join(' ') : last, pos:s.title });
+    return;
+  }
+  const poc = cls === 'AS300' || cls === 'AS400' || cls === 'Graybeard';
+  const role = s && /^[abcd]fl$/.test(s.id) ? 'FLT/CC' : s && /^[abcd]fd$/.test(s.id) ? 'FLT/CD' : poc ? 'POC' : '';
+  CADETS.push({ key:key, last:last, first:withMi(first, x), as:x.as || cls, flight:flightOf[key] || '', role:role,
+    pos:s ? s.des.replace(/^\d+ (SQ\/CC)$/, '$1') : '',
+    rank:s ? RANK_LONG[s.poc[1]] || '' : cls === 'AS100' ? 'Cadet Fourth Class' : 'Cadet Third Class' });
+});
+CADRE.sort(function (a, b) { return (a.rank ? 0 : 1) - (b.rank ? 0 : 1); });   // civilian staff last
 
 const GROUPS = [
   ['CADRE','Cadre'], ['AS100_250','AS100 / AS250'], ['AS200','AS200'], ['AS300','AS300'],
@@ -372,18 +382,18 @@ const MODES = [
 const SIZES = [['10','10'], ['20','20'], ['all','Whole deck']];
 
 const people = [];
+// Photos: photos/<key>.jpg (large), falling back to the Org Chart's 240 px copy, then initials.
 CADETS.forEach(function (c) {
-  const g = (c.AS === 'AS100' || c.AS === 'AS250') ? 'AS100_250' : (c.AS === 'AS700' || c.AS === 'AS800') ? 'GREY' : c.AS;
-  people.push({ id:'c:' + c.Last + '|' + c.First, type:'cadet', grp:g, last:c.Last, first:c.First, goes:c.Goes || '',
-                rank:c.Rank || '', as:c.AS, flight:c.Flight || '', pos:POS[c.Last] || '', role:c.Role || '',
-                img:'photos/' + c.Img });
+  const g = (c.as === 'AS100' || c.as === 'AS250') ? 'AS100_250' : (c.as === 'AS700' || c.as === 'AS800' || c.as === 'Graybeard') ? 'GREY' : c.as;
+  people.push({ id:'c:' + c.last + '|' + c.first, type:'cadet', grp:g, last:c.last, first:c.first, goes:'',
+                rank:c.rank, as:c.as, flight:c.flight, pos:c.pos, role:c.role, key:c.key, img:'photos/' + c.key + '.jpg' });
 });
 CADRE.forEach(function (c, i) {
   people.push({ id:'r:' + c.last, type:'cadre', grp:'CADRE', last:c.last, first:c.first, goes:'',
-                rank:c.rank, as:'', flight:'', pos:c.pos, role:'', order:i, img:c.img });
+                rank:c.rank, as:'', flight:'', pos:c.pos, role:'', order:i, key:c.key, img:'photos/' + c.key + '.jpg' });
 });
 function posText(p) { return p.pos || p.role; }
-function whoLine(p) { return p.type === 'cadre' ? 'Who&rsquo;s that Cadre?!' : 'Who&rsquo;s that Cadet?!'; }
+function whoLine(p) { return p.type === 'cadre' ? 'Name this cadre member' : 'Name this cadet'; }
 // Announcement name: "Cadet Captain Tu" / "Captain Russell"; no rank (civilian staff) falls back to first + last
 function sayName(p) { return p.rank ? esc(p.rank) + ' ' + esc(p.last) : esc(firstName(p)) + ' ' + esc(p.last); }
 function heroPhoto(p) {                       // the big photo; starts as a silhouette in shadow mode
@@ -424,9 +434,10 @@ function photo(p, cls) {
   const img = document.createElement('img');
   img.alt = ''; img.src = p.img; img.draggable = false;
   img.addEventListener('error', function () {
+    if (p.key && img.src.indexOf('/org-chart/') < 0) { img.src = '../org-chart/photos/' + p.key + '.jpg'; return; }
     img.remove();
     const ph = document.createElement('div'); ph.className = 'ph';
-    ph.innerHTML = '<b>' + initials(p) + '</b>' + (p.type === 'cadre' ? 'Photo needs internet' : 'Photo not found');
+    ph.innerHTML = '<b>' + initials(p) + '</b>' + 'Photo not found';
     wrap.appendChild(ph);
   });
   wrap.appendChild(img);
