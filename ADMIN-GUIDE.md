@@ -70,13 +70,14 @@ On the Documents tab, press **Edit** on the card. Air Force publications should 
 
 ### Change a site password
 
-Some parts of Storm HQ are locked with their own password: the Documents and Policy plans and OPORDs (the cadet password), Flight Staff Evaluation, and the Cadre Dashboard. To change one:
+Some parts of Storm HQ are locked with their own password: the Documents and Policy plans and OPORDs (the cadet password) and Flight Staff Evaluation. The Cadre Dashboard always uses the admin password, so it changes when the admin password changes.
 
-1. History and settings tab, under **Site passwords**, press **Change** next to it.
-2. Enter the current password and the new one (at least 8 characters), then press **Change password**.
-3. Tell everyone who uses it. The old password stops working when the live site updates, about a minute later.
+Anyone signed in to the admin page can see and change these passwords without knowing the old one:
 
-The page saves each password you set here with the admin settings (locked with the admin password), so the next admin can press **Show** to see it. A password shows "Not saved here yet" until it has been changed once from this page.
+1. History and settings tab, under **Site passwords**, press **Show** to see the current password, or **Change** to set a new one (at least 8 characters).
+2. Tell everyone who uses it. The old password stops working when the live site updates, about a minute later.
+
+The first time only, a password may say "Not saved here yet". Press **Enter it once** and type the current password. The page checks it and saves it (locked with the admin password), and no one needs to know it after that.
 
 ### Undo a mistake
 
