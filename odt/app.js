@@ -9,22 +9,24 @@
    { title, former:{key:[last, first, class]},
      events:[{ id, name, place, start, end (YYYY-MM-DD), note,
                info:[{title, text}], itinerary:[{date, time, end, what, where, note}],
-               roster:[roster keys], sections:[room groups], rooms:[{room, sec, cadets:[keys]}],
-               lodging:[{name, address, phone, checkin, checkout, note}],
-               meals:[{date, meal, time, where, note}],
+               itin:{id, name, size} (the itinerary file, a PDF with the hotel address and the meals),
+               roster:[roster keys, cadre too], sections:[room groups], rooms:[{room, sec, cadets:[keys]}],
                docs:[{id, title, note, name, size}] }] }
-   Each supporting document is its own locked file, files/<doc id>.json, same layout, opened on click.
-   Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms, lodging, meals), #all. */
+   The itinerary and each supporting document are their own locked files, files/<id>.json, same layout.
+   Cadre (class "Cadre" in the roster) can be on the roster and always have a room to themselves.
+   Older ODTs may still hold an itinerary list (itinerary:[{date, time, end, what, where, note}]); it shows
+   when there is no itinerary file. Lodging and meal lists are no longer shown.
+   Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms), #all. */
 (function(){
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const R = window.D250_ROSTER || {people:{}, seats:[], flights:{}, flightsPoc:{}};
 const PASS_KEY = "d250-docs-pass";
-const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",AS500:"r500",Graybeard:"rgb"};
-const LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS300:"AS 300",AS400:"AS 400",AS500:"AS 500",Graybeard:"Graybeard"};
-const CLASS_ORDER = ["AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
+const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",AS500:"r500",Graybeard:"rgb",Cadre:"rcad"};
+const LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS300:"AS 300",AS400:"AS 400",AS500:"AS 500",Graybeard:"Graybeard",Cadre:"Cadre"};
+const CLASS_ORDER = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
 const FL = {afl:"Alpha",bfl:"Bravo",cfl:"Charlie",dfl:"Delta"};
-const TABS = [["overview","Overview"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"],["lodging","Lodging"],["meals","Meals"]];
+const TABS = [["overview","Overview"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"]];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -40,14 +42,33 @@ async function openBytes(pw, v){
 }
 const open = async (pw, v) => JSON.parse(new TextDecoder().decode(await openBytes(pw, v)));
 let PW = "";
-const BLOBS = {};
-async function docUrl(id){
-  if (!BLOBS[id]){
+const BLOBS = {}, BYTES = {};
+async function docBytes(id){
+  if (!BYTES[id]){
     const r = await fetch(`files/${encodeURIComponent(id)}.json`, {cache:"no-store"});
     if (!r.ok) throw new Error("missing");
-    BLOBS[id] = URL.createObjectURL(new Blob([await openBytes(PW, await r.json())], {type:"application/pdf"}));
+    BYTES[id] = await openBytes(PW, await r.json());
   }
+  return BYTES[id];
+}
+async function docUrl(id){
+  if (!BLOBS[id]) BLOBS[id] = URL.createObjectURL(new Blob([await docBytes(id)], {type:"application/pdf"}));
   return BLOBS[id];
+}
+async function drawPdf(id, box){                    // the itinerary, page by page, sized to the column
+  const lib = window.pdfjsLib; if (!lib) throw new Error("no pdf.js");
+  lib.GlobalWorkerOptions.workerSrc = "../documents/vendor/pdfjs/pdf.worker.min.js";
+  const pdf = await lib.getDocument({data:(await docBytes(id)).slice()}).promise;
+  box.innerHTML = "";
+  const w = box.clientWidth || 800, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  for (let n = 1; n <= pdf.numPages; n++){
+    const page = await pdf.getPage(n), base = page.getViewport({scale:1});
+    const v = page.getViewport({scale:(w * dpr) / base.width});
+    const c = document.createElement("canvas"); c.width = v.width; c.height = v.height;
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", `Itinerary page ${n} of ${pdf.numPages}`);
+    box.appendChild(c);
+    await page.render({canvasContext:c.getContext("2d"), viewport:v}).promise;
+  }
 }
 const PDF_ICON = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>`;
 
@@ -76,12 +97,13 @@ function defaultEvent(){
 function who(key){
   const p = R.people[key] || (D.former || {})[key];
   if (!p) return {key, first:"", last:key, cls:"", rank:"", pos:"", flt:""};
-  const seat = R.people[key] ? R.seats.find(s => s.poc && s.poc[0] === key && !s.cadre) : null;
+  const seat = R.people[key] ? R.seats.find(s => s.poc && s.poc[0] === key) : null;
   let flt = "";
   if (R.people[key]) for (const list of [R.flights, R.flightsPoc]) for (const [f, ks] of Object.entries(list || {})) if (ks.includes(key)) flt = FL[f];
   if (!flt && seat && /FLT\//.test(seat.des || "")) flt = seat.des.split(" ")[0];
   const cls = p[2];
   const rank = seat ? seat.poc[1] : cls === "AS100" ? "C/4C" : /AS(200|250|500)/.test(cls) ? "C/3C" : "";
+  if (cls === "Cadre") flt = "";
   return {key, first:p[1], last:p[0], cls, rank, pos:seat ? seat.title : "", flt};
 }
 function face(c, sz = 48){
@@ -106,15 +128,13 @@ const printBar = () => `<div class="toolbar"><button class="btn" id="print" type
 
 /* ---------- tabs ---------- */
 function overview(e){
-  const ros = rosterOf(e), rooms = e.rooms || [], lodge = (e.lodging || [])[0];
-  const itin = (e.itinerary || []).slice().sort((a, b) => ((a.date || "") + (a.time || "")).localeCompare((b.date || "") + (b.time || "")));
-  const first = itin[0];
+  const ros = rosterOf(e), rooms = e.rooms || [];
+  const nc = ros.filter(k => who(k).cls !== "Cadre").length, nk = ros.length - nc;
   const tile = (tab, k, v, s) => `<button type="button" class="tile" data-go="${tab}"><small>${esc(k)}</small><b>${esc(v)}</b>${s ? `<span>${esc(s)}</span>` : ""}</button>`;
   return `${printBar()}<div class="tiles">
-      ${tile("itinerary", "Dates", dates(e) || "Not set", first ? `First: ${dayLabel(first.date)} ${first.time || ""} ${first.what || ""}`.trim() : (e.place || ""))}
-      ${tile("roster", "Going", `${ros.length} cadet${ros.length === 1 ? "" : "s"}`, "See the roster")}
+      ${tile("itinerary", "Dates", dates(e) || "Not set", e.itin || (e.itinerary || []).length ? "See the itinerary" : "Itinerary not posted yet")}
+      ${tile("roster", "Going", `${nc} cadet${nc === 1 ? "" : "s"}`, nk ? `and ${nk} cadre` : "See the roster")}
       ${tile("rooms", "Rooms", rooms.length ? `${rooms.length} rooms` : "Not posted", rooms.length ? "Find your room" : "")}
-      ${tile("lodging", "Lodging", lodge ? lodge.name : "Not posted", lodge ? lodge.address : "")}
     </div>
     ${(e.docs || []).length ? `<section class="sec"><h2>Documents<span>${e.docs.length}</span></h2><div class="cards">${e.docs.map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
     ${(e.info || []).length ? `<section class="sec"><h2>Things to know<span>${e.info.length}</span></h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : ""}`;
@@ -125,24 +145,12 @@ function byDay(list, row){
   return Object.keys(groups).sort().map(d => `<div class="day"><h3>${esc(dayLabel(d))}</h3>${groups[d].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map(row).join("")}</div>`).join("");
 }
 function itinerary(e){
+  if (e.itin) return `<div class="toolbar"><button class="btn" type="button" data-doc="${esc(e.itin.id)}">Open</button><button class="btn" type="button" data-dl="${esc(e.itin.id)}" data-name="${esc(e.itin.name || "Itinerary.pdf")}">Download</button><button class="btn" id="print" type="button">Print</button><span class="derr" role="status"></span></div>
+    <div class="pdfpages" id="itinPages" data-id="${esc(e.itin.id)}"><p class="empty">Opening the itinerary…</p></div>`;
   const L = e.itinerary || [];
   if (!L.length) return empty("The itinerary isn't posted yet.");
   return printBar() + byDay(L, x => `<div class="row"><div class="t">${esc(x.time || "")}${x.end ? `<span class="s"> to ${esc(x.end)}</span>` : ""}</div>
     <div><div class="w">${esc(x.what || "")}</div>${x.where ? `<div class="s">${esc(x.where)}</div>` : ""}${x.note ? `<div class="s">${esc(x.note)}</div>` : ""}</div></div>`);
-}
-function meals(e){
-  const L = e.meals || [];
-  if (!L.length) return empty("Meals aren't posted yet.");
-  return printBar() + byDay(L, x => `<div class="row"><div class="t">${esc(x.meal || "")}${x.time ? `<span class="s"> ${esc(x.time)}</span>` : ""}</div>
-    <div><div class="w">${esc(x.where || "")}</div>${x.note ? `<div class="s">${esc(x.note)}</div>` : ""}</div></div>`);
-}
-function lodging(e){
-  const L = e.lodging || [];
-  if (!L.length) return empty("Lodging isn't posted yet.");
-  return printBar() + `<div class="cards">${L.map(x => `<div class="card"><h3>${esc(x.name || "")}</h3>
-    ${x.address ? `<p><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.address)}" target="_blank" rel="noopener">${esc(x.address)}</a></p>` : ""}
-    <dl class="kv">${x.phone ? `<dt>Phone</dt><dd><a href="tel:${esc(x.phone.replace(/[^0-9+]/g, ""))}">${esc(x.phone)}</a></dd>` : ""}${x.checkin ? `<dt>Check in</dt><dd>${esc(x.checkin)}</dd>` : ""}${x.checkout ? `<dt>Check out</dt><dd>${esc(x.checkout)}</dd>` : ""}</dl>
-    ${x.note ? `<p style="margin-top:8px">${esc(x.note)}</p>` : ""}</div>`).join("")}</div>`;
 }
 function roster(e){
   const ros = rosterOf(e).map(who);
@@ -155,9 +163,10 @@ function roster(e){
 }
 function room(r){
   const ppl = (r.cadets || []).map(who), solo = ppl.length === 1, label = String(r.room || "");
-  return `<article class="room${solo ? " solo" : ""}" data-room="${esc(label)}" aria-label="Room ${esc(label)}: ${esc(ppl.map(c => c.first + " " + c.last).join(" and "))}">
+  const cad = solo && ppl[0].cls === "Cadre";
+  return `<article class="room${solo ? " solo" : ""}${cad ? " cadre" : ""}" data-room="${esc(label)}" aria-label="Room ${esc(label)}: ${esc(ppl.map(c => c.first + " " + c.last).join(" and "))}">
     <div class="rn"><small>ROOM</small><b${label.length > 3 ? ` class="long"` : ""}>${esc(label)}</b></div>
-    <div class="pp">${ppl.map(person).join("")}${solo ? `<div class="p bonus"><span class="star" aria-hidden="true">★</span><div class="txt"><div class="nm">Bonus room</div><div class="pos">Single occupancy</div></div></div>` : ""}</div></article>`;
+    <div class="pp">${ppl.map(person).join("")}${solo ? `<div class="p bonus"><span class="star" aria-hidden="true">★</span><div class="txt"><div class="nm">${cad ? "Cadre room" : "Bonus room"}</div><div class="pos">Single occupancy</div></div></div>` : ""}</div></article>`;
 }
 function rooms(e){
   const L = e.rooms || [];
@@ -165,8 +174,9 @@ function rooms(e){
   const secs = [...(e.sections || [])]; for (const r of L) if (!secs.includes(r.sec)) secs.push(r.sec);
   return findBox("Find your room: type your name") + legend(L.flatMap(r => r.cadets)) + `<div id="rooms">${secs.map(s => {
     const list = L.filter(r => r.sec === s); if (!list.length) return "";
-    const c = list.reduce((t, r) => t + r.cadets.length, 0);
-    return `<section class="sec"><h2>${esc(s)}<span>${list.length} room${list.length === 1 ? "" : "s"} · ${c} cadet${c === 1 ? "" : "s"}</span></h2><div class="grid">${list.map(room).join("")}</div></section>`;
+    const all = list.flatMap(r => r.cadets), k = all.filter(x => who(x).cls === "Cadre").length, c = all.length - k;
+    const cnt = [c ? `${c} cadet${c === 1 ? "" : "s"}` : "", k ? `${k} cadre` : ""].filter(Boolean).join(" · ");
+    return `<section class="sec"><h2>${esc(s)}<span>${list.length} room${list.length === 1 ? "" : "s"} · ${cnt}</span></h2><div class="grid">${list.map(room).join("")}</div></section>`;
   }).join("")}</div>`;
 }
 function allList(){
@@ -181,7 +191,7 @@ function allList(){
     (past.length ? `<section class="sec"><h2>Past<span>${past.length}</span></h2><div class="evlist">${past.map(card).join("")}</div></section>` : "") ||
     empty("No ODTs are posted yet.");
 }
-const VIEWS = {overview, itinerary, roster, rooms, lodging, meals};
+const VIEWS = {overview, itinerary, roster, rooms};
 
 /* ---------- render ---------- */
 function render(){
@@ -206,6 +216,8 @@ function wireView(){
   document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => go(`${EV}/${b.dataset.go}`)));
   document.querySelectorAll("[data-ev]").forEach(b => b.addEventListener("click", () => go(`${b.dataset.ev}/overview`)));
   const pr = $("#print"); if (pr) pr.addEventListener("click", () => window.print());
+  const ip = $("#itinPages");
+  if (ip) drawPdf(ip.dataset.id, ip).catch(() => { ip.innerHTML = `<p class="empty">Couldn't show the itinerary here. Use Open or Download.</p>`; });
   const fail = b => { const m = b.parentNode.querySelector(".derr"); if (m) m.textContent = "Couldn't open it. Reload and try again."; };
   document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", async () => {
     const w = window.open("", "_blank");             // opened now, so the browser doesn't block it
@@ -221,7 +233,7 @@ function wireView(){
   const e = EVENTS.find(x => x.id === EV);
   if (TAB === "rooms"){
     const L = e.rooms || [];
-    $("#stats").textContent = `${L.reduce((t, r) => t + r.cadets.length, 0)} cadets · ${L.length} rooms`;
+    $("#stats").textContent = `${L.reduce((t, r) => t + r.cadets.length, 0)} people · ${L.length} rooms`;
     q.addEventListener("input", () => {
       const s = q.value.trim().toLowerCase(), box = $("#rooms"); box.classList.toggle("searching", !!s);
       const hits = [];
@@ -238,7 +250,7 @@ function wireView(){
       $("#found").textContent = msg;
     });
   } else {
-    $("#stats").textContent = `${rosterOf(e).length} cadets`;
+    $("#stats").textContent = `${rosterOf(e).length} people`;
     q.addEventListener("input", () => {
       const s = q.value.trim().toLowerCase(); let n = 0;
       document.querySelectorAll(".person").forEach(p => { const on = !s || p.dataset.name.includes(s); p.classList.toggle("hide", !on); if (on) n++; });

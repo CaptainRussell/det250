@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>ODT Module · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
-<meta name="description" content="Det 250 ODT Module: dates, itinerary, roster, rooms, lodging and meals for each ODT. Cadet password.">
+<meta name="description" content="Det 250 ODT Module: dates, itinerary, roster, rooms and documents for each ODT. Cadet password.">
 <link rel="stylesheet" href="../shared/det250.css">
 <link rel="stylesheet" href="../shared/instructor.css">
 <style>
@@ -55,7 +55,13 @@ button,input{font:inherit;color:inherit}
 .flt{font-size:11.5px;color:var(--d250-soft);font-weight:600}
 .bonus .star{flex:none;width:48px;height:48px;border-radius:50%;border:2px dashed var(--d250-gold);display:grid;place-items:center;color:var(--d250-gold);font-size:20px}
 .bonus .nm{color:var(--d250-gold)}
-.r100{--ring:var(--as100)} .r200{--ring:var(--as200)} .r250{--ring:var(--as250)} .r300{--ring:var(--as300)} .r400{--ring:var(--as400)} .r500{--ring:var(--as500)} .rgb{--ring:var(--gb)}
+.r100{--ring:var(--as100)} .r200{--ring:var(--as200)} .r250{--ring:var(--as250)} .r300{--ring:var(--as300)} .r400{--ring:var(--as400)} .r500{--ring:var(--as500)} .rgb{--ring:var(--gb)} .rcad{--ring:var(--cadre)}
+:root{--cadre:#475569} :root[data-theme="dark"]{--cadre:#a3b1c6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cadre:#a3b1c6}}
+.cadre .star{border-color:var(--cadre);color:var(--cadre)} .cadre .nm{color:var(--cadre)} .room.solo.cadre{border-color:color-mix(in srgb,var(--cadre) 70%,transparent)}
+/* itinerary file, drawn page by page with PDF.js */
+.pdfpages{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.pdfpages canvas{display:block;width:100%;height:auto;background:#fff;border-radius:10px;box-shadow:var(--d250-shadow);break-inside:avoid}
 .seg{display:inline-flex;flex-wrap:wrap;gap:3px;background:var(--d250-surface-2);border:1px solid var(--d250-line-strong);border-radius:12px;padding:3px}
 .seg button{border:0;background:transparent;border-radius:9px;padding:7px 14px;min-height:38px;font-weight:700;color:var(--d250-soft);cursor:pointer}
 .seg button:hover{color:var(--d250-ink)}
@@ -107,7 +113,7 @@ input[type="password"],input[type="search"]{font:inherit}
 .modbar .allbtn{margin-left:auto}
 .btn.on{border-color:var(--d250-gold);color:var(--d250-gold)}
 /* overview */
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .tile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;box-shadow:var(--d250-shadow);cursor:pointer;min-width:0;transition:border-color .2s}
 .tile:hover{border-color:var(--d250-gold)}
 .tile small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
@@ -147,7 +153,7 @@ input[type="password"],input[type="search"]{font:inherit}
 @media print{
   @page{size:letter;margin:.35in}
   :root,:root[data-theme="dark"]{--d250-page:#fff;--d250-surface:#fff;--d250-ink:#1b1b1d;--d250-soft:#55565c;--d250-line:#d9d9de;--d250-gold:#a06f00;
-    --as100:#2b67ad;--as200:#8f3a7c;--as250:#0f7b7b;--as300:#2f7d32;--as400:#b45309;--as500:#b42318;--gb:#1b2f57;color-scheme:light}
+    --as100:#2b67ad;--as200:#8f3a7c;--as250:#0f7b7b;--as300:#2f7d32;--as400:#b45309;--as500:#b42318;--gb:#1b2f57;--cadre:#475569;color-scheme:light}
   body{font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .wrap{max-width:none;padding:0}
   .modbar,.toolbar,.found,.ev .other,.d250-foot .source-line,.noprint{display:none!important}
@@ -178,7 +184,7 @@ input[type="password"],input[type="search"]{font:inherit}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
       <h1 id="title">ODT Module</h1>
-      <p class="d250-head-sub">Everything for each ODT: dates, itinerary, who's going, rooms, lodging and meals.</p>
+      <p class="d250-head-sub">Everything for each ODT: dates, itinerary, who's going, rooms and documents.</p>
     </div>
   </div>
 </header>
@@ -220,6 +226,7 @@ input[type="password"],input[type="search"]{font:inherit}
 </footer>
 
 <script src="../data/roster.js"></script>
+<script src="../documents/vendor/pdfjs/pdf.min.js" defer></script>
 <script src="app.js"></script>
 </body>
 </html>
