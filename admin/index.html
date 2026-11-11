@@ -937,8 +937,7 @@ function docDialog(e, i){
   openDialog(`${isNew ? "Add" : "Edit"} a document · ${evName(e)}`, `
     <div class="field"><label class="label" for="oTitle">Title</label><input id="oTitle" type="text" value="${esc(d.title)}" placeholder="Class excusal letter" required></div>
     <div class="field"><label class="label" for="oNote">Note (optional)</label><input id="oNote" type="text" value="${esc(d.note || "")}" placeholder="Print it and give it to each of your professors."></div>
-    <div class="field"><span class="label">PDF</span>${d.name ? `<p class="hint">Now: ${esc(d.name)}</p>` : ""}<label class="btn" style="align-self:flex-start">${d.name ? "Replace the PDF" : "Choose a PDF"}<input id="oPdf" type="file" accept="application/pdf" class="sr"></label><p class="hint" id="oPdfName">Up to 25 MB. It is locked with the cadet password when you publish.</p></div>
-    <p class="hint">No em dashes.</p>`,
+    <div class="field"><span class="label">PDF</span>${d.name ? `<p class="hint">Now: ${esc(d.name)}</p>` : ""}<label class="btn" style="align-self:flex-start">${d.name ? "Replace the PDF" : "Choose a PDF"}<input id="oPdf" type="file" accept="application/pdf" class="sr"></label><p class="hint" id="oPdfName">Up to 25 MB. It is locked with the cadet password when you publish.</p></div>`,
     `${isNew ? "" : `<button class="btn danger" id="oDel" type="button">Remove</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="oSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
   dlg.querySelector("#oPdf").addEventListener("change", async ev => {
     const file = ev.target.files[0], out = dlg.querySelector("#oPdfName"); pick = null; if (!file) return;
@@ -981,7 +980,7 @@ function itemDialog(e, key, i){
   openDialog(`${isNew ? "Add" : "Edit"} ${L.one} · ${L.label}`, L.fields.map(([k, label, type, req, ph]) =>
     `<div class="field"><label class="label" for="f_${k}">${esc(label)}</label>${type === "area"
       ? `<textarea id="f_${k}" class="short" placeholder="${esc(ph || "")}">${esc(x[k] || "")}</textarea>`
-      : `<input id="f_${k}" type="${type === "date" ? "date" : "text"}" value="${esc(x[k] || "")}" placeholder="${esc(ph || "")}"${type === "date" && e.start ? ` min="${esc(e.start)}"` : ""}${type === "date" && e.end ? ` max="${esc(e.end)}"` : ""}>`}</div>`).join("") + `<p class="hint">No em dashes. Times as 24-hour (0600).</p>`,
+      : `<input id="f_${k}" type="${type === "date" ? "date" : "text"}" value="${esc(x[k] || "")}" placeholder="${esc(ph || "")}"${type === "date" && e.start ? ` min="${esc(e.start)}"` : ""}${type === "date" && e.end ? ` max="${esc(e.end)}"` : ""}>`}</div>`).join(""),
     `${isNew ? "" : `<button class="btn danger" id="iDel" type="button">Remove</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="iSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
   dlg.querySelector("#iSave").addEventListener("click", () => {
     const n = {};
