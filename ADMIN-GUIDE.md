@@ -71,7 +71,7 @@ On the Documents tab, press **Edit** on the card. Air Force publications should 
 
 ### The ODT Module
 
-The ODT Module page holds everything for each ODT: details and things to know, itinerary, who's going, rooms, lodging and meals. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
+The ODT Module page holds everything for each ODT: details and things to know, the itinerary, who's going (cadets and cadre), rooms and documents. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
 
 **First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. Publish.
 
@@ -84,10 +84,9 @@ The ODT Module page holds everything for each ODT: details and things to know, i
 **Fill in an ODT.** Pick it in the **ODT** box, then use the tabs:
 
 - **Details:** Edit details (name, dates, place, note, room sections) and **Things to know** (uniform, what to bring, anything else). **Supporting documents** are PDFs cadets open or download from the Overview, such as the class excusal letter: **Add a document**, give it a title and an optional note, choose the PDF (up to 25 MB). It is locked with the cadet password when you publish.
-- **Itinerary** and **Meals:** add each item with its day and time (24-hour, like 0600). They sort by day and time on their own.
-- **Roster:** who is going. **Add cadets** has a search and "All AS 100" style buttons. If someone has a room but isn't on the roster, a button adds them.
-- **Rooms:** press **Edit** on a room to change its number, section or cadets. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room. The tab warns about roster cadets without a room, anyone in two rooms, and rooms that mix POC with GMC. Gender isn't in the roster, so keep each section to one gender yourself.
-- **Lodging:** name, address (cadets get a map link), phone, check in and check out.
+- **Itinerary:** upload the itinerary as one PDF (**Choose a PDF**, later **Replace** or **Remove**). Put the hotel address and the meals provided in it. Cadets see it page by page on the Itinerary tab and can open, download or print it.
+- **Roster:** who is going, cadets and cadre. **Add cadets** has a search and "All AS 100" style buttons. If someone has a room but isn't on the roster, a button adds them.
+- **Rooms:** press **Edit** on a room to change its number, section or cadets. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room. The tab warns about roster cadets without a room, anyone in two rooms, and rooms that mix POC with GMC. Cadre always get a room to themselves: **Give the cadre their rooms** puts each cadre member on the roster in a room of their own, in a Cadre section. Gender isn't in the roster, so keep each section to one gender yourself.
 
 **Remove this ODT** deletes it and everything in it. Removing a cadet from the roster keeps them in past ODTs, so history stays complete. Changing the cadet password (History and settings) locks the ODT Module again with the new password too.
 

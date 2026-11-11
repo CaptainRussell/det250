@@ -785,7 +785,7 @@ function docDialog(i, sec){
 const ODT_PATH = "odt/vault.json";
 let OD = {exists:false, sha:null, pw:"", savedPw:"", orig:"", data:null, seed:null, files:{}};
 const odtFile = id => `odt/files/${id}.json`;      // one locked file per supporting document
-const docIds = data => new Set((data ? data.events : []).flatMap(e => (e.docs || []).map(d => d.id)));
+const docIds = data => new Set((data ? data.events : []).flatMap(e => [...(e.docs || []), ...(e.itin ? [e.itin] : [])].map(d => d.id)));
 async function sealOdt(pw, data){ return JSON.stringify(await sealRaw(pw, enc.encode(JSON.stringify(data)))) + "\n"; }
 async function openOdt(pw, v){ return JSON.parse(dec.decode(await openRaw(pw, v))); }
 async function loadOdt(){
@@ -804,7 +804,7 @@ function seedData(x){
   const out = {title:"ODT Module", former:{}, events:[]};
   if (!x) return out;
   out.former = x.former || {};
-  const blank = {info:[], itinerary:[], lodging:[], meals:[], docs:[]};
+  const blank = {info:[], docs:[]};
   if (Array.isArray(x.events)){
     for (const e of x.events){
       const rooms = (x.rooms || []).filter(r => r.event === e.id).map(r => ({room:r.room, sec:r.sec, cadets:r.cadets}));
@@ -819,6 +819,7 @@ function seedData(x){
 }
 const O = () => OD.data;
 const GMC = c => /^AS(100|200|250|500)$/.test(c);
+const isCadre = k => (personRow(k) || [])[2] === "Cadre";
 const evName = e => e ? e.name || e.id : "";
 function evDates(e){ return [e.start, e.end && e.end !== e.start ? e.end : ""].filter(Boolean).join(" to "); }
 function personRow(k){ return R().people[k] || (O().former || {})[k] || null; }
@@ -826,6 +827,7 @@ const pname = k => { const p = personRow(k); return p ? fullName(p) : k; };
 function roomIssues(r){
   const cls = r.cadets.map(k => (personRow(k) || [])[2]).filter(Boolean), out = [];
   if (r.cadets.some(k => !personRow(k))) out.push("someone here isn't on the roster");
+  if (r.cadets.length > 1 && r.cadets.some(isCadre)) out.push("cadre get a room to themselves");
   if (cls.some(POC) && cls.some(GMC)) out.push("POC with GMC");
   else if (new Set(cls).size > 1) out.push("mixed AS classes");
   return out;
@@ -839,21 +841,15 @@ function curEvent(){
   }
   return E.find(e => e.id === UI.ev) || null;
 }
-const SUBS = [["details","Details"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"],["lodging","Lodging"],["meals","Meals"]];
+const SUBS = [["details","Details"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"]];
 const LISTS = {
   info:{label:"Things to know", one:"item", order:true, fields:[["title","Title","text",true,"Uniform"],["text","Text","area",false,"OCPs for travel. PT gear for Friday."]],
     show:x => [x.title, x.text]},
-  itinerary:{label:"Itinerary", one:"item", fields:[["date","Day","date",true],["time","Start time","text",false,"0600"],["end","End time (optional)","text",false,"0800"],["what","What","text",true,"Depart the Armory"],["where","Where","text",false,"Armory parking lot"],["note","Note","area",false,"Be there 15 minutes early."]],
-    show:x => [`${x.date || ""} ${x.time || ""}${x.end ? " to " + x.end : ""} · ${x.what}`, [x.where, x.note].filter(Boolean).join(" · ")], sort:x => (x.date || "") + (x.time || "")},
-  lodging:{label:"Lodging", one:"place", order:true, fields:[["name","Name","text",true,"Hotel or dorm name"],["address","Address","text",false,"Street, city, state"],["phone","Phone","text",false,"(402) 555-0100"],["checkin","Check in","text",false,"Thu 3 Dec, 1500"],["checkout","Check out","text",false,"Fri 4 Dec, 1100"],["note","Note","area",false,""]],
-    show:x => [x.name, [x.address, x.phone].filter(Boolean).join(" · ")]},
-  meals:{label:"Meals", one:"meal", fields:[["date","Day","date",true],["meal","Meal","text",true,"Lunch"],["time","Time","text",false,"1200"],["where","Where","text",false,"Dining facility"],["note","Note","area",false,"Bring cash for dinner."]],
-    show:x => [`${x.date || ""} ${x.meal}${x.time ? " · " + x.time : ""}`, [x.where, x.note].filter(Boolean).join(" · ")], sort:x => (x.date || "") + (x.time || "")},
 };
 
 function renderRooms(){
   const el = $("#tab-rooms");
-  const head = `<div class="tabhd"><div><h2>ODT Module</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Module</a> page: one entry per ODT with its details, itinerary, roster, rooms, lodging and meals. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
+  const head = `<div class="tabhd"><div><h2>ODT Module</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Module</a> page: one entry per ODT with its details, itinerary file, roster (cadets and cadre), rooms and documents. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
   if (!OD.data){
     const known = !!CFG.locks.docs;
     const setup = !OD.exists;
@@ -898,13 +894,13 @@ function renderRooms(){
   $("#addEv").addEventListener("click", () => eventDialog(null));
   if (!e) return;
   $("#delEv").addEventListener("click", () => {
-    if (!confirm(`Remove ${evName(e)} and everything in it (itinerary, roster, rooms, lodging, meals)? Cadets won't see it any more, even under All ODTs. You can undo it from the History tab after publishing.`)) return;
+    if (!confirm(`Remove ${evName(e)} and everything in it (itinerary, roster, rooms, documents)? Cadets won't see it any more, even under All ODTs. You can undo it from the History tab after publishing.`)) return;
     X.events = X.events.filter(x => x !== e); UI.ev = ""; saveUI();
     changed(`Removed the ${evName(e)} ODT`); render();
   });
   document.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () => { UI.odtSub = b.dataset.sub; saveUI(); render(); }));
   const body = $("#odBody");
-  ({details:subDetails, itinerary:() => subList(e, "itinerary", body), roster:subRoster, rooms:subRooms, lodging:() => subList(e, "lodging", body), meals:() => subList(e, "meals", body)})[UI.odtSub](e, body);
+  ({details:subDetails, itinerary:subItin, roster:subRoster, rooms:subRooms})[UI.odtSub](e, body);
 }
 const val2 = id => (document.getElementById(id) || {}).value || "";
 
@@ -917,6 +913,27 @@ function subDetails(e, body){
   $("#editEv").addEventListener("click", () => eventDialog(e.id));
   subList(e, "info", $("#infoList"));
   subDocs(e, $("#docList"));
+}
+function subItin(e, body){
+  const f = e.itin;
+  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Itinerary file</h3><p class="hint" style="margin:4px 0 0">Upload the itinerary as a PDF. Put the hotel address and the meals provided in it. Cadets see it page by page on the Itinerary tab, with Open and Download buttons. It is locked with the cadet password.</p></div></div>
+    ${f ? `<div class="item"><div class="txt"><div class="t1">${esc(f.name || "Itinerary")}${OD.files[f.id] ? ` <span class="tag gold">Not published</span>` : ""}</div><div class="t2">${f.size ? mb(f.size) : ""}</div></div>
+      <div class="acts"><label class="btn small">Replace<input id="itFile" type="file" accept="application/pdf" class="sr"></label><button class="btn small danger" type="button" id="itDel">Remove</button></div></div>`
+      : `<div class="panel"><div class="panel-bd" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start"><p class="muted" style="margin:0">No itinerary file yet.</p><label class="btn primary">Choose a PDF<input id="itFile" type="file" accept="application/pdf" class="sr"></label></div></div>`}
+    <p class="err" id="itErr" role="alert"></p>`;
+  $("#itFile").addEventListener("change", async ev => {
+    const file = ev.target.files[0]; if (!file) return;
+    const err = $("#itErr");
+    if (file.size > 25 * 1048576){ err.textContent = "That file is over 25 MB."; return; }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (dec.decode(bytes.subarray(0, 5)) !== "%PDF-"){ err.textContent = "That isn't a PDF. Save the itinerary as a PDF and choose it again."; return; }
+    let id = f ? f.id : slug(e.id + " itinerary"), k = 2;
+    if (!f){ const all = docIds(O()); const base = id; while (all.has(id)) id = base + "-" + k++; }
+    e.itin = {id, name:file.name, size:file.size}; OD.files[id] = {bytes};
+    changed(`${evName(e)}: ${f ? "replaced" : "added"} the itinerary file (${file.name})`); render();
+  });
+  const del = $("#itDel");
+  if (del) del.addEventListener("click", () => { if (!confirm("Remove the itinerary file? Cadets won't see it any more.")) return; delete OD.files[f.id]; delete e.itin; changed(`${evName(e)}: removed the itinerary file`); render(); });
 }
 const mb = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
 function subDocs(e, box){
@@ -997,16 +1014,16 @@ function itemDialog(e, key, i){
 function subRoster(e, body){
   const P = R().people, ros = e.roster = e.roster || [];
   const inRooms = [...new Set((e.rooms || []).flatMap(r => r.cadets))], missing = inRooms.filter(k => !ros.includes(k));
-  const order = ["AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
+  const order = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
   const sortedRos = [...ros].sort((a, b) => { const pa = personRow(a) || [a, "", ""], pb = personRow(b) || [b, "", ""]; return (order.indexOf(pa[2]) - order.indexOf(pb[2])) || sortName(pa).localeCompare(sortName(pb)); });
-  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Who's going <span class="tag">${ros.length}</span></h3><p class="hint" style="margin:4px 0 0">Cadets see this list with photos, ranks and positions from the roster.</p></div>
+  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Who's going <span class="tag">${ros.length}</span></h3><p class="hint" style="margin:4px 0 0">Cadets and cadre. Cadets see this list with photos, ranks and positions from the roster. Each cadre member gets a room to themselves.</p></div>
       <div class="tools">${missing.length ? `<button class="btn small" type="button" id="rAddRooms">Add the ${missing.length} with a room</button>` : ""}<button class="btn small primary" type="button" id="rAdd">Add cadets</button></div></div>
     ${missing.length ? `<div class="note">${missing.length} cadet${missing.length === 1 ? " has" : "s have"} a room but ${missing.length === 1 ? "isn't" : "aren't"} on the roster: ${esc(missing.map(pname).join(", "))}.</div>` : ""}
     <div class="people">${sortedRos.map(k => `<div class="item">${P[k] ? face(k, 32) : ""}<span class="txt"><span class="t1">${esc(pname(k))}</span><span class="t2"> ${esc(CLASS_LABEL[(personRow(k) || [])[2]] || "")}</span></span><div class="acts"><button class="btn small" type="button" data-rrm="${esc(k)}" aria-label="Take ${esc(pname(k))} off the roster">Remove</button></div></div>`).join("") || `<p class="muted">Nobody yet.</p>`}</div>`;
   const add = $("#rAddRooms"); if (add) add.addEventListener("click", () => { ros.push(...missing); changed(`${evName(e)}: added ${missing.length} cadets with rooms to the roster`); render(); });
   body.querySelectorAll("[data-rrm]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.rrm; e.roster = ros.filter(x => x !== k); changed(`${evName(e)}: took ${pname(k)} off the roster`); render(); }));
   $("#rAdd").addEventListener("click", () => {
-    const keys = Object.keys(P).filter(k => P[k][2] !== "Cadre" && !ros.includes(k)).sort((a, b) => (order.indexOf(P[a][2]) - order.indexOf(P[b][2])) || sortName(P[a]).localeCompare(sortName(P[b])));
+    const keys = Object.keys(P).filter(k => !ros.includes(k)).sort((a, b) => (order.indexOf(P[a][2]) - order.indexOf(P[b][2])) || sortName(P[a]).localeCompare(sortName(P[b])));
     openDialog(`Add cadets to ${evName(e)}`, `<div class="field"><label class="label" for="rq">Find</label><input id="rq" type="search" placeholder="Last or first name"></div>
       <div class="row" style="gap:6px">${order.filter(c => keys.some(k => P[k][2] === c)).map(c => `<button class="btn small" type="button" data-allcls="${c}">All ${esc(CLASS_LABEL[c])}</button>`).join("")}</div>
       <div id="rList" style="display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto">${keys.map(k => `<label class="item" data-n="${esc(sortName(P[k]).toLowerCase())}" style="cursor:pointer;padding:6px 10px"><input type="checkbox" value="${esc(k)}" data-cls="${esc(P[k][2])}"> ${face(k, 28)}<span class="txt"><span class="t1">${esc(sortName(P[k]))}</span> <span class="t2">${esc(CLASS_LABEL[P[k][2]])}</span></span></label>`).join("") || `<p class="muted">Everyone on the roster is already going.</p>`}</div>`,
@@ -1029,25 +1046,33 @@ function subRooms(e, body){
   const dup = Object.keys(seen).filter(k => seen[k] > 1);
   const loose = (e.roster || []).filter(k => !seen[k]);
   const n = rooms.reduce((t, r) => t + r.cadets.length, 0);
+  const cadNo = (e.roster || []).filter(k => isCadre(k) && !seen[k]);
   const nextIn = (i, d) => { for (let j = i + d; j >= 0 && j < rooms.length; j += d) if (rooms[j].sec === rooms[i].sec) return j; return -1; };
-  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Rooms <span class="tag">${rooms.length}</span></h3><p class="hint" style="margin:4px 0 0">${n} cadets in ${rooms.length} rooms. A room with one cadet shows as a bonus room. Gender isn't in the roster, so keep each section to one gender yourself.</p></div>
-      <div class="tools"><button class="btn small primary" id="addRoom" type="button">Add a room</button></div></div>
+  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Rooms <span class="tag">${rooms.length}</span></h3><p class="hint" style="margin:4px 0 0">${n} cadets in ${rooms.length} rooms. A room with one cadet shows as a bonus room. Each cadre member gets a room to themselves. Gender isn't in the roster, so keep each section to one gender yourself.</p></div>
+      <div class="tools">${cadNo.length ? `<button class="btn small" id="cadRooms" type="button">Give the ${cadNo.length} cadre ${cadNo.length === 1 ? "a room" : "their rooms"}</button>` : ""}<button class="btn small primary" id="addRoom" type="button">Add a room</button></div></div>
     ${loose.length ? `<div class="note">On the roster without a room: ${esc(loose.map(pname).join(", "))}.</div>` : ""}
     ${dup.length ? `<div class="note bad">In more than one room: ${esc(dup.map(pname).join(", "))}.</div>` : ""}
     ${secs.map(s => { const list = rooms.map((r, i) => i).filter(i => rooms[i].sec === s); if (!list.length) return "";
       return `<h3 class="grp">${esc(s)} <span class="tag">${list.length} rooms</span></h3><div class="list">${list.map(i => { const r = rooms[i], iss = roomIssues(r);
         return `<div class="item"><span class="tile" style="--tone:#16161a;display:grid;place-items:center;color:#f1be48;font-weight:800;font-size:${String(r.room).length > 3 ? 12 : 17}px">${esc(r.room)}</span>
           <div class="txt"><div class="t1" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">${r.cadets.map(k => `<span style="display:inline-flex;gap:8px;align-items:center">${P[k] ? face(k, 32) : ""}${esc(pname(k))}</span>`).join("")}</div>
-          <div class="t2">${r.cadets.map(k => { const p = personRow(k); return p ? CLASS_LABEL[p[2]] || p[2] : "?"; }).join(" + ")}${r.cadets.length === 1 ? `<span class="tag gold">Bonus room</span>` : ""}${iss.map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div></div>
+          <div class="t2">${r.cadets.map(k => { const p = personRow(k); return p ? CLASS_LABEL[p[2]] || p[2] : "?"; }).join(" + ")}${r.cadets.length === 1 ? `<span class="tag gold">${isCadre(r.cadets[0]) ? "Cadre room" : "Bonus room"}</span>` : ""}${iss.map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div></div>
           <div class="acts"><button class="btn small" type="button" data-rup="${i}" ${nextIn(i, -1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} up">↑</button><button class="btn small" type="button" data-rdown="${i}" ${nextIn(i, 1) < 0 ? "disabled" : ""} aria-label="Move room ${esc(r.room)} down">↓</button><button class="btn small" type="button" data-room="${i}">Edit</button></div></div>`; }).join("")}</div>`; }).join("") || `<p class="muted">No rooms yet.</p>`}`;
   const move = (i, d) => { const j = nextIn(i, d); if (j < 0) return; [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; changed(`${evName(e)}: moved room ${rooms[j].room} ${d < 0 ? "up" : "down"}`); render(); };
   body.querySelectorAll("[data-rup]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rup, -1)));
   body.querySelectorAll("[data-rdown]").forEach(b => b.addEventListener("click", () => move(+b.dataset.rdown, 1)));
   body.querySelectorAll("[data-room]").forEach(b => b.addEventListener("click", () => roomDialog(e, +b.dataset.room)));
   $("#addRoom").addEventListener("click", () => roomDialog(e, -1));
+  const cr = $("#cadRooms");
+  if (cr) cr.addEventListener("click", () => {             // one room each, in a Cadre section at the top
+    if (!e.sections.includes("Cadre")) e.sections.unshift("Cadre");
+    let next = rooms.map(r => +r.room).filter(x => x > 0).reduce((a, b) => Math.max(a, b), 0);
+    for (const k of cadNo) rooms.push({room:String(++next), sec:"Cadre", cadets:[k]});
+    changed(`${evName(e)}: gave ${cadNo.map(pname).join(", ")} ${cadNo.length === 1 ? "a room" : "rooms"} of their own`); render();
+  });
 }
 function eventDialog(id){
-  const X = O(), e = id ? X.events.find(x => x.id === id) : {id:"", name:"", place:"", start:"", end:"", note:"", sections:["Men · POC","Women","Men · GMC"]};
+  const X = O(), e = id ? X.events.find(x => x.id === id) : {id:"", name:"", place:"", start:"", end:"", note:"", sections:["Cadre","Men · POC","Women","Men · GMC"]};
   const others = [...X.events].sort((x, y) => (y.start || "").localeCompare(x.start || ""));
   openDialog(id ? `Edit ${evName(e)}` : "New ODT", `
     <div class="field"><label class="label" for="eName">Name</label><input id="eName" type="text" value="${esc(e.name)}" placeholder="Offutt Dec 3-4 ODT" required></div>
@@ -1058,7 +1083,7 @@ function eventDialog(id){
     </div>
     <div class="field"><label class="label" for="eNote">Line under the name</label><input id="eNote" type="text" value="${esc(e.note || "")}" placeholder="Same Gender Mandatory."></div>
     <div class="field"><label class="label" for="eSecs">Room sections, in order</label><input id="eSecs" type="text" value="${esc((e.sections || []).join(", "))}"><p class="hint">Room groups on the Rooms tab, separated by commas, for example Men · POC, Women, Men · GMC.</p></div>
-    ${id ? "" : `<div class="field"><label class="label" for="eCopy">Start from</label><select id="eCopy">${opt("", "Nothing (fill it in tab by tab)", true)}${others.map(x => opt(x.id, `A copy of ${evName(x)}: roster, rooms and things to know`, false)).join("")}</select><p class="hint">Copying gives you the same roster and room pairs to edit. Cadets who have left the roster are skipped. Itinerary, lodging and meals start empty.</p></div>`}`,
+    ${id ? "" : `<div class="field"><label class="label" for="eCopy">Start from</label><select id="eCopy">${opt("", "Nothing (fill it in tab by tab)", true)}${others.map(x => opt(x.id, `A copy of ${evName(x)}: roster, rooms and things to know`, false)).join("")}</select><p class="hint">Copying gives you the same roster and room pairs to edit. People who have left the roster are skipped. The itinerary file and documents aren't copied.</p></div>`}`,
     `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="eSave" type="button">${id ? "Save" : "Add"}</button></div>`);
   dlg.querySelector("#eSave").addEventListener("click", () => {
     const name = val("eName").trim(), start = val("eStart"), end = val("eEnd") || start;
@@ -1072,7 +1097,7 @@ function eventDialog(id){
     if (!id){
       let base = slug(name + " " + start.slice(0, 7)), nid = base, i = 2;
       while (X.events.some(x => x.id === nid)) nid = base + "-" + i++;
-      Object.assign(e, {id:nid, info:[], itinerary:[], roster:[], rooms:[], lodging:[], meals:[], docs:[]});
+      Object.assign(e, {id:nid, info:[], roster:[], rooms:[], docs:[]});
       const from = val("eCopy"), src = from && X.events.find(x => x.id === from);
       if (src){
         const live = k => !!R().people[k];
@@ -1093,7 +1118,7 @@ function roomDialog(e, i){
   const r = isNew ? {room:String((nums.length ? Math.max(...nums) : 0) + 1), sec:e.sections[0] || "Rooms", cadets:[]} : mine[i];
   const secs = [...new Set([...e.sections, ...mine.map(x => x.sec)])];
   const where = {}; for (const x of mine) if (x !== r) for (const k of x.cadets) where[k] = x.room;
-  const pool = [...new Set([...(e.roster || []), ...Object.keys(P).filter(k => P[k][2] !== "Cadre"), ...r.cadets])];
+  const pool = [...new Set([...(e.roster || []), ...Object.keys(P), ...r.cadets])];
   const going = new Set(e.roster || []);
   const cadetOpts = sel => opt("", "(nobody)", !sel) + pool
     .sort((a, b) => (going.has(b) - going.has(a)) || sortName(personRow(a) || [a, ""]).localeCompare(sortName(personRow(b) || [b, ""])))
@@ -1105,7 +1130,7 @@ function roomDialog(e, i){
     </div>
     <div class="field" id="rNewWrap" hidden><label class="label" for="rNew">New section name</label><input id="rNew" type="text" placeholder="Women · POC"></div>
     ${[0,1,2,3].map(n => `<div class="field"><label class="label" for="rC${n}">Cadet ${n + 1}${n > 1 ? " (optional)" : ""}</label><select id="rC${n}">${cadetOpts(r.cadets[n] || "")}</select></div>`).join("")}
-    <p class="hint">Cadets on this ODT's roster are listed first. Picking someone who is already in another room moves them here, and anyone picked who isn't on the roster is added to it. Leave cadet 2 empty for a bonus (single) room.</p>`,
+    <p class="hint">Cadets on this ODT's roster are listed first. Picking someone who is already in another room moves them here, and anyone picked who isn't on the roster is added to it. Leave cadet 2 empty for a bonus (single) room. Cadre always get a room to themselves.</p>`,
     `${isNew ? "" : `<button class="btn danger" id="rDel" type="button">Remove room</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="rSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
   const secSel = dlg.querySelector("#rSec"); secSel.addEventListener("change", () => { $("#rNewWrap").hidden = secSel.value !== "__new"; });
   dlg.querySelector("#rSave").addEventListener("click", () => {
@@ -1114,6 +1139,7 @@ function roomDialog(e, i){
     const cadets = [...new Set([0,1,2,3].map(n => val("rC" + n)).filter(Boolean))];
     if (!label || !sec){ alert("A room number and a section are required."); return; }
     if (!cadets.length){ alert("Pick at least one cadet, or remove the room."); return; }
+    if (cadets.length > 1 && cadets.some(isCadre)){ alert("Cadre always get a room to themselves. Put the cadre member in a room alone."); return; }
     if (mine.some(x => x !== r && String(x.room) === label) && !confirm(`There is already a room ${label}. Use the same number anyway?`)) return;
     const moved = cadets.filter(k => where[k]);
     for (const x of mine) if (x !== r) x.cadets = x.cadets.filter(k => !cadets.includes(k));
