@@ -54,6 +54,7 @@
 
 ## Flight Staff Evaluation
 - Encrypted HTML in `flight-staff-eval/index.html` (password lock restored at Captain Russell's request, Nov 2026). Decrypt outside the repo to edit; roster, evaluator roles, photos and submit settings live in `CONFIG` in the decrypted page. Never commit decrypted source or the password.
+- Step 3 (rate cadets) works in any order: Next and the photo strip move to any cadet without rating the current one first (Captain Russell, 12 Nov 2026). Only Step 4 (ranking) requires every cadet fully rated, and sends the evaluator to the first unfinished one.
 - Evaluator roles: Sq/CC and Flt/CC only (Gp/CC removed Nov 2026, Captain Russell). The committed lock file uses CRLF line endings (add them after `encrypt.mjs`) so a re-lock only changes the payload line.
 - Results go to a private spreadsheet via the Google Apps Script `submitUrl` in `CONFIG`, not to GitHub. The script's `list` action (admin key in its Script Properties) feeds the Cadre Dashboard. That URL is inside the encrypted payload. Previously public copies remain in Git history.
 - To rebuild the lock: keep the plain page outside the repo and run `node tools/encrypt.mjs plain.html flight-staff-eval/index.html <password> tools/locked-template.html`.
