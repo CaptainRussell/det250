@@ -70,6 +70,18 @@
 .cat.missing h3::after{content:" \2022 needed";color:var(--d250-gold);font-size:12px}
 .nav{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--d250-line);flex-wrap:wrap}
 .keys{font-size:12px;color:var(--d250-faint)}
+.navmid{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* optional comment */
+.note{padding:14px 0 4px;border-top:1px solid var(--d250-line)}
+.note label{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:15px;font-weight:800;margin-bottom:6px}
+.note label small{font-size:12px;font-weight:600;color:var(--d250-soft)}
+.note textarea{min-height:84px;font-size:14px;line-height:1.5}
+.note .hint{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.note .cnt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.note .cnt.near{color:var(--d250-gold)}
+.plist .cm{flex:none;color:var(--d250-soft);display:grid;place-items:center}
+table.rev td.cmt{text-align:left;max-width:260px;color:var(--d250-soft);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* review */
 .revtools{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -114,6 +126,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
   .peerhd{padding:12px}
   .peerhd h2{font-size:19px}
   .keys{display:none}
+  .navmid{order:3;width:100%}
   .groups b{min-width:0}
   .groups div{flex-direction:column;gap:0}
 }
@@ -128,7 +141,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
       <h1>Peer Feedback</h1>
-      <p class="d250-head-sub">Rate every cadet in your peer group 1 to 5 in four areas. Only cadre see the results.</p>
+      <p class="d250-head-sub">Rate every cadet in your peer group 1 to 5 in four areas, with optional comments. Only cadre see the results.</p>
     </div>
     <span class="due" id="due"></span>
   </div>
@@ -153,7 +166,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
           <div><b>AS 200 / 250 / 500</b><span class="muted">Rate every AS 200, AS 250 and AS 500.</span></div>
           <div><b>AS 100</b><span class="muted">Rate every AS 100.</span></div>
         </div>
-        <p class="hint">You don't rate yourself, and there are no comments. Your ratings save on this device as you go. You can submit only once, so review before you send.</p>
+        <p class="hint">You don't rate yourself. Go in any order: tap any name to jump to that cadet and come back later to finish. Each cadet has an optional comment box for cadre. Your ratings save on this device as you go. You can submit only once, so review before you send.</p>
       </form>
     </div>
   </section>
@@ -186,7 +199,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
         <div class="panel-bd" id="cats"></div>
         <div class="nav">
           <button class="btn" id="prev" type="button">← Previous</button>
-          <span class="keys">Keys: 1 to 5 rate the next area, ← → change cadet</span>
+          <span class="navmid"><button class="linkbtn" id="nextOpen" type="button">Next unfinished cadet</button><span class="keys">Keys: 1 to 5 rate the next area, ← → change cadet</span></span>
           <button class="btn primary" id="next" type="button">Next →</button>
         </div>
       </div>
@@ -194,7 +207,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
 
     <div id="vReview" hidden>
       <div class="panel">
-        <div class="panel-hd"><span class="label">Review your ratings</span><span class="hint" style="margin:0">Click a name to change their ratings.</span></div>
+        <div class="panel-hd"><span class="label">Review your ratings</span><span class="hint" style="margin:0">Click a name to change their ratings or comment.</span></div>
         <div class="panel-bd">
           <div class="revtools">
             <p class="muted" style="max-width:56ch">Use the whole scale. A 3 means on par with the rest of your group. If most of your ratings are the same number, cadre can't tell your peers apart.</p>
@@ -218,7 +231,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Cadet tool. Ratings go to a private cadre spreadsheet, not to this site, and are combined with every other cadet's to help cadre with internal rankings. The areas are Leadership, Professionalism, Teamwork and Communication.</p>
+  <p class="source-line">Cadet tool. Ratings and comments go to a private cadre spreadsheet, not to this site, and are combined with every other cadet's to help cadre with internal rankings. The areas are Leadership, Professionalism, Teamwork and Communication.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
@@ -240,6 +253,7 @@ const FACTORS = [  // four of the Flight Staff Evaluation areas (Participation d
 ];
 const HINT = {1:'Well below',2:'Below',3:'On par',4:'Above',5:'Top'};
 const STORE = 'd250-peer-feedback-v1', CODE_KEY = 'd250-peer-code';
+const NOTE_MAX = 600;   // characters per optional comment (the script clips anything longer)
 const CLS_COLOR = {AS100:'--as100',AS200:'--as200',AS250:'--as250',AS300:'--as300',AS400:'--as400',AS500:'--as500',Graybeard:'--gb'};
 const CLS_LABEL = c => c === 'Graybeard' ? 'Graybeard' : c.replace('AS', 'AS ');
 
@@ -251,7 +265,7 @@ const fmtWhen = d => new Date(d).toLocaleString('en-US', {month:'short', day:'nu
 const isClosed = () => Date.now() > new Date(DUE).getTime();
 
 let ME = null;      // {me:{key,name,cls}, peers:[...], group, groupLabel, submittedAt}
-let S = null;       // {key, ratings:{peerKey:{lead:..}}, cur, submittedAt, sig}
+let S = null;       // {key, ratings:{peerKey:{lead:..}}, comments:{peerKey:text}, cur, submittedAt, sig}
 let CODE = '';
 
 // One saved draft per cadet, so two cadets can share a computer.
@@ -306,10 +320,12 @@ async function signIn(code){
   ME.peers = shuffleFor(out.me.key, out.peers);   // random order per rater (no last-name bias), the same every time they sign in
   try{ sessionStorage.setItem(CODE_KEY, code); }catch(_){}
   const old = load(out.me.key);
-  S = (old && old.ratings) ? old : {key:out.me.key, ratings:{}, cur:0, submittedAt:null, sig:null};
+  S = (old && old.ratings) ? old : {key:out.me.key, ratings:{}, comments:{}, cur:0, submittedAt:null, sig:null};
+  S.comments = S.comments || {};   // drafts saved before comments existed
   // keep only peers who are still in the group
   const keys = new Set(ME.peers.map(p => p.key));
   Object.keys(S.ratings).forEach(k => { if(!keys.has(k)) delete S.ratings[k]; });
+  Object.keys(S.comments).forEach(k => { if(!keys.has(k)) delete S.comments[k]; });
   S.submittedAt = out.submittedAt || null;   // the server decides whether this cadet already submitted
   S.cur = Math.min(S.cur || 0, ME.peers.length - 1);
   save();
@@ -317,9 +333,9 @@ async function signIn(code){
   renderWho(); if(S.submittedAt) showDone(); else setView(doneCount() === ME.peers.length ? 'review' : 'rate');
 }
 $('#resetAll').addEventListener('click', () => {
-  if(!S || !doneCount() && !Object.keys(S.ratings).length) return toast('Nothing to reset yet');
-  if(!confirm(`Clear every rating you've given all ${ME.peers.length} cadets and start over?`)) return;
-  S.ratings = {}; S.cur = 0; save();
+  if(!S || !doneCount() && !Object.keys(S.ratings).length && !Object.keys(S.comments).length) return toast('Nothing to reset yet');
+  if(!confirm(`Clear every rating and comment you've given all ${ME.peers.length} cadets and start over?`)) return;
+  S.ratings = {}; S.comments = {}; S.cur = 0; save();
   const box = $('.plist'); if(box) box.scrollTop = 0;
   setView('rate'); toast('All ratings cleared');
 });
@@ -334,6 +350,7 @@ $('#signout').addEventListener('click', () => {
 const rOf = k => S.ratings[k] || {};
 const filled = k => FACTORS.filter(f => rOf(k)[f.k]).length;
 const doneCount = () => ME.peers.filter(p => filled(p.key) === FACTORS.length).length;
+const noteOf = k => S.comments[k] || '';
 const sig = () => JSON.stringify(ME.peers.map(p => FACTORS.map(f => rOf(p.key)[f.k] || 0)));
 function setRating(k, f, v){ (S.ratings[k] = S.ratings[k] || {})[f] = v; save(); }
 
@@ -361,7 +378,8 @@ document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click'
 function renderList(){
   $('#plist').innerHTML = ME.peers.map((p, i) => {
     const f = filled(p.key), cls = f === FACTORS.length ? 'done' : f ? 'part' : '';
-    return `<li><button type="button" data-go="${i}" ${i === S.cur ? 'aria-current="true"' : ''}>${face(p.name, 30)}<span class="nm">${esc(p.name)}</span><span class="st ${cls}" aria-label="${f === FACTORS.length ? 'done' : f + ' of ' + FACTORS.length}">✓</span></button></li>`;
+    const cm = noteOf(p.key).trim() ? '<span class="cm" title="Has a comment"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-label="has a comment"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' : '';
+    return `<li><button type="button" data-go="${i}" ${i === S.cur ? 'aria-current="true"' : ''}>${face(p.name, 30)}<span class="nm">${esc(p.name)}</span>${cm}<span class="st ${cls}" aria-label="${f === FACTORS.length ? 'done' : f + ' of ' + FACTORS.length}">✓</span></button></li>`;
   }).join('');
 }
 $('#plist').addEventListener('click', e => {
@@ -390,8 +408,15 @@ function renderCard(){
       <div class="scale" role="group" aria-label="${esc(f.label)} for ${esc(p.name)}">
         ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}" style="--sc:var(--s${v})" aria-pressed="${r[f.k] === v}" aria-label="${v}, ${HINT[v]}"><b>${v}</b><span>${HINT[v]}</span></button>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`).join('') + `
+    <div class="note">
+      <label for="noteIn">Comments for cadre <small>Optional</small></label>
+      <textarea id="noteIn" maxlength="${NOTE_MAX}" placeholder="Anything cadre should know about ${esc(p.name.split(', ')[1] || p.name)}: strengths, examples, or areas to grow.">${esc(noteOf(p.key))}</textarea>
+      <div class="hint"><span>Only cadre see comments. Keep them professional.</span><span class="cnt" id="noteCnt"></span></div>
+    </div>`;
+  noteCount();
   $('#prev').disabled = S.cur === 0;
+  $('#nextOpen').hidden = nextOpen(S.cur) === null;
   const last = S.cur === ME.peers.length - 1;
   $('#next').textContent = last ? 'Review →' : 'Next →';
 }
@@ -403,21 +428,37 @@ $('#cats').addEventListener('click', e => {
 function rate(p, cat, v){
   const wasDone = filled(p.key) === FACTORS.length;
   setRating(p.key, cat, v);
-  renderCard(); renderList(); renderProgress();
-  if(!wasDone && filled(p.key) === FACTORS.length){
-    // this rating just finished the cadet (whichever area came last): move on to the next one that
-    // still needs work. Changing a cadet who was already finished stays put.
-    const nxt = nextOpen(S.cur);
-    if(nxt !== null) setTimeout(() => { if(ME && ME.peers[S.cur] === p) go(nxt); }, 260);
-    else { toast('Everyone rated. Review and submit.'); setTimeout(() => setView('review'), 500); }
-  }
+  // Redraw only the buttons, so a comment being typed is never disturbed.
+  const row = $(`#cats [data-cat="${cat}"]`);
+  row.classList.remove('missing');
+  row.querySelectorAll('[data-v]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === v)));
+  $('#nextOpen').hidden = nextOpen(S.cur) === null;
+  renderList(); renderProgress();
+  // No jump to another cadet: the cadet stays on screen so they can add a comment, then choose
+  // Next, Next unfinished, or any name in the list.
+  if(!wasDone && filled(p.key) === FACTORS.length)
+    toast(doneCount() === ME.peers.length ? 'Everyone rated. Review and submit when ready.' : `${p.name.split(', ')[1] || p.name} done`);
 }
+function noteCount(){
+  const t = $('#noteIn'), c = $('#noteCnt'); if(!t || !c) return;
+  const n = t.value.length; c.textContent = `${n} / ${NOTE_MAX}`; c.classList.toggle('near', n > NOTE_MAX * .9);
+}
+$('#cats').addEventListener('input', e => {
+  if(e.target.id !== 'noteIn') return;
+  const k = ME.peers[S.cur].key, had = !!noteOf(k).trim();
+  if(e.target.value.trim()) S.comments[k] = e.target.value.slice(0, NOTE_MAX); else delete S.comments[k];
+  noteCount();
+  clearTimeout(noteCount.t); noteCount.t = setTimeout(save, 300);
+  if(had !== !!e.target.value.trim()) renderList();
+});
+$('#cats').addEventListener('focusout', e => { if(e.target.id === 'noteIn') save(); });
 function nextOpen(from){
   const n = ME.peers.length;
   for(let i = 1; i <= n; i++){ const j = (from + i) % n; if(filled(ME.peers[j].key) < FACTORS.length) return j; }
   return null;
 }
 $('#prev').addEventListener('click', () => go(S.cur - 1));
+$('#nextOpen').addEventListener('click', () => { const n = nextOpen(S.cur); if(n !== null) go(n); });
 $('#next').addEventListener('click', () => S.cur === ME.peers.length - 1 ? setView('review') : go(S.cur + 1));
 document.addEventListener('keydown', e => {
   if(!ME || $('#vRate').hidden || e.target.matches('input,textarea,select') || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -435,9 +476,9 @@ function renderReview(){
   ME.peers.forEach(p => FACTORS.forEach(f => { const v = rOf(p.key)[f.k]; if(v) counts[v]++; }));
   const max = Math.max(1, ...counts.slice(1));
   $('#dist').innerHTML = [1,2,3,4,5].map(v => `<div title="${counts[v]} rating${counts[v] === 1 ? '' : 's'} of ${v}">${counts[v]}<i style="--sc:var(--s${v});height:${Math.round(counts[v] / max * 34) + 2}px"></i>${v}</div>`).join('');
-  $('#rev').innerHTML = `<thead><tr><th>Cadet</th>${FACTORS.map(f => `<th title="${esc(f.label)}">${esc(f.short)}</th>`).join('')}</tr></thead><tbody>${
+  $('#rev').innerHTML = `<thead><tr><th>Cadet</th>${FACTORS.map(f => `<th title="${esc(f.label)}">${esc(f.short)}</th>`).join('')}<th style="text-align:left">Comment</th></tr></thead><tbody>${
     ME.peers.map((p, i) => `<tr><td><button class="pn" type="button" data-edit="${i}">${face(p.name, 28)}${esc(p.name)}</button></td>${
-      FACTORS.map(f => { const v = rOf(p.key)[f.k]; return `<td>${v ? `<span class="sv" style="--sc:var(--s${v})">${v}</span>` : '<span class="sv none">–</span>'}</td>`; }).join('')}</tr>`).join('')}</tbody>`;
+      FACTORS.map(f => { const v = rOf(p.key)[f.k]; return `<td>${v ? `<span class="sv" style="--sc:var(--s${v})">${v}</span>` : '<span class="sv none">–</span>'}</td>`; }).join('')}<td class="cmt" title="${esc(noteOf(p.key))}">${noteOf(p.key).trim() ? esc(noteOf(p.key)) : '<span style="color:var(--d250-faint)">None</span>'}</td></tr>`).join('')}</tbody>`;
   renderStatus();
 }
 $('#rev').addEventListener('click', e => { const b = e.target.closest('[data-edit]'); if(!b) return; S.cur = +b.dataset.edit; save(); setView('rate'); });
@@ -455,9 +496,10 @@ $('#submit').addEventListener('click', async () => {
   if(!confirm(`Submit your ratings for all ${ME.peers.length} cadets? You can submit only once, and you won't be able to change them after this.`)) return;
   btn.disabled = true; btn.textContent = 'Sending…';
   const ratings = Object.fromEntries(ME.peers.map(p => [p.key, FACTORS.map(f => rOf(p.key)[f.k])]));
+  const comments = Object.fromEntries(ME.peers.map(p => [p.key, noteOf(p.key).trim().slice(0, NOTE_MAX)]).filter(([, t]) => t));
   try{
     let res;
-    try{ res = await fetch(SUBMIT_URL, {method:'POST', body:JSON.stringify({action:'peer', code:CODE, ratings})}); }
+    try{ res = await fetch(SUBMIT_URL, {method:'POST', body:JSON.stringify({action:'peer', code:CODE, ratings, comments})}); }
     catch(_){ throw new Error("couldn't reach the server"); }
     const out = await res.json().catch(() => ({ok:false, error:'unexpected reply from the server'}));
     if(!out.ok) throw new Error(out.error || 'not saved');
