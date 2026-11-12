@@ -109,6 +109,10 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .cb .trk em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--d250-ink);opacity:.7}
 .cb b{text-align:right;font-variant-numeric:tabular-nums}
 .stack{display:flex;height:22px;border-radius:7px;overflow:hidden}
+.notes{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.notes li{background:var(--d250-surface-2);border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.notes p{white-space:pre-wrap;overflow-wrap:anywhere}
+.notes small{display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--d250-soft);font-weight:600;font-size:12px}
 .stack i{display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;font-style:normal;background:var(--sc)}
 :root{--s1:#c8372d;--s2:#d9822b;--s3:#8a8b92;--s4:#3a8f5c;--s5:#1f7a8c}
 
@@ -310,7 +314,8 @@ function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else ren
    ===================================================================== */
 function model(d){
   const people = {}; d.roster.forEach(r => people[r.key] = Object.assign({}, r, {got:[], given:[]}));
-  const rows = d.ratings.filter(r => people[r[0]] && people[r[1]] && r[0] !== r[1]);
+  // r = [rater, peer, lead, prof, team, comm, comment]; cadets marked rated:false (taken off the form) are left out
+  const rows = d.ratings.filter(r => people[r[0]] && people[r[1]] && r[0] !== r[1] && people[r[1]].rated !== false);
   rows.forEach(r => { people[r[0]].given.push(r); people[r[1]].got.push(r); });
   const raters = {};
   Object.values(people).forEach(p => {
@@ -331,7 +336,8 @@ function model(d){
     p.rawO = mean(p.raw.filter(x => !isNaN(x)));
     p.adjO = mean(p.adj.filter(x => !isNaN(x)));
     p.dist = [0, 0, 0, 0, 0, 0]; p.got.forEach(r => r.slice(2, 2 + NPF).forEach(v => p.dist[v]++));
-    p.possible = Object.values(people).filter(q => q.group === p.group && q.key !== p.key).length;
+    p.possible = Object.values(people).filter(q => q.group === p.group && q.key !== p.key).length;   // everyone in the group rates, including cadets taken off the form
+    p.notes = p.got.filter(r => String(r[2 + NPF] || '').trim()).map(r => ({by:people[r[0]], text:String(r[2 + NPF]).trim()}));
   });
   PEER_GROUPS.forEach(G => {
     const list = Object.values(people).filter(p => p.group === G.g && p.got.length);
@@ -374,7 +380,7 @@ function renderPeer(){
     </section>
 
     <section class="blk">
-      <div class="blk-hd"><h2>Peer rankings</h2><span class="muted">Click a cadet for their breakdown.</span></div>
+      <div class="blk-hd"><h2>Peer rankings</h2><span class="muted">Click a cadet for their breakdown and comments.</span></div>
       <div class="filters">
         <div class="seg" role="group" aria-label="Peer group">${PEER_GROUPS.map(G => `<button type="button" data-group="${G.g}" aria-pressed="${UI.group === G.g}">${esc(G.label)}</button>`).join('')}</div>
         <div class="seg small" role="group" aria-label="AS level">${['all'].concat(PEER_GROUPS.find(G => G.g === UI.group).classes).map(c => `<button type="button" data-cls="${c}" aria-pressed="${UI.cls === c}">${c === 'all' ? 'All' : esc(CLS_LABEL(c))}</button>`).join('')}</div>
@@ -396,7 +402,7 @@ const subLabel = () => [UI.cls !== 'all' ? CLS_LABEL(UI.cls) : '', fyOn() ? UI.f
 const clsLine = p => CLS_LABEL(p.cls) + (fyOf(p.key) ? ' · ' + fyOf(p.key) : '');
 function rankList(){
   const G = PEER_GROUPS.find(G => G.g === UI.group);
-  let ps = Object.values(PEER.people).filter(p => p.group === G.g);
+  let ps = Object.values(PEER.people).filter(p => p.group === G.g && p.rated !== false);
   if(UI.cls !== 'all') ps = ps.filter(p => p.cls === UI.cls);
   if(fyOn()) ps = ps.filter(p => fyOf(p.key) === UI.fy);
   const rated = ps.filter(p => p.got.length).sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
@@ -465,8 +471,8 @@ async function copyLeft(g){
 }
 function csv(){
   const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own']);
-  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No']).map(q).join(','));
+  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own', 'Comments']);
+  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No', p.notes.map(n => n.text).join(' | ')]).map(q).join(','));
   const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}${fyOn() ? '_' + UI.fy : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
@@ -491,6 +497,9 @@ function detail(key){
       <div><span class="label">Every rating received (${total})</span>
         <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
         <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>
+      <div><span class="label">Comments (${p.notes.length})</span>${p.notes.length
+        ? `<ul class="notes">${p.notes.map(n => `<li><p>${esc(n.text)}</p><small>${face(n.by.name, 20)}${esc(n.by.name)} &middot; ${esc(CLS_LABEL(n.by.cls))}</small></li>`).join('')}</ul>`
+        : '<p class="muted" style="margin-top:6px;font-size:13px">No comments yet. Comments are optional.</p>'}</div>
       <p class="hint" style="margin:0">Raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ${p.submittedAt ? `Submitted their own ratings ${esc(fmtWhen(p.submittedAt))}.` : 'Has not submitted their own ratings yet.'}</p>`
       : `<p class="muted">No one has rated ${esc(p.name)} yet.</p>`}
     </div>`;

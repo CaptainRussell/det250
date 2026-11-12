@@ -15,13 +15,16 @@
    Endpoints
      GET  ?action=whoami&code=XXXX-XXXX   -> who the code belongs to + the peers to rate
      GET  ?action=results&token=...      -> everything the Cadre page needs
-     POST {action:"peer", code, ratings:{peerKey:[lead,prof,team,comm]}}
+     POST {action:"peer", code, ratings:{peerKey:[lead,prof,team,comm]}, comments:{peerKey:"optional text"}}
    Tabs it keeps: Ratings (one row per rater and peer). ONE submission per cadet: to let a cadet redo it, delete their rows in Submissions and Ratings,
    Submissions (one row per cadet), Log (every accepted submit). */
 
 var CATS = ['lead', 'prof', 'team', 'comm'];
 var CAT_LABELS = ['Leadership', 'Professionalism', 'Teamwork', 'Communication'];
 var GROUP_LABELS = { poc: 'POC', gmc: 'AS 200 / 250 / 500', as100: 'AS 100' };
+// Cadets nobody rates (they still sign in and rate their own group). Capt Russell, 12 Nov 2026.
+var NOT_RATED = ['FigueroaBacaAngel'];
+var NOTE_MAX = 600;   // characters kept per optional comment
 
 function norm_(code) { return String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
 function byCode_(code) {
@@ -31,7 +34,10 @@ function byCode_(code) {
   return null;
 }
 function byKey_(key) { for (var i = 0; i < ROSTER.length; i++) if (ROSTER[i].key === key) return ROSTER[i]; return null; }
-function peersOf_(me) { return ROSTER.filter(function (p) { return p.group === me.group && p.key !== me.key; }); }
+function rated_(p) { return NOT_RATED.indexOf(p.key) < 0; }
+function peersOf_(me) { return ROSTER.filter(function (p) { return p.group === me.group && p.key !== me.key && rated_(p); }); }
+// Plain text only; a leading = + - @ would make the Sheet treat it as a formula.
+function note_(t) { t = String(t == null ? '' : t).replace(/\r\n?/g, '\n').trim().slice(0, NOTE_MAX); return /^[=+\-@]/.test(t) ? "'" + t : t; }
 function pub_(p) { return { key: p.key, name: p.name, cls: p.cls }; }
 function out_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
 function closed_() { return Date.now() > new Date(DUE).getTime(); }
@@ -41,9 +47,15 @@ function sheet_(name, header) {
   if (!sh) { sh = ss.insertSheet(name); sh.appendRow(header); sh.setFrozenRows(1); }
   return sh;
 }
-function ratingsSheet_() { return sheet_('Ratings', ['Rater key', 'Rater', 'Rater class', 'Group', 'Peer key', 'Peer', 'Peer class'].concat(CAT_LABELS).concat(['Submitted'])); }
+var R_HEAD = ['Rater key', 'Rater', 'Rater class', 'Group', 'Peer key', 'Peer', 'Peer class'].concat(CAT_LABELS).concat(['Submitted', 'Comment']);
+var R_NOTE = R_HEAD.length - 1;   // column index of the comment (added 12 Nov 2026, after Submitted)
+function ratingsSheet_() {
+  var sh = sheet_('Ratings', R_HEAD);
+  if (sh.getRange(1, R_NOTE + 1).getValue() !== 'Comment') sh.getRange(1, R_NOTE + 1).setValue('Comment');   // sheets made before comments
+  return sh;
+}
 function subsSheet_() { return sheet_('Submissions', ['Cadet key', 'Cadet', 'Class', 'Group', 'Submitted', 'Times submitted']); }
-function logSheet_() { return sheet_('Log', ['Received', 'Cadet', 'Class', 'Group', 'Peers rated']); }
+function logSheet_() { return sheet_('Log', ['Received', 'Cadet', 'Class', 'Group', 'Peers rated', 'Comments']); }
 
 function submittedMap_() {
   var sh = subsSheet_(), v = sh.getDataRange().getValues(), m = {};
@@ -66,10 +78,11 @@ function doGet(e) {
       if (!p.token || p.token !== CADRE_TOKEN) return out_({ ok: false, error: 'Not authorized.' });
       var subs = submittedMap_();
       var rv = ratingsSheet_().getDataRange().getValues(), ratings = [];
-      for (var i = 1; i < rv.length; i++) ratings.push([rv[i][0], rv[i][4]].concat(rv[i].slice(7, 7 + CATS.length).map(Number)));
+      // [rater, peer, lead, prof, team, comm, comment]
+      for (var i = 1; i < rv.length; i++) ratings.push([rv[i][0], rv[i][4]].concat(rv[i].slice(7, 7 + CATS.length).map(Number)).concat([String(rv[i][R_NOTE] || '').replace(/^'/, '')]));
       return out_({ ok: true, due: DUE, now: new Date().toISOString(), categories: CATS, groups: GROUP_LABELS,
         roster: ROSTER.map(function (r) { var s = subs[r.key];
-          return { key: r.key, name: r.name, cls: r.cls, group: r.group, submittedAt: s ? new Date(s.at).toISOString() : null, times: s ? s.times : 0 }; }),
+          return { key: r.key, name: r.name, cls: r.cls, group: r.group, rated: rated_(r), submittedAt: s ? new Date(s.at).toISOString() : null, times: s ? s.times : 0 }; }),
         ratings: ratings });
     }
     return out_({ ok: false, error: 'Unknown request.' });
@@ -85,9 +98,9 @@ function doPost(e) {
     if (!me) return out_({ ok: false, error: 'That code was not found.' });
     if (closed_()) return out_({ ok: false, error: 'Peer Feedback closed at the suspense.' });
     if (submittedMap_()[me.key]) return out_({ ok: false, error: 'You already submitted. Each cadet submits once; see Capt Russell if something needs to change.' });
-    var peers = peersOf_(me), r = body.ratings || {};
+    var peers = peersOf_(me), r = body.ratings || {}, notes = body.comments || {};
     if (r[me.key]) return out_({ ok: false, error: 'You cannot rate yourself.' });
-    var keys = Object.keys(r);
+    var keys = Object.keys(r).filter(function (k) { return NOT_RATED.indexOf(k) < 0; });   // an old draft may still hold a removed cadet
     if (keys.length !== peers.length) return out_({ ok: false, error: 'Rate every cadet in your group (' + peers.length + ').' });
     for (var i = 0; i < peers.length; i++) {
       var v = r[peers[i].key];
@@ -98,12 +111,14 @@ function doPost(e) {
     var now = new Date(), sh = ratingsSheet_(), data = sh.getDataRange().getValues();
     // Clear any leftover rows for this rater (e.g. after cadre deleted their Submissions row to allow a redo).
     for (var k = data.length - 1; k >= 1; k--) if (data[k][0] === me.key) sh.deleteRow(k + 1);
-    var rows = peers.map(function (p) { return [me.key, me.name, me.cls, GROUP_LABELS[me.group], p.key, p.name, p.cls].concat(r[p.key].map(Number)).concat([now]); });
+    var nNotes = 0;
+    var rows = peers.map(function (p) { var t = note_(notes[p.key]); if (t) nNotes++;
+      return [me.key, me.name, me.cls, GROUP_LABELS[me.group], p.key, p.name, p.cls].concat(r[p.key].map(Number)).concat([now, t]); });
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
     var subs = submittedMap_(), s = subs[me.key], ss = subsSheet_();
     if (s) ss.getRange(s.row, 5, 1, 2).setValues([[now, s.times + 1]]);
     else ss.appendRow([me.key, me.name, me.cls, GROUP_LABELS[me.group], now, 1]);
-    logSheet_().appendRow([now, me.name, me.cls, GROUP_LABELS[me.group], rows.length]);
+    logSheet_().appendRow([now, me.name, me.cls, GROUP_LABELS[me.group], rows.length, nNotes]);
     return out_({ ok: true, received: now.toISOString() });
   } catch (err) {
     return out_({ ok: false, error: String(err && err.message || err) });
