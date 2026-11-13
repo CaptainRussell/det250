@@ -66,7 +66,9 @@
   document.getElementById('main').append(panels);
   ['cadre','command','staff','group'].forEach(id=>panels.append(document.getElementById(id)));
   document.getElementById('main').prepend(host);
-  host.innerHTML='<div class="bandhead"><h2>Proposed 2027 Org Charts</h2><span class="rt">Spring 2027 board review</span></div><div class="proposal-nav" role="tablist" aria-label="Proposed 2027 teams">'+proposals.map(p=>'<button type="button" role="tab" id="team-tab-'+p.id+'" aria-controls="chart-panels" aria-selected="false" tabindex="-1" data-proposal="'+p.id+'">'+esc(p.name.replaceAll(' / ','/'))+'</button>').join('')+'</div><p class="proposal-note">All proposed positions are shown. GMC cadet flight rosters are not assigned.</p>';
+  host.innerHTML='<div class="bandhead"><h2>Proposed 2027 Org Charts</h2><span class="rt">Spring 2027 board review</span></div><p class="proposal-note">All proposed positions are shown. GMC cadet flight rosters are not assigned.</p>';
+  const teams=document.getElementById('team-tabs');   // the team picker lives in the thin sticky chart bar
+  teams.innerHTML=proposals.map(p=>'<button type="button" role="tab" id="team-tab-'+p.id+'" aria-controls="chart-panels" aria-selected="false" tabindex="-1" data-proposal="'+p.id+'">'+esc(p.name.replaceAll(' / ','/'))+'</button>').join('');
   function updateIndex(seats){
     SEATS.splice(0,SEATS.length,...seats);
     Object.keys(byId).forEach(id=>delete byId[id]);SEATS.forEach(s=>byId[s.id]=s);
@@ -102,8 +104,8 @@
     const p=proposals.find(p=>p.id===id);if(!p)return;
     resetInteractions();selected=id;window.currentProposedChart=p;root.dataset.chartView='proposed';MODE='poc';root.dataset.mode='poc';
     updateIndex([...cadreSeats,...p.seats.map(s=>toNative(s,p))]);
-    host.hidden=false;panels.setAttribute('role','tabpanel');panels.setAttribute('aria-labelledby','team-tab-'+p.id);
-    host.querySelectorAll('[role="tab"]').forEach(tab=>{const on=tab.dataset.proposal===id;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;if(on&&focus)tab.focus();});
+    host.hidden=false;teams.hidden=false;panels.setAttribute('role','tabpanel');panels.setAttribute('aria-labelledby','team-tab-'+p.id);
+    teams.querySelectorAll('[role="tab"]').forEach(tab=>{const on=tab.dataset.proposal===id;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;if(on&&focus)tab.focus();});
     document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','true');
     document.getElementById('h-group').textContent='Squadron and Flight Staff';
     document.querySelector('#group .rt').textContent='Proposed squadron commanders, flight commanders and deputies';
@@ -118,15 +120,15 @@
       document.querySelector('.source-line').textContent='Positions reflect the Fall 2026 250th Cadet Wing organization chart, the Flip Week construct, and current flight assignments. Tap or click anyone for details; use the tabs at the top to switch charts.';
       rebuild();saveLocation();
     }
-    host.hidden=true;panels.removeAttribute('role');panels.removeAttribute('aria-labelledby');root.dataset.chartView=mode;document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','false');
+    host.hidden=true;teams.hidden=true;panels.removeAttribute('role');panels.removeAttribute('aria-labelledby');root.dataset.chartView=mode;document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','false');
   }
   document.addEventListener('click',event=>{
     if(event.target.closest('#proposed-chart-tab')){event.stopImmediatePropagation();showProposal(selected);window.scrollTo(0,0);}
     else {const tab=event.target.closest('[data-set-mode]');if(tab)showCurrent(tab.dataset.setMode);}
   },true);
-  host.addEventListener('click',event=>{const tab=event.target.closest('[data-proposal]');if(tab)showProposal(tab.dataset.proposal);});
-  host.querySelector('[role="tablist"]').addEventListener('keydown',event=>{
-    const tabs=[...host.querySelectorAll('[role="tab"]')];let i=tabs.indexOf(document.activeElement);if(i<0)return;
+  teams.addEventListener('click',event=>{const tab=event.target.closest('[data-proposal]');if(tab)showProposal(tab.dataset.proposal);});
+  teams.addEventListener('keydown',event=>{
+    const tabs=[...teams.querySelectorAll('[role="tab"]')];let i=tabs.indexOf(document.activeElement);if(i<0)return;
     if(event.key==='ArrowRight')i=(i+1)%tabs.length;else if(event.key==='ArrowLeft')i=(i+tabs.length-1)%tabs.length;else if(event.key==='Home')i=0;else if(event.key==='End')i=tabs.length-1;else return;
     event.preventDefault();showProposal(tabs[i].dataset.proposal,true);
   });
