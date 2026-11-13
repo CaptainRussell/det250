@@ -122,15 +122,37 @@
     }
     host.hidden=true;teams.hidden=true;panels.removeAttribute('role');panels.removeAttribute('aria-labelledby');root.dataset.chartView=mode;document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','false');
   }
+  /* Keep the reader's place when switching charts (Captain Russell, 13 Nov 2026: compare charts without
+     snapping to the top). Note which section sits under the sticky chart bar and how far into it, then hold
+     that spot while the new chart builds, the Flip Week fade runs and the cadre panel closes. */
+  let holdUntil=0,holdRaf=0;
+  function spot(){
+    const line=document.querySelector('.chartbar').getBoundingClientRect().bottom+8;
+    const els=['cadre','command','staff','group'].map(id=>document.getElementById(id)).filter(e=>e&&e.offsetParent);
+    if(!els.length||els[0].getBoundingClientRect().top>line)return null;          // still above the chart: leave the scroll alone
+    for(const el of els){const r=el.getBoundingClientRect();if(r.bottom>line)return {id:el.id,f:(line-r.top)/Math.max(r.height,1),line};}
+    const el=els[els.length-1],r=el.getBoundingClientRect();return {id:el.id,f:1,line,past:r.bottom-line};
+  }
+  function hold(s){
+    if(!s)return;cancelAnimationFrame(holdRaf);holdUntil=performance.now()+700;
+    const step=()=>{
+      const el=document.getElementById(s.id);if(!el)return;
+      const r=el.getBoundingClientRect(),want=s.past!=null?r.bottom-s.past:r.top+s.f*r.height,d=want-s.line;
+      if(Math.abs(d)>1)window.scrollTo({top:window.scrollY+d,behavior:'instant'});
+      if(performance.now()<holdUntil)holdRaf=requestAnimationFrame(step);
+    };step();
+  }
+  const stopHold=()=>{holdUntil=0;cancelAnimationFrame(holdRaf);};
+  ['wheel','touchmove'].forEach(t=>addEventListener(t,stopHold,{passive:true}));
   document.addEventListener('click',event=>{
-    if(event.target.closest('#proposed-chart-tab')){event.stopImmediatePropagation();showProposal(selected);window.scrollTo(0,0);}
-    else {const tab=event.target.closest('[data-set-mode]');if(tab)showCurrent(tab.dataset.setMode);}
+    if(event.target.closest('#proposed-chart-tab')){event.stopImmediatePropagation();const s=spot();showProposal(selected);hold(s);}
+    else {const tab=event.target.closest('[data-set-mode]');if(tab){const s=spot();showCurrent(tab.dataset.setMode);setTimeout(()=>hold(s),0);}}
   },true);
-  teams.addEventListener('click',event=>{const tab=event.target.closest('[data-proposal]');if(tab)showProposal(tab.dataset.proposal);});
+  teams.addEventListener('click',event=>{const tab=event.target.closest('[data-proposal]');if(tab){const s=spot();showProposal(tab.dataset.proposal);hold(s);}});
   teams.addEventListener('keydown',event=>{
     const tabs=[...teams.querySelectorAll('[role="tab"]')];let i=tabs.indexOf(document.activeElement);if(i<0)return;
     if(event.key==='ArrowRight')i=(i+1)%tabs.length;else if(event.key==='ArrowLeft')i=(i+tabs.length-1)%tabs.length;else if(event.key==='Home')i=0;else if(event.key==='End')i=tabs.length-1;else return;
-    event.preventDefault();showProposal(tabs[i].dataset.proposal,true);
+    event.preventDefault();const s=spot();showProposal(tabs[i].dataset.proposal,true);hold(s);
   });
   const initialSeat=location.hash.slice(1)||params.get('member');
   if(params.get('view')==='proposed'||location.hash==='#spring-proposals'||location.hash.startsWith('#proposal-')){
