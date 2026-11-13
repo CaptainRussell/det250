@@ -51,7 +51,7 @@
 
 *{box-sizing:border-box}
 html,body{margin:0}
-html{scroll-padding-top:116px}
+html{scroll-padding-top:108px}
 body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -60,8 +60,10 @@ button{cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:0 16px}
 
 /* ---------- header ---------- */
-header.top{--d250-measure:1240px;position:sticky;top:var(--d250-bar-h,42px);z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
-header.top .d250-head-in{padding-top:12px;padding-bottom:12px}
+header.top{--d250-measure:1240px}
+/* thin sticky chart bar under the header: which chart, and (on the proposed charts) which team */
+.chartbar{position:sticky;top:var(--d250-bar-h,42px);z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
+.chartbar-in{max-width:1240px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 20px;margin-bottom:6px}
 .toolbar .search{order:2}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -312,11 +314,8 @@ section.band{margin-top:26px}
 
 /* ---------- mobile outline ---------- */
 @media (max-width:760px){
-  html{scroll-padding-top:140px}
+  html{scroll-padding-top:150px}
   h1{font-size:18px;margin:0}
-  header.top .d250-head-in{padding-top:10px;padding-bottom:10px;gap:8px}
-  header.top .d250-head-icon,header.top .d250-head-sub{display:none}
-  header.top .d250-head h1,header.top h1{font-size:20px}
   .seg{min-width:0;width:100%}
   .toolbar .search{flex:1 1 100%;order:-1}
   .seg button{padding:8px 10px;font-size:15px;min-height:46px}
@@ -429,13 +428,18 @@ section.band{margin-top:26px}
         <h1>Det 250 Org Chart</h1>
         <p class="d250-head-sub">Fall 2026 wing organization and Flip Week, plus Spring 2027 proposed charts.</p>
       </div>
-      <div class="seg" role="group" aria-label="Which chart to show">
-        <button type="button" data-set-mode="poc" aria-pressed="true">POC Chart</button>
-        <button type="button" data-set-mode="flip" aria-pressed="false">Flip Week</button>
-        <button type="button" id="proposed-chart-tab" aria-pressed="false" aria-controls="spring-proposals">Proposed 2027 Org Charts</button>
-      </div>
   </div>
 </header>
+<nav class="chartbar" aria-label="Chart">
+  <div class="chartbar-in">
+    <div class="seg" role="group" aria-label="Which chart to show">
+      <button type="button" data-set-mode="poc" aria-pressed="true">POC Chart</button>
+      <button type="button" data-set-mode="flip" aria-pressed="false">Flip Week</button>
+      <button type="button" id="proposed-chart-tab" aria-pressed="false" aria-controls="spring-proposals">Proposed 2027<span class="long"> Org Charts</span></button>
+    </div>
+    <div class="teams" id="team-tabs" role="tablist" aria-label="Proposed 2027 teams" hidden></div>
+  </div>
+</nav>
 
 <main class="wrap" id="main">
   <div class="toolbar">
