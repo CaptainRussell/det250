@@ -3,10 +3,11 @@
 
    href     tool folder ("pfra/") or an outside https link
    name     card title          blurb   one or two sentences under the title
-   section  "cadets", "evaluators" or "instructors"
+   section  "cadets", "evaluators", "instructors" or "admin" (Cadre only)
    tone     card color (hex)    icon    fallback icon key (ICONS in index.html)
    locked   optional pill text, for example "Cadre password" (true shows "Password")
    ext      true for an outside link (opens in a new tab); art names its card picture
+   role     "cadre" shows the card only to someone signed in with the cadre password
    hidden   true hides the card without deleting it (use this for a tool nobody owns) */
 window.D250_HUB = {
 "tools": [
@@ -19,10 +20,10 @@ window.D250_HUB = {
   {"href":"odt/","name":"ODT Module","tone":"#155e75","icon":"faces","section":"cadets","locked":"Cadet password","blurb":"Everything for each ODT: dates, itinerary, who's going, rooms and documents, current and past."},
   {"href":"flight-staff-eval/","name":"Flight Staff Evaluation","tone":"#a06f00","icon":"chart","section":"evaluators","locked":"Flight Staff password","blurb":"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
   {"href":"peer-feedback/","name":"Peer Feedback","tone":"#be185d","icon":"peers","section":"evaluators","blurb":"Rate every cadet in your peer group 1 to 5 in Leadership, Professionalism, Teamwork and Communication. Due Fri 20 Nov, 1700. Only cadre see the results."},
-  {"href":"cadre/","name":"Cadre Dashboard","tone":"#475569","icon":"shield","section":"evaluators","locked":"Cadre password","blurb":"Peer Feedback and Flight Staff Evaluation results: rankings by AS level, charts and who still owes theirs."},
   {"href":"spin-the-wheel/","name":"Spin the Wheel","tone":"#b45309","icon":"wheel","section":"instructors","blurb":"Seating chart and name wheel. Add your class, set up the room, and spin to call on a student."},
   {"href":"make-the-call/","name":"Make the Call","tone":"#0f766e","icon":"scale","section":"instructors","blurb":"Agree, Neutral or Disagree: teams argue leadership statements to a board and split the prize pool."},
   {"href":"battle-buddy-recon/","name":"Battle Buddy Recon","tone":"#4a5a36","icon":"binoculars","section":"instructors","blurb":"OPSEC practical exercise: pair cadets on a wheel, run the open-source recon clock, then brief out."},
-  {"href":"practicum-adventure/","name":"Practicum Adventure","tone":"#6d28d9","icon":"dice","section":"instructors","blurb":"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."}
+  {"href":"practicum-adventure/","name":"Practicum Adventure","tone":"#6d28d9","icon":"dice","section":"instructors","blurb":"Leadership role-playing game for the projector. Cadets join on their phones, vote, roll and face the IG."},
+  {"href":"admin-hub/","name":"Admin","tone":"#475569","icon":"shield","section":"admin","role":"cadre","blurb":"Everything behind the scenes in one place: Peer Feedback and Flight Staff Evaluation results, editing Storm HQ, site passwords and the back end."}
 ]
 };

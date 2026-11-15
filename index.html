@@ -78,6 +78,42 @@ section{margin-top:26px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
 :root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
 
+/* ---------- sign in (shared/signin.js) ---------- */
+.whoami{display:flex;justify-content:center;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--soft);animation:up .6s var(--ease) both;animation-delay:.18s}
+.whoami .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.whoami[data-role="cadet"] .dot{background:#3fb871}
+.whoami[data-role="cadre"] .dot{background:var(--gold)}
+.whoami b{color:var(--ink)}
+.linkbtn{all:unset;cursor:pointer;font-weight:700;color:var(--gold);border-radius:6px;padding:2px 4px}
+.linkbtn:hover{text-decoration:underline}
+.linkbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+dialog.signin{border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);padding:28px 24px 22px;width:min(400px,calc(100vw - 32px));text-align:center;box-shadow:var(--shadow-lg)}
+dialog.signin[open]{animation:pop .45s var(--ease) both}
+dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.signin img{width:84px;height:auto}
+.signin h2{margin:10px 0 4px;font-size:21px;line-height:1.2}
+.signin p{margin:0;color:var(--soft);font-size:14px}
+.signin form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.signin label.l{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.signin input[type=password]{font:inherit;font-size:16px;min-height:46px;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--page);color:var(--ink)}
+.signin input[type=password]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)}
+.signin .keep{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--soft);cursor:pointer}
+.signin .keep input{width:18px;height:18px;accent-color:var(--cardinal)}
+.signin .err{min-height:20px;color:var(--cardinal);font-size:13px;font-weight:600}
+.signin .go{font:inherit;font-weight:800;min-height:46px;border:0;border-radius:10px;background:var(--cardinal);color:#fff;cursor:pointer;transition:filter .2s}
+.signin .go:hover{filter:brightness(1.08)}
+.signin .go:disabled{opacity:.7;cursor:progress}
+.signin .skip{align-self:center;margin-top:2px;color:var(--soft);font-weight:700}
+.signin .roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;text-align:left}
+.signin .roles div{background:var(--surface-2);border-radius:10px;padding:9px 11px;font-size:12.5px;color:var(--soft);line-height:1.4}
+.signin .roles b{display:block;color:var(--ink);font-size:13px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.lock.open{background:color-mix(in srgb,#3fb871 18%,transparent);color:#2f9a5c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lock.open{color:#6fd39a}}
+:root[data-theme="dark"] .lock.open{color:#6fd39a}
+
 @media (max-width:640px){
   .hero{padding:30px 0 18px}
   .patch{width:104px}
@@ -98,7 +134,26 @@ section{margin-top:26px}
   <div class="eyebrow">AFROTC Detachment 250 · Iowa State University</div>
   <h1>Storm HQ</h1>
   <p class="lede">Tools built by the Operations Flight Commander to support cadet operations, plus a few fun classroom activities. One link for all of Det 250.</p>
+  <div class="whoami" id="whoami" aria-live="polite"></div>
 </header>
+
+<dialog class="signin" id="signin" aria-labelledby="siTitle">
+  <img src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="84" height="87">
+  <h2 id="siTitle">Welcome to Storm HQ</h2>
+  <p>Enter the cadet or cadre password once, and the locked tools open without asking again.</p>
+  <form id="siForm" autocomplete="off">
+    <label class="l" for="siPw">Cadet or cadre password</label>
+    <input id="siPw" type="password" autocomplete="current-password" spellcheck="false">
+    <label class="keep"><input id="siKeep" type="checkbox"> Keep me signed in on this device</label>
+    <div class="err" id="siErr" role="alert"></div>
+    <button class="go" id="siGo" type="submit">Sign in</button>
+    <button class="linkbtn skip" id="siSkip" type="button">Skip for now</button>
+  </form>
+  <div class="roles" aria-hidden="true">
+    <div><b>Cadet</b>Documents and Policy plans, OPORDs and the ODT Module.</div>
+    <div><b>Cadre</b>Everything cadets get, plus the Admin tool.</div>
+  </div>
+</dialog>
 
 <main class="wrap" id="tools"></main>
 
@@ -109,17 +164,21 @@ section{margin-top:26px}
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
   <p class="source-line">Storm HQ is home base for every Det 250 cadet, evaluator and instructor tool. New tools show up here as they're added.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
-  <p class="source-line"><a href="admin/">Cadre admin</a></p>
+  <p class="source-line"><a href="admin-hub/">Admin</a></p>
 </footer>
 
 <script src="data/hub.js"></script>
+<script src="shared/signin.js"></script>
 <script>
 /* =====================================================================
    TOOLS: the hub cards live in data/hub.js (edit them there). To add a tool,
    drop its folder in the repo and add one entry to that list.
    ===================================================================== */
-const TOOLS = window.D250_HUB.tools.filter(t => !t.hidden);
-const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
+const SI = window.D250SignIn;
+// "admin" (Cadre only) comes first: only cadre ever see it, so it is the first thing they reach.
+const SECTIONS = {admin:"Cadre only", cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
+// Which sign-in key opens each locked tool, so its pill can say "Unlocked" (shared/signin.js).
+const OPENS = {"documents/":"docs", "odt/":"docs", "flight-staff-eval/":"fse", "cadre/":"cadre", "admin-hub/":"cadre"};
 
 const ICONS = {
   peers:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.5"/><path d="M2.5 19c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2M14 14.2c.9-.5 1.9-.7 3-.7 2.5 0 4.5 1.8 4.5 4.5"/>',
@@ -137,8 +196,17 @@ const ICONS = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
-const ART = new Set(["pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt"]);
+const ART = new Set(["admin-hub","pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt"]);
 const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
+const LOCK_SVG = open => `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V7a4 4 0 0 1 7.5-2" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
+function pill(t){
+  const k = OPENS[t.href], open = k && SI.has(k);
+  if (open) return `<span class="meta"><span class="lock open">${LOCK_SVG(true)}Unlocked</span></span>`;
+  return t.locked ? `<span class="meta"><span class="lock">${LOCK_SVG(false)}${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : "";
+}
+function render(){
+const role = SI.role();
+const TOOLS = window.D250_HUB.tools.filter(t => !t.hidden && (!t.role || t.role === role));
 let i = 0;
 document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key, title]) => {
   const list = TOOLS.filter(t => t.section === key);
@@ -147,9 +215,48 @@ document.getElementById("tools").innerHTML = Object.entries(SECTIONS).map(([key,
     list.map(t => `<a class="tool" href="${esc(t.href)}"${t.ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${t.tone};--i:${i++}">
       <span class="icon${art(t) ? " art" : ""}" aria-hidden="true">${art(t) ? `<img src="${esc(art(t))}" alt="" width="56" height="56">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.chart}</svg>`}</span>
       <span class="body"><span class="name">${esc(t.name)}</span><p class="blurb">${esc(t.blurb)}</p>
-      ${t.locked ? `<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : ""}</span></a>`).join("")
+      ${pill(t)}</span></a>`).join("")
   }</div></section>`;
 }).join("");
+const who = document.getElementById("whoami");
+who.dataset.role = role;
+who.innerHTML = role === "cadet" || role === "cadre"
+  ? `<span class="dot" aria-hidden="true"></span><span>Signed in as <b>${role === "cadre" ? "Cadre" : "Cadet"}</b></span><button class="linkbtn" type="button" id="siOut">Sign out</button>`
+  : `<span class="dot" aria-hidden="true"></span><span>Not signed in</span><button class="linkbtn" type="button" id="siIn">Sign in</button>`;
+const out = document.getElementById("siOut"), inn = document.getElementById("siIn");
+if (out) out.addEventListener("click", () => { SI.clear(); SI.skip(); render(); });
+if (inn) inn.addEventListener("click", openSignIn);
+}
+
+/* ---------- sign in: cadet or cadre password, or skip ---------- */
+const dlg = document.getElementById("signin");
+function openSignIn(){
+  document.getElementById("siErr").textContent = "";
+  document.getElementById("siPw").value = "";
+  document.getElementById("siKeep").checked = SI.kept();
+  if (!dlg.open) dlg.showModal();
+  document.getElementById("siPw").focus();
+}
+document.getElementById("siForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const go = document.getElementById("siGo"), err = document.getElementById("siErr");
+  err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
+  try{
+    const role = await SI.signIn(document.getElementById("siPw").value, document.getElementById("siKeep").checked);
+    go.textContent = role === "cadre" ? "Signed in as cadre" : "Signed in as cadet";
+    setTimeout(() => { dlg.close(); render(); go.disabled = false; go.textContent = "Sign in"; }, 450);
+  }catch(x){
+    go.disabled = false; go.textContent = "Sign in";
+    err.textContent = x.message || "That password didn't work. Try again.";
+    dlg.classList.remove("shake"); void dlg.offsetWidth; dlg.classList.add("shake");
+    document.getElementById("siPw").select();
+  }
+});
+document.getElementById("siSkip").addEventListener("click", () => { SI.skip(); dlg.close(); render(); });
+dlg.addEventListener("cancel", () => { if (!SI.role()) SI.skip(); render(); });   // Esc counts as Skip
+
+render();
+SI.resume().then(role => { if (role) render(); else openSignIn(); });
 </script>
 </body>
 </html>
