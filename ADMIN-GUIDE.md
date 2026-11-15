@@ -13,7 +13,7 @@ When someone opens Storm HQ, the home page asks for a password once per browser 
 - The **cadre password** (the admin password) shows the **Admin** card and opens the Cadre Dashboard and Cadre Admin without asking again. If the cadet and Flight Staff Evaluation passwords are saved under Site passwords (see below), it opens those tools too.
 - **Skip for now** shows every open tool, and each locked tool still asks for its own password.
 
-"Keep me signed in on this device" remembers the password in that browser. Don't tick it on a shared computer. **Sign out** under the title on the home page forgets it. Change either password the usual way (Site passwords, or Change the admin password); the home page checks against the locked files, so there is nothing else to update.
+"Keep me signed in on this device" is ticked by default and remembers the password in that browser. Untick it on a shared computer. **Sign out** under the title on the home page forgets it. Change either password the usual way (Site passwords, or Change the admin password); the home page checks against the locked files, so there is nothing else to update.
 
 ## How it works
 

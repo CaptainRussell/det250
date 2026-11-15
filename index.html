@@ -144,7 +144,7 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
   <form id="siForm" autocomplete="off">
     <label class="l" for="siPw">Cadet or cadre password</label>
     <input id="siPw" type="password" autocomplete="current-password" spellcheck="false">
-    <label class="keep"><input id="siKeep" type="checkbox"> Keep me signed in on this device</label>
+    <label class="keep"><input id="siKeep" type="checkbox" checked> Keep me signed in on this device</label>
     <div class="err" id="siErr" role="alert"></div>
     <button class="go" id="siGo" type="submit">Sign in</button>
     <button class="linkbtn skip" id="siSkip" type="button">Skip for now</button>
@@ -233,7 +233,7 @@ const dlg = document.getElementById("signin");
 function openSignIn(){
   document.getElementById("siErr").textContent = "";
   document.getElementById("siPw").value = "";
-  document.getElementById("siKeep").checked = SI.kept();
+  document.getElementById("siKeep").checked = true;   // on by default (Captain Russell, 15 Nov 2026); untick on a shared computer
   if (!dlg.open) dlg.showModal();
   document.getElementById("siPw").focus();
 }
