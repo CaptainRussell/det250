@@ -133,6 +133,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{.d250-bar,.topbar,.filters,.cc-tools,.chk{display:none!important}}
 </style>
+<style>html.d250-auto #lockwrap{visibility:hidden}</style>
+<script>/* Signed in this tab: keep the password screen hidden while the saved password is tried, so it does not flash. */
+try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.classList.add("d250-auto"); }catch(_){}</script>
 </head>
 <body>
 <a class="d250-bar" href="../admin-hub/" aria-label="Back to Admin"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Admin</span></a>
@@ -593,6 +596,7 @@ $('#tFse').addEventListener('click', e => {
 (async () => {
   let pw = ''; try{ pw = sessionStorage.getItem(PASS_KEY) || ''; }catch(_){}
   if(pw){ try{ await unlock(pw); return; }catch(_){ try{ sessionStorage.removeItem(PASS_KEY); }catch(__){} } }
+  document.documentElement.classList.remove('d250-auto');
   $('#pw').focus();
 })();
 </script>

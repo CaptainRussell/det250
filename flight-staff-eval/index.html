@@ -30,6 +30,9 @@ button:disabled{opacity:.6;cursor:progress}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 @media (prefers-reduced-motion:reduce){.lock,.shake{animation:none}}
 </style>
+<style>html.d250-auto #lock{visibility:hidden}</style>
+<script>/* Signed in this tab: keep the password screen hidden while the saved password is tried, so it does not flash. */
+try { if (sessionStorage.getItem("d250-gmc-pass")) document.documentElement.classList.add("d250-auto"); } catch(_){}</script>
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
@@ -84,7 +87,8 @@ f.addEventListener("submit", async e => {
 /* Stay unlocked for this browser tab */
 (async () => {
   let saved = null; try { saved = sessionStorage.getItem(KEY); } catch(_){}
-  if(saved){ try { show(await unlock(saved)); } catch(_){ try { sessionStorage.removeItem(KEY); } catch(__){} } }
+  if(saved){ try { show(await unlock(saved)); return; } catch(_){ try { sessionStorage.removeItem(KEY); } catch(__){} } }
+  document.documentElement.classList.remove("d250-auto");
 })();
 </script>
 </body>
