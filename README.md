@@ -13,7 +13,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 ## Evaluator Tools
 - **Flight Staff Evaluation** (`flight-staff-eval/`): rate and stratify GMC cadets by flight. Results go to a private cadre spreadsheet.
 - **Peer Feedback** (`peer-feedback/`): each cadet signs in with a personal code and rates every cadet in their peer group (POC, AS 200/250/500, AS 100) 1 to 5 in Leadership, Professionalism, Teamwork and Communication. Results go to a private cadre spreadsheet.
-- **Cadre Dashboard** (`cadre/`): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
+- **Cadre Dashboard** (`cadre/`, reached from Admin): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
 
 ## Instructor Tools
 - **Practicum Adventure** (`practicum-adventure/`): a video game style practicum cadets join and play from their phones. Tests objectives from the AFAS 3410 and 3420 series.
@@ -21,7 +21,9 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
 - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
-## Cadre Admin
+## Cadre only
+- **Sign-in:** the home page asks for the cadet or cadre password once per tab (or Skip). Cadet opens the locked documents and ODT Module; cadre also shows the Admin card.
+- **Admin** (`admin-hub/`): one page with every cadre and back-end page: Cadre Dashboard, Cadre Admin tabs, Site passwords, the admin guide and GitHub.
 - **Cadre Admin** (`admin/`, admin password): update the roster and photos, org chart positions, hub cards and document links without code. Each Publish is one change on GitHub and can be undone. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
 
 ## Notes

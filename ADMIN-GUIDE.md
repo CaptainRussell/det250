@@ -3,7 +3,17 @@
 This guide is for the cadre member who keeps Storm HQ up to date. You don't need to know how to code. Almost everything is done on the **Cadre Admin** page.
 
 - Live site: https://captainrussell.github.io/det250/
-- Admin page: https://captainrussell.github.io/det250/admin/ (also linked as "Cadre admin" at the bottom of the home page)
+- Admin: https://captainrussell.github.io/det250/admin-hub/ (the **Admin** card on the home page, shown after you sign in with the cadre password; also linked as "Admin" at the bottom of the home page). It gathers every cadre page: the Cadre Dashboard, the Cadre Admin page (https://captainrussell.github.io/det250/admin/), Site passwords, this guide and the back end links.
+
+## Signing in to Storm HQ
+
+When someone opens Storm HQ, the home page asks for a password once per browser tab:
+
+- The **cadet password** (the Documents and Policy password) opens the locked plans, OPORDs and the ODT Module without asking again.
+- The **cadre password** (the admin password) shows the **Admin** card and opens the Cadre Dashboard and Cadre Admin without asking again. If the cadet and Flight Staff Evaluation passwords are saved under Site passwords (see below), it opens those tools too.
+- **Skip for now** shows every open tool, and each locked tool still asks for its own password.
+
+"Keep me signed in on this device" remembers the password in that browser. Don't tick it on a shared computer. **Sign out** under the title on the home page forgets it. Change either password the usual way (Site passwords, or Change the admin password); the home page checks against the locked files, so there is nothing else to update.
 
 ## How it works
 
@@ -93,6 +103,8 @@ The ODT Module page holds everything for each ODT: details and things to know, t
 ### Change a site password
 
 Some parts of Storm HQ are locked with their own password: the Documents and Policy plans and OPORDs (the cadet password) and Flight Staff Evaluation. The Cadre Dashboard always uses the admin password, so it changes when the admin password changes.
+
+Save the cadet and Flight Staff Evaluation passwords here once (**Enter it once**). After that, signing in with the cadre password on the home page opens those tools too, and the Admin page stops showing its yellow reminder.
 
 Anyone signed in to the admin page can see and change these passwords without knowing the old one:
 

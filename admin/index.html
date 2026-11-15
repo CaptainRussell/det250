@@ -109,7 +109,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../admin-hub/" aria-label="Back to Admin"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Admin</span></a>
 <header class="d250-head" style="--tone:#475569">
   <div class="d250-head-in">
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/det250-patch-icon.png" alt="" width="56" height="56"></span>
@@ -230,7 +230,7 @@ const POC = c => c === "AS300" || c === "AS400" || c === "Graybeard";
 const FLIGHTS = [["afl","Alpha"],["bfl","Bravo"],["cfl","Charlie"],["dfl","Delta"]];
 const CADET_RANKS = ["C/Col","C/Lt Col","C/Maj","C/Capt","C/1st Lt","C/2d Lt","C/3C","C/4C"];
 const CADRE_RANKS = ["Col","Lt Col","Maj","Capt","1st Lt","2d Lt","CMSgt","SMSgt","MSgt","TSgt","SSgt","SrA","Mr.","Ms.","Mrs.","Dr."];
-const SECTION_LABEL = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
+const SECTION_LABEL = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools", admin:"Cadre only"};
 
 let UI = {tab:"people", q:"", cls:"all"};
 try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || "{}")); }catch(_){}
@@ -322,7 +322,8 @@ async function signIn(pw){
   $("#lockwrap").hidden = true; $("#setupwrap").hidden = true; $("#app").hidden = false;
   $("#repoLine").textContent = `${cfg.owner}/${cfg.repo}`;
   $("#guideLink").href = `https://github.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/blob/${encodeURIComponent(cfg.branch)}/ADMIN-GUIDE.md`;
-  setTab(UI.tab);
+  const h = location.hash.slice(1);   // ../admin/#people etc. (links from the Admin page)
+  setTab(document.querySelector(`.seg [data-tab="${CSS.escape(h)}"]`) ? h : UI.tab);
 }
 $("#signOut").addEventListener("click", () => {
   if (LOG.length && !confirm("You have changes that aren't published. Sign out anyway?")) return;

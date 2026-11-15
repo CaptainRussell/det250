@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+:root{--ok:#1b7a44}
+:root[data-theme="dark"]{--ok:#6fd39a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#6fd39a}}
+
+/* lock (same look as the Cadre Dashboard lock) */
+.lockwrap{min-height:calc(100vh - 360px);display:grid;place-items:center;padding:32px 0}
+.lock{width:min(400px,100%);background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:18px;padding:28px 24px 24px;text-align:center;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:pop .45s var(--d250-ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.lock img{width:84px;height:auto}
+.lock h2{font-size:20px;margin:12px 0 4px}
+.lock p{color:var(--d250-soft);font-size:14px}
+.lock form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.lock input{font-size:16px;min-height:46px}
+.lock .btn{min-height:46px}
+.err{min-height:20px;color:var(--d250-cardinal);font-size:13px;font-weight:600}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* top line + notes */
+.topline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin-bottom:6px;font-size:13.5px;color:var(--d250-soft)}
+.topline .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--d250-gold);margin-right:6px}
+.topline b{color:var(--d250-ink)}
+.note{background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;margin:12px 0 0}
+.note a{color:inherit;font-weight:800}
+
+/* hub-style cards (same as the Storm HQ home page) */
+section.grp{margin-top:26px}
+.sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:16px;box-shadow:var(--d250-shadow);text-decoration:none;color:var(--d250-ink);overflow:hidden;
+  transition:transform .28s var(--d250-ease),box-shadow .28s var(--d250-ease),border-color .2s;animation:rise .55s var(--d250-ease) both;animation-delay:calc(var(--i,0) * 50ms + .1s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--d250-ease);pointer-events:none}
+.tool:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(0,0,0,.35);border-color:var(--tone)}
+.tool:hover::after{transform:translateX(100%)}
+.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--d250-ease)}
+.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.icon.art{background:none;overflow:hidden}
+.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
+.body{min-width:0;flex:1}
+.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
+.name .ext{color:var(--d250-faint)}
+.blurb{margin:4px 0 0;color:var(--d250-soft);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .tool{padding:16px 14px 14px;gap:14px}
+  .icon{width:48px;height:48px;border-radius:12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<header class="d250-head" style="--tone:#475569">
+  <div class="d250-head-in">
+    <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/admin-hub.webp" alt="" width="56" height="56"></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
+      <h1>Admin</h1>
+      <p class="d250-head-sub">Everything behind the scenes of Storm HQ in one place: results, editing the site, passwords and the back end.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="lockwrap" id="lockwrap" hidden>
+    <div class="lock" id="lock">
+      <img src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch">
+      <h2>Admin</h2>
+      <p>Cadre only. Enter the cadre password to continue.</p>
+      <form id="f" autocomplete="off">
+        <label class="label" for="pw">Cadre password</label>
+        <input id="pw" type="password" required autocomplete="current-password">
+        <div class="err" id="err" role="alert"></div>
+        <button class="btn primary" id="go" type="submit">Unlock</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="topline">
+      <span><span class="dot" aria-hidden="true"></span>Signed in as <b>Cadre</b> for this browser tab</span>
+      <button class="linkbtn" id="signOut" type="button">Sign out</button>
+    </div>
+    <div id="notes"></div>
+    <div id="cards"></div>
+  </div>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Cadre tool. Each page here still checks the cadre password on its own; signing in on the Storm HQ home page opens them all for this browser tab.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../shared/signin.js"></script>
+<script>
+/* Admin (Nov 2026, Captain Russell): the one cadre card on the hub. It gathers every
+   admin and back-end page so the hub shows a single "Admin" card to cadre instead of
+   the Cadre Dashboard. Shown on the hub only to someone signed in with the cadre
+   password (role "cadre" in data/hub.js); this page also asks for it on its own. */
+const SI = window.D250SignIn; SI.root = "../";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// The GitHub repository behind the live site (owner.github.io/<repo>/), so links keep working after a handover.
+const OWNER = /\.github\.io$/i.test(location.hostname) ? location.hostname.split(".")[0] : "CaptainRussell";
+const REPO = /\.github\.io$/i.test(location.hostname) ? (location.pathname.split("/")[1] || "det250") : "det250";
+const GH = `https://github.com/${OWNER}/${REPO}`;
+
+const ICONS = {
+  hub:'<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>',
+  history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7.5V12l3 2"/>',
+  key:'<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>',
+  code:'<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>',
+  rocket:'<path d="M12 15l-3-3c1.5-4.5 4.5-8 10-9-.9 5.5-4.4 8.5-9 10z"/><path d="M9 12H5l2.5-3.5H11M12 15v4l3.5-2.5V13"/><path d="M6.5 16.5C5 17 4.5 19.5 4.5 19.5S7 19 7.5 17.5"/>',
+  sheet:'<rect x="3.5" y="2.5" width="17" height="19" rx="2"/><path d="M3.5 8.5h17M3.5 14.5h17M10 8.5v13"/>'
+};
+// One list of cards. art = shared/card-art/<name>.webp (the tool's own picture, same as its hub card).
+const GROUPS = [
+  {title:"Results", cards:[
+    {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Peer Feedback and Flight Staff Evaluation results: rankings by AS level, comments, charts and who still owes theirs."},
+    {href:"../peer-feedback/", art:"peer-feedback", tone:"#be185d", name:"Peer Feedback form", blurb:"The form cadets fill in with their personal code. Results show only on the Cadre Dashboard."},
+    {href:"../flight-staff-eval/", art:"flight-staff-eval", tone:"#a06f00", name:"Flight Staff Evaluation", blurb:"The Sq/CC and Flt/CC rating form. Results show on the Cadre Dashboard.", key:"fse"}
+  ]},
+  {title:"Edit Storm HQ", cards:[
+    {href:"../admin/#people", art:"whos-that-cadet", tone:"#1f4e9c", name:"People and photos", blurb:"The one detachment roster, photos, flights and the semester. Every tool reads it."},
+    {href:"../admin/#chart", art:"org-chart", tone:"#2f7d32", name:"Org chart", blurb:"Who holds each seat, ranks, Flip Week holders and who reports to whom."},
+    {href:"../admin/#hub", icon:"hub", tone:"#c8102e", name:"Hub cards", blurb:"Edit, hide or reorder the cards on the Storm HQ home page."},
+    {href:"../admin/#docs", art:"documents", tone:"#0369a1", name:"Documents and Policy", blurb:"Add, edit or reorder documents: outside links or uploaded PDFs."},
+    {href:"../admin/#rooms", art:"odt", tone:"#155e75", name:"ODT Module", blurb:"Each ODT's details, itinerary, roster, rooms and supporting documents."},
+    {href:"../admin/#history", icon:"history", tone:"#475569", name:"History and undo", blurb:"Recent changes with Undo, the admin password and the GitHub key."},
+    {href:"../admin/#history", icon:"key", tone:"#a06f00", name:"Site passwords", blurb:"Show or change the cadet, Flight Staff Evaluation and cadre passwords."}
+  ]},
+  {title:"Back end", cards:[
+    {href:`${GH}/blob/main/ADMIN-GUIDE.md`, ext:true, icon:"book", tone:"#0369a1", name:"Admin guide", blurb:"Plain-language steps for every admin job, the semester rollover and the handoff."},
+    {href:"https://script.google.com/home", ext:true, icon:"sheet", tone:"#1b7a44", name:"Apps Scripts and Sheets", blurb:"The Peer Feedback and Flight Staff Evaluation scripts and their private Sheets. Sign in with the Google account that owns them."},
+    {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Each admin publish is one change here.`},
+    {href:`${GH}/actions`, ext:true, icon:"rocket", tone:"#4338ca", name:"Site updates", blurb:"Watch a publish go live. Changes usually show on the site in a minute or two."}
+  ]}
+];
+
+function card(c, i){
+  const pic = c.art ? `<span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>`
+    : `<span class="icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[c.icon]}</svg></span>`;
+  const pill = c.key ? (SI.has(c.key) ? `<span class="pill ok">Unlocked</span>` : `<span class="pill">Own password</span>`) : "";
+  return `<a class="tool" href="${esc(c.href)}"${c.ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${c.tone};--i:${i}">${pic}
+    <span class="body"><span class="name">${esc(c.name)}${c.ext ? '<span class="ext" aria-label="(opens in a new tab)">↗</span>' : ""}</span><p class="blurb">${esc(c.blurb)}</p>${pill}</span></a>`;
+}
+function show(){
+  $("#lockwrap").hidden = true; $("#app").hidden = false;
+  let i = 0;
+  $("#cards").innerHTML = GROUPS.map((g, n) => `<section class="grp" aria-labelledby="g${n}"><div class="sechead"><h2 id="g${n}">${g.title}</h2></div><div class="grid">${g.cards.map(c => card(c, i++)).join("")}</div></section>`).join("");
+  const missing = [!SI.has("docs") && "Documents and Policy and the ODT Module (cadet password)", !SI.has("fse") && "Flight Staff Evaluation"].filter(Boolean);
+  $("#notes").innerHTML = missing.length ? `<p class="note">Cadre sign-in doesn't open ${missing.join(" or ")} yet. Save ${missing.length > 1 ? "those passwords" : "that password"} once on <a href="../admin/#history">Site passwords</a> (press "Enter it once"), and it will from then on.</p>` : "";
+}
+$("#f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const go = $("#go"), err = $("#err"); err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
+  try{
+    const role = await SI.signIn($("#pw").value, SI.kept());
+    if (role === "cadre") return show();
+    err.textContent = "That's the cadet password. Admin needs the cadre password.";
+  }catch(x){ err.textContent = x.message || "That password didn't work. Try again."; }
+  const l = $("#lock"); l.classList.remove("shake"); void l.offsetWidth; l.classList.add("shake");
+  go.disabled = false; go.textContent = "Unlock";
+});
+$("#signOut").addEventListener("click", () => { SI.clear(); location.href = "../"; });
+
+(async () => {
+  if (SI.role() !== "cadre") await SI.resume();
+  if (SI.role() === "cadre") show();
+  else { $("#lockwrap").hidden = false; $("#pw").focus(); }
+})();
+</script>
+</body>
+</html>
