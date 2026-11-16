@@ -226,6 +226,7 @@ async function boot() {
   }
 
   $('reset-all').addEventListener('click', resetAll);
+  $('reset-all-top').addEventListener('click', resetAll);
   // A cadet reading this on a phone will not go looking through the browser
   // menu for Print, and the result is the part worth keeping.
   $('print-result').addEventListener('click', () => window.print());
@@ -794,6 +795,10 @@ function resetAll() {
   $('altitude-group').value = '';
   closeAltitudePanel();
 
+  // Cards back to one line, as the page loads. Their charts were closing
+  // while an opened card stayed open, so it showed no chart.
+  for (const component of CARDS) setCardOpen(component, false);
+  showExpandAll();
   for (const component of COMPONENTS) chartOpen.delete(component);
   $('verbiage').close();
   for (const details of document.querySelectorAll('.pretest, .foldable')) {
@@ -825,11 +830,18 @@ function wholeNumber(id) {
   return Number.isInteger(n) && n >= 0 ? n : undefined; // undefined = present but unusable
 }
 
+/** Height and waist outside these inches are typos, not people. A height of
+ * 0.2 rounds to 0 and divided the waist by zero ("a ratio of Infinity"). */
+const BODY_LIMITS = Object.freeze({ height: [36, 96], waist: [15, 80] });
+
 function decimal(id) {
   const raw = $(id).value.trim();
   if (raw === '') return null;
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? n : undefined;
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const limits = BODY_LIMITS[id];
+  if (limits && (n < limits[0] || n > limits[1])) return undefined;
+  return n;
 }
 
 /**
@@ -1047,6 +1059,18 @@ function update() {
   showRatio(lastResult);
   showBfa(lastResult, complete);
 
+  // A link carrying a passed BFA applies it as soon as there is a ratio for it
+  // to exempt, complete or not, the way the sender's page had it. Cleared
+  // straight away so it happens once.
+  if (sharedBfaPending && bfa.ratio != null && !bfa.applied) {
+    sharedBfaPending = false;
+    if (bfaMeasurements(sex)) {
+      applyBfaExemption();
+      update();
+      return;
+    }
+  }
+
   if (!complete) {
     $('results').hidden = true;
     $('award-line').hidden = true;
@@ -1064,18 +1088,6 @@ function update() {
   showAward(result);
   suggestTarget(result);
 
-  // A link carrying a passed BFA applies it the first time the assessment is
-  // scoreable, because the panel needs a ratio before it has anything to
-  // exempt. Cleared straight away so it happens once.
-  if (sharedBfaPending && bfa.ratio != null && !bfa.applied) {
-    sharedBfaPending = false;
-    const measured = bfaMeasurements(sex);
-    if (measured) {
-      applyBfaExemption();
-      update();
-      return;
-    }
-  }
 
   // Re-run against this score rather than leaving the last one up. onPlan()
   // reads lastResult, which was assigned above, and calls nothing that leads
@@ -1103,6 +1115,11 @@ function showHeightInFeet() {
 
   if (!Number.isFinite(inches) || inches <= 0) {
     hint.textContent = 'Nearest ½ inch, as the 4446 records it.';
+    return;
+  }
+  if (decimal('height') === undefined) {
+    hint.textContent = `Check this: a height is ${BODY_LIMITS.height[0]} to ` +
+      `${BODY_LIMITS.height[1]} inches.`;
     return;
   }
 
@@ -1195,9 +1212,11 @@ function renderCharts(band) {
     if (!sex || !band) {
       toggle.disabled = true;
       toggle.textContent = 'Scoring Chart';
+      // Kept open, so the chart comes back as soon as the band is picked
+      // (Captain Russell, Nov 2026: changing the age bracket lost it).
       host.replaceChildren();
+      delete host.dataset.pics;
       host.hidden = true;
-      chartOpen.delete(component);
       chartMarked.delete(component);
       toggle.setAttribute('aria-expanded', 'false');
       continue;
@@ -1217,6 +1236,8 @@ function renderCharts(band) {
     });
     if (!chart) {
       host.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.textContent = 'Scoring Chart';
       continue;
     }
 
@@ -1235,9 +1256,14 @@ function renderCharts(band) {
       host.hidden = false;
       host.classList.add('pictured');
       const key = `${sex}|${band}|` + pictures.map((p) => p.key).join('|');
-      if (host.dataset.pics !== pictures.map((p) => p.page).join(',')) {
+      // Rebuilt whenever the page changes (a new exercise) or the pictures are
+      // not there any more (the chart was cleared while no age band was set);
+      // otherwise only the outlines move, for a new band, sex or score.
+      const pages = pictures.map((p) => p.page.page).join(',');
+      const built = host.querySelectorAll(':scope > .chart-pic').length === pictures.length;
+      if (host.dataset.pics !== pages || !built) {
         host.replaceChildren(...pictures.map(buildChartPicture));
-        host.dataset.pics = pictures.map((p) => p.page).join(',');
+        host.dataset.pics = pages;
       } else {
         pictures.forEach((pic, i) => markChartPicture(host.children[i], pic));
       }
@@ -1383,16 +1409,23 @@ function buildChartPicture(pic) {
   zoom.type = 'button';
   zoom.setAttribute('aria-pressed', 'true');
   zoom.addEventListener('click', () => {
+    // The button stays where it was on screen (Captain Russell, Nov 2026):
+    // it sits above the picture and keeps its size, and anything that still
+    // moves it is scrolled back.
+    const before = zoom.getBoundingClientRect().top;
     const whole = fig.classList.toggle('whole');
     zoom.textContent = whole ? 'Zoom in' : 'Whole page';
     zoom.setAttribute('aria-pressed', String(whole));
-    if (!whole) requestAnimationFrame(() => centreChartPicture(fig));
+    const moved = zoom.getBoundingClientRect().top - before;
+    if (Math.abs(moved) > 0.5) window.scrollBy({ top: moved, behavior: 'instant' });
+    if (!whole) centreChartPicture(fig);
   });
   const open = el('a', 'chart-pic-open', `PDF page ${page.page}`);
   open.href = `${CHART_DOC}&page=${page.page}`;
   tools.append(zoom, open);
   cap.append(what, tools);
-  fig.append(scroll, cap);
+  // Caption first, so the picture growing or shrinking below never moves it.
+  fig.append(cap, scroll);
   markChartPicture(fig, pic);
   return fig;
 }
@@ -2279,6 +2312,17 @@ function applyShareLink() {
       button.setAttribute('aria-checked', String(on));
     }
     $('band-picker').hidden = under;
+  } else {
+    // The sender had "25 or older" with no band picked yet. Opening on the
+    // under 25 default instead would score a link that was never scored.
+    for (const button of document.querySelectorAll('.segment[data-band]')) {
+      const on = button.dataset.band === 'older';
+      button.classList.toggle('on', on);
+      button.setAttribute('aria-checked', String(on));
+    }
+    ageBand = null;
+    $('age-band').value = '';
+    $('band-picker').hidden = false;
   }
 
   if (params.get('ht')) $('height').value = params.get('ht');
@@ -2853,7 +2897,8 @@ function currentMeasurement(component) {
     const [minId, secId] = control.field;
     const minutes = wholeNumber(minId);
     const seconds = wholeNumber(secId);
-    if (minutes == null || seconds == null) return null;
+    // Same rule as readForm: 99 seconds is not a time, so it is not shared.
+    if (minutes == null || seconds == null || seconds > 59) return null;
     return minutes * 60 + seconds;
   }
   return wholeNumber(control.field) ?? null;
@@ -3082,10 +3127,13 @@ function showTally(result, ready) {
     score.textContent = '–';
     text.textContent = 'Add your age and sex to start scoring';
     tally.className = 'tally';
+    delete tally.dataset.tier;
     return;
   }
 
-  tally.hidden = false;
+  // Nothing entered yet: no "0.0 so far" on a page that opens already
+  // scoreable (Male, Under 25 is the default).
+  tally.hidden = ready.size === 0;
   const remaining = COMPONENTS.length - ready.size;
 
   if (remaining > 0) {
@@ -3101,6 +3149,7 @@ function showTally(result, ready) {
       .map((c) => COMPONENT_LABELS[c].toLowerCase());
     text.textContent = `so far · still need ${missing.join(', ')}`;
     tally.className = 'tally';
+    delete tally.dataset.tier;
     return;
   }
 
@@ -3112,6 +3161,7 @@ function showTally(result, ready) {
   animateTo(score, result.composite);
   text.textContent = `${result.rating} · tap for the breakdown`;
   tally.className = `tally ${result.pass ? 'is-pass' : 'is-fail'}`;
+  tally.dataset.tier = tierOf(result);
 }
 
 /**
@@ -3153,10 +3203,22 @@ function animateTo(node, value) {
 
 // --- rendering the breakdown ----------------------------------------------
 
+/**
+ * The colour the composite reads in (Captain Russell, Nov 2026): red for
+ * Unsatisfactory, yellow for Satisfactory, green for Excellent, gold for a
+ * perfect 100.
+ */
+function tierOf(result) {
+  if (!result.pass) return 'unsat';
+  if (result.composite >= 100) return 'perfect';
+  return result.rating === 'Excellent' ? 'excellent' : 'sat';
+}
+
 function renderScoreboard(result) {
   const board = $('scoreboard');
   board.classList.toggle('is-pass', result.pass);
   board.classList.toggle('is-fail', !result.pass);
+  board.dataset.tier = tierOf(result);
   $('composite').textContent = result.compositeText;
   // DAFMAN 36-2905 para 3.6.1 names the three categories. Unsatisfactory is the
   // failing one, so the badge carries the pass or fail colour without printing
