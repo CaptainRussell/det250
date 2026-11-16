@@ -60,6 +60,7 @@ def cell(edges, centre):
 
 def grid_page(img, ws):
     pts = [w for w in ws if w['x1'] < 75 * SCALE and re.fullmatch(r'\d+(\.\d)?', w['t'])]
+    right_pts = [w for w in ws if w['x0'] > img.width - 90 * SCALE and re.fullmatch(r'\d+(\.\d)?', w['t'])]
     heads = [w for w in ws if w['t'] in ('M', 'F')]
     heads.sort(key=lambda w: w['cx'])
     assert len(heads) == 18, len(heads)
@@ -77,9 +78,21 @@ def grid_page(img, ws):
         c = cell(vl, w['cx'])
         if c:
             cols[f"{BANDS[i // 2]}:{w['t']}"] = c
+    # The Points columns at both edges, so the points a row is worth can be
+    # outlined beside the box the measurement landed in.
+    # They are filled navy, so there are no rules inside them to find: each
+    # runs from the table's data columns out, centred on its labels.
+    first, last = cols['under25:M'][0], cols['60plus:F'][1]
+    pcols = []
+    if pts:
+        cx = pts[0]['cx']
+        pcols.append([round(2 * cx - first), first])
+    if right_pts:
+        cx = right_pts[0]['cx']
+        pcols.append([last, round(2 * cx - last)])
     crop = [0, int(min(w['y0'] for w in ws) - 12 * SCALE), img.width,
             int(max(r[1] for r in rows.values()) + 8 * SCALE)]
-    return {'rows': rows, 'cols': cols, 'crop': crop}
+    return {'rows': rows, 'cols': cols, 'pcols': pcols, 'crop': crop}
 
 
 def whtr_grid(img):
@@ -154,6 +167,8 @@ def main(pdf, out):
             for key in ('rows',):
                 entry[key] = {k: [round(v[0] - dy), round(v[1] - dy)] for k, v in entry[key].items()}
             entry['cols'] = {k: [round(v[0] - dx), round(v[1] - dx)] for k, v in entry['cols'].items()}
+            if 'pcols' in entry:
+                entry['pcols'] = [[round(v[0] - dx), round(v[1] - dx)] for v in entry['pcols']]
             del entry['crop']
         entry['w'], entry['h'] = img.size
         img.save(os.path.join(out, f'p{n}.webp'), 'WEBP', quality=82, method=6)

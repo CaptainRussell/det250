@@ -126,6 +126,7 @@ async function boot() {
   applyShareLink();
   wireListen();
   wireMoreToggles();
+  wireSliderAnchor();
   wireEnterToNext();
   wireBfa();
   wireTrack();
@@ -283,6 +284,41 @@ function wireMoreToggles() {
     if (e.target.closest('.more-toggle')) showExpandAll();
   });
   showExpandAll();
+}
+
+/**
+ * Keep a slider where the hand is (Captain Russell, Nov 2026). Moving one can
+ * change text above it (an exemption note, a verdict, a warning) and push the
+ * slider up or down the page under the pointer. While a slider is being moved,
+ * the page scrolls by however far it was pushed, so it stays put on screen.
+ */
+function wireSliderAnchor() {
+  let anchor = null;
+  const hold = (slider) => { anchor = { slider, top: slider.getBoundingClientRect().top }; };
+  const settle = () => {
+    if (!anchor) return;
+    const drift = anchor.slider.getBoundingClientRect().top - anchor.top;
+    if (Math.abs(drift) > 0.5) window.scrollBy(0, drift);
+  };
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target.matches?.('input[type="range"]')) hold(e.target);
+  }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches?.('input[type="range"]')) hold(e.target);
+  }, true);
+  // After the slider's own handlers have redrawn the page, and once more after
+  // anything they queued (a body fat pass rescoring) has run.
+  document.addEventListener('input', (e) => {
+    if (!anchor || e.target !== anchor.slider) return;
+    settle();
+    requestAnimationFrame(settle);
+  });
+  const release = () => requestAnimationFrame(() => { settle(); anchor = null; });
+  document.addEventListener('pointerup', release, true);
+  document.addEventListener('pointercancel', release, true);
+  document.addEventListener('keyup', (e) => {
+    if (anchor && e.target === anchor.slider) release();
+  }, true);
 }
 
 function showExpandAll() {
@@ -1266,7 +1302,7 @@ function buildChartTable(chart, currentIndex, component) {
 let chartMap = null;
 
 function loadChartMap() {
-  return fetch('./charts/map.json?v=1').then((r) => (r.ok ? r.json() : null))
+  return fetch('./charts/map.json?v=2').then((r) => (r.ok ? r.json() : null))
     .then((map) => {
       chartMap = map;
       if (chartOpen.size) renderCharts(ageBand);
@@ -1328,7 +1364,9 @@ const pct = (v, of) => `${(v / of) * 100}%`;
 
 function buildChartPicture(pic) {
   const { page } = pic;
-  const fig = el('figure', 'chart-pic');
+  // Opens on the whole page (Captain Russell, Nov 2026), with Zoom in as the
+  // obvious next step.
+  const fig = el('figure', 'chart-pic whole');
   const scroll = el('div', 'chart-pic-scroll');
   const frame = el('div', 'chart-pic-frame');
   frame.style.setProperty('--w', page.w);
@@ -1340,15 +1378,15 @@ function buildChartPicture(pic) {
   img.alt = '';
   img.decoding = 'async';
   frame.append(img, el('span', 'chart-pic-col'), el('span', 'chart-pic-row'),
-    el('span', 'chart-pic-cell'));
+    el('span', 'chart-pic-cell'), el('span', 'chart-pic-pts'), el('span', 'chart-pic-pts'));
   scroll.append(frame);
 
   const cap = el('figcaption');
   const what = el('span', 'chart-pic-what');
   const tools = el('span', 'chart-pic-tools');
-  const zoom = el('button', 'chart-pic-zoom', 'Whole page');
+  const zoom = el('button', 'chart-pic-zoom', 'Zoom in');
   zoom.type = 'button';
-  zoom.setAttribute('aria-pressed', 'false');
+  zoom.setAttribute('aria-pressed', 'true');
   zoom.addEventListener('click', () => {
     const whole = fig.classList.toggle('whole');
     zoom.textContent = whole ? 'Zoom in' : 'Whole page';
@@ -1381,6 +1419,14 @@ function markChartPicture(fig, pic) {
   place(cellNode, r && c && {
     left: pct(c[0], page.w), width: pct(c[1] - c[0], page.w),
     top: pct(r[0], page.h), height: pct(r[1] - r[0], page.h)
+  });
+  // And the points that row is worth, in the Points columns at each edge.
+  fig.querySelectorAll('.chart-pic-pts').forEach((node, i) => {
+    const p = page.pcols?.[i];
+    place(node, r && p && {
+      left: pct(p[0], page.w), width: pct(p[1] - p[0], page.w),
+      top: pct(r[0], page.h), height: pct(r[1] - r[0], page.h)
+    });
   });
   fig.querySelector('.chart-pic-what').textContent = pic.label;
   fig.classList.toggle('below', Boolean(pic.below));
@@ -2721,7 +2767,11 @@ function renderSliders(band) {
     // DNS or DNF hides it too: there is no measurement left to adjust.
     const bestValue = range ? spec.best(range) : null;
     const worstValue = range ? spec.worst(range) : null;
-    if (bestValue == null || worstValue == null || statuses[component]) {
+    // A body fat pass makes body composition exempt, but the waist and height
+    // still decide whether that assessment was needed, so its slider stays.
+    const statusHides = statuses[component]
+      && !(component === 'body_composition' && bfa.applied);
+    if (bestValue == null || worstValue == null || statusHides) {
       row.hidden = true;
       continue;
     }
