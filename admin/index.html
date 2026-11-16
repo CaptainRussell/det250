@@ -1157,6 +1157,9 @@ function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order 
   if (cadre.length) e.sections = [...(e.sections || []).filter(s => s !== "Cadre"), "Cadre"];   // cadre rooms show after the cadets
 }
 function applyPendingPlans(){                         // an ODT that was set up before its plan existed gets it on open
+  for (const e of (OD.data ? OD.data.events : [])) if (/same gender/i.test(e.note || "")){   // Captain Russell, 16 Nov 2026: the line under the name says what the trip is
+    e.note = "Base Visit"; changed(`${evName(e)}: line under the name is now "Base Visit"`);
+  }
   for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
     const r = applyPlan(e);
     if (r.drop.length) changed(`${evName(e)}: took ${r.drop.map(pname).join(", ")} off the roster`);
@@ -1290,7 +1293,7 @@ function eventDialog(id){
       <div class="field"><label class="label" for="eStart">First day</label><input id="eStart" type="date" value="${esc(e.start || "")}" required></div>
       <div class="field"><label class="label" for="eEnd">Last day</label><input id="eEnd" type="date" value="${esc(e.end || "")}"></div>
     </div>
-    <div class="field"><label class="label" for="eNote">Line under the name</label><input id="eNote" type="text" value="${esc(e.note || "")}" placeholder="Same Gender Mandatory."></div>
+    <div class="field"><label class="label" for="eNote">Line under the name</label><input id="eNote" type="text" value="${esc(e.note || "")}" placeholder="Base Visit"></div>
     <div class="field"><label class="label" for="eSecs">Room sections, in order</label><input id="eSecs" type="text" value="${esc((e.sections || []).join(", "))}"><p class="hint">Room groups on the Rooms tab, separated by commas, for example Men · POC, Women, Men · GMC.</p></div>
     ${id ? "" : `<div class="field"><label class="label" for="eCopy">Start from</label><select id="eCopy">${opt("", "Nothing (fill it in tab by tab)", true)}${others.map(x => opt(x.id, `A copy of ${evName(x)}: roster, rooms and things to know`, false)).join("")}</select><p class="hint">Copying gives you the same roster and room pairs to edit. People who have left the roster are skipped. The itinerary file and documents aren't copied.</p></div>`}`,
     `<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="eSave" type="button">${id ? "Save" : "Add"}</button></div>`);

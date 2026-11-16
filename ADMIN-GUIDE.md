@@ -87,7 +87,7 @@ The ODT Module page holds everything for each ODT: details and things to know, t
 
 **Add a new ODT**
 
-1. ODT tab, **New ODT**. Enter the name, place, first and last day, the line under the name (for example "Same Gender Mandatory.") and the room sections.
+1. ODT tab, **New ODT**. Enter the name, place, first and last day, the line under the name (for example "Base Visit") and the room sections.
 2. Under **Start from**, pick an earlier ODT to copy its roster, rooms and things to know, or start empty.
 3. Fill in each tab (below), then publish.
 
