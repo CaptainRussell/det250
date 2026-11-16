@@ -145,6 +145,7 @@ async function boot() {
   }
   $('age-band').addEventListener('change', () => {
     ageBand = $('age-band').value || null;
+    markAge();
     update();
   });
   for (const button of document.querySelectorAll('.step')) {
@@ -409,23 +410,21 @@ function fillBandOptions() {
  * refuses to assume one, and so does this.
  */
 function selectAgeGroup(choice) {
-  const picker = $('band-picker');
-  for (const button of document.querySelectorAll('.segment[data-band]')) {
-    const on = button.dataset.band === choice;
-    button.classList.toggle('on', on);
-    button.setAttribute('aria-checked', String(on));
-  }
-
-  if (choice === 'under25') {
-    ageBand = 'under25';
-    picker.hidden = true;
-    $('age-band').value = '';
-  } else {
-    picker.hidden = false;
-    ageBand = $('age-band').value || null;
-    $('age-band').focus();
-  }
+  ageBand = choice;
+  markAge();
   update();
+}
+
+/** Light whichever age answer is in: the Under 25 button or the band picked
+ * from the "25 or older" dropdown. */
+function markAge() {
+  const under = ageBand === 'under25';
+  const button = document.querySelector('.segment[data-band="under25"]');
+  button.classList.toggle('on', under);
+  button.setAttribute('aria-pressed', String(under));
+  const select = $('age-band');
+  select.value = ageBand && !under ? ageBand : '';
+  select.classList.toggle('on', Boolean(ageBand) && !under);
 }
 
 function openPicker(component) {
@@ -762,8 +761,7 @@ function resetAll() {
     button.classList.remove('on');
     button.setAttribute('aria-checked', 'false');
   }
-  $('band-picker').hidden = true;
-  $('age-band').value = '';
+  markAge();
   applyDefaultCadet();
 
   // Statuses before fields: clearing an exemption re-enables the inputs it
@@ -969,9 +967,8 @@ function showCue(ready) {
   let target = null;
 
   if (!ageBand) {
-    // Tapping "25 or older" answers the age question but does not settle the
-    // band, so the cue moves to the dropdown that still has to be answered.
-    target = $('band-picker').hidden ? $('field-age') : $('band-picker');
+    // No age answer yet: Under 25, or a band from the "25 or older" dropdown.
+    target = $('field-age');
   } else if (!sex) {
     target = $('field-sex');
   } else {
@@ -2305,29 +2302,11 @@ function applyShareLink() {
   if (sexWanted === 'M' || sexWanted === 'F') selectSex(sexWanted);
 
   const band = params.get('band');
-  if (band && scorer.data.age_bands.includes(band)) {
-    ageBand = band;
-    $('age-band').value = band;
-    // Seat the two age buttons so the form does not look unanswered.
-    const under = band === 'under25';
-    for (const button of document.querySelectorAll('.segment[data-band]')) {
-      const on = button.dataset.band === (under ? 'under25' : 'older');
-      button.classList.toggle('on', on);
-      button.setAttribute('aria-checked', String(on));
-    }
-    $('band-picker').hidden = under;
-  } else {
-    // The sender had "25 or older" with no band picked yet. Opening on the
-    // under 25 default instead would score a link that was never scored.
-    for (const button of document.querySelectorAll('.segment[data-band]')) {
-      const on = button.dataset.band === 'older';
-      button.classList.toggle('on', on);
-      button.setAttribute('aria-checked', String(on));
-    }
-    ageBand = null;
-    $('age-band').value = '';
-    $('band-picker').hidden = false;
-  }
+  // A link from "25 or older" with no band picked yet opens with no band,
+  // rather than on the Under 25 default, which would score what the sender
+  // never scored.
+  ageBand = band && scorer.data.age_bands.includes(band) ? band : null;
+  markAge();
 
   if (params.get('ht')) $('height').value = params.get('ht');
   if (params.get('wa')) $('waist').value = params.get('wa');

@@ -896,17 +896,11 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   animation: cue-glow 2.4s ease-in-out infinite;
 }
 
-.field.cue, .band-picker.cue {
+.field.cue {
   padding: 6px;
   margin: -6px;
 }
 
-/* .band-picker carries its own reveal animation, and a later rule of equal
- * specificity would win, so the cue is restated here with both running. */
-.band-picker.cue {
-  margin: -10px -6px -6px;
-  animation: rise .22s ease both, cue-glow 2.4s ease-in-out infinite;
-}
 
 /* The cue usually lands on a slider now, so the ring hugs the track rather
  * than the card around it. The padding is cancelled by an equal negative
@@ -932,19 +926,29 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 
 /* A steady ring still says "this one next" without anything moving. */
 @media (prefers-reduced-motion: reduce) {
-  .cue,
-  .band-picker.cue { animation: none; box-shadow: 0 0 0 3px rgba(241, 190, 72, .45); }
+  .cue { animation: none; box-shadow: 0 0 0 3px rgba(241, 190, 72, .45); }
 }
 
-/* Revealed only when a cadet says they are 25 or older. */
-.band-picker {
-  margin-top: -4px;
-  animation: rise .22s ease both;
+/* "25 or older" is the band dropdown, drawn as the second segment: it reads
+ * "25 or older" until a band is picked, then shows the band in gold. */
+.segmented .segment.band-select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  text-align-last: center;
+  font-family: inherit;
+  cursor: pointer;
+  padding-right: 22px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 13px) 55%, calc(100% - 8px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .band-picker { animation: none; }
-}
+.segmented .segment.band-select.on { background-color: var(--gold); }
+.segment.band-select option { background: var(--surface); color: var(--ink); font-weight: 400; }
 
 /* Each event is its own block with a live score chip. */
 .event {
@@ -3027,5 +3031,17 @@ form#assessment > .about-row { gap: 10px; }
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+}
+@media (max-width: 560px) {
+  /* Room for "25 or older" and its arrow beside Under 25 on a phone. */
+  #field-age .segmented { grid-template-columns: auto minmax(0, 1fr); }
+  #field-age .segment[data-band] { padding-left: 8px; padding-right: 8px; }
+  form#assessment > .row.about-row { grid-template-columns: 1.3fr 1fr; }
+  .segmented .segment.band-select { font-size: .8rem; }
+  .segmented .segment.band-select {
+    padding: 5px 16px 5px 4px;
+    background-position: calc(100% - 11px) 55%, calc(100% - 6px) 55%;
+    background-size: 4px 4px, 4px 4px;
   }
 }
