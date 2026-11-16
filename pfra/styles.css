@@ -2585,3 +2585,125 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   text-transform: uppercase;
   color: var(--ink-faint);
 }
+
+/* --- condensed components ----------------------------------------------
+ *
+ * The default: each component is one line, the picture, the name, the number
+ * boxes, a play button and the score, so the whole assessment and its result
+ * fit on one laptop screen (Captain Russell, Nov 2026). The arrow opens the
+ * full card. Warnings, an open exercise picker and the altitude note still
+ * show, full width under the line, because they change what the number means.
+ */
+.events-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 8px;
+}
+
+.more-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.more-toggle:hover { border-color: var(--cardinal); color: var(--cardinal); }
+.more-toggle:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.more-toggle svg { transition: transform .2s ease; }
+.event.open .more-toggle svg { transform: rotate(180deg); }
+.event-head .more-toggle { grid-area: 1 / 4; }
+.event.open .event-head { grid-template-columns: auto 1fr auto auto; }
+
+.event:not(.open) {
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+  grid-template-areas:
+    "icon name input listen chip more"
+    "bar  bar  bar   bar    bar  bar";
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 12px;
+}
+.event:not(.open) + .event { margin-top: -2px; }
+.event:not(.open) > .event-head,
+.event:not(.open) .event-tools { display: contents; }
+.event:not(.open) .event-icon { grid-area: icon; width: 34px; height: 34px; }
+.event:not(.open) .event-icon svg { width: 22px; height: 22px; }
+.event:not(.open) h2 { grid-area: name; font-size: .95rem; min-width: 0; }
+.event:not(.open) .chip { grid-area: chip; padding: 3px 10px; font-size: .85rem; }
+.event:not(.open) .more-toggle { grid-area: more; }
+.event:not(.open) .listen-pill {
+  grid-area: listen;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+.event:not(.open) .listen-pill span { display: none; }
+.event:not(.open) .event-tools > :not(.listen-pill) { display: none; }
+.event:not(.open) .meter { grid-area: bar; height: 3px; margin: 0; }
+.event:not(.open) > .stepper,
+.event:not(.open) > .time-inputs,
+.event:not(.open) > .measure-row { grid-area: input; justify-self: end; }
+/* Everything else on the card waits for the arrow. */
+.event:not(.open) > :not(.event-head, .meter, .alt-note, .event-picker, .stepper,
+  .time-inputs, .measure-row, .status-note, .below-minimum-note, .altitude-applied) {
+  display: none;
+}
+.event:not(.open) > .alt-note,
+.event:not(.open) > .event-picker,
+.event:not(.open) > .status-note,
+.event:not(.open) > .below-minimum-note,
+.event:not(.open) > .altitude-applied { grid-column: 1 / -1; }
+
+/* The number boxes, small. Typing is the fast way in; the steppers, sliders
+ * and labels are on the open card. */
+.event:not(.open) .step { display: none; }
+.event:not(.open) .stepper { display: block; }
+.event:not(.open) input[type="number"] {
+  width: 84px;
+  min-height: 0;
+  height: 36px;
+  padding: 4px 8px;
+  font-size: .95rem;
+  text-align: center;
+}
+.event:not(.open) .time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.event:not(.open) .time-inputs input { width: 56px; }
+.event:not(.open) .measure-row {
+  display: flex;
+  gap: 8px;
+}
+.event:not(.open) .measure-row .field { display: block; }
+.event:not(.open) .measure-row .field > :not(input) { display: none; }
+.event:not(.open) .measure-row input { width: 92px; }
+
+@media (max-width: 560px) {
+  .event:not(.open) {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "icon name  chip   more"
+      "icon input listen listen"
+      "bar  bar   bar    bar";
+  }
+  .event:not(.open) .event-icon { align-self: start; }
+  .event:not(.open) .listen-pill { justify-self: end; }
+  .event:not(.open) > .stepper,
+  .event:not(.open) > .time-inputs,
+  .event:not(.open) > .measure-row { justify-self: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more-toggle svg { transition: none; }
+}
