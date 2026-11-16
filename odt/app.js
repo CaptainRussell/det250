@@ -11,12 +11,13 @@
                info:[{title, text}], itinerary:[{date, time, end, what, where, note}],
                itin:{id, name, size} (the itinerary file, a PDF with the hotel address and the meals),
                roster:[roster keys, cadre too], sections:[room groups], rooms:[{room, sec, cadets:[keys]}],
-               docs:[{id, title, note, name, size}] }] }
+               docs:[{id, title, note, name, size}],
+               vans:[{id, name, kind (isu15, gov11, other), seats (driver included), driver, relief, riders:[keys]}] }] }
    The itinerary and each supporting document are their own locked files, files/<id>.json, same layout.
    Cadre (class "Cadre" in the roster) can be on the roster and always have a room to themselves.
    Older ODTs may still hold an itinerary list (itinerary:[{date, time, end, what, where, note}]); it shows
    when there is no itinerary file. Lodging and meal lists are no longer shown.
-   Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms), #all. */
+   Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms, vans), #all. */
 (function(){
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -26,7 +27,7 @@ const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",A
 const LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS300:"AS 300",AS400:"AS 400",AS500:"AS 500",Graybeard:"Graybeard",Cadre:"Cadre"};
 const CLASS_ORDER = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
 const FL = {afl:"Alpha",bfl:"Bravo",cfl:"Charlie",dfl:"Delta"};
-const TABS = [["overview","Overview"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"]];
+const TABS = [["overview","Overview"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"],["vans","Vans"]];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -135,6 +136,7 @@ function overview(e){
       ${tile("itinerary", "Dates", dates(e) || "Not set", e.itin || (e.itinerary || []).length ? "See the itinerary" : "Itinerary not posted yet")}
       ${tile("roster", "Going", `${nc} cadet${nc === 1 ? "" : "s"}`, nk ? `and ${nk} cadre` : "See the roster")}
       ${tile("rooms", "Rooms", rooms.length ? `${rooms.length} rooms` : "Not posted", rooms.length ? "Find your room" : "")}
+      ${tile("vans", "Vans", (e.vans || []).length ? `${e.vans.length} vans` : "Not posted", (e.vans || []).length ? "Find your van" : "")}
     </div>
     ${(e.docs || []).length ? `<section class="sec"><h2>Documents<span>${e.docs.length}</span></h2><div class="cards">${e.docs.map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
     ${(e.info || []).length ? `<section class="sec"><h2>Things to know<span>${e.info.length}</span></h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : ""}`;
@@ -191,7 +193,21 @@ function allList(){
     (past.length ? `<section class="sec"><h2>Past<span>${past.length}</span></h2><div class="evlist">${past.map(card).join("")}</div></section>` : "") ||
     empty("No ODTs are posted yet.");
 }
-const VIEWS = {overview, itinerary, roster, rooms};
+const KIND = {isu15:"15-passenger ISU van", gov11:"11-passenger GOV"};
+function vans(e){
+  const L = e.vans || [];
+  if (!L.length) return empty("Van assignments aren't posted yet.");
+  const all = L.flatMap(v => [v.driver, v.relief, ...(v.riders || [])].filter(Boolean));
+  const card = (k, role) => { const c = who(k);
+    return `<div class="person${role ? " role" : ""}" data-name="${esc((c.first + " " + c.last + " " + c.last + " " + c.first).toLowerCase())}">${face(c, 40)}<div class="txt"><div class="nm">${esc(fullName(c))}</div><div class="pos">${role ? `<b>${esc(role)}</b>` : esc(c.pos || (c.flt ? c.flt + " Flight" : LABEL[c.cls] || ""))}</div></div></div>`; };
+  return findBox("Find your van: type your name") + legend(all) + L.map(v => {
+    const ppl = [v.driver, v.relief].filter(Boolean).length + (v.riders || []).length;
+    const riders = (v.riders || []).slice().sort((a, b) => { const x = who(a), y = who(b); return (CLASS_ORDER.indexOf(x.cls) - CLASS_ORDER.indexOf(y.cls)) || (x.last + x.first).localeCompare(y.last + y.first); });
+    return `<section class="sec van"><h2>${esc(v.name)}<span>${esc(KIND[v.kind] || "Vehicle")}${v.seats ? ` · ${ppl} of ${esc(v.seats)} seats` : ""}</span></h2>
+      <div class="ppl">${v.driver ? card(v.driver, "Driver") : ""}${v.relief ? card(v.relief, "Relief driver") : ""}${riders.map(k => card(k, "")).join("")}</div></section>`;
+  }).join("");
+}
+const VIEWS = {overview, itinerary, roster, rooms, vans};
 
 /* ---------- render ---------- */
 function render(){
@@ -255,7 +271,10 @@ function wireView(){
       const s = q.value.trim().toLowerCase(); let n = 0;
       document.querySelectorAll(".person").forEach(p => { const on = !s || p.dataset.name.includes(s); p.classList.toggle("hide", !on); if (on) n++; });
       document.querySelectorAll("#view .sec").forEach(sec => { sec.hidden = !!s && !sec.querySelector(".person:not(.hide)"); });
-      $("#found").textContent = s ? (n ? `${n} match${n === 1 ? "" : "es"}.` : "No one by that name.") : "";
+      let msg = s ? (n ? `${n} match${n === 1 ? "" : "es"}.` : "No one by that name.") : "";
+      const hit = [...document.querySelectorAll(".person:not(.hide)")];
+      if (s && TAB === "vans" && hit.length === 1){ const v = hit[0].closest(".van"), role = hit[0].querySelector(".pos b"); msg = `${hit[0].querySelector(".nm").textContent}: ${v.querySelector("h2").firstChild.textContent}${role ? ` (${role.textContent})` : ""}.`; }
+      $("#found").textContent = msg;
     });
   }
 }

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>ODT Module · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
-<meta name="description" content="Det 250 ODT Module: dates, itinerary, roster, rooms and documents for each ODT. Cadet password.">
+<meta name="description" content="Det 250 ODT Module: dates, itinerary, roster, rooms, vans and documents for each ODT. Cadet password.">
 <link rel="stylesheet" href="../shared/det250.css">
 <link rel="stylesheet" href="../shared/instructor.css">
 <style>
@@ -113,7 +113,9 @@ input[type="password"],input[type="search"]{font:inherit}
 .modbar .allbtn{margin-left:auto}
 .btn.on{border-color:var(--d250-gold);color:var(--d250-gold)}
 /* overview */
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.person.role{border-color:color-mix(in srgb,var(--d250-gold) 55%,var(--d250-line))}
+.person.role .pos b{color:var(--d250-gold);font-weight:800}
 .tile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;box-shadow:var(--d250-shadow);cursor:pointer;min-width:0;transition:border-color .2s}
 .tile:hover{border-color:var(--d250-gold)}
 .tile small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
@@ -184,7 +186,7 @@ input[type="password"],input[type="search"]{font:inherit}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
       <h1 id="title">ODT Module</h1>
-      <p class="d250-head-sub">Everything for each ODT: dates, itinerary, who's going, rooms and documents.</p>
+      <p class="d250-head-sub">Everything for each ODT: dates, itinerary, who's going, rooms, vans and documents.</p>
     </div>
   </div>
 </header>
