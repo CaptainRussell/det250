@@ -560,6 +560,7 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   font-size: .82rem;
   color: var(--ink-soft);
 }
+.chart-pic figcaption { border-bottom: 1px solid var(--line); }
 .chart-pic-what { font-weight: 600; color: var(--ink); }
 .chart-pic-tools { display: flex; gap: 8px; align-items: center; }
 .chart-pic-zoom,
@@ -584,9 +585,9 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   background: var(--cardinal);
   border-color: var(--cardinal);
   color: #fff;
-  padding: 6px 16px;
-  font-size: .85rem;
 }
+/* One size in both states, so switching never shifts the row. */
+.chart-pic-zoom { min-width: 7.5rem; text-align: center; padding: 6px 14px; font-size: .85rem; }
 .chart-pic.whole .chart-pic-zoom:hover { filter: brightness(1.1); color: #fff; }
 .chart-pic-zoom:focus-visible,
 .chart-pic-open:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
@@ -962,7 +963,7 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
  * view, sits to the left of both. */
 .event-head {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px 12px;
 }
@@ -1134,6 +1135,55 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   bottom: -2px;
   opacity: .7;
   transform: translateX(-1.5px);
+}
+
+/* The pass mark stays white and Excellent (90) is green, both edged in dark
+ * so they show on any fill (Captain Russell, Nov 2026). */
+.meter-composite .meter-mark {
+  background: #fff;
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .55);
+}
+.meter-composite .meter-mark-90 { background: #22c55e; }
+
+/* Composite colour by rating (Captain Russell, Nov 2026): red Unsatisfactory,
+ * yellow Satisfactory, green Excellent, gold for a perfect 100. The big number
+ * carries a dark edge so yellow and gold still read on the light theme. */
+[data-tier="unsat"] { --tier: #ef4054; --tier-solid: #c8102e; --tier-ink: #fff; --tier-edge: #4a0812; }
+[data-tier="sat"] { --tier: #facc15; --tier-solid: #facc15; --tier-ink: #1b1b1d; --tier-edge: #4d3b00; }
+[data-tier="excellent"] { --tier: #22c55e; --tier-solid: #22c55e; --tier-ink: #0d1f14; --tier-edge: #063d1c; }
+[data-tier="perfect"] { --tier: #f1be48; --tier-solid: #f1be48; --tier-ink: #1b1b1d; --tier-edge: #5a3d00; }
+.scoreboard[data-tier] { border-top-color: var(--tier); }
+.scoreboard[data-tier] .composite {
+  color: var(--tier);
+  -webkit-text-stroke: 3px var(--tier-edge);
+  paint-order: stroke fill;
+}
+.scoreboard[data-tier] .verdict {
+  background: var(--tier-solid);
+  color: var(--tier-ink);
+  box-shadow: 0 0 0 2px var(--tier-edge);
+}
+.scoreboard[data-tier] .meter-composite { border-color: var(--tier); border-width: 2px; }
+.scoreboard[data-tier] .meter-composite .meter-fill {
+  background: var(--tier);
+  box-shadow: inset 0 0 0 1px var(--tier-edge);
+}
+.scoreboard[data-tier="perfect"] .meter-composite .meter-fill {
+  background: linear-gradient(180deg, #ffe9a8, #f1be48 45%, #c8921a);
+}
+.scoreboard[data-tier="perfect"] .composite {
+  background: linear-gradient(180deg, #ffe9a8, #f1be48 50%, #c8921a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0;
+  filter: drop-shadow(0 1px 0 var(--tier-edge)) drop-shadow(0 0 1px var(--tier-edge));
+}
+.tally[data-tier] .tally-score {
+  color: var(--tier);
+  -webkit-text-stroke: 1.5px var(--tier-edge);
+  paint-order: stroke fill;
 }
 
 .meter-legend {
@@ -1954,6 +2004,16 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   .meter { border: 1px solid #000; height: 10pt; }
   .meter-fill { background: #000 !important; }
   .meter-mark { background: #fff; width: 2pt; opacity: 1; }
+  /* Ink only on paper: no tier colours, the 90 mark as a dashed line. */
+  .scoreboard[data-tier] .composite {
+    color: #000 !important; background: none !important;
+    -webkit-text-stroke: 0; filter: none;
+  }
+  .scoreboard[data-tier] .verdict { box-shadow: none; }
+  .scoreboard[data-tier] { border-top-color: #000; }
+  .scoreboard[data-tier] .meter-composite { border-color: #000; border-width: 1px; }
+  .meter-composite .meter-mark { box-shadow: none; }
+  .meter-composite .meter-mark-90 { background: #fff; border-left: 1pt dashed #000; }
 
   .failures { border-left: 3pt solid #000; background: none; }
   .failures h2 { color: #000; }
@@ -2180,7 +2240,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   transition: border-color .2s ease;
 }
 .bfa:focus-within { border-color: var(--cardinal); }
-.bfa .event-head { grid-template-columns: auto 1fr auto auto; }
+.bfa .event-head { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 
 /* Not needed: greyed out with one line saying why (Captain Russell, Nov 2026). */
 .bfa.idle .event-icon,
@@ -2757,7 +2817,7 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 .more-toggle svg { transition: transform .2s ease; }
 .event.open .more-toggle svg { transform: rotate(180deg); }
 .event-head .more-toggle { grid-area: 1 / 4; }
-.event.open .event-head { grid-template-columns: auto 1fr auto auto; }
+.event.open .event-head { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 
 .event:not(.open) {
   grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
@@ -2909,3 +2969,39 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 @media (prefers-reduced-motion: reduce) {
   .more-toggle svg { transition: none; }
 }
+
+/* --- compact top (Captain Russell, Nov 2026) ------------------------------
+ * A slim header, Age and Sex the height of a condensed component, and the
+ * Assessment instructions as one thin line just above the components, so the
+ * form starts higher up the screen. */
+.d250-head.masthead .d250-head-in { padding-top: 8px; padding-bottom: 8px; gap: 10px; }
+.d250-head.masthead .d250-head-icon { width: 36px; height: 36px; border-radius: 10px; }
+.d250-head.masthead .d250-eyebrow { display: none; }
+.d250-head.masthead h1 { font-size: 1.2rem; margin: 0; }
+.d250-head.masthead .d250-head-sub {
+  margin: 0; font-size: .78rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+form#assessment > .about-row { gap: 10px; }
+.about-row .field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.about-row .segmented { padding: 3px; gap: 4px; border-radius: 9px; }
+.about-row .segment { min-height: 32px; padding: 5px 6px; font-size: .85rem; }
+.about-row .sex-glyph { font-size: 1.4em; }
+.opening { margin: 0; padding: 5px 6px 5px 12px; gap: 6px 10px; }
+.opening-text { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.opening-title { font-size: .85rem; }
+.opening .hint { font-size: .74rem; margin: 0; }
+.opening .event-tools { gap: 6px; }
+.events-bar { margin-top: 2px; }
+.events-bar-tools { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.reset-top:hover { border-color: var(--cardinal); color: var(--cardinal); }
+@media (max-width: 560px) {
+  .d250-head.masthead .d250-head-sub { display: none; }
+  .about-row .field { grid-template-columns: 1fr; gap: 4px; }
+  .about-row .label-text { font-size: .78rem; }
+  .opening .hint { display: none; }
+  .opening { flex-wrap: nowrap; padding-left: 10px; }
+  .opening-title { white-space: nowrap; font-size: .8rem; }
+  .opening .event-tools { flex-wrap: nowrap; flex: none; }
+}
+@media print { .reset-top { display: none; } }
