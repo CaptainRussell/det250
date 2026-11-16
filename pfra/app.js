@@ -1606,8 +1606,6 @@ function showAward(result) {
     line.hidden = true;
     return;
   }
-  const whose = 'the';
-
   const award = scorer.fitnessAward(result);
   if (!award.meetsThreshold) {
     line.hidden = true;
@@ -1626,14 +1624,21 @@ function showAward(result) {
     return;
   }
 
-  line.textContent = award.tier === 'silver_star'
-    ? `A perfect ${result.compositeText}. If this is ${whose} official PFRA for the ` +
-      'term it earns the Fitness Award, and the Silver Star device the first time ' +
-      'the cadet scores 100 at the detachment ' +
-      '(AFROTCI 36-2011 V3, Table 15.1).'
-    : `${result.compositeText} is ${award.threshold} or above. If this is ${whose} ` +
-      'official PFRA for the term it earns the Fitness Award, which may be received ' +
-      'once per term (AFROTCI 36-2011 V3, Table 15.1).';
+  // The ribbon itself, drawn by the Ribbon Rack Builder (Captain Russell, 16
+  // Nov 2026), with the Silver Star on a 100. Short words beside it.
+  const star = award.tier === 'silver_star';
+  const ribbon = document.createElement('img');
+  ribbon.className = 'award-ribbon';
+  ribbon.src = star ? 'art/ribbon-pf-star.svg' : 'art/ribbon-pf.svg';
+  ribbon.alt = star ? 'Physical Fitness ribbon with Silver Star' : 'Physical Fitness ribbon';
+  ribbon.width = 110;
+  ribbon.height = 30;
+  const words = el('span', 'award-words');
+  words.append(el('strong', null, star ? 'Fitness Award + Silver Star' : 'Fitness Award'));
+  words.append(el('span', 'award-sub', star
+    ? 'First 100 at the detachment, if this is the official PFRA (Table 15.1)'
+    : 'Once per term, if this is the official PFRA (Table 15.1)'));
+  line.replaceChildren(ribbon, words);
   line.className = `award-line award-earned${award.tier === 'silver_star' ? ' award-star' : ''}`;
   line.hidden = false;
 }

@@ -668,6 +668,18 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   font-weight: 600;
 }
 .award-star { border-left-width: 6px; }
+/* The ribbon from the Ribbon Rack Builder, beside a short line. */
+.award-earned { display: flex; align-items: center; gap: 12px; }
+.award-ribbon {
+  flex: none;
+  width: 88px;
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.45);
+}
+.award-words { display: grid; gap: 2px; }
+.award-words strong { font-size: .92rem; }
+.award-sub { font-size: .78rem; font-weight: 500; color: var(--ink-soft); }
 .award-blocked {
   border-left: 4px solid var(--line-strong);
   background: var(--page);
