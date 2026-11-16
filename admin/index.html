@@ -1139,6 +1139,7 @@ function giveCadreRooms(e){
 const ODT_PLANS = {
   "offutt-2026-12": {cadre:["CacicJohn","RussellScott","MooreGabrielle","OrrTy"],
     // room numbers from Captain Russell's list (16 Nov 2026): cadet rooms 1 on in page order, then the cadre in this order
+    drop:["MafnasMaxC","WheelerAndrewT"],              // not going (Captain Russell, 16 Nov 2026)
     renumber:true, cadreRooms:["RussellScott","OrrTy","MooreGabrielle","CacicJohn"], vans:[
     {name:"Van 1", kind:"isu15", seats:15, driver:"CacicJohn", relief:"MarschangAllissaA"},
     {name:"Van 2", kind:"isu15", seats:15, driver:"OrrTy", relief:"HelleNicolasD"},
@@ -1158,19 +1159,26 @@ function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order 
 function applyPendingPlans(){                         // an ODT that was set up before its plan existed gets it on open
   for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
     const r = applyPlan(e);
+    if (r.drop.length) changed(`${evName(e)}: took ${r.drop.map(pname).join(", ")} off the roster`);
     changed(`${evName(e)}: applied the plan (cadre ${r.rooms.map(pname).join(", ") || "already roomed"}, rooms renumbered, ${e.vans.length} vans)`);
   }
 }
 function applyPlan(e){
   const P = ODT_PLANS[e.id]; if (!P) return null;
   e.roster = e.roster || [];
+  const drop = (P.drop || []).filter(k => e.roster.includes(k) || (e.rooms || []).some(r => r.cadets.includes(k)));
+  if (drop.length){
+    e.roster = e.roster.filter(k => !drop.includes(k));
+    for (const r of e.rooms || []) r.cadets = r.cadets.filter(k => !drop.includes(k));
+    e.rooms = (e.rooms || []).filter(r => r.cadets.length);
+  }
   const add = [...P.cadre, ...P.vans.map(v => v.relief)].filter(k => R().people[k] && !e.roster.includes(k));
   e.roster.push(...add);
   const rooms = giveCadreRooms(e);
   if (P.renumber) renumberRooms(e, P.cadreRooms || []);
   e.vans = P.vans.map((v, i) => ({id:"van" + (i + 1), ...v, riders:[]}));
   const over = vanAuto(e);
-  return {add, rooms, over};
+  return {add, drop, rooms, over};
 }
 
 function subVans(e, body){
