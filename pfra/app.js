@@ -3643,11 +3643,12 @@ function showCourseSections() {
   $('layout-body').hidden = !course.layout;
   $('pace-section').hidden = !course.pace;
   $('track-section').hidden = !course.layout;
-  // One set of distance and track pickers, in whichever section is open
-  // (the lap pace first when both are).
+  // One set of distance and track pickers, at the bottom of whichever section
+  // is open (the lap pace when both are), under the map and the numbers
+  // (Captain Russell, 16 Nov 2026).
   const pickers = document.querySelector('.track-pickers');
   const home = course.pace ? $('course-body') : $('layout-body');
-  if (pickers.parentElement !== home) home.prepend(pickers);
+  if (pickers.parentElement !== home || home.lastElementChild !== pickers) home.append(pickers);
   for (const [id, on] of [['pace-toggle', course.pace], ['layout-toggle', course.layout]]) {
     $(id).setAttribute('aria-expanded', String(on));
     $(id).classList.toggle('on', on);

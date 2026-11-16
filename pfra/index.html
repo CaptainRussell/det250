@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=refs1">
+<link rel="stylesheet" href="styles.css?v=order1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -473,6 +473,10 @@
             <!-- No time box of its own (Captain Russell, Nov 2026): the pace
                  is worked out from the run or walk time entered above, so
                  there is one time to type and one slider to drag. -->
+            <!-- Map first, then Every lap, then the pickers at the bottom
+                 (Captain Russell, 16 Nov 2026). Where the odd first stretch
+                 is: one start, one finish, and the part lap between them. -->
+            <div class="track-figure pace-figure" id="pace-figure"></div>
             <p class="hint pace-empty" id="pace-empty">
               Enter your time above and every lap's split shows here.
             </p>
@@ -482,9 +486,6 @@
               <p class="pace-working" id="pace-working"></p>
               <p class="pace-partial" id="pace-partial" hidden></p>
             </div>
-            <!-- Where the odd first stretch is. Simpler than the layout below:
-                 one start, one finish, and the part lap between them. -->
-            <div class="track-figure pace-figure" id="pace-figure"></div>
           </div>
           </div>
         </div>
@@ -928,6 +929,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=refs1"></script>
+<script type="module" src="app.js?v=order1"></script>
 </body>
 </html>
