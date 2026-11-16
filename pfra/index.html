@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=refs1">
+<link rel="stylesheet" href="styles.css?v=prog1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -58,7 +58,8 @@
     <!-- The opening statement (DAFMAN 36-2905 A2.1), read once before the first
          component. It replaced the Cadet / Proctor switch: there is one view
          now, and anything a cadet is not allowed (an alternate event, an
-         exemption) is flagged where it is chosen. One slim line just above the components
+         exemption other than body composition after a passed body fat
+         assessment) is flagged where it is chosen. One slim line just above the components
          (Captain Russell, Nov 2026). -->
     <div class="opening" id="opening">
       <div class="opening-text">
@@ -393,6 +394,9 @@
         <p class="altitude-applied-detail" id="altitude-applied-detail"></p>
       </div>
       <p class="status-note" id="exempt-note-cardiorespiratory" hidden></p>
+      <!-- The HAMR pacing track, played here (Captain Russell, 16 Nov 2026).
+           Filled by showHamrAudio(); loads nothing until Play. -->
+      <div class="hamr-audio" id="hamr-audio" hidden></div>
       <div class="chart-inline" id="chart-cardiorespiratory">
         <div class="chart-body" id="chart-body-cardiorespiratory" hidden></div>
       </div>
@@ -473,6 +477,10 @@
             <!-- No time box of its own (Captain Russell, Nov 2026): the pace
                  is worked out from the run or walk time entered above, so
                  there is one time to type and one slider to drag. -->
+            <!-- Map first, then Every lap, then the pickers at the bottom
+                 (Captain Russell, 16 Nov 2026). Where the odd first stretch
+                 is: one start, one finish, and the part lap between them. -->
+            <div class="track-figure pace-figure" id="pace-figure"></div>
             <p class="hint pace-empty" id="pace-empty">
               Enter your time above and every lap's split shows here.
             </p>
@@ -482,9 +490,6 @@
               <p class="pace-working" id="pace-working"></p>
               <p class="pace-partial" id="pace-partial" hidden></p>
             </div>
-            <!-- Where the odd first stretch is. Simpler than the layout below:
-                 one start, one finish, and the part lap between them. -->
-            <div class="track-figure pace-figure" id="pace-figure"></div>
           </div>
           </div>
         </div>
@@ -928,6 +933,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=refs1"></script>
+<script type="module" src="app.js?v=prog1"></script>
 </body>
 </html>
