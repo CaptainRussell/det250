@@ -38,9 +38,9 @@ let ageBand = null;
  * Who is being assessed.
  *
  * The charts do not change; what changes is what the member is allowed to do.
- * Cadets test on the three AFROTC events and are not authorised exemptions on
- * any component (AFROTCI 36-2011 V3: the most recent PFRA "with no exemptions"
- * is required before contracting, field training and commissioning). Cadre and
+ * Cadets test on the three AFROTC events and are not authorised exemptions,
+ * except body composition after a passed secondary body fat assessment
+ * (DAFMAN 36-2905 para 3.7.2; Captain Russell, 16 Nov 2026). Cadre and
  * staff may be on a profile, may be assessed on an alternate event, and may
  * have a component exempted.
  *
@@ -1520,9 +1520,13 @@ function showAward(result) {
   // exempt. Anything else is an active duty member's PFRA, and telling them
   // it would not earn a cadet ribbon is noise. A proctor scoring a cadet is the
   // case this is for, and they need the line as much as the cadet does.
+  // The one exemption a cadet may have is body composition after a passed
+  // secondary body fat assessment (Captain Russell, 16 Nov 2026). Any other
+  // exemption, including one from the Exempt button, is not allowed.
+  const notCadetExempt = (component) => !(component === 'body_composition' && bfa.applied);
   const cadetShaped = result
     && Object.entries(CADET_EVENTS).every(([c, event]) => result.components[c].event === event)
-    && result.exemptComponents.length === 0;
+    && !result.exemptComponents.some(notCadetExempt);
   if (!result) {
     line.hidden = true;
     return;
@@ -1534,7 +1538,7 @@ function showAward(result) {
     if (Object.entries(CADET_EVENTS).some(([c, event]) => result.components[c].event !== event)) {
       why.push('an alternate event');
     }
-    if (result.exemptComponents.length) why.push('an exemption');
+    if (result.exemptComponents.some(notCadetExempt)) why.push('an exemption');
     line.textContent = `Not valid for a cadet: this assessment uses ${why.join(' and ')}, ` +
       'which cadets are not allowed (NOTACC CY26-092, AFROTCI 36-2011 V3). ' +
       'It does not count toward the Fitness Award.';
@@ -2101,7 +2105,8 @@ function bfaExemptionNote(on) {
   note.textContent =
     'Exempt because the secondary body fat assessment passed (DAFMAN 36-2905 para ' +
     '3.7.2). It scores no points, fails nothing, and the composite is worked out ' +
-    'over the three components that were assessed.';
+    'over the three components that were assessed. This is the one exemption ' +
+    'cadets are allowed.';
   note.hidden = false;
 }
 
