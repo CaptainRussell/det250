@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=listen1">
+<link rel="stylesheet" href="styles.css?v=flow1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -30,27 +30,20 @@
   <!-- ---------------------------------------------------------------- -->
   <form id="assessment" class="card" novalidate autocomplete="off">
 
-    <!-- Above age and sex because it frames them: the same charts, but a
-         different set of things a member is allowed to do.
-
-         No visible heading. It was "Assessing", which read wrongly once the
-         second choice became Proctor / Cadre: a proctor runs the assessment
-         rather than taking it. The two buttons and the line under them say
-         what the switch is; the name is kept for screen readers. -->
-    <div class="field" id="field-role">
-      <div class="segmented" role="radiogroup" aria-label="Which view of the calculator">
-        <button type="button" class="segment on" role="radio" aria-checked="true"
-                data-role="cadet">AFROTC Cadet</button>
-        <button type="button" class="segment" role="radio" aria-checked="false"
-                data-role="cadre">Proctor / Cadre</button>
+    <!-- The opening statement (DAFMAN 36-2905 A2.1), read once before the first
+         component. It replaced the Cadet / Proctor switch: there is one view
+         now, and anything a cadet is not allowed (an alternate event, an
+         exemption) is flagged where it is chosen. -->
+    <div class="opening" id="opening">
+      <div class="opening-text">
+        <p class="opening-title">Assessment instructions</p>
+        <p class="hint">Read to everyone once, before the first component.</p>
       </div>
-      <!-- Cadet is the default, on load and on Reset Everything, because most
-           people opening this are cadets checking their own score. Kept in step
-           with ROLE_HINTS.cadet in app.js, which rewrites it on a switch. -->
-      <p class="hint" id="role-hint">
-        Waist to height, hand-release push-ups, sit-ups and the 2 mile run. Those
-        four are the whole cadet assessment (NOTACC CY26-092).
-      </p>
+      <div class="event-tools">
+        <button type="button" class="listen-pill" data-listen-key="general"></button>
+        <button type="button" class="verbiage-open" data-verbiage="general"
+                title="What the assessment administrator reads out">Read</button>
+      </div>
     </div>
 
     <div class="row about-row">
@@ -62,7 +55,6 @@
           <button type="button" class="segment" role="radio" aria-checked="false"
                   data-band="older">25 or older</button>
         </div>
-        <p class="hint">Charts differ by age band.</p>
       </div>
       <div class="field" id="field-sex">
         <span class="label-text" id="sex-label">Sex</span>
@@ -72,7 +64,6 @@
           <button type="button" class="segment" role="radio" aria-checked="false"
                   data-sex="F"><span class="sex-glyph" aria-hidden="true">♀</span> Female</button>
         </div>
-        <p class="hint">Charts differ by sex.</p>
       </div>
     </div>
 
@@ -89,8 +80,11 @@
         <span class="event-icon" id="icon-body_composition" aria-hidden="true"></span>
         <h2>Waist to Height (WHtR)</h2>
         <div class="event-tools">
+          <button type="button" class="listen-pill" data-listen="body_composition"></button>
           <button type="button" class="verbiage-open" data-verbiage="body_composition"
                 title="What the assessment administrator reads out">How It's Measured</button>
+          <button type="button" class="chart-toggle" data-chart="body_composition"
+                  aria-expanded="false" aria-controls="chart-body-body_composition">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="body_composition"
                   title="Cadre and staff on profile. Not authorised for cadets."
                   hidden>Exempt</button>
@@ -123,7 +117,7 @@
         <div class="field">
           <label for="waist">Waist</label>
           <input type="number" id="waist" inputmode="decimal" min="16" max="70" step="0.5"
-                 placeholder="in" enterkeyhint="done">
+                 placeholder="in" enterkeyhint="next">
           <div class="slider-row" id="slider-body_composition" hidden>
             <span class="slider-end low" id="slider-low-body_composition"></span>
             <input type="range" class="slider" id="slide-body_composition"
@@ -145,9 +139,6 @@
       <div class="range" id="range-body_composition" aria-label="Chart range"></div>
       <p class="below-minimum-note" id="row-body_composition" hidden></p>
       <div class="chart-inline" id="chart-body_composition">
-        <button type="button" class="secondary small chart-toggle"
-                data-chart="body_composition" aria-expanded="false"
-                aria-controls="chart-body-body_composition">Scoring Chart</button>
         <div class="chart-body" id="chart-body-body_composition" hidden></div>
       </div>
     </section>
@@ -163,8 +154,11 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-muscular_strength">Hand Release Push-Ups</h2>
         <div class="event-tools">
+          <button type="button" class="listen-pill" data-listen="muscular_strength"></button>
           <button type="button" class="verbiage-open" data-verbiage="muscular_strength"
                 title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="chart-toggle" data-chart="muscular_strength"
+                  aria-expanded="false" aria-controls="chart-body-muscular_strength">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="muscular_strength"
                   title="Cadre and staff on profile. Not authorised for cadets."
                   hidden>Exempt</button>
@@ -204,9 +198,6 @@
       <div class="range" id="range-muscular_strength" aria-label="Chart range"></div>
       <p class="below-minimum-note" id="row-muscular_strength" hidden></p>
       <div class="chart-inline" id="chart-muscular_strength">
-        <button type="button" class="secondary small chart-toggle"
-                data-chart="muscular_strength" aria-expanded="false"
-                aria-controls="chart-body-muscular_strength">Scoring Chart</button>
         <div class="chart-body" id="chart-body-muscular_strength" hidden></div>
       </div>
     </section>
@@ -222,8 +213,11 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-core_endurance">Sit-Ups</h2>
         <div class="event-tools">
+          <button type="button" class="listen-pill" data-listen="core_endurance"></button>
           <button type="button" class="verbiage-open" data-verbiage="core_endurance"
                 title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="chart-toggle" data-chart="core_endurance"
+                  aria-expanded="false" aria-controls="chart-body-core_endurance">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="core_endurance"
                   title="Cadre and staff on profile. Not authorised for cadets."
                   hidden>Exempt</button>
@@ -271,9 +265,6 @@
       <div class="range" id="range-core_endurance" aria-label="Chart range"></div>
       <p class="below-minimum-note" id="row-core_endurance" hidden></p>
       <div class="chart-inline" id="chart-core_endurance">
-        <button type="button" class="secondary small chart-toggle"
-                data-chart="core_endurance" aria-expanded="false"
-                aria-controls="chart-body-core_endurance">Scoring Chart</button>
         <div class="chart-body" id="chart-body-core_endurance" hidden></div>
       </div>
     </section>
@@ -289,11 +280,18 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-cardiorespiratory">2 Mile Run</h2>
         <div class="event-tools">
+          <button type="button" class="listen-pill" data-listen="cardiorespiratory"></button>
           <button type="button" class="verbiage-open" data-verbiage="cardiorespiratory"
                 title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="chart-toggle" data-chart="cardiorespiratory"
+                  aria-expanded="false" aria-controls="chart-body-cardiorespiratory">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="cardiorespiratory"
                   title="Cadre and staff on profile. Not authorised for cadets."
                   hidden>Exempt</button>
+          <!-- Only the run and the walk: those are the events a member can
+               leave part-way through. -->
+          <button type="button" class="not-done" id="dnf-run"
+                  data-status-for="run" hidden>Did Not Finish</button>
           <button type="button" class="swap" id="altitude-toggle"
                   aria-expanded="false" aria-controls="altitude-panel"
                   title="Altitude time correction">Altitude</button>
@@ -407,9 +405,6 @@
       </div>
       <p class="below-minimum-note" id="row-cardiorespiratory" hidden></p>
       <div class="chart-inline" id="chart-cardiorespiratory">
-        <button type="button" class="secondary small chart-toggle"
-                data-chart="cardiorespiratory" aria-expanded="false"
-                aria-controls="chart-body-cardiorespiratory">Scoring Chart</button>
         <div class="chart-body" id="chart-body-cardiorespiratory" hidden></div>
       </div>
 
@@ -535,8 +530,6 @@
       <!-- Only the run and the walk: those are the events a member can leave
            part-way through. Stopping early on push-ups or sit-ups is just a
            lower count, which is what the verbiage says happens. -->
-      <button type="button" class="not-done" id="dnf-run"
-              data-status-for="run" hidden>Did Not Finish</button>
       <p class="status-note" id="status-run" hidden></p>
     </section>
 
@@ -769,6 +762,13 @@
 
   </section>
 
+  <!-- Wide screens only: holds the score column until there is a score. -->
+  <aside class="card score-wait" id="score-wait" aria-hidden="true">
+    <p class="scoreboard-label">Composite</p>
+    <p class="score-wait-num">&ndash;</p>
+    <p id="score-wait-text">Choose your age and sex, then enter your numbers. The score builds here as you type.</p>
+  </aside>
+
   <!-- ---------------------------------------------------------------- -->
   <!-- The track layout as its own printed sheet. Never on screen: it is a
        second copy of what the panel in the form already shows, and it exists
@@ -926,6 +926,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=listen1"></script>
+<script type="module" src="app.js?v=flow1"></script>
 </body>
 </html>
