@@ -17,7 +17,7 @@
    Cadre (class "Cadre" in the roster) can be on the roster and always have a room to themselves.
    Older ODTs may still hold an itinerary list (itinerary:[{date, time, end, what, where, note}]); it shows
    when there is no itinerary file. Lodging and meal lists are no longer shown.
-   Links: #<event id>/<tab> (tabs: overview, itinerary, roster, rooms, vans), #all. */
+   Links: #<event id>/<tab> (tabs: overview, itinerary, docs, roster, rooms, vans), #all. */
 (function(){
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -27,7 +27,7 @@ const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",A
 const LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS300:"AS 300",AS400:"AS 400",AS500:"AS 500",Graybeard:"Graybeard",Cadre:"Cadre"};
 const CLASS_ORDER = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
 const FL = {afl:"Alpha",bfl:"Bravo",cfl:"Charlie",dfl:"Delta"};
-const TABS = [["overview","Overview"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"],["vans","Vans"]];
+const TABS = [["overview","Overview"],["itinerary","Itinerary"],["docs","Documents"],["roster","Roster"],["rooms","Rooms"],["vans","Vans"]];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -56,7 +56,7 @@ async function docUrl(id){
   if (!BLOBS[id]) BLOBS[id] = URL.createObjectURL(new Blob([await docBytes(id)], {type:"application/pdf"}));
   return BLOBS[id];
 }
-async function drawPdf(id, box){                    // the itinerary, page by page, sized to the column
+async function drawPdf(id, box, label = "Itinerary"){   // a locked PDF (itinerary or document), page by page, sized to the column
   const lib = window.pdfjsLib; if (!lib) throw new Error("no pdf.js");
   lib.GlobalWorkerOptions.workerSrc = "../documents/vendor/pdfjs/pdf.worker.min.js";
   const pdf = await lib.getDocument({data:(await docBytes(id)).slice()}).promise;
@@ -66,7 +66,7 @@ async function drawPdf(id, box){                    // the itinerary, page by pa
     const page = await pdf.getPage(n), base = page.getViewport({scale:1});
     const v = page.getViewport({scale:(w * dpr) / base.width});
     const c = document.createElement("canvas"); c.width = v.width; c.height = v.height;
-    c.setAttribute("role", "img"); c.setAttribute("aria-label", `Itinerary page ${n} of ${pdf.numPages}`);
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", `${label} page ${n} of ${pdf.numPages}`);
     box.appendChild(c);
     await page.render({canvasContext:c.getContext("2d"), viewport:v}).promise;
   }
@@ -138,7 +138,7 @@ function overview(e){
       ${tile("rooms", "Rooms", rooms.length ? `${rooms.length} rooms` : "Not posted", rooms.length ? "Find your room" : "")}
       ${tile("vans", "Vans", (e.vans || []).length ? `${e.vans.length} vans` : "Not posted", (e.vans || []).length ? "Find your van" : "")}
     </div>
-    ${(e.docs || []).length ? `<section class="sec"><h2>Documents<span>${e.docs.length}</span></h2><div class="cards">${e.docs.map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
+    ${(e.docs || []).length ? `<section class="sec"><h2>Documents<span>${e.docs.length}</span></h2><div class="cards">${e.docs.map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-see="${esc(d.id)}">View</button><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
     ${(e.info || []).length ? `<section class="sec"><h2>Things to know<span>${e.info.length}</span></h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : ""}`;
 }
 function byDay(list, row){
@@ -153,6 +153,13 @@ function itinerary(e){
   if (!L.length) return empty("The itinerary isn't posted yet.");
   return printBar() + byDay(L, x => `<div class="row"><div class="t">${esc(x.time || "")}${x.end ? `<span class="s"> to ${esc(x.end)}</span>` : ""}</div>
     <div><div class="w">${esc(x.what || "")}</div>${x.where ? `<div class="s">${esc(x.where)}</div>` : ""}${x.note ? `<div class="s">${esc(x.note)}</div>` : ""}</div></div>`);
+}
+function docs(e){                                   // every supporting document drawn open, like the itinerary
+  const L = e.docs || [];
+  if (!L.length) return empty("No documents are posted for this ODT.");
+  return L.map(d => `<section class="sec docview" id="doc-${esc(d.id)}"><h2>${esc(d.title)}</h2>${d.note ? `<p class="muted">${esc(d.note)}</p>` : ""}
+    <div class="toolbar"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div>
+    <div class="pdfpages" data-pdf="${esc(d.id)}" data-label="${esc(d.title)}"><p class="empty">Opening ${esc(d.title)}…</p></div></section>`).join("");
 }
 function roster(e){
   const ros = rosterOf(e).map(who);
@@ -207,7 +214,7 @@ function vans(e){
       <div class="ppl">${v.driver ? card(v.driver, "Driver") : ""}${v.relief ? card(v.relief, "Relief driver") : ""}${riders.map(k => card(k, "")).join("")}</div></section>`;
   }).join("");
 }
-const VIEWS = {overview, itinerary, roster, rooms, vans};
+const VIEWS = {overview, itinerary, docs, roster, rooms, vans};
 
 /* ---------- render ---------- */
 function render(){
@@ -234,6 +241,14 @@ function wireView(){
   const pr = $("#print"); if (pr) pr.addEventListener("click", () => window.print());
   const ip = $("#itinPages");
   if (ip) drawPdf(ip.dataset.id, ip).catch(() => { ip.innerHTML = `<p class="empty">Couldn't show the itinerary here. Use Open or Download.</p>`; });
+  const seeId = TAB === "docs" ? SEE : ""; SEE = "";
+  const see = () => { const t = seeId && document.getElementById("doc-" + seeId); if (t) t.scrollIntoView({block:"start"}); };
+  see();
+  (async () => { for (const box of document.querySelectorAll("[data-pdf]")){   // one at a time, top to bottom
+    await drawPdf(box.dataset.pdf, box, box.dataset.label).catch(() => { box.innerHTML = `<p class="empty">Couldn't show this document here. Use Open or Download.</p>`; });
+    if (box.closest(".docview").id === "doc-" + seeId) see();     // the pages above it are drawn, so it stays put now
+  } })();
+  document.querySelectorAll("[data-see]").forEach(b => b.addEventListener("click", () => { SEE = b.dataset.see; go(`${EV}/docs`); }));
   const fail = b => { const m = b.parentNode.querySelector(".derr"); if (m) m.textContent = "Couldn't open it. Reload and try again."; };
   document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", async () => {
     const w = window.open("", "_blank");             // opened now, so the browser doesn't block it
@@ -278,6 +293,7 @@ function wireView(){
     });
   }
 }
+let SEE = "";                                       // the document to scroll to on the Documents tab
 function go(h){ if (location.hash.slice(1) !== h) location.hash = h; else route(); }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
