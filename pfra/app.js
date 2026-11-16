@@ -204,9 +204,14 @@ async function boot() {
   advanceOnFull('run-min', 'run-sec', 2);
   advanceOnFull('plank-min', 'plank-sec', 1);
 
-  $('plan-button').addEventListener('click', onPlan);
+  $('plan-button').addEventListener('click', () => {
+    if (planTarget !== null) clearPlan();
+    else onPlan();
+  });
   $('target').addEventListener('input', () => {
     targetEdited = true;
+    // A new target needs a new plan, so the old one is put away.
+    if (planTarget !== null) clearPlan();
     $('target-why').hidden = true;
   });
   $('tally-button').addEventListener('click', () => {
@@ -226,7 +231,6 @@ async function boot() {
   }
 
   $('reset-all').addEventListener('click', resetAll);
-  $('reset-all-top').addEventListener('click', resetAll);
   // A cadet reading this on a phone will not go looking through the browser
   // menu for Print, and the result is the part worth keeping.
   $('print-result').addEventListener('click', () => window.print());
@@ -4216,6 +4220,16 @@ function clearPlan() {
   planTarget = null;
   $('target-plans').replaceChildren();
   $('target-error').hidden = true;
+  showPlanButton();
+}
+
+/** Show me how turns into Close while the plans are up (Captain Russell,
+ * Nov 2026), so they can be put away again. */
+function showPlanButton() {
+  const open = planTarget !== null;
+  const button = $('plan-button');
+  button.textContent = open ? 'Close' : 'Show me how';
+  button.setAttribute('aria-expanded', String(open));
 }
 
 function onPlan() {
@@ -4240,9 +4254,11 @@ function onPlan() {
     errorNode.textContent = error.message;
     errorNode.hidden = false;
     planTarget = null;
+    showPlanButton();
     return;
   }
   planTarget = target;
+  showPlanButton();
 
   if (!plan.reachable) {
     host.append(el('p', 'card-intro',

@@ -2994,7 +2994,15 @@ form#assessment > .about-row { gap: 10px; }
 .opening .event-tools { gap: 6px; }
 .events-bar { margin-top: 2px; }
 .events-bar-tools { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.reset-top:hover { border-color: var(--cardinal); color: var(--cardinal); }
+/* The bottom button's colours at the size of the pills beside it. */
+.reset-button.reset-top {
+  width: auto;
+  min-height: 0;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: .78rem;
+  box-shadow: none;
+}
 @media (max-width: 560px) {
   .d250-head.masthead .d250-head-sub { display: none; }
   .about-row .field { grid-template-columns: 1fr; gap: 4px; }
