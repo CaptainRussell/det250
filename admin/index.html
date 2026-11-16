@@ -1187,7 +1187,13 @@ function subVans(e, body){
   const loose = (e.roster || []).filter(k => !place[k]), dup = Object.keys(place).filter(k => place[k].length > 1);
   const offRoster = Object.keys(place).filter(k => !(e.roster || []).includes(k));
   const plan = ODT_PLANS[e.id] && !vans.length;
-  const split = (e.rooms || []).filter(r => new Set(r.cadets.filter(k => place[k]).map(k => place[k][0])).size > 1);
+  // roommates should share a van, except drivers and relief drivers, who sit where they drive (Captain Russell, 16 Nov 2026)
+  const drives = new Set(vans.flatMap(v => [v.driver, v.relief]).filter(Boolean));
+  const split = (e.rooms || []).filter(r => {
+    const rid = r.cadets.filter(k => place[k] && !drives.has(k)), drv = r.cadets.filter(k => place[k] && drives.has(k));
+    if (new Set(rid.map(k => place[k][0])).size > 1) return true;
+    return rid.length && drv.length && !drv.some(d => place[d][0] === place[rid[0]][0]);
+  });
   const SLOT = {driver:"Driver", relief:"Relief driver", rider:"Rider"};
   // every person is a face chip; the picker moves them to any van and seat, swapping with whoever holds a driver seat
   const chip = (k, i, slot) => `<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">${k && P[k] ? face(k, 26) : ""}${slot !== "rider" ? `<span class="tag gold">${SLOT[slot]}</span>` : ""}${k ? esc(pname(k)) : `<span class="muted">none</span>`}${k ? `<select data-mv="${esc(k)}" data-from="${i}" data-slot="${slot}" aria-label="Move ${esc(pname(k))}" style="font-size:12px;padding:2px 4px">${vans.map((x, j) => ["driver", "relief", "rider"].map(sl => opt(`${j}:${sl}`, `${x.name} ${SLOT[sl].toLowerCase()}`, j === i && sl === slot)).join("")).join("")}</select>` : ""}</label>`;
