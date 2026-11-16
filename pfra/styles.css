@@ -532,7 +532,15 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 .chart-pic-frame img { display: block; width: 100%; height: auto; }
 .chart-pic-col,
 .chart-pic-row,
-.chart-pic-cell { position: absolute; pointer-events: none; }
+.chart-pic-cell,
+.chart-pic-pts { position: absolute; pointer-events: none; }
+.chart-pic-pts {
+  outline: 3px solid #c8102e;
+  outline-offset: 1px;
+  border-radius: 2px;
+  background: rgba(241, 190, 72, .28);
+  box-shadow: 0 0 0 6px rgba(200, 16, 46, .18);
+}
 .chart-pic-col,
 .chart-pic-row { background: rgba(200, 16, 46, .08); }
 .chart-pic-cell {
@@ -570,6 +578,16 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 }
 .chart-pic-zoom:hover,
 .chart-pic-open:hover { border-color: var(--cardinal); color: var(--cardinal); }
+/* Zoom in is the one thing to do with a whole page, so it is the filled
+ * button while the page is zoomed out. */
+.chart-pic.whole .chart-pic-zoom {
+  background: var(--cardinal);
+  border-color: var(--cardinal);
+  color: #fff;
+  padding: 6px 16px;
+  font-size: .85rem;
+}
+.chart-pic.whole .chart-pic-zoom:hover { filter: brightness(1.1); color: #fff; }
 .chart-pic-zoom:focus-visible,
 .chart-pic-open:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 @media print { .chart-pic-scroll { max-height: none; } .chart-pic-tools { display: none; } }
@@ -2183,7 +2201,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:not(.open) .event-icon { width: 34px; height: 34px; grid-row: 1; }
 .bfa:not(.open) .event-icon svg { width: 22px; height: 22px; }
 .bfa:not(.open) .bfa-title { font-size: .95rem; }
-.bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; }
+.bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
 .bfa:not(.open) .event-tools,
 .bfa:not(.open):not(.idle) .bfa-trigger,
 .bfa:not(.open) #bfa-method-hint,
@@ -2756,7 +2774,10 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 .event:not(.open) .event-icon { grid-area: icon; width: 34px; height: 34px; }
 .event:not(.open) .event-icon svg { width: 22px; height: 22px; }
 .event:not(.open) h2 { grid-area: name; font-size: .95rem; min-width: 0; }
-.event:not(.open) .chip { grid-area: chip; padding: 3px 10px; font-size: .85rem; }
+.event:not(.open) .chip { grid-area: chip; padding: 3px 10px; font-size: .85rem;
+  /* A fixed width, so a score changing as a slider moves cannot resize the
+   * slider beside it and slide the handle out from under the pointer. */
+  min-width: 92px; text-align: center; }
 .event:not(.open) .more-toggle { grid-area: more; }
 .event:not(.open) .listen-pill {
   grid-area: listen;
