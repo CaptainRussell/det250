@@ -581,14 +581,16 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 .chart-pic-open:hover { border-color: var(--cardinal); color: var(--cardinal); }
 /* Zoom in is the one thing to do with a whole page, so it is the filled
  * button while the page is zoomed out. */
-.chart-pic.whole .chart-pic-zoom {
+/* Zoom in and Zoom out are both the filled red button (Captain Russell, Nov
+ * 2026). */
+.chart-pic .chart-pic-zoom {
   background: var(--cardinal);
   border-color: var(--cardinal);
   color: #fff;
 }
 /* One size in both states, so switching never shifts the row. */
 .chart-pic-zoom { min-width: 7.5rem; text-align: center; padding: 6px 14px; font-size: .85rem; }
-.chart-pic.whole .chart-pic-zoom:hover { filter: brightness(1.1); color: #fff; }
+.chart-pic .chart-pic-zoom:hover { filter: brightness(1.1); color: #fff; border-color: var(--cardinal); }
 .chart-pic-zoom:focus-visible,
 .chart-pic-open:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 @media print { .chart-pic-scroll { max-height: none; } .chart-pic-tools { display: none; } }

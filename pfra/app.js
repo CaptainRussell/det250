@@ -995,7 +995,6 @@ const el = (tag, className, text) => {
 
 function update() {
   showHeightInFeet();
-  renderRanges(ageBand);   // reads the height, so it must run after it changes
   renderSliders(ageBand); // same bounds, same reason to run here
   renderHeightSlider();   // fixed bounds, so it needs no band at all
 
@@ -1418,7 +1417,7 @@ function buildChartPicture(pic) {
     // moves it is scrolled back.
     const before = zoom.getBoundingClientRect().top;
     const whole = fig.classList.toggle('whole');
-    zoom.textContent = whole ? 'Zoom in' : 'Whole page';
+    zoom.textContent = whole ? 'Zoom in' : 'Zoom out';
     zoom.setAttribute('aria-pressed', String(whole));
     const moved = zoom.getBoundingClientRect().top - before;
     if (Math.abs(moved) > 0.5) window.scrollBy({ top: moved, behavior: 'instant' });
@@ -2941,77 +2940,8 @@ function onSliderInput(component) {
   update();
 }
 
-/**
- * The chart bounds for each component, shown whether or not anything is typed.
- *
- * Both numbers come from the engine, which reads them off the chart for this
- * sex and band. Until a sex and age are set there is no chart to read, so the
- * strip says so rather than showing a default that might be the wrong one.
- */
-function renderRanges(band) {
-  for (const component of COMPONENTS) {
-    const host = $(`range-${component}`);
-    host.replaceChildren();
-
-    const event = events[component] ?? 'whtr';
-    const heightInches = decimal('height') || null;
-    const range = (sex && band)
-      ? scorer.rangeFor({ component, event, sex, band, heightInches,
-        altitudeGroup: $('altitude-group').value || null })
-      : null;
-
-    if (!range) {
-      // Almost always the real reason, and the only one a member can act on.
-      // Said conditionally because rangeFor also returns null when it has no
-      // table for a combination, and telling someone who has already answered
-      // both questions to answer them again would send them looking for a
-      // control that is already set.
-      host.append(el('p', 'range-empty', sex && band
-        ? 'No chart for this combination.'
-        : 'Set your age and sex to see the chart range.'));
-      continue;
-    }
-
-    // Pass or fail: one number, and it is a ceiling rather than a floor.
-    if (range.passFail) {
-      host.append(rangeItem('Maximum time', range.standard.label,
-        range.altitudeGroupLabel
-          ? `aged ${range.standard.groupLabel} · ${range.altitudeGroupLabel}`
-          : `aged ${range.standard.groupLabel}`, false));
-      host.append(rangeItem('Worth', 'No points',
-        'pass or fail · para 3.7.3', true));
-      continue;
-    }
-
-    if (range.floor.isFloor) {
-      host.append(rangeItem('Minimum', range.floor.label,
-        `${range.minimumPoints.toFixed(1)} pts`, false));
-      host.append(rangeItem('Full marks', range.best.label,
-        `${range.maxPoints.toFixed(1)} pts`, false));
-      continue;
-    }
-
-    // Waist to height. Lead with the waist in inches, which is the number a
-    // cadet can do something about, and keep the ratio underneath because that
-    // is what the scoring chart is actually read on.
-    host.append(rangeItem('Scores zero',
-      range.floor.waistLabel ?? range.floor.label,
-      range.floor.waistLabel ? `ratio ${range.floor.label}` : 'no minimum', true));
-    host.append(rangeItem('Full marks',
-      range.best.waistLabel ?? range.best.label,
-      range.best.waistLabel
-        ? `ratio ${range.best.label} · ${range.maxPoints.toFixed(1)} pts`
-        : `${range.maxPoints.toFixed(1)} pts`, false));
-  }
-}
-
-function rangeItem(caption, value, points, muted) {
-  const box = el('div', `range-item${muted ? ' muted' : ''}`);
-  box.append(el('span', 'range-caption', caption));
-  box.append(el('span', 'range-value', value));
-  box.append(el('span', 'range-points', points));
-  return box;
-}
+// The Minimum / Full marks strip under each component was removed (Captain
+// Russell, Nov 2026): the scoring chart opens with the card and shows both.
 
 /**
  * Draw one points bar.
@@ -3727,11 +3657,19 @@ function showCourseSections() {
   // The layout is for whoever marks the track. A cadet has the lap pace, which
   // draws the start, the finish and the part lap between them, and that is the
   // part of the layout a runner needs.
-  $('course-body').hidden = !(course.pace || course.layout);
+  $('course-body').hidden = !course.pace;
+  $('layout-body').hidden = !course.layout;
   $('pace-section').hidden = !course.pace;
   $('track-section').hidden = !course.layout;
-  $('pace-toggle').setAttribute('aria-expanded', String(course.pace));
-  $('pace-toggle').classList.toggle('on', course.pace);
+  // One set of distance and track pickers, in whichever section is open
+  // (the lap pace first when both are).
+  const pickers = document.querySelector('.track-pickers');
+  const home = course.pace ? $('course-body') : $('layout-body');
+  if (pickers.parentElement !== home) home.prepend(pickers);
+  for (const [id, on] of [['pace-toggle', course.pace], ['layout-toggle', course.layout]]) {
+    $(id).setAttribute('aria-expanded', String(on));
+    $(id).classList.toggle('on', on);
+  }
 }
 
 function closeTrackPanel() {
@@ -4003,10 +3941,15 @@ function printTrackLayout() {
 }
 
 function wireTrack() {
-  // One button opens the pace and the layout together.
+  // Lap Pace and Marking the Track open on their own (Captain Russell,
+  // Nov 2026).
   $('pace-toggle').addEventListener('click', () => {
     course.pace = !course.pace;
-    course.layout = course.pace;
+    showCourseSections();
+    renderTrack();
+  });
+  $('layout-toggle').addEventListener('click', () => {
+    course.layout = !course.layout;
     showCourseSections();
     renderTrack();
   });
