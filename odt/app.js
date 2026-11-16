@@ -189,11 +189,12 @@ function rooms(e){
   }).join("")}</div>`;
 }
 function allList(){
-  const card = e => { const rs = e.rooms || [], n = rosterOf(e).length, d = day(e.start);
-    const faces = rosterOf(e).slice(0, 4).map(k => face(who(k), 30)).join("");
+  const card = e => { const rs = e.rooms || [], ros = rosterOf(e), d = day(e.start);
+    const cad = ros.filter(k => who(k).cls === "Cadre"), n = ros.length - cad.length;
+    const faces = (cad.length ? cad : ros).slice(0, 4).map(k => face(who(k), 30)).join("");   // the cadre going, else the first cadets
     return `<button type="button" class="evcard${isPast(e) ? " past" : ""}" data-ev="${esc(e.id)}">
       <span class="cal" aria-hidden="true"><small>${d ? MON[d.getMonth()].toUpperCase() : ""}</small><b>${d ? d.getDate() : "?"}</b></span>
-      <span><span class="t1">${esc(e.name)}</span><br><span class="t2">${esc([dates(e), e.place].filter(Boolean).join(" · "))}</span><br><span class="t2">${n} cadets${rs.length ? ` · ${rs.length} rooms` : ""}</span></span>
+      <span><span class="t1">${esc(e.name)}</span><br><span class="t2">${esc([dates(e), e.place].filter(Boolean).join(" · "))}</span><br><span class="t2">${n} cadet${n === 1 ? "" : "s"}${cad.length ? ` · ${cad.length} cadre` : ""}${rs.length ? ` · ${rs.length} rooms` : ""}</span></span>
       <span class="stack" aria-hidden="true">${faces}</span></button>`; };
   const up = EVENTS.filter(e => !isPast(e)).sort((x, y) => (x.start || "").localeCompare(y.start || "")), past = EVENTS.filter(isPast);
   return (up.length ? `<section class="sec"><h2>Current and upcoming<span>${up.length}</span></h2><div class="evlist">${up.map(card).join("")}</div></section>` : "") +
@@ -297,7 +298,7 @@ let SEE = "";                                       // the document to scroll to
 function go(h){ if (location.hash.slice(1) !== h) location.hash = h; else route(); }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h === "all"){ TAB = "all"; render(); return; }
+  if (h === "all" || !h){ if (!EVENTS.some(e => e.id === EV)) EV = defaultEvent(); TAB = "all"; render(); return; }   // opens on All ODTs
   const [id, tab] = h.split("/");
   EV = EVENTS.some(e => e.id === id) ? id : (EVENTS.some(e => e.id === EV) ? EV : defaultEvent());
   TAB = TABS.some(t => t[0] === tab) ? tab : TABS.some(t => t[0] === id) ? id : "overview";
