@@ -60,6 +60,8 @@ button,input{font:inherit;color:inherit}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cadre:#a3b1c6}}
 .cadre .star{border-color:var(--cadre);color:var(--cadre)} .cadre .nm{color:var(--cadre)} .room.solo.cadre{border-color:color-mix(in srgb,var(--cadre) 70%,transparent)}
 /* itinerary file, drawn page by page with PDF.js */
+.docview{scroll-margin-top:110px}
+.docview > .muted{color:var(--d250-soft,#b2b3b8);margin:-4px 0 10px;font-size:14px}
 .pdfpages{display:flex;flex-direction:column;gap:12px;margin-top:6px}
 .pdfpages canvas{display:block;width:100%;height:auto;background:#fff;border-radius:10px;box-shadow:var(--d250-shadow);break-inside:avoid}
 .seg{display:inline-flex;flex-wrap:wrap;gap:3px;background:var(--d250-surface-2);border:1px solid var(--d250-line-strong);border-radius:12px;padding:3px}
