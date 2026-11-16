@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=proctor1">
+<link rel="stylesheet" href="styles.css?v=ribbon1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -67,9 +67,7 @@
         <p class="hint">Read to everyone once, before the first component.</p>
       </div>
       <div class="event-tools">
-        <button type="button" class="listen-pill" data-listen-key="general"></button>
-        <button type="button" class="verbiage-open" data-verbiage="general"
-                title="What the assessment administrator reads out">Read</button>
+        <button type="button" class="listen-pill" data-listen-key="general" data-label="Instructions"></button>
       </div>
     </div>
 
@@ -90,9 +88,7 @@
         <span class="event-icon" id="icon-body_composition" aria-hidden="true"></span>
         <h2>Waist to Height (WHtR)</h2>
         <div class="event-tools">
-          <button type="button" class="listen-pill" data-listen="body_composition"></button>
-          <button type="button" class="verbiage-open" data-verbiage="body_composition"
-                title="What the assessment administrator reads out">How It's Measured</button>
+          <button type="button" class="listen-pill" data-listen="body_composition" data-label="How It's Measured"></button>
           <button type="button" class="chart-toggle" data-chart="body_composition"
                   aria-expanded="false" aria-controls="chart-body-body_composition">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="body_composition"
@@ -169,9 +165,7 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-muscular_strength">Hand Release Push-Ups</h2>
         <div class="event-tools">
-          <button type="button" class="listen-pill" data-listen="muscular_strength"></button>
-          <button type="button" class="verbiage-open" data-verbiage="muscular_strength"
-                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="listen-pill" data-listen="muscular_strength" data-label="How It's Graded"></button>
           <button type="button" class="chart-toggle" data-chart="muscular_strength"
                   aria-expanded="false" aria-controls="chart-body-muscular_strength">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="muscular_strength"
@@ -190,7 +184,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-muscular_strength" hidden></p>
       <div class="event-picker" id="event-muscular_strength" hidden>
         <label for="event-select-muscular_strength">Event</label>
         <select id="event-select-muscular_strength" data-component="muscular_strength">
@@ -233,9 +226,7 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-core_endurance">Sit-Ups</h2>
         <div class="event-tools">
-          <button type="button" class="listen-pill" data-listen="core_endurance"></button>
-          <button type="button" class="verbiage-open" data-verbiage="core_endurance"
-                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="listen-pill" data-listen="core_endurance" data-label="How It's Graded"></button>
           <button type="button" class="chart-toggle" data-chart="core_endurance"
                   aria-expanded="false" aria-controls="chart-body-core_endurance">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="core_endurance"
@@ -254,7 +245,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-core_endurance" hidden></p>
       <div class="event-picker" id="event-core_endurance" hidden>
         <label for="event-select-core_endurance">Event</label>
         <select id="event-select-core_endurance" data-component="core_endurance">
@@ -305,9 +295,7 @@
                 aria-expanded="false" title="Change exercise"></button>
         <h2 id="heading-cardiorespiratory">2 Mile Run</h2>
         <div class="event-tools">
-          <button type="button" class="listen-pill" data-listen="cardiorespiratory"></button>
-          <button type="button" class="verbiage-open" data-verbiage="cardiorespiratory"
-                title="What the assessment administrator reads out">How It's Graded</button>
+          <button type="button" class="listen-pill" data-listen="cardiorespiratory" data-label="How It's Graded"></button>
           <button type="button" class="chart-toggle" data-chart="cardiorespiratory"
                   aria-expanded="false" aria-controls="chart-body-cardiorespiratory">Scoring Chart</button>
           <button type="button" class="exempt-toggle" data-exempt="cardiorespiratory"
@@ -333,7 +321,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-cardiorespiratory" hidden></p>
       <!-- A group rather than an elevation: the four blocks are what Attachment 3
            is printed as, so a cadre member picks the row they are reading. It
            also sidesteps the printed ranges overlapping at their ends. The
@@ -394,9 +381,6 @@
         <p class="altitude-applied-detail" id="altitude-applied-detail"></p>
       </div>
       <p class="status-note" id="exempt-note-cardiorespiratory" hidden></p>
-      <!-- The HAMR pacing track, played here (Captain Russell, 16 Nov 2026).
-           Filled by showHamrAudio(); loads nothing until Play. -->
-      <div class="hamr-audio" id="hamr-audio" hidden></div>
       <div class="chart-inline" id="chart-cardiorespiratory">
         <div class="chart-body" id="chart-body-cardiorespiratory" hidden></div>
       </div>
@@ -642,6 +626,11 @@
       <p class="composite" id="composite">&ndash;</p>
       <p class="verdict" id="verdict"></p>
       <p class="band" id="band"></p>
+      <!-- Only here, not on the cards (Captain Russell, 16 Nov 2026). -->
+      <div class="cadet-flag" id="cadet-flag" role="status" hidden>
+        <p class="cadet-flag-title"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5h.01"/></svg>Not valid for a cadet</p>
+        <p class="cadet-flag-text"></p>
+      </div>
       <div class="meter meter-composite" id="meter-composite" role="progressbar"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
            aria-label="Composite score">
@@ -735,6 +724,10 @@
     <p class="scoreboard-label">Composite</p>
     <p class="score-wait-num">&ndash;</p>
     <p id="score-wait-text">Your score builds here as you enter your numbers.</p>
+    <div class="cadet-flag" id="cadet-flag-wait" role="status" hidden>
+      <p class="cadet-flag-title"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5h.01"/></svg>Not valid for a cadet</p>
+      <p class="cadet-flag-text"></p>
+    </div>
   </aside>
 
   <!-- ---------------------------------------------------------------- -->
@@ -960,6 +953,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=proctor1"></script>
+<script type="module" src="app.js?v=ribbon1"></script>
 </body>
 </html>

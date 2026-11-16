@@ -668,10 +668,64 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   font-weight: 600;
 }
 .award-star { border-left-width: 6px; }
+/* The ribbon from the Ribbon Rack Builder, beside a short line. */
+.award-earned { display: flex; align-items: center; gap: 12px; }
+.award-ribbon {
+  flex: none;
+  width: 88px;
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.45);
+}
+.award-words { display: grid; gap: 2px; }
+.award-words strong { font-size: .92rem; }
+.award-sub { font-size: .78rem; font-weight: 500; color: var(--ink-soft); }
 .award-blocked {
   border-left: 4px solid var(--line-strong);
   background: var(--page);
   color: var(--ink-soft);
+}
+
+/* Not valid for a cadet: in the score column only, and made to glow so it
+ * cannot be missed (Captain Russell, 16 Nov 2026). */
+.cadet-flag {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border: 2px solid var(--cardinal);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cardinal) 14%, var(--surface));
+  text-align: left;
+  animation: cadet-glow 1.8s ease-in-out infinite;
+}
+.cadet-flag-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--cardinal);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.cadet-flag-title svg { flex: none; }
+.cadet-flag-text {
+  margin: 4px 0 0;
+  font-size: .82rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+@keyframes cadet-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cardinal) 0%, transparent); }
+  50% { box-shadow: 0 0 16px 3px color-mix(in srgb, var(--cardinal) 55%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cadet-flag { animation: none; box-shadow: 0 0 12px 2px color-mix(in srgb, var(--cardinal) 45%, transparent); }
+}
+@media print {
+  .cadet-flag { animation: none; box-shadow: none; border: 2pt solid #000; background: none; }
+  .cadet-flag-title, .cadet-flag-text { color: #000; }
+  #cadet-flag-wait { display: none; }
 }
 
 /* --- the waist to height ratio ------------------------------------------
@@ -3107,3 +3161,9 @@ form#assessment > .about-row { gap: 10px; }
     background-size: 4px 4px, 4px 4px;
   }
 }
+
+/* The HAMR pacing track in the HAMR dialog: the player, then a download
+ * (Captain Russell, 16 Nov 2026). */
+.hamr-pacing { display: grid; gap: 8px; margin-top: 4px; }
+.hamr-pacing .listen { margin-top: 10px; }
+.hamr-download { justify-self: start; text-decoration: none; }

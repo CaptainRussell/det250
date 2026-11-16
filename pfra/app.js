@@ -195,9 +195,6 @@ async function boot() {
       renderCharts(ageBand);
     });
   }
-  for (const button of document.querySelectorAll('.verbiage-open')) {
-    button.addEventListener('click', () => openVerbiage(button.dataset.verbiage));
-  }
   // Clicking the backdrop is the other way people expect to dismiss a modal.
   $('verbiage').addEventListener('click', (e) => {
     if (e.target === $('verbiage')) $('verbiage').close();
@@ -243,7 +240,6 @@ async function boot() {
   $('share-result').addEventListener('click', shareResult);
 
   showEventIcons();
-  showHamrAudio();
   showNotFinished();
   showTrackPanel();
 
@@ -548,35 +544,52 @@ function selectEvent(component, event) {
   if (listening.key && !reading.has(listening.key)) stopListening();
   else paintListen();
   showEventIcons();
-  showHamrAudio();
   showNotFinished();
   showTrackPanel();
   update();
 }
 
 /**
- * Flag an alternate exercise on the component it was chosen for.
+ * Say, beside the composite, when this could not be a cadet's assessment.
  *
- * The warning sits with the exercise rather than in one banner elsewhere, so
- * there is no doubt which component it is about when only one was changed.
+ * It used to be a note on each component an alternate was picked for; it now
+ * sits only in the score column, made to stand out (Captain Russell, 16 Nov
+ * 2026), and shows from the moment an alternate or an exemption is chosen,
+ * before there is a full score.
  */
-function showAltNotes() {
-  for (const component of ['muscular_strength', 'core_endurance', 'cardiorespiratory']) {
-    const note = $(`alt-${component}`);
-    const event = events[component];
+function cadetProblems() {
+  const alternates = Object.entries(CADET_EVENTS)
+    .filter(([c, event]) => events[c] !== event)
+    .map(([c]) => EVENT_PHRASES[events[c]]);
+  // The one exemption a cadet may have is body composition after a passed
+  // secondary body fat assessment (Captain Russell, 16 Nov 2026).
+  const exempt = COMPONENTS
+    .filter((c) => statuses[c] === 'exempt' && !(c === 'body_composition' && bfa.applied))
+    .map((c) => COMPONENT_LABELS[c].toLowerCase());
+  return { alternates, exempt, any: alternates.length > 0 || exempt.length > 0 };
+}
 
-    if (DET250_EVENTS.includes(event)) {
-      note.hidden = true;
-      continue;
-    }
-    // "cadets are not tested on X" keeps the verb agreeing with the cadets, so
-    // the sentence stays correct whether X is singular or plural. For cadre the
-    // alternate is simply an authorised event, so the warning becomes a note.
-    note.textContent = `Not allowed for cadets. AFROTC cadets are not tested on ` +
-      `${EVENT_PHRASES[event]}: NOTACC CY26-092 sets the cadet assessment as ` +
-      'hand-release push-ups, sit-ups and the 2 mile run. Scored here as an ' +
-      'active duty alternate (DAFMAN 36-2905).';
-    note.hidden = false;
+const listOf = (items) => items.length < 2 ? items.join('')
+  : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
+function showCadetFlag() {
+  const { alternates, exempt, any } = cadetProblems();
+  const parts = [];
+  if (alternates.length) parts.push(`This uses ${listOf(alternates)}, which cadets are not tested on.`);
+  if (exempt.length) {
+    const what = listOf(exempt);
+    parts.push(`${what[0].toUpperCase()}${what.slice(1)} ${exempt.length === 1 ? 'is' : 'are'} exempt.`);
+  }
+  const text = any
+    ? `${parts.join(' ')} Cadets test on hand-release push-ups, sit-ups ` +
+      'and the 2 mile run, with no exemption except body composition after a passed ' +
+      'body fat assessment (NOTACC CY26-092, AFROTCI 36-2011 V3). It does not count ' +
+      'toward the Fitness Award.'
+    : '';
+  for (const id of ['cadet-flag', 'cadet-flag-wait']) {
+    const flag = $(id);
+    flag.hidden = !any;
+    flag.querySelector('.cadet-flag-text').textContent = text;
   }
 }
 
@@ -660,16 +673,6 @@ function buildEventOptions() {
     select.previousElementSibling.hidden = true;   // its "Event" label
     select.after(list);
   }
-}
-
-/** The HAMR pacing track, on the HAMR card only (Captain Russell, 16 Nov 2026). */
-function showHamrAudio() {
-  const host = $('hamr-audio');
-  if (!host.firstChild) {
-    host.append(listenPlayer('hamr_pacing', 'the HAMR pacing track', pageListen,
-      { title: 'HAMR pacing audio', sub: 'Beep track, 9 MB', aria: '' }));
-  }
-  host.hidden = events.cardiorespiratory !== 'hamr_20m';
 }
 
 const fieldOf = (component) => ({
@@ -1055,6 +1058,7 @@ function update() {
 
   const { input, ready } = readForm();
   showCue(ready);
+  showCadetFlag();
 
   // These three describe the form rather than the score, so they run whether or
   // not there is one. Leaving them below the early return meant the Altitude
@@ -1072,7 +1076,7 @@ function update() {
   // cadre, so it depends on the role as much as on the event. It used to be
   // refreshed only when the event changed, which left a cadre member reading
   // "AFROTC cadets are not tested on push-ups" after switching across.
-  showAltNotes();
+  showCadetFlag();
 
   if (!input) {
     for (const component of COMPONENTS) resetChip(component);
@@ -1596,31 +1600,12 @@ function showAward(result) {
   // The one exemption a cadet may have is body composition after a passed
   // secondary body fat assessment (Captain Russell, 16 Nov 2026). Any other
   // exemption, including one from the Exempt button, is not allowed.
-  const notCadetExempt = (component) => !(component === 'body_composition' && bfa.applied);
-  const cadetShaped = result
-    && Object.entries(CADET_EVENTS).every(([c, event]) => result.components[c].event === event)
-    && !result.exemptComponents.some(notCadetExempt);
-  if (!result) {
+  // An assessment a cadet could not have taken is flagged by showCadetFlag()
+  // at the top of the score, which already says it earns no award.
+  if (!result || cadetProblems().any) {
     line.hidden = true;
     return;
   }
-  // One view for everyone, so the score says when it could not be a cadet's:
-  // an alternate event or an exemption is an active duty assessment.
-  if (!cadetShaped) {
-    const why = [];
-    if (Object.entries(CADET_EVENTS).some(([c, event]) => result.components[c].event !== event)) {
-      why.push('an alternate event');
-    }
-    if (result.exemptComponents.some(notCadetExempt)) why.push('an exemption');
-    line.textContent = `Not valid for a cadet: this assessment uses ${why.join(' and ')}, ` +
-      'which cadets are not allowed (NOTACC CY26-092, AFROTCI 36-2011 V3). ' +
-      'It does not count toward the Fitness Award.';
-    line.className = 'award-line award-blocked';
-    line.hidden = false;
-    return;
-  }
-  const whose = 'the';
-
   const award = scorer.fitnessAward(result);
   if (!award.meetsThreshold) {
     line.hidden = true;
@@ -1639,14 +1624,21 @@ function showAward(result) {
     return;
   }
 
-  line.textContent = award.tier === 'silver_star'
-    ? `A perfect ${result.compositeText}. If this is ${whose} official PFRA for the ` +
-      'term it earns the Fitness Award, and the Silver Star device the first time ' +
-      'the cadet scores 100 at the detachment ' +
-      '(AFROTCI 36-2011 V3, Table 15.1).'
-    : `${result.compositeText} is ${award.threshold} or above. If this is ${whose} ` +
-      'official PFRA for the term it earns the Fitness Award, which may be received ' +
-      'once per term (AFROTCI 36-2011 V3, Table 15.1).';
+  // The ribbon itself, drawn by the Ribbon Rack Builder (Captain Russell, 16
+  // Nov 2026), with the Silver Star on a 100. Short words beside it.
+  const star = award.tier === 'silver_star';
+  const ribbon = document.createElement('img');
+  ribbon.className = 'award-ribbon';
+  ribbon.src = star ? 'art/ribbon-pf-star.svg' : 'art/ribbon-pf.svg';
+  ribbon.alt = star ? 'Physical Fitness ribbon with Silver Star' : 'Physical Fitness ribbon';
+  ribbon.width = 110;
+  ribbon.height = 30;
+  const words = el('span', 'award-words');
+  words.append(el('strong', null, star ? 'Fitness Award + Silver Star' : 'Fitness Award'));
+  words.append(el('span', 'award-sub', star
+    ? 'First 100 at the detachment, if this is the official PFRA (Table 15.1)'
+    : 'Once per term, if this is the official PFRA (Table 15.1)'));
+  line.replaceChildren(ribbon, words);
   line.className = `award-line award-earned${award.tier === 'silver_star' ? ' award-star' : ''}`;
   line.hidden = false;
 }
@@ -1774,8 +1766,7 @@ function setExempt(component, on) {
   const note = $(`exempt-note-${component}`);
   note.textContent = on
     ? 'Exempt. Scores no points, fails nothing, and the composite is worked out ' +
-      'over the components that were assessed. Not allowed for cadets: AFROTCI ' +
-      '36-2011 V3 requires a PFRA with no exemptions.'
+      'over the components that were assessed.'
     : '';
   note.hidden = !on;
 
@@ -2511,6 +2502,10 @@ function openScript(event) {
   direction.hidden = !section.direction;
 
   if (LISTEN[event]) body.append(listenPlayer(event, section.title));
+  // The HAMR's pacing track lives here, beside the HAMR script (Captain
+  // Russell, 16 Nov 2026): play it, or save it for test day. It keeps playing
+  // when the dialog closes; the HAMR card's button shows it is on.
+  if (event === 'hamr_20m') body.append(hamrPacing());
   appendParts(body, section);
 
   $('verbiage-source').textContent =
@@ -2588,6 +2583,10 @@ const clock = (seconds) => {
 
 const PLAY_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
   '<path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+const SCRIPT_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" ' +
+  'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" ' +
+  'stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>' +
+  '<path d="M15.5 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
   '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>';
 
@@ -2655,25 +2654,30 @@ function seekListen(key, seconds) {
  * component's other tools, which fills in gold as the clip plays.
  */
 function wireListen() {
+  // One button per component (Captain Russell, 16 Nov 2026): it opens How It's
+  // Measured or Graded, which has the recording, rather than a separate Listen
+  // button beside it. While a clip of that card plays, the button fills in
+  // gold behind the time, so it is clear what is playing and where to stop it.
   for (const button of document.querySelectorAll('.listen-pill')) {
     const component = button.dataset.listen ?? 'general';
-    button.addEventListener('click', () => toggleListen(listenKeyFor(component)));
+    const label = button.dataset.label;
+    button.addEventListener('click', () => openVerbiage(component));
     const paint = () => {
-      const key = listenKeyFor(component);
-      button.hidden = !LISTEN[key];
-      if (button.hidden) return;
+      const keys = [listenKeyFor(component)];
+      if (component === 'cardiorespiratory' && events.cardiorespiratory === 'hamr_20m') {
+        keys.push('hamr_pacing');
+      }
+      const key = keys.find((k) => listening.key === k) ?? keys[0];
       const state = listenState(key);
       const started = listening.key === key;
-      button.innerHTML = state.playing ? PAUSE_ICON : PLAY_ICON;
-      button.append(el('span', null, started
-        ? `${clock(state.at)} / ${clock(state.length)}`
-        : `Listen ${clock(state.length)}`));
+      button.innerHTML = state.playing ? PAUSE_ICON : SCRIPT_ICON;
+      button.append(el('span', null, started && state.playing
+        ? `${label} ${clock(state.at)} / ${clock(state.length)}`
+        : label));
       button.classList.toggle('playing', state.playing);
       button.style.setProperty('--played',
         started ? `${(state.at / state.length) * 100}%` : '0%');
-      button.setAttribute('aria-label',
-        `${state.playing ? 'Pause' : 'Play'} the instructions read aloud`);
-      button.setAttribute('aria-pressed', String(state.playing));
+      button.setAttribute('aria-label', `${label}: the instructions, with the recording`);
     };
     pageListen.add(paint);
   }
@@ -2686,9 +2690,20 @@ function wireListen() {
   paintListen();
 }
 
+function hamrPacing() {
+  const wrap = el('div', 'hamr-pacing');
+  wrap.append(listenPlayer('hamr_pacing', 'the HAMR pacing track', dialogListen,
+    { title: 'HAMR pacing audio', sub: 'The beep track, 22 min', aria: '' }, false));
+  const save = el('a', 'secondary small hamr-download', 'Download (9 MB)');
+  save.href = LISTEN_FILES.hamr_pacing;
+  save.setAttribute('download', 'hamr-pacing-audio.m4a');
+  wrap.append(save);
+  return wrap;
+}
+
 /** The fuller player at the top of the dialog, with a scrubber. */
 function listenPlayer(key, what, painters = dialogListen,
-  words = { title: 'Listen', sub: 'Read aloud', aria: 'read aloud' }) {
+  words = { title: 'Listen', sub: 'Read aloud', aria: 'read aloud' }, stopsWithDialog = true) {
   const wrap = el('div', 'listen');
   const play = el('button', 'listen-play');
   play.type = 'button';
@@ -2718,7 +2733,8 @@ function listenPlayer(key, what, painters = dialogListen,
     time.textContent = `${clock(state.at)} / ${clock(state.length)}`;
     seek.setAttribute('aria-valuetext', `${clock(state.at)} of ${clock(state.length)}`);
   };
-  play.addEventListener('click', () => toggleListen(key, listening.key !== key || listening.fromDialog));
+  play.addEventListener('click', () => toggleListen(key,
+    stopsWithDialog && (listening.key !== key || listening.fromDialog)));
   seek.addEventListener('input', () => seekListen(key, Number(seek.value)));
   painters.add(paint);
   paint();
