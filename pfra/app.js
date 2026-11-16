@@ -814,6 +814,7 @@ function resetAll() {
 
   lastResult = null;
   $('results').hidden = true;
+  $('rules-card').hidden = true;
   $('results').classList.remove('revealed');
   clearPlan();
   targetEdited = false;
@@ -1027,6 +1028,7 @@ function update() {
     showRatio(null);
     showBfa(null, false);
     $('results').hidden = true;
+    $('rules-card').hidden = true;
     showTally(null, ready);
     return;
   }
@@ -1074,6 +1076,7 @@ function update() {
 
   if (!complete) {
     $('results').hidden = true;
+    $('rules-card').hidden = true;
     $('award-line').hidden = true;
     clearPlan();
     return;
@@ -4343,6 +4346,7 @@ function suggestTarget(result) {
 }
 
 function renderReferences(result) {
+  $('rules-card').hidden = false;
   const host = $('reference-list');
   host.replaceChildren();
 

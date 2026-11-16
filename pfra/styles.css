@@ -1184,7 +1184,7 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   -webkit-text-stroke: 0;
   filter: drop-shadow(0 1px 0 var(--tier-edge)) drop-shadow(0 0 1px var(--tier-edge));
 }
-.tally[data-tier] .tally-score {
+.tally.tally[data-tier] .tally-score {
   color: var(--tier);
   -webkit-text-stroke: 1.5px var(--tier-edge);
   paint-order: stroke fill;
@@ -1471,6 +1471,18 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 /* Side by side where there is room, and each one wide enough to be an obvious
  * target rather than sized to the length of its label. */
 .result-actions button { flex: 0 1 240px; max-width: 320px; }
+/* One line, each with its icon (Captain Russell, Nov 2026). */
+.result-actions { display: grid; grid-template-columns: 1fr 1fr; }
+.result-actions button { max-width: none; }
+.result-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.result-actions button svg { flex: none; }
+.result-actions #share-note { grid-column: 1 / -1; margin: 0; overflow-wrap: anywhere; }
 
 /* --- what an exempt component does to the composite ------------------------
  *
@@ -1663,7 +1675,7 @@ footer.d250-foot {
 /* Three buttons plus a description will not share a phone-width row without
  * crushing the text, so below this the buttons take their own line. */
 @media (max-width: 560px) {
-  .result-actions button { flex: 1 1 100%; max-width: none; }
+  .result-actions button { flex: 1 1 0; max-width: none; padding-left: 8px; padding-right: 8px; }
 
   /* Height and waist each carry a slider now. Side by side they leave about a
    * hundred pixels of track apiece, which is not enough to aim a finger at, so

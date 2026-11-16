@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=band1">
+<link rel="stylesheet" href="styles.css?v=layout1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -719,15 +719,34 @@
       <p class="gap-line" id="gap-line" hidden></p>
     </div>
 
+    <!-- Above Print and Copy Link (Captain Russell, Nov 2026). -->
+    <div class="card" id="aim-card">
+      <h2>Aim for a Score</h2>
+      <p class="card-intro">Enter a composite you want and see what reaches it.</p>
+      <div class="row target-row">
+        <div class="field">
+          <label for="target">Target composite</label>
+          <input type="number" id="target" inputmode="decimal" min="0" max="100" step="0.5"
+                 value="75">
+          <!-- Says why the box holds the number it does, until the member types
+               their own. -->
+          <p class="hint" id="target-why" hidden></p>
+        </div>
+        <button type="button" class="secondary" id="plan-button">Show me how</button>
+      </div>
+      <p class="error" id="target-error" hidden></p>
+      <div id="target-plans"></div>
+    </div>
+
     <!-- Screen only. The printed page is reached through this rather than
          through the browser's own menu, because a cadet on a phone will not
          find that menu and the result is the thing worth keeping. -->
     <div class="result-actions">
-      <button type="button" class="secondary" id="print-result">Print Result</button>
+      <button type="button" class="secondary" id="print-result"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>Print Result</button>
       <!-- The tool keeps nothing, so a link is the only way to hand a result to
            anyone. Everything needed to rebuild it travels in the address; the
            only copy is the one the member chooses to send. -->
-      <button type="button" class="secondary" id="share-result">Copy Link</button>
+      <button type="button" class="secondary" id="share-result"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy Link</button>
       <p class="hint" id="share-note" hidden></p>
     </div>
 
@@ -756,31 +775,6 @@
          thing that can go over onto a second sheet if anything has to. -->
     <div class="print-only print-pace" id="print-pace"></div>
 
-    <div class="card" id="aim-card">
-      <h2>Aim for a Score</h2>
-      <p class="card-intro">Enter a composite you want and see what reaches it.</p>
-      <div class="row target-row">
-        <div class="field">
-          <label for="target">Target composite</label>
-          <input type="number" id="target" inputmode="decimal" min="0" max="100" step="0.5"
-                 value="75">
-          <!-- Says why the box holds the number it does, until the member types
-               their own. -->
-          <p class="hint" id="target-why" hidden></p>
-        </div>
-        <button type="button" class="secondary" id="plan-button">Show me how</button>
-      </div>
-      <p class="error" id="target-error" hidden></p>
-      <div id="target-plans"></div>
-    </div>
-
-    <details class="card foldable">
-      <summary>
-        <h2>The Rules Behind These Numbers</h2>
-        <span class="summary-hint">DAFMAN 36-2905 and NOTACC CY26-092</span>
-      </summary>
-      <div id="reference-list"></div>
-    </details>
 
   </section>
 
@@ -899,6 +893,16 @@
     <div id="pfra-refs"></div>
   </details>
 
+  <!-- Under the References (Captain Russell, Nov 2026). Filled from the
+       score, so it shows once there is a full assessment. -->
+  <details class="card foldable" id="rules-card" hidden>
+    <summary>
+      <h2>The Rules Behind These Numbers</h2>
+      <span class="summary-hint">DAFMAN 36-2905 and NOTACC CY26-092</span>
+    </summary>
+    <div id="reference-list"></div>
+  </details>
+
 </main>
 
 <!-- Filled by app.js when a Verbiage button is pressed. A native <dialog> so
@@ -952,6 +956,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=band1"></script>
+<script type="module" src="app.js?v=layout1"></script>
 </body>
 </html>
