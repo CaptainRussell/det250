@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=flow1">
+<link rel="stylesheet" href="styles.css?v=flow2">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -420,17 +420,13 @@
            on a marked course. The HAMR is run between two lines 20 m apart
            and has nothing to lay out. -->
       <div class="chart-inline" id="track-inline" hidden>
-        <div class="course-toggles">
-          <button type="button" class="secondary small" id="track-toggle"
-                  aria-expanded="false" aria-controls="course-body">Track Layout</button>
-        </div>
-        <!-- The lap pace is for every member who runs, so it is a bar of its
-             own rather than one more chip beside the proctor's layout. Last
-             before the body, so what it opens appears directly under it. -->
+        <!-- One bar for both halves of the course (Captain Russell, Nov 2026):
+             the lap pace a runner wants and the layout whoever marks the
+             track wants. They share the distance and lap pickers inside. -->
         <button type="button" class="pace-bar" id="pace-toggle"
                 aria-expanded="false" aria-controls="course-body">
-          <span class="pace-bar-title">Lap Pace</span>
-          <span class="pace-bar-hint">How fast each lap needs to be for your goal time</span>
+          <span class="pace-bar-title">Lap Pace &amp; Track Layout</span>
+          <span class="pace-bar-hint">Each lap's split for your goal time, and where to mark the course</span>
           <span class="pace-bar-chevron" aria-hidden="true">&#9662;</span>
         </button>
         <div class="chart-body track-body" id="course-body" hidden>
@@ -515,6 +511,7 @@
           </div>
           </div>
           <div id="track-section" hidden>
+          <p class="course-subhead">Marking the track</p>
           <div class="track-figure" id="track-figure"></div>
           <div class="track-groups" id="track-groups"></div>
           <p class="hint" id="track-note"></p>
@@ -766,7 +763,7 @@
   <aside class="card score-wait" id="score-wait" aria-hidden="true">
     <p class="scoreboard-label">Composite</p>
     <p class="score-wait-num">&ndash;</p>
-    <p id="score-wait-text">Choose your age and sex, then enter your numbers. The score builds here as you type.</p>
+    <p id="score-wait-text">Your score builds here as you enter your numbers.</p>
   </aside>
 
   <!-- ---------------------------------------------------------------- -->
@@ -926,6 +923,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=flow1"></script>
+<script type="module" src="app.js?v=flow2"></script>
 </body>
 </html>
