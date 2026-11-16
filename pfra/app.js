@@ -1931,7 +1931,8 @@ function buildShareLink() {
   // no goal set, because the printed result works its laps out on it.
   if (CONTROLS[events.cardiorespiratory].kind === 'time'
       || CONTROLS[events.cardiorespiratory].kind === 'walk') {
-    const goal = paceSeconds();
+    // Only a goal from a plan travels: a run time is already in the link.
+    const goal = runSeconds() == null ? paceGoal : null;
     if (goal != null) {
       params.set('pg', String(goal));
       params.set('pd', TRACK_DISTANCES[track.distanceIndex].id);
@@ -2058,8 +2059,7 @@ function applySharedPace(params) {
   if (!(goal > 0) || !Number.isInteger(goal)) return;
   const index = TRACK_DISTANCES.findIndex((d) => d.id === params.get('pd'));
   if (index >= 0) track.distanceIndex = index;
-  $('pace-min').value = String(Math.floor(goal / 60));
-  $('pace-sec').value = String(goal % 60).padStart(2, '0');
+  paceGoal = goal;
   course.pace = true;
   course.layout = true;
 }
@@ -2588,11 +2588,6 @@ function dropBfaOnRemeasure() {
 
 /** Write a dragged value into the fields the rest of the app reads. */
 function onSliderInput(component) {
-  if (component === 'pace') {
-    onPaceSliderInput();
-    return;
-  }
-
   if (component === 'height') {
     const raw = Number($('slide-height').value);
     $('height').value = raw.toFixed(1);
@@ -3414,11 +3409,8 @@ function resetTrack() {
   track.customUnit = 'm';
   $('custom-lap').value = '';
   $('custom-lap-unit').value = 'm';
-  $('pace-min').value = '';
-  $('pace-sec').value = '';
+  paceGoal = null;
   $('pace-readout').hidden = true;
-  $('slider-pace').hidden = true;
-  paceBounds = null;
   track.lengthIndex = TRACK_LENGTHS.indexOf(300);
   closeTrackPanel();
 }
@@ -3432,14 +3424,14 @@ function resetTrack() {
  */
 function renderPace(distance, length) {
   const readout = $('pace-readout');
-  renderPaceSlider(distance);
   const figure = $('pace-figure');
 
   // Nothing aimed at yet is the resting state, not an error. A part-entered or
   // out-of-range time shows nothing rather than a pace worked out from half of
   // it.
-  const target = paceSeconds();
+  const target = paceSeconds(distance);
   const plan = trackPlan({ distanceId: distance.id, trackLength: length });
+  $('pace-empty').hidden = target != null;
   if (target == null) {
     readout.hidden = true;
     if (course.pace) figure.replaceChildren(buildPaceFigure(plan, null));
@@ -3454,9 +3446,12 @@ function renderPace(distance, length) {
 
   if (course.pace) figure.replaceChildren(buildPaceFigure(plan, pace));
   $('pace-lap').textContent = pace.lap.label;
+  const from = runSeconds() != null
+    ? (distance.id === runDistance().id ? 'your time' : 'your pace')
+    : 'your plan\'s goal';
   $('pace-working').textContent =
     `${pace.laps} ${pace.laps === 1 ? 'lap' : 'laps'} of ${length} m ` +
-    `for ${distance.label} in ${pace.totalLabel}.`;
+    `for ${distance.label} in ${pace.totalLabel}, from ${from}.`;
 
   const partial = $('pace-partial');
   if (pace.opening) {
@@ -3515,111 +3510,41 @@ function renderPrintPace(result) {
 }
 
 /**
- * The two ends of the pace slider, in seconds, or null when there is no chart
- * to read them off yet.
- *
- * The 2 km is the walk's distance, and nobody runs a PFRA over it, so it takes
- * the walk slider's ends: the slow end is this member's walk standard and the
- * fast end is WALK_FASTEST, 14:00. Run paces would put the whole slider at a
- * jog no walker reaches.
- *
- * Every other distance is anchored on the 2 mile run, with the same right hand
- * end as the run's own slider: the time that earns full marks for this
- * member's sex and age band. The slow end is the slowest time that still
- * passes. Both are paces rather than times, so they carry over to the 1.5 and
- * 3 mile, which have no standard of their own. A faster goal can still be
- * typed in; the handle pins at the end, as it does on the run.
- *
- * The slow end is the passing time itself rather than a second past it, which
- * is where the scoring sliders put their left hand end. Those record what
- * happened and a fail is a real thing to record. This one sets a goal, and a
- * goal of missing the standard is not one.
+ * A finishing time from a plan's "Open Lap Pace", used only while no run or
+ * walk time has been entered. Typing a time takes over from it.
  */
-function paceEnds(distance) {
-  if (!sex || !ageBand) return null;
+let paceGoal = null;
 
-  if (distance.id === 'km2') {
-    const walk = scorer.rangeFor({
-      component: 'cardiorespiratory', event: 'walk_2km', sex, band: ageBand
-    });
-    if (!walk || !walk.standard || walk.standard.seconds == null) return null;
-    return { slow: walk.standard.seconds, fast: WALK_FASTEST };
-  }
-
-  const run = scorer.rangeFor({
-    component: 'cardiorespiratory', event: 'run_2mile', sex, band: ageBand
-  });
-  if (!run || !run.floor || run.floor.value == null || !run.best) return null;
-
-  const mile2 = distanceById('mile2');
-  const factor = distance.metres / mile2.metres;
-  return {
-    slow: Math.round(run.floor.value * factor),
-    // SLIDER_MEASURES.time.best, so the two run tracks end in the same place.
-    fast: Math.round(SLIDER_MEASURES.time.best(run) * factor)
-  };
+/** The distance the current cardio event is run over. */
+function runDistance() {
+  return distanceById(events.cardiorespiratory === 'walk_2km' ? 'km2' : 'mile2');
 }
 
-/** Where the pace slider's ends currently sit, for reading a dragged value. */
-let paceBounds = null;
-
-/**
- * Draw the pace slider for the distance listening picked.
- *
- * Slower on the left and faster on the right, which is worst to best as every
- * other track on the page runs, so the handle moves the same way here as it
- * does on the run.
- */
-function renderPaceSlider(distance) {
-  const row = $('slider-pace');
-  const input = $('slide-pace');
-  const ends = paceEnds(distance);
-  paceBounds = ends;
-
-  if (!ends) {
-    row.hidden = true;
-    return;
-  }
-
-  row.hidden = false;
-  input.min = String(ends.fast);
-  input.max = String(ends.slow);
-  input.step = '1';
-  $('pace-low').textContent = formatTime(ends.slow);
-  $('pace-high').textContent = formatTime(ends.fast);
-
-  if (dragging === 'pace') return;
-
-  const current = paceSeconds();
-  // Nothing aimed at yet parks at the left, the slowest end, the way an
-  // unentered score parks at the worst end of its own track.
-  const seated = current == null
-    ? ends.slow
-    : Math.max(ends.fast, Math.min(ends.slow, current));
-  input.value = String(ends.fast + ends.slow - seated);
-  input.setAttribute('aria-valuetext',
-    current == null ? 'not set' : formatTime(current));
-}
-
-/** The target time listening in the two fields, in seconds, or null. */
-function paceSeconds() {
-  const minutes = wholeNumber('pace-min');
-  const seconds = wholeNumber('pace-sec');
+/** The run or walk time entered on the card, in seconds, or null. */
+function runSeconds() {
+  const kind = CONTROLS[events.cardiorespiratory].kind;
+  if (kind !== 'time' && kind !== 'walk') return null;
+  if (statuses.cardiorespiratory) return null;
+  const minutes = wholeNumber('run-min');
+  const seconds = wholeNumber('run-sec');
   if (minutes == null || minutes === undefined) return null;
   if (seconds == null || seconds === undefined || seconds > 59) return null;
   const total = minutes * 60 + seconds;
   return total > 0 ? total : null;
 }
 
-/** Write a dragged pace back into the fields the readout is worked out from. */
-function onPaceSliderInput() {
-  if (!paceBounds) return;
-  const position = Number($('slide-pace').value);
-  const seconds = paceBounds.fast + paceBounds.slow - position;
-  $('pace-min').value = String(Math.floor(seconds / 60));
-  $('pace-sec').value = String(seconds % 60).padStart(2, '0');
-  $('slide-pace').setAttribute('aria-valuetext', formatTime(seconds));
-  renderTrack();
+/**
+ * The finishing time to pace, over the distance picked in the panel.
+ *
+ * The time entered on the card is for the event's own distance. Picked over
+ * another distance it is held at the same speed, so the lap split is the one
+ * the entered time was run at and only the total changes.
+ */
+function paceSeconds(distance = TRACK_DISTANCES[track.distanceIndex]) {
+  const run = runSeconds();
+  if (run != null) return Math.round(run * distance.metres / runDistance().metres);
+  if (paceGoal == null) return null;
+  return Math.round(paceGoal * distance.metres / distanceById('mile2').metres);
 }
 
 function renderTrack() {
@@ -3761,9 +3686,6 @@ function wireTrack() {
     // underneath them would be a different, and surprising, thing to do.
     readCustomLap();
   });
-  for (const id of ['pace-min', 'pace-sec']) {
-    $(id).addEventListener('input', () => renderTrack());
-  }
   $('print-track').addEventListener('click', printTrackLayout);
 }
 
@@ -4025,8 +3947,7 @@ function planPace(step) {
 function openPaceFor(seconds) {
   const index = TRACK_DISTANCES.findIndex((d) => d.id === 'mile2');
   if (index >= 0) track.distanceIndex = index;
-  $('pace-min').value = String(Math.floor(seconds / 60));
-  $('pace-sec').value = String(seconds % 60).padStart(2, '0');
+  paceGoal = seconds;
   course.pace = true;
   course.layout = true;
   renderTrack();
