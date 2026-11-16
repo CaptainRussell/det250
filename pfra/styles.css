@@ -686,6 +686,89 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   color: var(--ink-soft);
 }
 
+/* --- read aloud ----------------------------------------------------------
+ *
+ * The recorded script, at the top of the dialog it reads. Built from the page's
+ * own parts: the cardinal round button of the steppers and the .slider track,
+ * so it looks like the rest of the calculator rather than a browser player.
+ */
+.listen {
+  --played: 0%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--page);
+}
+.verbiage-general .listen { background: var(--surface); }
+
+.listen-play {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cardinal-dark);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color .15s ease, transform .15s ease;
+}
+.listen-play:hover { background: var(--cardinal); }
+.listen-play:active { transform: scale(.94); }
+.listen-play:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.listen.playing .listen-play { background: var(--cardinal); }
+
+.listen-main { min-width: 0; }
+.listen-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0;
+}
+.listen-title { font-weight: 700; font-size: .92rem; }
+.listen-sub { color: var(--ink-faint); font-size: .78rem; }
+
+/* The page's slider, smaller: a scrubber is a secondary control here, and the
+ * played part of the track fills in gold as it goes. */
+.slider.listen-seek {
+  --track-height: 6px;
+  --thumb-size: 16px;
+  display: block;
+}
+@media (pointer: coarse) {
+  .slider.listen-seek { --track-height: 8px; --thumb-size: 24px; }
+}
+.slider.listen-seek::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--gold-deep) 0 var(--played), var(--line-strong) var(--played) 100%);
+}
+.slider.listen-seek::-moz-range-track {
+  background: linear-gradient(to right, var(--gold-deep) 0 var(--played), var(--line-strong) var(--played) 100%);
+}
+.slider.listen-seek::-webkit-slider-thumb { border-width: 2px; }
+.slider.listen-seek::-moz-range-thumb { border-width: 2px; }
+
+.listen-time {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.listen-credit a { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .listen-play { transition: none; }
+  .listen-play:active { transform: none; }
+}
+
 /* --- the guide cue ------------------------------------------------------
  *
  * One section glows at a time: the next one still to be answered. The ring is

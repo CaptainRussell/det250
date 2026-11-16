@@ -195,6 +195,8 @@ async function boot() {
   $('verbiage').addEventListener('click', (e) => {
     if (e.target === $('verbiage')) $('verbiage').close();
   });
+  // A recording left playing behind a closed dialog has no visible way to stop.
+  $('verbiage').addEventListener('close', stopListening);
   for (const button of document.querySelectorAll('.not-done')) {
     button.addEventListener('click', () => toggleNotFinished(button.dataset.statusFor));
   }
@@ -2204,18 +2206,145 @@ function openVerbiage(component) {
     const general = el('div', 'verbiage-general');
     general.append(el('p', 'verbiage-general-head',
       'Read once, before the assessment begins'));
+    general.append(listenPlayer('general', 'the opening instructions'));
     appendParts(general, VERBIAGE.general);
     body.append(general);
   }
 
+  if (LISTEN[event]) body.append(listenPlayer(event, section.title));
   appendParts(body, section);
 
   $('verbiage-source').textContent =
     `${VERBIAGE_SOURCE.publication}, ${VERBIAGE_SOURCE.date}, ` +
     `${VERBIAGE_SOURCE.attachment}, pages ${VERBIAGE_SOURCE.pages}. ` +
     'Quoted in full; spoken text in bold.';
+  // The recordings are not ours, so they are credited wherever one plays.
+  if (LISTEN[event] || component === 'body_composition') {
+    const credit = el('span', 'listen-credit', ' Audio: 90th Missile Wing, Air Force Global Strike Command (');
+    const link = el('a', null, 'source video');
+    link.href = LISTEN_SOURCE;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    credit.append(link, ').');
+    $('verbiage-source').append(credit);
+  }
 
   dialog.showModal();
+}
+
+/* --- read aloud ----------------------------------------------------------
+ *
+ * The same Attachment 2 script, recorded, so a cadet can hear what will be said
+ * on the day and a proctor can play it to a group instead of reading it out.
+ * One file per script in audio/, named by the VERBIAGE key it reads. The 2 km
+ * walk has no recording yet, so it simply shows no player.
+ *
+ * Lengths are written here rather than read from the files, so the time shows
+ * before anything downloads: preload is "none", and a phone on cellular only
+ * fetches the clip it actually plays.
+ */
+const LISTEN = Object.freeze({
+  general: 50,
+  whtr: 60,
+  pushup: 92,
+  hand_release_pushup: 76,
+  situp: 155,
+  cross_leg_reverse_crunch: 74,
+  forearm_plank: 128,
+  run_2mile: 43,
+  hamr_20m: 102
+});
+
+const LISTEN_SOURCE = 'https://www.afgsc.af.mil/News/Videos/videoid/1013334/';
+
+const listening = new Set();
+
+function stopListening() {
+  for (const audio of listening) audio.pause();
+  listening.clear();
+}
+
+const clock = (seconds) => {
+  const s = Math.max(0, Math.round(seconds || 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+const PLAY_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
+  '<path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+const PAUSE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
+  '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>';
+
+function listenPlayer(key, what) {
+  const total = LISTEN[key];
+  const audio = new Audio();
+  audio.preload = 'none';
+  audio.src = `audio/${key}.mp3`;
+
+  const wrap = el('div', 'listen');
+  const play = el('button', 'listen-play');
+  play.type = 'button';
+  play.innerHTML = PLAY_ICON;
+  play.setAttribute('aria-label', `Play ${what} read aloud`);
+
+  const main = el('div', 'listen-main');
+  const label = el('p', 'listen-label');
+  label.append(el('span', 'listen-title', 'Listen'),
+    el('span', 'listen-sub', 'Read aloud'));
+  const seek = el('input', 'slider listen-seek');
+  seek.type = 'range';
+  seek.min = '0';
+  seek.max = String(total);
+  seek.step = '1';
+  seek.value = '0';
+  seek.setAttribute('aria-label', `Position in ${what}`);
+  main.append(label, seek);
+
+  const time = el('span', 'listen-time', `0:00 / ${clock(total)}`);
+  wrap.append(play, main, time);
+
+  const length = () => (Number.isFinite(audio.duration) ? audio.duration : total);
+  const paint = () => {
+    const now = audio.currentTime;
+    seek.max = String(Math.round(length()));
+    if (!seek.matches(':active')) seek.value = String(Math.round(now));
+    wrap.style.setProperty('--played', `${(now / length()) * 100}%`);
+    time.textContent = `${clock(now)} / ${clock(length())}`;
+    seek.setAttribute('aria-valuetext', `${clock(now)} of ${clock(length())}`);
+  };
+  const showPlaying = (on) => {
+    play.innerHTML = on ? PAUSE_ICON : PLAY_ICON;
+    play.setAttribute('aria-label', `${on ? 'Pause' : 'Play'} ${what} read aloud`);
+    wrap.classList.toggle('playing', on);
+  };
+
+  play.addEventListener('click', () => {
+    if (audio.paused) {
+      // One voice at a time: the opening statement and the event script share
+      // the dialog for body composition.
+      for (const other of listening) if (other !== audio) other.pause();
+      listening.add(audio);
+      audio.play().catch(() => showPlaying(false));
+    } else {
+      audio.pause();
+    }
+  });
+  seek.addEventListener('input', () => {
+    audio.currentTime = Number(seek.value);
+    paint();
+  });
+  audio.addEventListener('play', () => showPlaying(true));
+  audio.addEventListener('pause', () => showPlaying(false));
+  audio.addEventListener('timeupdate', paint);
+  audio.addEventListener('loadedmetadata', paint);
+  audio.addEventListener('ended', () => {
+    audio.currentTime = 0;
+    paint();
+  });
+  audio.addEventListener('error', () => {
+    showPlaying(false);
+    time.textContent = 'Could not load';
+  });
+  return wrap;
 }
 
 function appendParts(host, section) {
