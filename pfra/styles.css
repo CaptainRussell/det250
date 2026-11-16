@@ -2030,6 +2030,12 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
     color: #222;
   }
   .track-sheet .track-svg { max-height: 118mm; }
+  /* A landscape sheet is 62 mm shorter, so the drawing gives up the
+   * difference and the groups, check and note stay on the same page. */
+  @media (orientation: landscape) {
+    .track-sheet .track-svg { max-height: 84mm; }
+  }
+  .track-sheet { break-inside: avoid; }
   .track-sheet .track-groups {
     margin-top: 6pt;
     display: grid;

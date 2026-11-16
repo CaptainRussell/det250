@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=flow2">
+<link rel="stylesheet" href="styles.css?v=flow3">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -426,7 +426,7 @@
         <button type="button" class="pace-bar" id="pace-toggle"
                 aria-expanded="false" aria-controls="course-body">
           <span class="pace-bar-title">Lap Pace &amp; Track Layout</span>
-          <span class="pace-bar-hint">Each lap's split for your goal time, and where to mark the course</span>
+          <span class="pace-bar-hint">Each lap's split for the time entered above, and where to mark the course</span>
           <span class="pace-bar-chevron" aria-hidden="true">&#9662;</span>
         </button>
         <div class="chart-body track-body" id="course-body" hidden>
@@ -478,27 +478,12 @@
                know how long a lap is and how many of them there are, but they
                are opened separately because they are for different people. -->
           <div class="pace">
-            <div class="field pace-field">
-              <label for="pace-min">Pace for a finishing time of</label>
-              <div class="time-inputs">
-                <input type="number" id="pace-min" inputmode="numeric" min="0" max="59"
-                       step="1" placeholder="mm" aria-label="Target minutes">
-                <span class="time-colon" aria-hidden="true">:</span>
-                <input type="number" id="pace-sec" inputmode="numeric" min="0" max="59"
-                       step="1" placeholder="ss" aria-label="Target seconds">
-              </div>
-              <!-- Ends come from the chart, so the track has to know the sex
-                   and age band before it can draw them. A time outside them
-                   is still typed in: the handle pins and the pace is worked
-                   out from what was typed, as the scoring sliders do. -->
-              <div class="slider-row" id="slider-pace" hidden>
-                <span class="slider-end low" id="pace-low"></span>
-                <input type="range" class="slider" id="slide-pace" data-component="pace"
-                       min="0" max="1" step="1" value="0"
-                       aria-label="Target finishing time">
-                <span class="slider-end high" id="pace-high"></span>
-              </div>
-            </div>
+            <!-- No time box of its own (Captain Russell, Nov 2026): the pace
+                 is worked out from the run or walk time entered above, so
+                 there is one time to type and one slider to drag. -->
+            <p class="hint pace-empty" id="pace-empty">
+              Enter your time above and every lap's split shows here.
+            </p>
             <div class="pace-readout" id="pace-readout" hidden>
               <p class="pace-label">Every lap</p>
               <p class="pace-value" id="pace-lap"></p>
@@ -923,6 +908,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=flow2"></script>
+<script type="module" src="app.js?v=flow3"></script>
 </body>
 </html>
