@@ -237,9 +237,7 @@ async function boot() {
   $('print-result').addEventListener('click', () => window.print());
   $('share-result').addEventListener('click', shareResult);
 
-  setupDocuments();
   showEventIcons();
-  showEventDocs();
   showNotFinished();
   showTrackPanel();
 
@@ -490,7 +488,6 @@ function selectEvent(component, event) {
   if (listening.key && !reading.has(listening.key)) stopListening();
   else paintListen();
   showEventIcons();
-  showEventDocs();
   showNotFinished();
   showTrackPanel();
   update();
@@ -601,21 +598,6 @@ function buildEventOptions() {
     select.hidden = true;
     select.previousElementSibling.hidden = true;   // its "Event" label
     select.after(list);
-  }
-}
-
-function showEventDocs() {
-  const wanted = events.cardiorespiratory === 'hamr_20m';
-  // The tally sheet and the pacing audio both belong to the HAMR and nothing
-  // else, so they appear and disappear together.
-  for (const id of ['doc-hamr', 'doc-hamr-audio']) {
-    const doc = $(id);
-    if (!wanted && !doc.hidden) {
-      // Collapse the viewer too, or it would reopen already expanded later.
-      const toggle = doc.querySelector('.view-toggle');
-      if (toggle && toggle.getAttribute('aria-expanded') === 'true') toggle.click();
-    }
-    doc.hidden = !wanted;
   }
 }
 
@@ -4089,6 +4071,11 @@ function renderFailures(result) {
   }
   for (const failure of result.failures) list.append(el('li', null, failure.message));
   card.hidden = false;
+  // On screen the gap line under the composite already says why, so this list
+  // is for paper. When the gap line has nothing to say (a failed walk with the
+  // composite met), this is the only place that says it, so it shows.
+  const gap = $('gap-line');
+  card.classList.toggle('screen-show', gap.hidden || !gap.textContent.trim());
 }
 
 function renderWarnings(result) {
@@ -4306,15 +4293,8 @@ function renderReferences(result) {
     host.append(box);
   }
 
-  const pub = el('div', 'reference');
-  pub.append(el('span', 'reference-id', result.publication.title));
-  const link = document.createElement('a');
-  link.href = result.publication.url;
-  link.textContent = 'Read it on e-Publishing';
-  link.rel = 'noopener noreferrer';
-  link.target = '_blank';
-  pub.append(link);
-  host.append(pub);
+  // No e-Publishing link here: DAFMAN 36-2905 is a card in References, just
+  // above (Captain Russell, Nov 2026).
 }
 
 /*
@@ -4327,124 +4307,10 @@ function renderReferences(result) {
  */
 
 // --- reference documents ---------------------------------------------------
-
-/**
- * Wire up the document list.
- *
- * A PDF only gets an inline viewer if a browser can actually render it. The
- * scoring charts can. The two AF forms are XFA (Adobe LiveCycle) documents,
- * which no browser renders: they show only their own "requires Adobe Reader"
- * placeholder, so they are download-only until a flattened copy exists.
- *
- * If one does, `data-flat` points at it and this picks it up: the download
- * switches to the flattened file and the View button appears. Nothing here
- * needs changing when that happens; just drop the file into references/.
- */
-async function setupDocuments() {
-  for (const doc of document.querySelectorAll('.document')) {
-    const link = doc.querySelector('.doc-link');
-    const flat = doc.querySelector('.doc-flat');
-    const toggle = doc.querySelector('.view-toggle');
-    const viewer = doc.querySelector('.viewer');
-    const note = doc.querySelector('.document-note');
-
-    // A row with no View button is download-only by design: see the comment on
-    // the manual in index.html. Nothing below applies to it.
-    if (!toggle) continue;
-
-    // The scoring charts have no flattened twin; they render as published.
-    if (!flat) {
-      toggle.hidden = false;
-      toggle.addEventListener('click', () => toggleViewer(toggle, viewer, link.href));
-      continue;
-    }
-
-    if (await exists(flat.getAttribute('href'))) {
-      flat.hidden = false;
-      toggle.hidden = false;
-      note.textContent += ' Fillable opens in Adobe Reader; the flat copy reads ' +
-        'in any browser but cannot be filled in.';
-      toggle.addEventListener('click', () => toggleViewer(toggle, viewer, flat.href));
-    } else {
-      note.textContent += ' Opens in Adobe Reader, not in a browser.';
-    }
-  }
-}
-
-/**
- * Is there a file at this URL?
- *
- * A HEAD request is enough for a served file. A data: URI is the file, so it
- * is answered without asking: fetch only honours GET on a data: URL and
- * rejects a HEAD outright, which would have the single-file build decide its
- * own embedded forms were missing and hide the View button on both of them.
- */
-async function exists(url) {
-  if (url.startsWith('data:')) return true;
-  try {
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Object URLs handed out for the inline viewer, so they can be handed back.
- *
- * Keyed by the viewer they were put in, because that is what closes.
- */
-const viewerObjectUrls = new WeakMap();
-
-/**
- * A src an iframe will actually render a PDF from.
- *
- * Chrome will not run its PDF viewer on a data: URL, so in the single-file
- * build every View button opened a blank frame. The bytes are already here;
- * they just need an address the viewer will accept, and a blob: URL is one.
- * A served URL is left alone: it is already fine and making a blob of it
- * would download the file twice.
- */
-async function viewerSource(viewer, src) {
-  if (!src.startsWith('data:')) return src;
-  const blob = await fetch(src).then((response) => response.blob());
-  const url = URL.createObjectURL(blob);
-  viewerObjectUrls.set(viewer, url);
-  return url;
-}
-
-function releaseViewer(viewer) {
-  const url = viewerObjectUrls.get(viewer);
-  if (!url) return;
-  URL.revokeObjectURL(url);
-  viewerObjectUrls.delete(viewer);
-}
-
-async function toggleViewer(toggle, viewer, src) {
-  const open = toggle.getAttribute('aria-expanded') === 'true';
-  if (open) {
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.textContent = 'View';
-    viewer.hidden = true;
-    viewer.replaceChildren();
-    releaseViewer(viewer);
-    return;
-  }
-
-  // Said before the await, not after: on the offline build the blob is made
-  // from a 40 MB data: URL and the button would otherwise sit unchanged long
-  // enough to be pressed again.
-  toggle.setAttribute('aria-expanded', 'true');
-  toggle.textContent = 'Hide';
-
-  releaseViewer(viewer);
-  const frame = document.createElement('iframe');
-  frame.src = await viewerSource(viewer, src);
-  frame.title = 'Reference document';
-  frame.loading = 'lazy';
-  viewer.replaceChildren(frame);
-  viewer.hidden = false;
-}
+// The HAMR tally sheet and pacing audio used to sit in the cardio card with
+// their own View and Save buttons. They are reference cards now, beside the
+// other forms and manuals (Captain Russell, Nov 2026), so the inline viewer
+// that served them is gone.
 
 boot().catch((error) => {
   document.body.prepend(Object.assign(document.createElement('p'), {
