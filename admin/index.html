@@ -796,6 +796,7 @@ async function loadOdt(){
     OD.exists = true; OD.sha = f.sha; OD.vault = JSON.parse(f.text);
     const pw = CFG.locks.docs;
     if (pw){ try{ OD.data = await openOdt(pw, OD.vault); OD.pw = OD.savedPw = pw; OD.orig = JSON.stringify(OD.data); }catch(_){} }
+    if (OD.data) applyPendingPlans();
   } else {
     const r = await GH.readText("data/rooms.js");     // the old public room list, moved in at setup
     try{ OD.seed = r ? D250DataFile.parse(r.text).data : null; }catch(_){ OD.seed = null; }
@@ -875,6 +876,7 @@ function renderRooms(){
         } else {
           let data; try{ data = await openOdt(pw, OD.vault); }catch(_){ throw new Error("That password doesn't open the ODT file."); }
           OD.pw = pw; OD.data = data; OD.orig = JSON.stringify(data);
+          applyPendingPlans();
         }
         render();
       }catch(x){ err.textContent = x.message; btn.disabled = false; btn.textContent = setup ? "Set up" : "Unlock"; }
@@ -1135,18 +1137,37 @@ function giveCadreRooms(e){
 /* The Offutt plan Captain Russell gave on 16 Nov 2026: four cadre go, each drives a van, Capt Russell takes
    the 11-passenger GOV, and four AS 300s are the relief drivers. Applied once at Set up, or from the Vans tab. */
 const ODT_PLANS = {
-  "offutt-2026-12": {cadre:["CacicJohn","RussellScott","MooreGabrielle","OrrTy"], vans:[
+  "offutt-2026-12": {cadre:["CacicJohn","RussellScott","MooreGabrielle","OrrTy"],
+    // room numbers from Captain Russell's list (16 Nov 2026): cadet rooms 1 on in page order, then the cadre in this order
+    renumber:true, cadreRooms:["RussellScott","OrrTy","MooreGabrielle","CacicJohn"], vans:[
     {name:"Van 1", kind:"isu15", seats:15, driver:"CacicJohn", relief:"MarschangAllissaA"},
     {name:"Van 2", kind:"isu15", seats:15, driver:"OrrTy", relief:"HelleNicolasD"},
     {name:"Van 3", kind:"isu15", seats:15, driver:"MooreGabrielle", relief:"AshbackerMiloK"},
     {name:"GOV", kind:"gov11", seats:11, driver:"RussellScott", relief:"BourekAkrynJ"}]},
 };
+function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order cadets see them, cadre last
+  const secIdx = s => { const i = (e.sections || []).indexOf(s); return i < 0 ? 999 : i; };
+  const cad = r => r.sec === "Cadre" || (r.cadets.length === 1 && isCadre(r.cadets[0]));
+  const rank = r => { const i = cadreOrder.indexOf(r.cadets[0]); return i < 0 ? 999 : i; };
+  const cadet = e.rooms.map((r, i) => [r, i]).filter(([r]) => !cad(r)).sort((a, b) => secIdx(a[0].sec) - secIdx(b[0].sec) || a[1] - b[1]).map(x => x[0]);
+  const cadre = e.rooms.map((r, i) => [r, i]).filter(([r]) => cad(r)).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
+  let n = 0; for (const r of [...cadet, ...cadre]) r.room = String(++n);
+  e.rooms = [...cadet, ...cadre];
+  if (cadre.length) e.sections = [...(e.sections || []).filter(s => s !== "Cadre"), "Cadre"];   // cadre rooms show after the cadets
+}
+function applyPendingPlans(){                         // an ODT that was set up before its plan existed gets it on open
+  for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
+    const r = applyPlan(e);
+    changed(`${evName(e)}: applied the plan (cadre ${r.rooms.map(pname).join(", ") || "already roomed"}, rooms renumbered, ${e.vans.length} vans)`);
+  }
+}
 function applyPlan(e){
   const P = ODT_PLANS[e.id]; if (!P) return null;
   e.roster = e.roster || [];
   const add = [...P.cadre, ...P.vans.map(v => v.relief)].filter(k => R().people[k] && !e.roster.includes(k));
   e.roster.push(...add);
   const rooms = giveCadreRooms(e);
+  if (P.renumber) renumberRooms(e, P.cadreRooms || []);
   e.vans = P.vans.map((v, i) => ({id:"van" + (i + 1), ...v, riders:[]}));
   const over = vanAuto(e);
   return {add, rooms, over};

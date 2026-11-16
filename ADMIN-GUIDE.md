@@ -83,7 +83,7 @@ On the Documents tab, press **Edit** on the card. Air Force publications should 
 
 The ODT Module page holds everything for each ODT: details and things to know, the itinerary, who's going (cadets and cadre), rooms, vans and documents. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
 
-**First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. It also adds the Offutt cadre (Lt Col Cacic, Capt Russell, SSgt Moore, Capt Orr) with rooms of their own and sets up the four vans. Check the Vans tab, then publish.
+**First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. It also adds the Offutt cadre (Lt Col Cacic, Capt Russell, SSgt Moore, Capt Orr) with rooms of their own, numbers the rooms (cadets 1 to 21 in page order, then Russell 22, Orr 23, Moore 24, Cacic 25) and sets up the four vans. If the ODT Module was already set up, this happens the first time the ODT tab opens. Check the Rooms and Vans tabs, then publish.
 
 **Add a new ODT**
 
