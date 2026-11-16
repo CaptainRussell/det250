@@ -134,6 +134,7 @@ async function boot() {
   wireEnterToNext();
   wireBfa();
   wireTrack();
+  wireProctor();
   for (const button of document.querySelectorAll('.exempt-toggle')) {
     button.addEventListener('click', () => {
       const component = button.dataset.exempt;
@@ -270,7 +271,8 @@ function saveProgress() {
     const open = CARDS.filter((c) => (c === 'bfa' ? $('bfa')
       : document.querySelector(`.event[data-component="${c}"]`)).classList.contains('open'));
     sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({
-      q, from: location.search, open, refs: $('refs-card').open, y: Math.round(window.scrollY)
+      q, from: location.search, open, refs: $('refs-card').open,
+      proctor: $('proctor-card').open, ptab: proctorTab, y: Math.round(window.scrollY)
     }));
   } catch { /* storage blocked: nothing to keep */ }
 }
@@ -293,6 +295,8 @@ function restoreView(saved) {
   for (const card of saved.open ?? []) if (CARDS.includes(card)) setCardOpen(card, true);
   showExpandAll();
   if (saved.refs) $('refs-card').open = true;
+  if (saved.ptab) showProctorTab(saved.ptab);
+  if (saved.proctor) $('proctor-card').open = true;
   // After the charts and the score column have laid out, or the page is still
   // shorter than where the reader was.
   const y = Number(saved.y) || 0;
@@ -853,9 +857,10 @@ function resetAll() {
   showExpandAll();
   for (const component of COMPONENTS) chartOpen.delete(component);
   $('verbiage').close();
-  for (const details of document.querySelectorAll('.pretest, .foldable')) {
+  for (const details of document.querySelectorAll('.foldable')) {
     details.open = false;
   }
+  showProctorTab('before');
 
   // Drop a shared assessment out of the address too, or Reset Everything is
   // undone by the next refresh.
@@ -2431,7 +2436,6 @@ function applySharedPace(params) {
   if (index >= 0) track.distanceIndex = index;
   paceGoal = goal;
   course.pace = true;
-  course.layout = true;
 }
 
 /** A shared link said this component was exempt or did not finish. */
@@ -2487,7 +2491,11 @@ async function shareResult() {
  * this renders them differently, so the difference survives.
  */
 function openVerbiage(component) {
-  const event = listenKeyFor(component);
+  openScript(listenKeyFor(component));
+}
+
+/** The dialog for one script, by its VERBIAGE key. */
+function openScript(event) {
   const section = verbiageFor(event);
   if (!section) return;
 
@@ -3719,25 +3727,23 @@ function showCourseSections() {
   // The layout is for whoever marks the track. A cadet has the lap pace, which
   // draws the start, the finish and the part lap between them, and that is the
   // part of the layout a runner needs.
+  // Marking the Track lives in Cadre Proctor Tools (Captain Russell, 16 Nov
+  // 2026), so it is "open" while that card is open on its tab.
+  course.layout = $('proctor-card').open && proctorTab === 'track';
   $('course-body').hidden = !course.pace;
-  $('layout-body').hidden = !course.layout;
   $('pace-section').hidden = !course.pace;
-  $('track-section').hidden = !course.layout;
-  // One set of distance and track pickers, at the bottom of whichever section
-  // is open (the lap pace when both are), under the map and the numbers
+  // The pickers sit at the bottom of Lap Pace, under the map and the numbers
   // (Captain Russell, 16 Nov 2026).
   const pickers = document.querySelector('.track-pickers');
-  const home = course.pace ? $('course-body') : $('layout-body');
+  const home = $('course-body');
   if (pickers.parentElement !== home || home.lastElementChild !== pickers) home.append(pickers);
-  for (const [id, on] of [['pace-toggle', course.pace], ['layout-toggle', course.layout]]) {
-    $(id).setAttribute('aria-expanded', String(on));
-    $(id).classList.toggle('on', on);
-  }
+  $('pace-toggle').setAttribute('aria-expanded', String(course.pace));
+  $('pace-toggle').classList.toggle('on', course.pace);
 }
 
+/** Lap Pace only: the proctor's layout does not follow the run card. */
 function closeTrackPanel() {
   course.pace = false;
-  course.layout = false;
   showCourseSections();
 }
 
@@ -3923,6 +3929,7 @@ function renderTrack() {
 
   renderPace(distance, length);
   renderPrintPace(lastResult);
+  syncPickers();
 
   showCourseSections();
   if (!course.layout) return;   // no figure to draw into
@@ -4003,6 +4010,121 @@ function printTrackLayout() {
   done();
 }
 
+/* --- Cadre Proctor Tools --------------------------------------------------
+ *
+ * Its own card with tabs (Captain Russell, 16 Nov 2026): what whoever runs
+ * the assessment needs and the cadets testing do not.
+ */
+const PROCTOR_TABS = ['before', 'track', 'day', 'after'];
+let proctorTab = 'before';
+
+function showProctorTab(tab, focus = false) {
+  if (!PROCTOR_TABS.includes(tab)) return;
+  proctorTab = tab;
+  for (const id of PROCTOR_TABS) {
+    const on = id === tab;
+    const button = $(`ptab-${id}`);
+    button.setAttribute('aria-selected', String(on));
+    button.tabIndex = on ? 0 : -1;
+    $(`ppanel-${id}`).hidden = !on;
+    if (on && focus) button.focus();
+  }
+  renderTrack();
+}
+
+/** The scripts a proctor reads, AFROTC events first. */
+const PROCTOR_SCRIPTS = [
+  ['general', 'Opening statement', true],
+  ['whtr', 'Waist to height', true],
+  ['hand_release_pushup', 'Hand release push-ups', true],
+  ['situp', 'Sit-ups', true],
+  ['run_2mile', '2 mile run', true],
+  ['pushup', 'Push-ups', false],
+  ['cross_leg_reverse_crunch', 'Cross leg reverse crunch', false],
+  ['forearm_plank', 'Forearm plank', false],
+  ['hamr_20m', '20 m HAMR', false],
+  ['walk_2km', '2 km walk', false]
+];
+
+function wireProctor() {
+  const card = $('proctor-card');
+  card.addEventListener('toggle', renderTrack);
+  const tabs = PROCTOR_TABS.map((id) => $(`ptab-${id}`));
+  tabs.forEach((button, index) => {
+    button.addEventListener('click', () => showProctorTab(PROCTOR_TABS[index]));
+    button.addEventListener('keydown', (event) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (event.key === 'Home' || event.key === 'End') {
+        event.preventDefault();
+        showProctorTab(PROCTOR_TABS[event.key === 'Home' ? 0 : PROCTOR_TABS.length - 1], true);
+      } else if (step) {
+        event.preventDefault();
+        const next = (index + step + PROCTOR_TABS.length) % PROCTOR_TABS.length;
+        showProctorTab(PROCTOR_TABS[next], true);
+      }
+    });
+  });
+
+  // Links into Documents and Policy, so its back button comes back here.
+  for (const link of card.querySelectorAll('a[data-doc]')) {
+    const href = window.D250Refs?.href(link.dataset.doc, 'pfra');
+    if (href) link.href = href;
+    if (link.dataset.doc === 'hamr-audio') link.setAttribute('download', '');
+  }
+
+  const host = $('proctor-scripts');
+  for (const [key, label, cadet] of PROCTOR_SCRIPTS) {
+    if (!verbiageFor(key)) continue;
+    const button = el('button', 'proctor-script');
+    button.type = 'button';
+    button.append(el('span', 'proctor-script-name', label));
+    button.append(el('span', 'proctor-script-tag', cadet ? 'AFROTC' : 'Alternate'));
+    button.addEventListener('click', () => openScript(key));
+    host.append(button);
+  }
+}
+
+/** The pickers Marking the Track uses: a copy of Lap Pace's, same state. */
+const PICKER_IDS = ['slide-track-distance', 'slide-track-length', 'track-distance-low',
+  'track-distance-high', 'track-length-low', 'track-length-high', 'track-distance-picked',
+  'track-length-picked', 'custom-lap', 'custom-lap-unit'];
+
+function copyPickers() {
+  const copy = document.querySelector('.track-pickers').cloneNode(true);
+  for (const node of copy.querySelectorAll('[id]')) node.id = `${node.id}-p`;
+  for (const label of copy.querySelectorAll('label[for]')) {
+    label.htmlFor = `${label.htmlFor}-p`;
+  }
+  $('layout-pickers').append(copy);
+  // Typing in the copy is typing in the original, so one path does the work.
+  for (const id of ['slide-track-distance', 'slide-track-length', 'custom-lap']) {
+    $(`${id}-p`).addEventListener('input', () => {
+      $(id).value = $(`${id}-p`).value;
+      $(id).dispatchEvent(new Event('input'));
+    });
+  }
+  $('custom-lap-unit-p').addEventListener('change', () => {
+    $('custom-lap-unit').value = $('custom-lap-unit-p').value;
+    $('custom-lap-unit').dispatchEvent(new Event('change'));
+  });
+}
+
+function syncPickers() {
+  for (const id of PICKER_IDS) {
+    const from = $(id);
+    const to = $(`${id}-p`);
+    if (!to) continue;
+    if (from.matches('input, select')) {
+      for (const attr of ['min', 'max', 'placeholder', 'aria-valuetext']) {
+        if (from.hasAttribute(attr)) to.setAttribute(attr, from.getAttribute(attr));
+      }
+      if (to !== document.activeElement) to.value = from.value;
+    } else {
+      to.textContent = from.textContent;
+    }
+  }
+}
+
 function wireTrack() {
   // Lap Pace and Marking the Track open on their own (Captain Russell,
   // Nov 2026).
@@ -4011,11 +4133,7 @@ function wireTrack() {
     showCourseSections();
     renderTrack();
   });
-  $('layout-toggle').addEventListener('click', () => {
-    course.layout = !course.layout;
-    showCourseSections();
-    renderTrack();
-  });
+  copyPickers();
   $('slide-track-distance').addEventListener('input', () => {
     track.distanceIndex = Number($('slide-track-distance').value);
     renderTrack();
@@ -4317,7 +4435,6 @@ function openPaceFor(seconds) {
   if (index >= 0) track.distanceIndex = index;
   paceGoal = seconds;
   course.pace = true;
-  course.layout = true;
   renderTrack();
   $('pace-toggle').scrollIntoView({ behavior: motion(), block: 'start' });
 }
