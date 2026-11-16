@@ -369,24 +369,6 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
  * citation under each item is the point: a cadet who needs to argue one of
  * these with somebody needs the paragraph, not a paraphrase.
  */
-.pretest > summary {
-  display: grid;
-  gap: 2px;
-  cursor: pointer;
-  list-style: none;
-}
-.pretest > summary::-webkit-details-marker { display: none; }
-.pretest-title { font-weight: 700; font-size: 1rem; }
-.pretest > summary::after {
-  content: "▾";
-  position: absolute;
-  right: var(--gutter);
-  margin-top: 2px;
-  color: var(--ink-faint);
-}
-.pretest[open] > summary::after { content: "▴"; }
-.pretest { position: relative; }
-
 .pretest-item { margin-top: 18px; }
 .pretest-item h3 { margin: 0 0 4px; font-size: .92rem; }
 .pretest-item p { margin: 0; font-size: .88rem; line-height: 1.5; color: var(--ink-soft); }
@@ -396,6 +378,81 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
+/* --- Cadre Proctor Tools (Captain Russell, 16 Nov 2026) ------------------ */
+.proctor-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.proctor-tab {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.proctor-tab:hover { border-color: var(--cardinal); color: var(--ink); }
+.proctor-tab[aria-selected="true"] {
+  background: var(--cardinal);
+  border-color: var(--cardinal);
+  color: #fff;
+}
+.proctor-tab:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.proctor-panel > .card-intro { margin-top: 14px; }
+.proctor-panel #track-section { display: grid; gap: 12px; margin-top: 12px; }
+.proctor-panel #layout-pickers { margin: 14px 0 12px; }
+.proctor-check {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  font-size: .88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.proctor-check li + li { margin-top: 4px; }
+.proctor-check a { color: var(--gold); }
+.proctor-scripts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.proctor-script {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.proctor-script:hover { border-color: var(--cardinal); }
+.proctor-script:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.proctor-script-tag {
+  flex: none;
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+@media print { .proctor-tools { display: none; } }
+
 .pretest-footer {
   margin: 18px 0 0;
   padding-top: 12px;
@@ -2552,11 +2609,6 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   .pace-bar-chevron { transition: none; }
 }
 
-#pace-section + #track-section {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
 
 /* Shown only when the clipboard is refused, and then it holds a whole link, so
  * it has to be allowed to break anywhere rather than push the card wider. */

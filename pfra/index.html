@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=prog1">
+<link rel="stylesheet" href="styles.css?v=proctor1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -493,28 +493,6 @@
           </div>
           </div>
         </div>
-        <!-- Its own bar and section (Captain Russell, Nov 2026): the layout is
-             for whoever marks the course, the lap pace for whoever runs it.
-             The distance and track pickers move into whichever is open. -->
-        <button type="button" class="pace-bar" id="layout-toggle"
-                aria-expanded="false" aria-controls="layout-body">
-          <span class="pace-bar-title">Marking the Track</span>
-          <span class="pace-bar-hint">Where to put each group's start and finish lines</span>
-          <span class="pace-bar-chevron" aria-hidden="true">&#9662;</span>
-        </button>
-        <div class="chart-body track-body" id="layout-body" hidden>
-          <div id="track-section" hidden>
-          <div class="track-figure" id="track-figure"></div>
-          <div class="track-groups" id="track-groups"></div>
-          <p class="hint" id="track-note"></p>
-
-          <!-- The person marking the track is outside with a wheel, not at a
-               screen. This prints the layout on its own sheet: the result
-               record and this are two different documents and only one of them
-               goes out at a time, which is what body.printing-track decides. -->
-          <button type="button" class="secondary small" id="print-track">Print Layout</button>
-          </div>
-        </div>
       </div>
       <!-- Only the run and the walk: those are the events a member can leave
            part-way through. Stopping early on push-ups or sit-ups is just a
@@ -767,93 +745,142 @@
   <section class="track-sheet" id="track-print" hidden aria-hidden="true"></section>
 
   <!-- ---------------------------------------------------------------- -->
-  <!-- Folded away by default. It is worth knowing once, not reading every
-       time a score is worked out, and none of it changes the arithmetic. -->
-  <section class="card" id="proctor-card">
-    <details class="pretest">
-      <summary>
-        <span class="pretest-title">PFRA Proctor Details</span>
-      </summary>
+  <!-- Cadre Proctor Tools (Captain Russell, 16 Nov 2026): what whoever runs
+       the assessment needs and the cadets testing do not. Folded by default,
+       its own tabs. Marking the Track moved here from the run card. -->
+  <details class="card foldable proctor-tools" id="proctor-card">
+    <summary>
+      <h2>Cadre Proctor Tools</h2>
+      <span class="summary-hint">For whoever runs the assessment</span>
+    </summary>
+    <div class="proctor-tabs" role="tablist" aria-label="Cadre proctor tools">
+      <button type="button" role="tab" class="proctor-tab" id="ptab-before" aria-controls="ppanel-before" aria-selected="true">Before Test Day</button>
+      <button type="button" role="tab" class="proctor-tab" id="ptab-track" aria-controls="ppanel-track" aria-selected="false" tabindex="-1">Marking the Track</button>
+      <button type="button" role="tab" class="proctor-tab" id="ptab-day" aria-controls="ppanel-day" aria-selected="false" tabindex="-1">On the Day</button>
+      <button type="button" role="tab" class="proctor-tab" id="ptab-after" aria-controls="ppanel-after" aria-selected="false" tabindex="-1">After the Test</button>
+    </div>
 
+    <div class="proctor-panel" role="tabpanel" id="ppanel-before" aria-labelledby="ptab-before">
       <div class="pretest-item">
-        <h3>An AED has to be there</h3>
-        <p>
-          Official assessments and PT are run with an automated external
-          defibrillator present, inside the building or within 100 feet,
-          and it stays on site until everyone has left the area. If there is no
-          AED, the assessment does not run.
-        </p>
-        <p class="pretest-cite">AFROTCI 36-2011 V3, para 10.6.2, citing DAFMAN 36-2905</p>
+        <h3>What to have ready</h3>
+        <ul class="proctor-check" id="proctor-check">
+          <li>An AED on site, inside the building or within 100 feet.</li>
+          <li>Each cadet's <a data-doc="af-form-4446a">Fitness Screening Questionnaire (AF Form 4446A)</a>, done first on the day.</li>
+          <li>One <a data-doc="af-form-4446">AF Form 4446 scorecard</a> per member.</li>
+          <li>The run course measured and certified with a measuring wheel. The track layout is under Marking the Track.</li>
+          <li>A current sports physical for every cadet testing.</li>
+          <li>Stopwatches for the run and the plank, and a tape for height and waist.</li>
+          <li>Anyone on the HAMR: the <a data-doc="hamr-shuttle-tally">tally sheets</a> printed and the <a data-doc="hamr-audio">pacing audio</a> saved to a speaker.</li>
+          <li>The verbal instructions to read, under On the Day.</li>
+        </ul>
+        <p class="pretest-cite">A working checklist built from the rules below, not a regulation.</p>
       </div>
+        <div class="pretest-item">
+          <h3>An AED has to be there</h3>
+          <p>
+            Official assessments and PT are run with an automated external
+            defibrillator present, inside the building or within 100 feet,
+            and it stays on site until everyone has left the area. If there is no
+            AED, the assessment does not run.
+          </p>
+          <p class="pretest-cite">AFROTCI 36-2011 V3, para 10.6.2, citing DAFMAN 36-2905</p>
+        </div>
+        <div class="pretest-item">
+          <h3>Before the assessment can be official</h3>
+          <p>
+            The 2 mile run course has to be measured and certified with a
+            measuring wheel first, or in coordination with the university. A
+            sports physical is valid for <strong>one calendar year</strong> from
+            the date of examination.
+          </p>
+          <p class="pretest-cite">NOTACC CY26-092, AY2026-2027 Fitness Guidance</p>
+        </div>
+    </div>
 
+    <div class="proctor-panel" role="tabpanel" id="ppanel-track" aria-labelledby="ptab-track" hidden>
+      <p class="card-intro">Where to put each group's start and finish lines, measured
+        back from the painted finish. Set the distance and the track, then print it
+        for whoever is out with the wheel.</p>
+      <div id="track-section">
+        <div class="track-figure" id="track-figure"></div>
+        <div class="track-groups" id="track-groups"></div>
+        <p class="hint" id="track-note"></p>
+      </div>
+      <!-- A copy of the Lap Pace pickers, wired to the same track (app.js
+           copies it in), so the two never fight over one set. -->
+      <div id="layout-pickers"></div>
+      <!-- The person marking the track is outside with a wheel, not at a
+           screen. This prints the layout on its own sheet. -->
+      <button type="button" class="secondary small" id="print-track">Print Layout</button>
+    </div>
+
+    <div class="proctor-panel" role="tabpanel" id="ppanel-day" aria-labelledby="ptab-day" hidden>
+        <div class="pretest-item">
+          <h3>How the day runs</h3>
+          <p>
+            The Fitness Screening Questionnaire is completed before anything else,
+            and may be re-accomplished if something has changed since. On a cadet's
+            FSQ, questions 2 and 3 do not apply: cadets are not sickle cell tested
+            until their first duty station. All three physical components are done
+            inside a <strong>3 hour window</strong> on the same day. Up to a
+            <strong>3 minute warm-up</strong> is allowed before the run, the HAMR
+            or the walk.
+          </p>
+          <p>
+            Body composition may be measured separately from the rest, by
+            <strong>no more than 5 duty days</strong>. Outside that window the
+            assessment counts as a did-not-finish and has to be done again.
+          </p>
+          <p class="pretest-cite">
+            DAFMAN 36-2905 paras 3.15.9, 3.4.3 and Attachment 2. The 2023 AFROTC
+            Supplement says 3 days, but it predates this assessment and HQ AFROTC
+            has said it will be revised.
+          </p>
+        </div>
       <div class="pretest-item">
-        <h3>How the day runs</h3>
+        <h3>The verbal instructions</h3>
         <p>
-          The Fitness Screening Questionnaire is completed before anything else,
-          and may be re-accomplished if something has changed since. On a cadet's
-          FSQ, questions 2 and 3 do not apply: cadets are not sickle cell tested
-          until their first duty station. All three physical components are done
-          inside a <strong>3 hour window</strong> on the same day. Up to a
-          <strong>3 minute warm-up</strong> is allowed before the run, the HAMR
-          or the walk.
+          Read word for word before each component. Each one opens the full
+          script from DAFMAN 36-2905 Attachment 2, with the recording where
+          there is one. The AFROTC events are marked.
         </p>
-        <p>
-          Body composition may be measured separately from the rest, by
-          <strong>no more than 5 duty days</strong>. Outside that window the
-          assessment counts as a did-not-finish and has to be done again.
-        </p>
-        <p class="pretest-cite">
-          DAFMAN 36-2905 paras 3.15.9, 3.4.3 and Attachment 2. The 2023 AFROTC
-          Supplement says 3 days, but it predates this assessment and HQ AFROTC
-          has said it will be revised.
-        </p>
+        <div class="proctor-scripts" id="proctor-scripts"></div>
       </div>
+    </div>
 
-      <div class="pretest-item">
-        <h3>If you are on a medical restriction</h3>
-        <p>
-          Cadets are deferred from the assessment while on Medical Restriction
-          Status. On release there is a <strong>42 day reconditioning
-          period</strong>, and you cannot be made to test during it, though
-          you may choose to, in which case the assessment counts. The
-          requirement is to pass no later than the <strong>60th calendar
-          day</strong> after removal from MRS.
+    <div class="proctor-panel" role="tabpanel" id="ppanel-after" aria-labelledby="ptab-after" hidden>
+        <div class="pretest-item">
+          <h3>After an Unsatisfactory</h3>
+          <p>
+            A cadet has <strong>42 days</strong> before being required to test
+            again. You may choose to retest inside that window, but cadre must
+            counsel you first that it counts as an official assessment and that
+            you are giving up the 42 days.
+          </p>
+          <p class="pretest-cite">
+            AFROTC Supplement para 5.5.1.4, from the 2023 supplement, which is
+            awaiting revision. Nothing newer replaces it.
+          </p>
+        </div>
+        <div class="pretest-item">
+          <h3>If you are on a medical restriction</h3>
+          <p>
+            Cadets are deferred from the assessment while on Medical Restriction
+            Status. On release there is a <strong>42 day reconditioning
+            period</strong>, and you cannot be made to test during it, though
+            you may choose to, in which case the assessment counts. The
+            requirement is to pass no later than the <strong>60th calendar
+            day</strong> after removal from MRS.
+          </p>
+          <p class="pretest-cite">AFROTCI 36-2011 V3, paras 8.7.2 and 8.7.2.1</p>
+        </div>
+        <p class="pretest-footer">
+          A summary, not a substitute. In order: NOTACC CY26-092, then AFROTCI
+          36-2011 V3, then DAFMAN 36-2905. The 2023 AFROTC Supplement is awaiting
+          revision and is last, not first. The manuals are in References, below.
         </p>
-        <p class="pretest-cite">AFROTCI 36-2011 V3, paras 8.7.2 and 8.7.2.1</p>
-      </div>
-
-      <div class="pretest-item">
-        <h3>Before the assessment can be official</h3>
-        <p>
-          The 2 mile run course has to be measured and certified with a
-          measuring wheel first, or in coordination with the university. A
-          sports physical is valid for <strong>one calendar year</strong> from
-          the date of examination.
-        </p>
-        <p class="pretest-cite">NOTACC CY26-092, AY2026-2027 Fitness Guidance</p>
-      </div>
-
-      <div class="pretest-item">
-        <h3>After an Unsatisfactory</h3>
-        <p>
-          A cadet has <strong>42 days</strong> before being required to test
-          again. You may choose to retest inside that window, but cadre must
-          counsel you first that it counts as an official assessment and that
-          you are giving up the 42 days.
-        </p>
-        <p class="pretest-cite">
-          AFROTC Supplement para 5.5.1.4, from the 2023 supplement, which is
-          awaiting revision. Nothing newer replaces it.
-        </p>
-      </div>
-
-      <p class="pretest-footer">
-        A summary, not a substitute. In order: NOTACC CY26-092, then AFROTCI
-        36-2011 V3, then DAFMAN 36-2905. The 2023 AFROTC Supplement is awaiting
-        revision and is last, not first. The manuals are in References, below.
-      </p>
-    </details>
-  </section>
+    </div>
+  </details>
 
   <!-- ---------------------------------------------------------------- -->
   <!-- Folded by default (Captain Russell, Nov 2026). -->
@@ -933,6 +960,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=prog1"></script>
+<script type="module" src="app.js?v=proctor1"></script>
 </body>
 </html>
