@@ -3149,3 +3149,9 @@ form#assessment > .about-row { gap: 10px; }
     background-size: 4px 4px, 4px 4px;
   }
 }
+
+/* The HAMR pacing track in the HAMR dialog: the player, then a download
+ * (Captain Russell, 16 Nov 2026). */
+.hamr-pacing { display: grid; gap: 8px; margin-top: 4px; }
+.hamr-pacing .listen { margin-top: 10px; }
+.hamr-download { justify-self: start; text-decoration: none; }

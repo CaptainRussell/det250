@@ -195,9 +195,6 @@ async function boot() {
       renderCharts(ageBand);
     });
   }
-  for (const button of document.querySelectorAll('.verbiage-open')) {
-    button.addEventListener('click', () => openVerbiage(button.dataset.verbiage));
-  }
   // Clicking the backdrop is the other way people expect to dismiss a modal.
   $('verbiage').addEventListener('click', (e) => {
     if (e.target === $('verbiage')) $('verbiage').close();
@@ -243,7 +240,6 @@ async function boot() {
   $('share-result').addEventListener('click', shareResult);
 
   showEventIcons();
-  showHamrAudio();
   showNotFinished();
   showTrackPanel();
 
@@ -548,7 +544,6 @@ function selectEvent(component, event) {
   if (listening.key && !reading.has(listening.key)) stopListening();
   else paintListen();
   showEventIcons();
-  showHamrAudio();
   showNotFinished();
   showTrackPanel();
   update();
@@ -678,16 +673,6 @@ function buildEventOptions() {
     select.previousElementSibling.hidden = true;   // its "Event" label
     select.after(list);
   }
-}
-
-/** The HAMR pacing track, on the HAMR card only (Captain Russell, 16 Nov 2026). */
-function showHamrAudio() {
-  const host = $('hamr-audio');
-  if (!host.firstChild) {
-    host.append(listenPlayer('hamr_pacing', 'the HAMR pacing track', pageListen,
-      { title: 'HAMR pacing audio', sub: 'Beep track, 9 MB', aria: '' }));
-  }
-  host.hidden = events.cardiorespiratory !== 'hamr_20m';
 }
 
 const fieldOf = (component) => ({
@@ -2512,6 +2497,10 @@ function openScript(event) {
   direction.hidden = !section.direction;
 
   if (LISTEN[event]) body.append(listenPlayer(event, section.title));
+  // The HAMR's pacing track lives here, beside the HAMR script (Captain
+  // Russell, 16 Nov 2026): play it, or save it for test day. It keeps playing
+  // when the dialog closes; the HAMR card's button shows it is on.
+  if (event === 'hamr_20m') body.append(hamrPacing());
   appendParts(body, section);
 
   $('verbiage-source').textContent =
@@ -2589,6 +2578,10 @@ const clock = (seconds) => {
 
 const PLAY_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
   '<path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+const SCRIPT_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" ' +
+  'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" ' +
+  'stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>' +
+  '<path d="M15.5 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
   '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>';
 
@@ -2656,25 +2649,30 @@ function seekListen(key, seconds) {
  * component's other tools, which fills in gold as the clip plays.
  */
 function wireListen() {
+  // One button per component (Captain Russell, 16 Nov 2026): it opens How It's
+  // Measured or Graded, which has the recording, rather than a separate Listen
+  // button beside it. While a clip of that card plays, the button fills in
+  // gold behind the time, so it is clear what is playing and where to stop it.
   for (const button of document.querySelectorAll('.listen-pill')) {
     const component = button.dataset.listen ?? 'general';
-    button.addEventListener('click', () => toggleListen(listenKeyFor(component)));
+    const label = button.dataset.label;
+    button.addEventListener('click', () => openVerbiage(component));
     const paint = () => {
-      const key = listenKeyFor(component);
-      button.hidden = !LISTEN[key];
-      if (button.hidden) return;
+      const keys = [listenKeyFor(component)];
+      if (component === 'cardiorespiratory' && events.cardiorespiratory === 'hamr_20m') {
+        keys.push('hamr_pacing');
+      }
+      const key = keys.find((k) => listening.key === k) ?? keys[0];
       const state = listenState(key);
       const started = listening.key === key;
-      button.innerHTML = state.playing ? PAUSE_ICON : PLAY_ICON;
-      button.append(el('span', null, started
-        ? `${clock(state.at)} / ${clock(state.length)}`
-        : `Listen ${clock(state.length)}`));
+      button.innerHTML = state.playing ? PAUSE_ICON : SCRIPT_ICON;
+      button.append(el('span', null, started && state.playing
+        ? `${label} ${clock(state.at)} / ${clock(state.length)}`
+        : label));
       button.classList.toggle('playing', state.playing);
       button.style.setProperty('--played',
         started ? `${(state.at / state.length) * 100}%` : '0%');
-      button.setAttribute('aria-label',
-        `${state.playing ? 'Pause' : 'Play'} the instructions read aloud`);
-      button.setAttribute('aria-pressed', String(state.playing));
+      button.setAttribute('aria-label', `${label}: the instructions, with the recording`);
     };
     pageListen.add(paint);
   }
@@ -2687,9 +2685,20 @@ function wireListen() {
   paintListen();
 }
 
+function hamrPacing() {
+  const wrap = el('div', 'hamr-pacing');
+  wrap.append(listenPlayer('hamr_pacing', 'the HAMR pacing track', dialogListen,
+    { title: 'HAMR pacing audio', sub: 'The beep track, 22 min', aria: '' }, false));
+  const save = el('a', 'secondary small hamr-download', 'Download (9 MB)');
+  save.href = LISTEN_FILES.hamr_pacing;
+  save.setAttribute('download', 'hamr-pacing-audio.m4a');
+  wrap.append(save);
+  return wrap;
+}
+
 /** The fuller player at the top of the dialog, with a scrubber. */
 function listenPlayer(key, what, painters = dialogListen,
-  words = { title: 'Listen', sub: 'Read aloud', aria: 'read aloud' }) {
+  words = { title: 'Listen', sub: 'Read aloud', aria: 'read aloud' }, stopsWithDialog = true) {
   const wrap = el('div', 'listen');
   const play = el('button', 'listen-play');
   play.type = 'button';
@@ -2719,7 +2728,8 @@ function listenPlayer(key, what, painters = dialogListen,
     time.textContent = `${clock(state.at)} / ${clock(state.length)}`;
     seek.setAttribute('aria-valuetext', `${clock(state.at)} of ${clock(state.length)}`);
   };
-  play.addEventListener('click', () => toggleListen(key, listening.key !== key || listening.fromDialog));
+  play.addEventListener('click', () => toggleListen(key,
+    stopsWithDialog && (listening.key !== key || listening.fromDialog)));
   seek.addEventListener('input', () => seekListen(key, Number(seek.value)));
   painters.add(paint);
   paint();
