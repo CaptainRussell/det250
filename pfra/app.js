@@ -261,8 +261,15 @@ function setCardOpen(component, open) {
   const card = component === 'bfa'
     ? $('bfa') : document.querySelector(`.event[data-component="${component}"]`);
   const button = card.querySelector('.more-toggle');
+  const opening = open && !card.classList.contains('open');
   card.classList.toggle('open', open);
   button.setAttribute('aria-expanded', String(open));
+  // Opening a card shows its scoring chart with it (Captain Russell, Nov
+  // 2026); Hide Chart still folds it away.
+  if (opening && COMPONENTS.includes(component) && !chartOpen.has(component)) {
+    chartOpen.add(component);
+    if (scorer) renderCharts(ageBand);
+  }
   button.setAttribute('aria-label',
     `${open ? 'Hide' : 'Show'} details for ${card.querySelector('h2').textContent}`);
 }
@@ -1342,22 +1349,10 @@ function chartPicturesFor(component, event, scored) {
         ? `${who}: below the lowest row, so 0 points`
         : `${who}: your column`
   };
-  if (event !== 'whtr') return [main];
 
-  // Waist to height reads two pages: the grid turns waist and height into the
-  // ratio, then page 1 turns the ratio into points.
-  const grid = chartMap.pages.whtr_grid;
-  const m = counted?.measured;
-  const h = m?.heightInches != null ? String(Number(m.heightInches).toFixed(1)) : null;
-  const w = m?.waistInches != null ? String(Number(m.waistInches).toFixed(1)) : null;
-  const inGrid = grid && h in grid.rows && w in grid.cols;
-  const first = grid ? [{
-    page: grid, row: inGrid ? h : null, col: inGrid ? w : null, key: `${h}:${w}`,
-    label: inGrid ? `Height ${h} in, waist ${w} in: the ratio`
-      : m?.heightInches != null ? 'Your height or waist is off this grid; the ratio is worked out the same way'
-        : 'Waist to height ratio grid'
-  }] : [];
-  return [...first, main];
+  // Waist to height: page 1, which carries the points (Captain Russell,
+  // Nov 2026), rather than the page 9 grid of ratios.
+  return [main];
 }
 
 const pct = (v, of) => `${(v / of) * 100}%`;
