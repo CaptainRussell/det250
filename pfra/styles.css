@@ -2162,6 +2162,75 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   transition: border-color .2s ease;
 }
 .bfa:focus-within { border-color: var(--cardinal); }
+.bfa .event-head { grid-template-columns: auto 1fr auto auto; }
+
+/* Not needed: greyed out with one line saying why (Captain Russell, Nov 2026). */
+.bfa.idle .event-icon,
+.bfa.idle .bfa-title,
+.bfa.idle .chip { opacity: .5; }
+.bfa.idle .bfa-trigger {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 400;
+  font-size: .8rem;
+  color: var(--ink-faint);
+}
+
+/* Condensed like the component cards: picture, name, the measurement boxes,
+ * the outcome chip and the arrow. Everything else waits for the arrow. */
+.bfa:not(.open) { padding: 8px 12px; gap: 6px; }
+.bfa:not(.open) .event-icon { width: 34px; height: 34px; grid-row: 1; }
+.bfa:not(.open) .event-icon svg { width: 22px; height: 22px; }
+.bfa:not(.open) .bfa-title { font-size: .95rem; }
+.bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; }
+.bfa:not(.open) .event-tools,
+.bfa:not(.open):not(.idle) .bfa-trigger,
+.bfa:not(.open) #bfa-method-hint,
+.bfa:not(.open) .bfa-fields .hint,
+.bfa:not(.open) .bfa-result,
+.bfa:not(.open) .bfa-note { display: none; }
+.bfa:not(.open) .bfa-body { gap: 6px; }
+.bfa:not(.open) .bfa-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 20px;
+}
+.bfa:not(.open) .bfa-fields .field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "label slider input";
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.bfa:not(.open) .bfa-fields .field[hidden] { display: none; }
+.bfa:not(.open) .bfa-fields label {
+  grid-area: label;
+  margin: 0;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.bfa:not(.open) .bfa-fields input[type="number"] {
+  grid-area: input;
+  width: 84px;
+  min-height: 0;
+  height: 36px;
+  padding: 4px 8px;
+  font-size: .95rem;
+  text-align: center;
+}
+.bfa:not(.open) .bfa-fields .slider-row { grid-area: slider; gap: 6px; margin: 0; }
+.bfa:not(.open) .slider { --thumb-size: 20px; --track-height: 6px; }
+.bfa:not(.open) .slider-end { font-size: .68rem; }
+@media (max-width: 560px) {
+  .bfa:not(.open) .bfa-fields .field {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label input" "slider slider";
+    gap: 4px 8px;
+  }
+}
 
 .bfa-title { margin: 0; font-size: 1rem; }
 
@@ -2233,23 +2302,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   color: var(--ink-soft);
 }
 
-.bfa-apply {
-  padding: 11px 14px;
-  border: 1px solid var(--pass);
-  border-radius: 8px;
-  background: var(--pass-bg);
-  color: var(--ink);
-  font: inherit;
-  font-size: .85rem;
-  font-weight: 700;
-  cursor: pointer;
-}
 
-.bfa-apply.on {
-  border-color: var(--line-strong);
-  background: var(--surface);
-  color: var(--ink-soft);
-}
 
 
 /* --- lap pace -------------------------------------------------------------
