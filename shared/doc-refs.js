@@ -52,6 +52,7 @@
 .d250r-card:hover{transform:translateY(-3px);border-color:var(--tone);box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .d250r-card:focus-visible{outline:2px solid var(--d250-gold);outline-offset:2px}
 .d250r-ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));transition:transform .3s var(--d250-ease)}
+.d250r-ic.d250r-art{width:56px;height:56px;background:none;overflow:hidden;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .d250r-card:hover .d250r-ic{transform:rotate(-6deg) scale(1.06)}
 .d250r-b{min-width:0;flex:1}
 .d250r-n{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
@@ -74,7 +75,7 @@
     const paths = (window.D250_DOC_ICONS || {})[d.icon];
     const icon = paths ? SVG(paths) : (ICON[d.sec] || ICON.afrotc);
     return `<a class="d250r-card" href="${esc(href(item.id, from, item.page))}"${ext ? ' target="_blank" rel="noopener"' : d.download ? " download" : ""} style="--tone:${s.tone || "#0369a1"}">
-      <span class="d250r-ic"${d.art ? ' style="background:none;overflow:hidden;padding:0"' : ""}>${d.art ? `<img src="${esc(d.art)}" alt="" style="display:block;width:100%;height:100%;border-radius:inherit">` : icon}</span>
+      <span class="d250r-ic${d.art ? " d250r-art" : ""}">${d.art ? `<img src="${esc(/^https?:/.test(d.art) ? d.art : ROOT + "documents/" + d.art)}" alt="" style="display:block;width:100%;height:100%;border-radius:inherit">` : icon}</span>
       <span class="d250r-b"><span class="d250r-n">${esc(d.num)}${ext ? EXT : ""}</span><span class="d250r-t">${esc(d.title)}</span><p class="d250r-w">${esc(item.note || d.what)}</p></span></a>`;
   }
 
