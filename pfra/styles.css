@@ -1530,6 +1530,11 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   color: var(--ink);
 }
 
+/* On screen these repeat what is already beside them: the band line says what
+   is needed to pass, the red breakdown rows, the chips and the gap line say
+   what failed, unless the gap line is empty (Captain Russell, Nov 2026: no repeats in the quick reference).
+   The printed sheet has no form, so it keeps both. */
+@media screen { .meter-legend, #failures:not(.screen-show) { display: none; } }
 .failures { border-left: 4px solid var(--fail); background: var(--fail-bg); }
 .failures h2 { color: var(--fail); }
 .failures ul { margin-top: 10px; }
@@ -1710,15 +1715,6 @@ footer.d250-foot {
 a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal); }
 
 /* The same document block, shown inside an event rather than in the list. */
-.inline-doc {
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--page);
-  padding: 10px 12px;
-}
-.inline-doc .document-name { font-size: .88rem; }
-.inline-doc .document-note { font-size: .78rem; }
-.inline-doc .viewer iframe { height: 60vh; min-height: 300px; }
 
 .viewer { margin-top: 12px; }
 .viewer iframe {

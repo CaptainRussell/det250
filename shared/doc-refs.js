@@ -30,7 +30,7 @@
     external: SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>'),
     forms: SVG('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>')
   };
-  const EXT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Opens e-Publishing in a new tab"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  const EXT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Opens in a new tab"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 
   const find = id => lib().find(d => d.id === id);
   // The viewer link for any document id, public or restricted (restricted ids
@@ -73,7 +73,7 @@
     const s = sec(d.sec), ext = !d.src && /^https?:/.test(d.href);
     const paths = (window.D250_DOC_ICONS || {})[d.icon];
     const icon = paths ? SVG(paths) : (ICON[d.sec] || ICON.afrotc);
-    return `<a class="d250r-card" href="${esc(href(item.id, from, item.page))}"${ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${s.tone || "#0369a1"}">
+    return `<a class="d250r-card" href="${esc(href(item.id, from, item.page))}"${ext ? ' target="_blank" rel="noopener"' : d.download ? " download" : ""} style="--tone:${s.tone || "#0369a1"}">
       <span class="d250r-ic"${d.art ? ' style="background:none;overflow:hidden;padding:0"' : ""}>${d.art ? `<img src="${esc(d.art)}" alt="" style="display:block;width:100%;height:100%;border-radius:inherit">` : icon}</span>
       <span class="d250r-b"><span class="d250r-n">${esc(d.num)}${ext ? EXT : ""}</span><span class="d250r-t">${esc(d.title)}</span><p class="d250r-w">${esc(item.note || d.what)}</p></span></a>`;
   }
