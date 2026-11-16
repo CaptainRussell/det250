@@ -2061,6 +2061,7 @@ function applySharedPace(params) {
   $('pace-min').value = String(Math.floor(goal / 60));
   $('pace-sec').value = String(goal % 60).padStart(2, '0');
   course.pace = true;
+  course.layout = true;
 }
 
 /** A shared link said this component was exempt or did not finish. */
@@ -3386,15 +3387,11 @@ function showCourseSections() {
   // The layout is for whoever marks the track. A cadet has the lap pace, which
   // draws the start, the finish and the part lap between them, and that is the
   // part of the layout a runner needs.
-  const toggle = $('track-toggle');
-  toggle.hidden = false;
   $('course-body').hidden = !(course.pace || course.layout);
   $('pace-section').hidden = !course.pace;
   $('track-section').hidden = !course.layout;
   $('pace-toggle').setAttribute('aria-expanded', String(course.pace));
   $('pace-toggle').classList.toggle('on', course.pace);
-  $('track-toggle').setAttribute('aria-expanded', String(course.layout));
-  $('track-toggle').classList.toggle('on', course.layout);
 }
 
 function closeTrackPanel() {
@@ -3736,13 +3733,10 @@ function printTrackLayout() {
 }
 
 function wireTrack() {
+  // One button opens the pace and the layout together.
   $('pace-toggle').addEventListener('click', () => {
     course.pace = !course.pace;
-    showCourseSections();
-    renderTrack();
-  });
-  $('track-toggle').addEventListener('click', () => {
-    course.layout = !course.layout;
+    course.layout = course.pace;
     showCourseSections();
     renderTrack();
   });
@@ -4034,6 +4028,7 @@ function openPaceFor(seconds) {
   $('pace-min').value = String(Math.floor(seconds / 60));
   $('pace-sec').value = String(seconds % 60).padStart(2, '0');
   course.pace = true;
+  course.layout = true;
   renderTrack();
   $('pace-toggle').scrollIntoView({ behavior: motion(), block: 'start' });
 }
