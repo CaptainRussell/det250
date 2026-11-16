@@ -3005,3 +3005,19 @@ form#assessment > .about-row { gap: 10px; }
   .opening .event-tools { flex-wrap: nowrap; flex: none; }
 }
 @media print { .reset-top { display: none; } }
+
+/* On a phone the chart's label line keeps two lines' room, so a longer label
+ * ("below the lowest row") never pushes the picture down (Captain Russell,
+ * Nov 2026). */
+@media (max-width: 560px) {
+  .chart-pic figcaption { flex-wrap: wrap; }
+  .chart-pic-what {
+    flex: 1 1 100%;
+    line-height: 1.3;
+    min-height: 2.6em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
