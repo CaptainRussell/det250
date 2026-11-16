@@ -555,28 +555,46 @@ function selectEvent(component, event) {
 }
 
 /**
- * Flag an alternate exercise on the component it was chosen for.
+ * Say, beside the composite, when this could not be a cadet's assessment.
  *
- * The warning sits with the exercise rather than in one banner elsewhere, so
- * there is no doubt which component it is about when only one was changed.
+ * It used to be a note on each component an alternate was picked for; it now
+ * sits only in the score column, made to stand out (Captain Russell, 16 Nov
+ * 2026), and shows from the moment an alternate or an exemption is chosen,
+ * before there is a full score.
  */
-function showAltNotes() {
-  for (const component of ['muscular_strength', 'core_endurance', 'cardiorespiratory']) {
-    const note = $(`alt-${component}`);
-    const event = events[component];
+function cadetProblems() {
+  const alternates = Object.entries(CADET_EVENTS)
+    .filter(([c, event]) => events[c] !== event)
+    .map(([c]) => EVENT_PHRASES[events[c]]);
+  // The one exemption a cadet may have is body composition after a passed
+  // secondary body fat assessment (Captain Russell, 16 Nov 2026).
+  const exempt = COMPONENTS
+    .filter((c) => statuses[c] === 'exempt' && !(c === 'body_composition' && bfa.applied))
+    .map((c) => COMPONENT_LABELS[c].toLowerCase());
+  return { alternates, exempt, any: alternates.length > 0 || exempt.length > 0 };
+}
 
-    if (DET250_EVENTS.includes(event)) {
-      note.hidden = true;
-      continue;
-    }
-    // "cadets are not tested on X" keeps the verb agreeing with the cadets, so
-    // the sentence stays correct whether X is singular or plural. For cadre the
-    // alternate is simply an authorised event, so the warning becomes a note.
-    note.textContent = `Not allowed for cadets. AFROTC cadets are not tested on ` +
-      `${EVENT_PHRASES[event]}: NOTACC CY26-092 sets the cadet assessment as ` +
-      'hand-release push-ups, sit-ups and the 2 mile run. Scored here as an ' +
-      'active duty alternate (DAFMAN 36-2905).';
-    note.hidden = false;
+const listOf = (items) => items.length < 2 ? items.join('')
+  : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
+function showCadetFlag() {
+  const { alternates, exempt, any } = cadetProblems();
+  const parts = [];
+  if (alternates.length) parts.push(`This uses ${listOf(alternates)}, which cadets are not tested on.`);
+  if (exempt.length) {
+    const what = listOf(exempt);
+    parts.push(`${what[0].toUpperCase()}${what.slice(1)} ${exempt.length === 1 ? 'is' : 'are'} exempt.`);
+  }
+  const text = any
+    ? `${parts.join(' ')} Cadets test on hand-release push-ups, sit-ups ` +
+      'and the 2 mile run, with no exemption except body composition after a passed ' +
+      'body fat assessment (NOTACC CY26-092, AFROTCI 36-2011 V3). It does not count ' +
+      'toward the Fitness Award.'
+    : '';
+  for (const id of ['cadet-flag', 'cadet-flag-wait']) {
+    const flag = $(id);
+    flag.hidden = !any;
+    flag.querySelector('.cadet-flag-text').textContent = text;
   }
 }
 
@@ -1055,6 +1073,7 @@ function update() {
 
   const { input, ready } = readForm();
   showCue(ready);
+  showCadetFlag();
 
   // These three describe the form rather than the score, so they run whether or
   // not there is one. Leaving them below the early return meant the Altitude
@@ -1072,7 +1091,7 @@ function update() {
   // cadre, so it depends on the role as much as on the event. It used to be
   // refreshed only when the event changed, which left a cadre member reading
   // "AFROTC cadets are not tested on push-ups" after switching across.
-  showAltNotes();
+  showCadetFlag();
 
   if (!input) {
     for (const component of COMPONENTS) resetChip(component);
@@ -1596,27 +1615,10 @@ function showAward(result) {
   // The one exemption a cadet may have is body composition after a passed
   // secondary body fat assessment (Captain Russell, 16 Nov 2026). Any other
   // exemption, including one from the Exempt button, is not allowed.
-  const notCadetExempt = (component) => !(component === 'body_composition' && bfa.applied);
-  const cadetShaped = result
-    && Object.entries(CADET_EVENTS).every(([c, event]) => result.components[c].event === event)
-    && !result.exemptComponents.some(notCadetExempt);
-  if (!result) {
+  // An assessment a cadet could not have taken is flagged by showCadetFlag()
+  // at the top of the score, which already says it earns no award.
+  if (!result || cadetProblems().any) {
     line.hidden = true;
-    return;
-  }
-  // One view for everyone, so the score says when it could not be a cadet's:
-  // an alternate event or an exemption is an active duty assessment.
-  if (!cadetShaped) {
-    const why = [];
-    if (Object.entries(CADET_EVENTS).some(([c, event]) => result.components[c].event !== event)) {
-      why.push('an alternate event');
-    }
-    if (result.exemptComponents.some(notCadetExempt)) why.push('an exemption');
-    line.textContent = `Not valid for a cadet: this assessment uses ${why.join(' and ')}, ` +
-      'which cadets are not allowed (NOTACC CY26-092, AFROTCI 36-2011 V3). ' +
-      'It does not count toward the Fitness Award.';
-    line.className = 'award-line award-blocked';
-    line.hidden = false;
     return;
   }
   const whose = 'the';
@@ -1774,8 +1776,7 @@ function setExempt(component, on) {
   const note = $(`exempt-note-${component}`);
   note.textContent = on
     ? 'Exempt. Scores no points, fails nothing, and the composite is worked out ' +
-      'over the components that were assessed. Not allowed for cadets: AFROTCI ' +
-      '36-2011 V3 requires a PFRA with no exemptions.'
+      'over the components that were assessed.'
     : '';
   note.hidden = !on;
 

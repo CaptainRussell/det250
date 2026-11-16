@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=proctor1">
+<link rel="stylesheet" href="styles.css?v=flag1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -190,7 +190,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-muscular_strength" hidden></p>
       <div class="event-picker" id="event-muscular_strength" hidden>
         <label for="event-select-muscular_strength">Event</label>
         <select id="event-select-muscular_strength" data-component="muscular_strength">
@@ -254,7 +253,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-core_endurance" hidden></p>
       <div class="event-picker" id="event-core_endurance" hidden>
         <label for="event-select-core_endurance">Event</label>
         <select id="event-select-core_endurance" data-component="core_endurance">
@@ -333,7 +331,6 @@
         <div class="meter-fill"></div>
         <div class="meter-mark" hidden></div>
       </div>
-      <p class="alt-note" id="alt-cardiorespiratory" hidden></p>
       <!-- A group rather than an elevation: the four blocks are what Attachment 3
            is printed as, so a cadre member picks the row they are reading. It
            also sidesteps the printed ranges overlapping at their ends. The
@@ -642,6 +639,11 @@
       <p class="composite" id="composite">&ndash;</p>
       <p class="verdict" id="verdict"></p>
       <p class="band" id="band"></p>
+      <!-- Only here, not on the cards (Captain Russell, 16 Nov 2026). -->
+      <div class="cadet-flag" id="cadet-flag" role="status" hidden>
+        <p class="cadet-flag-title"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5h.01"/></svg>Not valid for a cadet</p>
+        <p class="cadet-flag-text"></p>
+      </div>
       <div class="meter meter-composite" id="meter-composite" role="progressbar"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
            aria-label="Composite score">
@@ -735,6 +737,10 @@
     <p class="scoreboard-label">Composite</p>
     <p class="score-wait-num">&ndash;</p>
     <p id="score-wait-text">Your score builds here as you enter your numbers.</p>
+    <div class="cadet-flag" id="cadet-flag-wait" role="status" hidden>
+      <p class="cadet-flag-title"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5h.01"/></svg>Not valid for a cadet</p>
+      <p class="cadet-flag-text"></p>
+    </div>
   </aside>
 
   <!-- ---------------------------------------------------------------- -->
@@ -960,6 +966,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=proctor1"></script>
+<script type="module" src="app.js?v=flag1"></script>
 </body>
 </html>
