@@ -47,7 +47,6 @@ let ageBand = null;
  * Altitude is not gated by this. Attachment 3 is a property of where the
  * assessment was run, not of who ran it.
  */
-let role = null;
 
 /** Per component: a measurement, a declared non-completion, or nothing yet. */
 const statuses = {
@@ -119,14 +118,12 @@ async function boot() {
 
   fillBandOptions();
   fillAltitudeOptions();
-  // Before the share link, which may name cadre instead.
-  applyRole(DEFAULT_ROLE);
+  showRoleControls();
   // Before anything is typed, so a shared assessment is what loads rather than
   // something a reader has to clear first.
   applyShareLink();
-  for (const button of document.querySelectorAll('.segment[data-role]')) {
-    button.addEventListener('click', () => selectRole(button.dataset.role));
-  }
+  wireListen();
+  wireEnterToNext();
   wireBfa();
   wireTrack();
   for (const button of document.querySelectorAll('.exempt-toggle')) {
@@ -195,8 +192,6 @@ async function boot() {
   $('verbiage').addEventListener('click', (e) => {
     if (e.target === $('verbiage')) $('verbiage').close();
   });
-  // A recording left playing behind a closed dialog has no visible way to stop.
-  $('verbiage').addEventListener('close', stopListening);
   for (const button of document.querySelectorAll('.not-done')) {
     button.addEventListener('click', () => toggleNotFinished(button.dataset.statusFor));
   }
@@ -248,6 +243,39 @@ function advanceOnFull(fromId, toId, digits) {
   $(fromId).addEventListener('input', () => {
     if ($(fromId).value.length >= digits) $(toId).focus();
   });
+}
+
+/**
+ * Enter moves on to the next measurement, in the order the assessment runs,
+ * so a proctor can type a whole card of numbers without reaching for the
+ * screen. Hidden and disabled fields (an exempt component, the control the
+ * current exercise does not use) are skipped. After the last one it goes to
+ * the score.
+ */
+const ENTRY_ORDER = ['height', 'waist', 'hrpu', 'situp', 'plank-min', 'plank-sec',
+  'run-min', 'run-sec', 'hamr'];
+
+function wireEnterToNext() {
+  const usable = (id) => {
+    const input = $(id);
+    return !input.disabled && input.offsetParent !== null;
+  };
+  for (const id of ENTRY_ORDER) {
+    $(id).addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      const next = ENTRY_ORDER.slice(ENTRY_ORDER.indexOf(id) + 1).find(usable);
+      if (next) {
+        $(next).focus();
+        $(next).select();
+      } else {
+        $(id).blur();
+        if (!$('results').hidden) {
+          $('scoreboard').scrollIntoView({ behavior: motion(), block: 'start' });
+        }
+      }
+    });
+  }
 }
 
 // --- input handling --------------------------------------------------------
@@ -363,6 +391,10 @@ function selectEvent(component, event) {
   for (const id of [control.field].flat()) $(id).value = '';
 
   $(`heading-${component}`).textContent = EVENT_LABELS[event];
+  // A clip of the exercise just swapped out would be reading the wrong script.
+  const reading = new Set(['general', 'whtr', ...Object.values(events)]);
+  if (listening.key && !reading.has(listening.key)) stopListening();
+  else paintListen();
   showEventIcons();
   showEventDocs();
   showNotFinished();
@@ -388,12 +420,10 @@ function showAltNotes() {
     // "cadets are not tested on X" keeps the verb agreeing with the cadets, so
     // the sentence stays correct whether X is singular or plural. For cadre the
     // alternate is simply an authorised event, so the warning becomes a note.
-    note.textContent = role !== 'cadre'
-      ? `AFROTC cadets are not tested on ${EVENT_PHRASES[event]}. NOTACC CY26-092 ` +
-        'sets the cadet assessment as hand-release push-ups, sit-ups and the 2 mile ' +
-        'run, exclusively, from Academic Year 2026-2027. Cadre/Staff reference only.'
-      : `Scored on ${EVENT_PHRASES[event]}, authorised by DAFMAN 36-2905 for ` +
-        'active duty members. (For cadre/staff selection)';
+    note.textContent = `Not allowed for cadets. AFROTC cadets are not tested on ` +
+      `${EVENT_PHRASES[event]}: NOTACC CY26-092 sets the cadet assessment as ` +
+      'hand-release push-ups, sit-ups and the 2 mile run. Scored here as an ' +
+      'active duty alternate (DAFMAN 36-2905).';
     note.hidden = false;
   }
 }
@@ -415,7 +445,7 @@ function showNotFinished() {
   const event = events.cardiorespiratory;
   // Not for a cadet working out their own score: a DNF is something a proctor
   // records on the day, not a result anyone plans for.
-  const wanted = role !== 'cadet' && (event === 'run_2mile' || event === 'walk_2km');
+  const wanted = event === 'run_2mile' || event === 'walk_2km';
   const button = $('dnf-run');
   // Switching to the HAMR while a DNF is set would strand it out of reach.
   if (!wanted && statuses.cardiorespiratory === 'dnf') setStatus('run', null);
@@ -620,11 +650,10 @@ function onAnyInput() {
  */
 function resetAll() {
   // Who and what: the three answers that gate everything else.
-  role = null;
+  stopListening();
   sex = null;
   ageBand = null;
-  for (const button of document.querySelectorAll('.segment[data-role], ' +
-    '.segment[data-sex], .segment[data-band]')) {
+  for (const button of document.querySelectorAll('.segment[data-sex], .segment[data-band]')) {
     button.classList.remove('on');
     button.setAttribute('aria-checked', 'false');
   }
@@ -681,9 +710,6 @@ function resetAll() {
   clearPlan();
   targetEdited = false;
 
-  // Last, after the events are back on their defaults, so applyRole() has
-  // nothing left to switch.
-  applyRole(DEFAULT_ROLE);
   update();
   window.scrollTo({ top: 0, behavior: motion() });
 }
@@ -716,10 +742,7 @@ function decimal(id) {
 function readForm() {
   const ready = new Set();
 
-  // Role gates scoring the way age and sex do. It changes no number, but it
-  // decides what the page may offer, and a cue that points at a question the
-  // form will happily skip past is not a guide.
-  if (!role || !ageBand || !sex) {
+  if (!ageBand || !sex) {
     return { input: null, ready };
   }
 
@@ -828,11 +851,7 @@ function cueTargetFor(component) {
 function showCue(ready) {
   let target = null;
 
-  if (!role) {
-    // Who is being assessed comes first: it decides what the rest of the form
-    // is allowed to offer.
-    target = $('field-role');
-  } else if (!ageBand) {
+  if (!ageBand) {
     // Tapping "25 or older" answers the age question but does not settle the
     // band, so the cue moves to the dropdown that still has to be answered.
     target = $('band-picker').hidden ? $('field-age') : $('band-picker');
@@ -1213,11 +1232,26 @@ function showAward(result) {
   const cadetShaped = result
     && Object.entries(CADET_EVENTS).every(([c, event]) => result.components[c].event === event)
     && result.exemptComponents.length === 0;
-  if (!result || (role !== 'cadet' && !cadetShaped)) {
+  if (!result) {
     line.hidden = true;
     return;
   }
-  const whose = role === 'cadet' ? 'your' : "the cadet's";
+  // One view for everyone, so the score says when it could not be a cadet's:
+  // an alternate event or an exemption is an active duty assessment.
+  if (!cadetShaped) {
+    const why = [];
+    if (Object.entries(CADET_EVENTS).some(([c, event]) => result.components[c].event !== event)) {
+      why.push('an alternate event');
+    }
+    if (result.exemptComponents.length) why.push('an exemption');
+    line.textContent = `Not valid for a cadet: this assessment uses ${why.join(' and ')}, ` +
+      'which cadets are not allowed (NOTACC CY26-092, AFROTCI 36-2011 V3). ' +
+      'It does not count toward the Fitness Award.';
+    line.className = 'award-line award-blocked';
+    line.hidden = false;
+    return;
+  }
+  const whose = 'the';
 
   const award = scorer.fitnessAward(result);
   if (!award.meetsThreshold) {
@@ -1240,7 +1274,7 @@ function showAward(result) {
   line.textContent = award.tier === 'silver_star'
     ? `A perfect ${result.compositeText}. If this is ${whose} official PFRA for the ` +
       'term it earns the Fitness Award, and the Silver Star device the first time ' +
-      `${role === 'cadet' ? 'you score' : 'they score'} 100 at the detachment ` +
+      'the cadet scores 100 at the detachment ' +
       '(AFROTCI 36-2011 V3, Table 15.1).'
     : `${result.compositeText} is ${award.threshold} or above. If this is ${whose} ` +
       'official PFRA for the term it earns the Fitness Award, which may be received ' +
@@ -1310,56 +1344,7 @@ function showAltitudeGroup() {
   toggle.classList.add('on');
 }
 
-/* --- who is being assessed ------------------------------------------------ */
-
-/** The line under the role picker. The cadet one is also in index.html. */
-const ROLE_HINTS = Object.freeze({
-  cadet: 'Waist to height, hand-release push-ups, sit-ups and the 2 mile run. Those ' +
-    'four are the whole cadet assessment (NOTACC CY26-092).',
-  cadre: 'Everything in the cadet view, plus what a proctor or active duty member ' +
-    'needs: alternate events, component exemptions, Did Not Finish on the run or ' +
-    'walk, the track layout for marking a course, and the proctor notes.'
-});
-
-/** The role a fresh page and Reset Everything start on. */
-const DEFAULT_ROLE = 'cadet';
-
-function selectRole(value) {
-  applyRole(value);
-  update();
-}
-
-/**
- * Set the role and everything that follows from it, without rescoring.
- *
- * Split from selectRole() so start-up and Reset Everything can put the page
- * on the default role before the rest of the page is ready to score.
- */
-function applyRole(value) {
-  role = value;
-  for (const button of document.querySelectorAll('.segment[data-role]')) {
-    const on = button.dataset.role === value;
-    button.classList.toggle('on', on);
-    button.setAttribute('aria-checked', String(on));
-  }
-
-  // Nothing a cadre member set up may survive a switch to cadet. An exemption
-  // would sit there scoring nothing and failing nothing for a member who is not
-  // authorised one, and an alternate event would score a cadet on a chart
-  // NOTACC CY26-092 says they are never assessed on. A DNF goes too: the button
-  // that would clear it is about to be hidden.
-  if (role === 'cadet') {
-    for (const component of COMPONENTS) {
-      if (statuses[component] === 'exempt') setExempt(component, false);
-    }
-    lockCadetEvents();
-    if (statuses.cardiorespiratory === 'dnf') setStatus('run', null);
-  }
-
-  $('role-hint').textContent = ROLE_HINTS[role] ?? '';
-
-  showRoleControls();
-}
+/* --- one view for cadets and cadre ---------------------------------------- */
 
 /**
  * Show each control to the people it is for.
@@ -1375,39 +1360,20 @@ function applyRole(value) {
  * was held, not of who ran it.
  */
 function showRoleControls() {
-  const cadet = role === 'cadet';
-  for (const button of document.querySelectorAll('.exempt-toggle')) {
-    button.hidden = role !== 'cadre';
-  }
+  for (const button of document.querySelectorAll('.exempt-toggle')) button.hidden = false;
   for (const icon of document.querySelectorAll('[data-swap-icon]')) {
-    if (cadet) closePicker(icon.dataset.swapIcon);
-    icon.disabled = cadet;
-    icon.classList.toggle('can-swap', !cadet);
-    if (cadet) {
-      icon.setAttribute('aria-hidden', 'true');
-      icon.removeAttribute('title');
-      icon.removeAttribute('aria-label');
-    } else {
-      icon.removeAttribute('aria-hidden');
-      icon.title = 'Change exercise';
-      icon.setAttribute('aria-label',
-        `Change exercise, now ${EVENT_LABELS[events[icon.dataset.swapIcon]]}`);
-    }
+    icon.disabled = false;
+    icon.classList.add('can-swap');
+    icon.removeAttribute('aria-hidden');
+    icon.title = 'Change exercise';
+    icon.setAttribute('aria-label',
+      `Change exercise, now ${EVENT_LABELS[events[icon.dataset.swapIcon]]}`);
   }
-  $('proctor-card').hidden = cadet;
+  $('proctor-card').hidden = false;
   // Both of these also depend on the event, so they work the role out
   // themselves rather than being set here and overwritten on the next swap.
   showNotFinished();
   showCourseSections();
-}
-
-/** Put every component back on its cadet event, if it is not there already. */
-function lockCadetEvents() {
-  for (const [component, event] of Object.entries(CADET_EVENTS)) {
-    if (events[component] === event) continue;
-    $(`event-select-${component}`).value = event;
-    selectEvent(component, event);
-  }
 }
 
 /** The three events NOTACC CY26-092 sets for cadets, by component. */
@@ -1440,7 +1406,8 @@ function setExempt(component, on) {
   const note = $(`exempt-note-${component}`);
   note.textContent = on
     ? 'Exempt. Scores no points, fails nothing, and the composite is worked out ' +
-      'over the components that were assessed.'
+      'over the components that were assessed. Not allowed for cadets: AFROTCI ' +
+      '36-2011 V3 requires a PFRA with no exemptions.'
     : '';
   note.hidden = !on;
 
@@ -1567,11 +1534,7 @@ function showBfa(result, complete) {
   const required = complete && result.pass === false;
   const settled = complete && result.pass === true && !bfa.applied;
   const ratio = bfa.ratio.toFixed(2);
-  const cadet = role === 'cadet';
-
-  $('bfa-trigger').textContent = cadet
-    ? cadetBfaLine(ratio, { required, settled })
-    : bfa.applied
+  $('bfa-trigger').textContent = bfa.applied
     // Said in the past tense on purpose. The composite passes *because* this
     // was applied, so describing the requirement as open would misread the
     // score sitting above it.
@@ -1626,31 +1589,6 @@ function showBfa(result, complete) {
   showBfaFields(sex);
   renderBfaSliders();
   workBfa(sex);
-}
-
-/**
- * The body fat panel for a cadet, in one sentence.
- *
- * The rest of the panel is written for whoever does the taping: methods,
- * attachments, which way each site rounds. A cadet needs to know whether it
- * applies to them and what the standard is, and nothing else.
- */
-function cadetBfaLine(ratio, { required, settled }) {
-  const standard = scorer.data.body_fat.standards[sex];
-  if (bfa.applied) {
-    return 'Your body fat is within the standard, so body composition is left out ' +
-      'and your composite is scored on the other three components.';
-  }
-  if (required) {
-    return `Your ratio is ${ratio} and your PFRA is unsatisfactory, so the proctor ` +
-      `will check your body fat. The standard is ${standard}% or under, and passing ` +
-      'it leaves body composition out of your score.';
-  }
-  if (settled) {
-    return `Your ratio is ${ratio}, but you are passing, so no body fat check is needed.`;
-  }
-  return `Your ratio is ${ratio}. If your PFRA comes out unsatisfactory, the proctor ` +
-    `will check your body fat; the standard is ${standard}% or under.`;
 }
 
 /** Which measurement fields this member's BFA needs. */
@@ -1796,7 +1734,7 @@ function workBfa(sexCode) {
     : 'Taken from the scale, so there is no tape arithmetic to show.';
 
   const notes = [...assessment.warnings];
-  if (role === 'cadet') {
+  {
     notes.push(
       'Cadets are assessed on body fat against the DAFMAN standard, not BMI. HQ ' +
       'confirmed at a Check 6 on 1 October 2026 that AFROTC will not set a figure ' +
@@ -1960,7 +1898,6 @@ const SHARE_KEYS = Object.freeze({
 /** The assessment now on screen, as a link that rebuilds it. */
 function buildShareLink() {
   const params = new URLSearchParams();
-  if (role) params.set('role', role);
   if (sex) params.set('sex', sex);
   if (ageBand) params.set('band', ageBand);
 
@@ -2040,9 +1977,6 @@ function applyShareLink() {
   const params = new URLSearchParams(location.search);
   if (![...params.keys()].length) return false;
 
-  const roleWanted = params.get('role');
-  if (roleWanted === 'cadet' || roleWanted === 'cadre') selectRole(roleWanted);
-
   const sexWanted = params.get('sex');
   if (sexWanted === 'M' || sexWanted === 'F') selectSex(sexWanted);
 
@@ -2065,9 +1999,6 @@ function applyShareLink() {
 
   for (const [component, keys] of Object.entries(SHARE_KEYS)) {
     const event = params.get(keys.event);
-    // A cadet link naming another event keeps the cadet event and drops the
-    // number with it: 60 HAMR shuttles written into the run read as 1:00.
-    if (event && role === 'cadet' && CADET_EVENTS[component] !== event) continue;
     if (event && CONTROLS[event]) {
       $(`event-select-${component}`).value = event;
       selectEvent(component, event);
@@ -2134,7 +2065,6 @@ function applySharedPace(params) {
 
 /** A shared link said this component was exempt or did not finish. */
 function applySharedStatus(component, value) {
-  if (role === 'cadet') return;
   if (value === 'exempt') {
     setExempt(component, true);
     return;
@@ -2186,30 +2116,20 @@ async function shareResult() {
  * this renders them differently, so the difference survives.
  */
 function openVerbiage(component) {
-  const event = component === 'body_composition' ? 'whtr' : events[component];
+  const event = listenKeyFor(component);
   const section = verbiageFor(event);
   if (!section) return;
 
   const dialog = $('verbiage');
   const body = $('verbiage-body');
   body.replaceChildren();
+  dialogListen.clear();
 
   $('verbiage-title').textContent = `${section.ref}. ${section.title}`;
 
   const direction = $('verbiage-direction');
   direction.textContent = section.direction ?? '';
   direction.hidden = !section.direction;
-
-  // A2.1 is read once at the start of the assessment rather than before an
-  // event. Body composition is the first thing measured, so it carries it.
-  if (component === 'body_composition') {
-    const general = el('div', 'verbiage-general');
-    general.append(el('p', 'verbiage-general-head',
-      'Read once, before the assessment begins'));
-    general.append(listenPlayer('general', 'the opening instructions'));
-    appendParts(general, VERBIAGE.general);
-    body.append(general);
-  }
 
   if (LISTEN[event]) body.append(listenPlayer(event, section.title));
   appendParts(body, section);
@@ -2219,15 +2139,7 @@ function openVerbiage(component) {
     `${VERBIAGE_SOURCE.attachment}, pages ${VERBIAGE_SOURCE.pages}. ` +
     'Quoted in full; spoken text in bold.';
   // The recordings are not ours, so they are credited wherever one plays.
-  if (LISTEN[event] || component === 'body_composition') {
-    const credit = el('span', 'listen-credit', ' Audio: 90th Missile Wing, Air Force Global Strike Command (');
-    const link = el('a', null, 'source video');
-    link.href = LISTEN_SOURCE;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    credit.append(link, ').');
-    $('verbiage-source').append(credit);
-  }
+  if (LISTEN[event]) $('verbiage-source').append(' ', listenCredit());
 
   dialog.showModal();
 }
@@ -2238,6 +2150,10 @@ function openVerbiage(component) {
  * on the day and a proctor can play it to a group instead of reading it out.
  * One file per script in audio/, named by the VERBIAGE key it reads. The 2 km
  * walk has no recording yet, so it simply shows no player.
+ *
+ * One clip plays at a time, from whichever control started it: the Listen
+ * button on a component, the one on the opening instructions, or the player
+ * in the dialog. They all draw the same state, so pausing in one shows in all.
  *
  * Lengths are written here rather than read from the files, so the time shows
  * before anything downloads: preload is "none", and a phone on cellular only
@@ -2257,11 +2173,27 @@ const LISTEN = Object.freeze({
 
 const LISTEN_SOURCE = 'https://www.afgsc.af.mil/News/Videos/videoid/1013334/';
 
-const listening = new Set();
+/** What is playing, if anything, and which control started it. */
+const listening = { key: null, audio: null, fromDialog: false };
+/** Painters for the card and opening buttons, and for the open dialog. */
+const pageListen = new Set();
+const dialogListen = new Set();
 
-function stopListening() {
-  for (const audio of listening) audio.pause();
-  listening.clear();
+/** Which script a component reads, following its current event. */
+function listenKeyFor(component) {
+  if (component === 'general') return 'general';
+  return component === 'body_composition' ? 'whtr' : events[component];
+}
+
+function listenCredit() {
+  const credit = el('span', 'listen-credit',
+    'Audio: 90th Missile Wing, Air Force Global Strike Command (');
+  const link = el('a', null, 'source video');
+  link.href = LISTEN_SOURCE;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  credit.append(link, ').');
+  return credit;
 }
 
 const clock = (seconds) => {
@@ -2274,17 +2206,106 @@ const PLAY_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
   '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>';
 
-function listenPlayer(key, what) {
-  const total = LISTEN[key];
+/** Where a clip is, whether or not it is the one loaded. */
+function listenState(key) {
+  const total = LISTEN[key] ?? 0;
+  if (listening.key !== key || !listening.audio) return { playing: false, at: 0, length: total };
+  const length = Number.isFinite(listening.audio.duration) ? listening.audio.duration : total;
+  return { playing: !listening.audio.paused, at: listening.audio.currentTime, length };
+}
+
+function paintListen() {
+  for (const paint of pageListen) paint();
+  for (const paint of dialogListen) paint();
+}
+
+function stopListening() {
+  if (listening.audio) {
+    listening.audio.pause();
+    listening.audio.removeAttribute('src');
+  }
+  listening.key = null;
+  listening.audio = null;
+  paintListen();
+}
+
+function toggleListen(key, fromDialog = false) {
+  if (listening.key === key && listening.audio) {
+    if (listening.audio.paused) listening.audio.play().catch(paintListen);
+    else listening.audio.pause();
+    return;
+  }
+  stopListening();
   const audio = new Audio();
   audio.preload = 'none';
   audio.src = `audio/${key}.mp3`;
+  listening.key = key;
+  listening.audio = audio;
+  listening.fromDialog = fromDialog;
+  for (const type of ['play', 'pause', 'timeupdate', 'loadedmetadata']) {
+    audio.addEventListener(type, paintListen);
+  }
+  audio.addEventListener('ended', () => {
+    audio.currentTime = 0;
+    paintListen();
+  });
+  audio.addEventListener('error', () => {
+    if (listening.audio === audio) stopListening();
+  });
+  audio.play().catch(paintListen);
+  paintListen();
+}
 
+function seekListen(key, seconds) {
+  if (listening.key !== key || !listening.audio) {
+    toggleListen(key, true);
+  }
+  listening.audio.currentTime = seconds;
+  paintListen();
+}
+
+/**
+ * The Listen buttons on the page: one on each component, following whichever
+ * exercise it is set to, and one on the opening instructions. A pill like the
+ * component's other tools, which fills in gold as the clip plays.
+ */
+function wireListen() {
+  for (const button of document.querySelectorAll('.listen-pill')) {
+    const component = button.dataset.listen ?? 'general';
+    button.addEventListener('click', () => toggleListen(listenKeyFor(component)));
+    const paint = () => {
+      const key = listenKeyFor(component);
+      button.hidden = !LISTEN[key];
+      if (button.hidden) return;
+      const state = listenState(key);
+      const started = listening.key === key;
+      button.innerHTML = state.playing ? PAUSE_ICON : PLAY_ICON;
+      button.append(el('span', null, started
+        ? `${clock(state.at)} / ${clock(state.length)}`
+        : `Listen ${clock(state.length)}`));
+      button.classList.toggle('playing', state.playing);
+      button.style.setProperty('--played',
+        started ? `${(state.at / state.length) * 100}%` : '0%');
+      button.setAttribute('aria-label',
+        `${state.playing ? 'Pause' : 'Play'} the instructions read aloud`);
+      button.setAttribute('aria-pressed', String(state.playing));
+    };
+    pageListen.add(paint);
+  }
+  // A clip started from the dialog belongs to it, and closing the dialog is
+  // the only way left to stop it. One started on the page keeps playing.
+  $('verbiage').addEventListener('close', () => {
+    if (listening.fromDialog) stopListening();
+    dialogListen.clear();
+  });
+  paintListen();
+}
+
+/** The fuller player at the top of the dialog, with a scrubber. */
+function listenPlayer(key, what) {
   const wrap = el('div', 'listen');
   const play = el('button', 'listen-play');
   play.type = 'button';
-  play.innerHTML = PLAY_ICON;
-  play.setAttribute('aria-label', `Play ${what} read aloud`);
 
   const main = el('div', 'listen-main');
   const label = el('p', 'listen-label');
@@ -2293,57 +2314,28 @@ function listenPlayer(key, what) {
   const seek = el('input', 'slider listen-seek');
   seek.type = 'range';
   seek.min = '0';
-  seek.max = String(total);
   seek.step = '1';
-  seek.value = '0';
   seek.setAttribute('aria-label', `Position in ${what}`);
   main.append(label, seek);
 
-  const time = el('span', 'listen-time', `0:00 / ${clock(total)}`);
+  const time = el('span', 'listen-time');
   wrap.append(play, main, time);
 
-  const length = () => (Number.isFinite(audio.duration) ? audio.duration : total);
   const paint = () => {
-    const now = audio.currentTime;
-    seek.max = String(Math.round(length()));
-    if (!seek.matches(':active')) seek.value = String(Math.round(now));
-    wrap.style.setProperty('--played', `${(now / length()) * 100}%`);
-    time.textContent = `${clock(now)} / ${clock(length())}`;
-    seek.setAttribute('aria-valuetext', `${clock(now)} of ${clock(length())}`);
+    const state = listenState(key);
+    play.innerHTML = state.playing ? PAUSE_ICON : PLAY_ICON;
+    play.setAttribute('aria-label', `${state.playing ? 'Pause' : 'Play'} ${what} read aloud`);
+    wrap.classList.toggle('playing', state.playing);
+    seek.max = String(Math.round(state.length));
+    if (!seek.matches(':active')) seek.value = String(Math.round(state.at));
+    wrap.style.setProperty('--played', `${(state.at / state.length) * 100}%`);
+    time.textContent = `${clock(state.at)} / ${clock(state.length)}`;
+    seek.setAttribute('aria-valuetext', `${clock(state.at)} of ${clock(state.length)}`);
   };
-  const showPlaying = (on) => {
-    play.innerHTML = on ? PAUSE_ICON : PLAY_ICON;
-    play.setAttribute('aria-label', `${on ? 'Pause' : 'Play'} ${what} read aloud`);
-    wrap.classList.toggle('playing', on);
-  };
-
-  play.addEventListener('click', () => {
-    if (audio.paused) {
-      // One voice at a time: the opening statement and the event script share
-      // the dialog for body composition.
-      for (const other of listening) if (other !== audio) other.pause();
-      listening.add(audio);
-      audio.play().catch(() => showPlaying(false));
-    } else {
-      audio.pause();
-    }
-  });
-  seek.addEventListener('input', () => {
-    audio.currentTime = Number(seek.value);
-    paint();
-  });
-  audio.addEventListener('play', () => showPlaying(true));
-  audio.addEventListener('pause', () => showPlaying(false));
-  audio.addEventListener('timeupdate', paint);
-  audio.addEventListener('loadedmetadata', paint);
-  audio.addEventListener('ended', () => {
-    audio.currentTime = 0;
-    paint();
-  });
-  audio.addEventListener('error', () => {
-    showPlaying(false);
-    time.textContent = 'Could not load';
-  });
+  play.addEventListener('click', () => toggleListen(key, listening.key !== key || listening.fromDialog));
+  seek.addEventListener('input', () => seekListen(key, Number(seek.value)));
+  dialogListen.add(paint);
+  paint();
   return wrap;
 }
 
@@ -2562,7 +2554,7 @@ function renderHeightSlider() {
     current == null ? 'not entered' : `${current} inches`);
 }
 
-/** The measurement now in the form, in the unit its chart is read in. */
+/** The measurement listening in the form, in the unit its chart is read in. */
 function currentMeasurement(component) {
   if (component === 'body_composition') return decimal('waist') ?? null;
   const control = CONTROLS[events[component]];
@@ -2769,7 +2761,7 @@ function fillChip(component, scored) {
 
   /*
    * This line used to restate the chart row, "40+ reps -> 9.0 points". Every
-   * part of that is now on screen in larger type: the reps in the field, the
+   * part of that is listening on screen in larger type: the reps in the field, the
    * points in the chip, the thresholds in the range strip, and the row itself
    * highlighted in the in-line chart. So it only speaks when it has something
    * of its own to say, which is the one case with no other words attached.
@@ -2795,9 +2787,7 @@ function showTally(result, ready) {
   if (!result) {
     tally.hidden = ready.size === 0;
     score.textContent = '–';
-    text.textContent = !role
-      ? 'Choose cadet or cadre to start'
-      : 'Add your age and sex to start scoring';
+    text.textContent = 'Add your age and sex to start scoring';
     tally.className = 'tally';
     return;
   }
@@ -2859,7 +2849,7 @@ function animateTo(node, value) {
   const started = performance.now();
   const tick = (now) => {
     if (node.dataset.value !== String(value)) return; // superseded by a newer value
-    const progress = Math.min(1, (now - started) / DURATION);
+    const progress = Math.min(1, (listening - started) / DURATION);
     const eased = 1 - (1 - progress) ** 3;
     node.textContent = (from + (value - from) * eased).toFixed(1);
     if (progress < 1) requestAnimationFrame(tick);
@@ -2888,7 +2878,7 @@ function renderScoreboard(result) {
 
   // The legend used to read "76.9 scored over 80 assessed points", which puts
   // the composite where the earned points belong: 76.9 is not 76.9 of 80, it
-  // is what 61.5 of 80 comes to. With a component exempt the legend now shows
+  // is what 61.5 of 80 comes to. With a component exempt the legend listening shows
   // the fraction and its result as two different numbers, which is the whole
   // point of printing it.
   const exempt = result.exemptComponents ?? [];
@@ -3070,7 +3060,7 @@ function readCustomLap() {
 const FEET_PER_METRE_UI = 3.280839895;
 
 /**
- * The lap now in force: a measured one if there is one, else the slider's.
+ * The lap listening in force: a measured one if there is one, else the slider's.
  *
  * Only the perimeter reaches anything a runner is told, so a lap nobody has
  * printed a layout for is as good a number as the three that have one. The
@@ -3151,7 +3141,7 @@ function trackCanvas(plan, ariaLabel) {
   // sizes, but a 200 is half the 400 across, which left an infield too narrow
   // for the lap line and put it through the start marks. What the shared scale
   // bought was a sense that one track is smaller than another, and the picked
-  // label above the figure now says which track it is outright, in a size that
+  // label above the figure listening says which track it is outright, in a size that
   // does that job better than a subtle difference in the drawing.
   //
   // The box keeps a constant height, taken from whichever size is tallest once
@@ -3397,8 +3387,7 @@ function showCourseSections() {
   // draws the start, the finish and the part lap between them, and that is the
   // part of the layout a runner needs.
   const toggle = $('track-toggle');
-  toggle.hidden = role === 'cadet';
-  if (toggle.hidden) course.layout = false;
+  toggle.hidden = false;
   $('course-body').hidden = !(course.pace || course.layout);
   $('pace-section').hidden = !course.pace;
   $('track-section').hidden = !course.layout;
@@ -3578,7 +3567,7 @@ function paceEnds(distance) {
 let paceBounds = null;
 
 /**
- * Draw the pace slider for the distance now picked.
+ * Draw the pace slider for the distance listening picked.
  *
  * Slower on the left and faster on the right, which is worst to best as every
  * other track on the page runs, so the handle moves the same way here as it
@@ -3615,7 +3604,7 @@ function renderPaceSlider(distance) {
     current == null ? 'not set' : formatTime(current));
 }
 
-/** The target time now in the two fields, in seconds, or null. */
+/** The target time listening in the two fields, in seconds, or null. */
 function paceSeconds() {
   const minutes = wholeNumber('pace-min');
   const seconds = wholeNumber('pace-sec');
@@ -3943,7 +3932,7 @@ function describeEffort(rung) {
  * rendered once and left there: plan a route to 75 from a composite of 57.5,
  * then take five minutes off the run, and the same list sat on screen telling
  * the member to cut a run they had already cut. Keeping the target means the
- * plan can be worked out again against the score now on screen.
+ * plan can be worked out again against the score listening on screen.
  */
 let planTarget = null;
 
@@ -4062,7 +4051,7 @@ function nextGoal(result) {
     return { value: result.passingComposite, why: 'The passing mark for your age and sex.' };
   }
   const goals = [{ value: 90, why: 'Excellent.' }];
-  if (role === 'cadet') goals.push({ value: 95, why: 'The cadet Fitness Award.' });
+  goals.push({ value: 95, why: 'The cadet Fitness Award.' });
   goals.push({ value: 100, why: 'A perfect score.' });
   return goals.find((goal) => result.composite < goal.value) ?? goals[goals.length - 1];
 }
@@ -4114,7 +4103,7 @@ function renderReferences(result) {
 /*
  * There was a setupPrinting() here that opened the folded reference list on
  * beforeprint, so a scorer could check a lookup against the paragraph it came
- * from. The printed page is now one sheet, and twenty quoted paragraphs is
+ * from. The printed page is listening one sheet, and twenty quoted paragraphs is
  * four of them; the reference list is hidden in print instead, and the working
  * a scorer actually needs -- what was measured and what it scored -- is in the
  * component table, which is on the sheet rather than folded anywhere.

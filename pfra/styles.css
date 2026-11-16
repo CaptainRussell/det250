@@ -196,6 +196,25 @@ main {
 }
 .card-intro { margin-bottom: 14px; }
 
+/* --- opening instructions ---------------------------------------------- */
+
+/* Where the Cadet / Proctor switch was: one line, read before anything else. */
+.opening {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--page);
+  border-radius: 10px;
+}
+.opening-title { font-weight: 700; font-size: .92rem; }
+.opening .hint { font-size: .78rem; }
+.opening .event-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.opening .event-tools > * { margin-left: 0; }
+
 /* --- fields ------------------------------------------------------------- */
 
 .row {
@@ -884,6 +903,8 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 /* Changing the event is a cadre job, so the control is quiet by design. */
 .swap,
 .verbiage-open,
+.chart-toggle,
+.listen-pill,
 .exempt-toggle {
   min-height: 0;
   padding: 4px 10px;
@@ -898,6 +919,30 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 .swap:hover,
 .verbiage-open:hover,
 .exempt-toggle:not(.on):hover { border-color: var(--cardinal); color: var(--cardinal); }
+.chart-toggle:not(:disabled):hover { border-color: var(--cardinal); color: var(--cardinal); }
+.chart-toggle:disabled { opacity: .5; cursor: default; }
+.chart-toggle[aria-expanded="true"] { border-color: var(--line-strong); color: var(--ink); }
+
+/* Listen: the one tool that does something rather than open something, so it
+ * leads the row in cardinal, and fills in gold behind its time as it plays. */
+.listen-pill {
+  --played: 0%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 7px;
+  border-color: color-mix(in srgb, var(--cardinal) 55%, var(--line));
+  color: var(--cardinal);
+  font-variant-numeric: tabular-nums;
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--gold) 26%, transparent) 0 var(--played),
+      transparent var(--played) 100%);
+}
+.listen-pill svg { width: 13px; height: 13px; flex: none; }
+.listen-pill:hover { border-color: var(--cardinal); }
+.listen-pill.playing { border-color: var(--gold-deep); color: var(--ink); }
+.listen-pill:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
 
 .event-picker {
   display: grid;
@@ -1221,6 +1266,8 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   background: var(--fail-bg);
   color: var(--fail);
 }
+
+.event-tools .not-done { padding: 4px 10px; font-size: .72rem; }
 
 .status-note { font-size: .82rem; color: var(--fail); font-weight: 600; }
 
@@ -2456,3 +2503,67 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   background: var(--page);
 }
 .event-option-icon .event-icon-svg { width: 32px; height: 32px; }
+
+/* --- wide screens: the score beside the form ----------------------------
+ *
+ * On a laptop the form and the score sit side by side, so the composite and
+ * its breakdown stay in view while numbers go in, instead of a scroll to the
+ * bottom of the page after every change. Everything else keeps the form's
+ * column. Phones keep the single column and the running total bar.
+ */
+.score-wait { display: none; }
+
+@media screen and (min-width: 1180px) {
+  main {
+    max-width: 76rem;
+    grid-template-columns: minmax(0, var(--measure)) minmax(340px, 1fr);
+    align-items: start;
+  }
+  main > * { grid-column: 1; }
+  main > #results,
+  main > .score-wait {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    position: sticky;
+    top: calc(var(--d250-bar-h, 42px) + var(--gutter));
+    max-height: calc(100vh - var(--d250-bar-h, 42px) - 2 * var(--gutter));
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    border-radius: var(--radius);
+  }
+  main > #results { padding-bottom: 2px; }
+  #results:not([hidden]) ~ .score-wait { display: none; }
+  #results[hidden] ~ .score-wait { display: grid; }
+  .tally { display: none !important; }
+}
+
+.score-wait {
+  gap: 6px;
+  text-align: center;
+  color: var(--ink-faint);
+  padding: 28px var(--gutter);
+}
+.score-wait-num {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--line-strong);
+}
+.score-wait p { font-size: .88rem; }
+
+/* --- phones: fewer, shorter rows --------------------------------------- */
+@media (max-width: 400px) {
+  /* Age and sex are two taps each, so they share one row rather than stacking
+   * into two before the first number can go in. */
+  .row.about-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .about-row .segment { font-size: .78rem; padding: 8px 2px; white-space: nowrap; }
+  .about-row .sex-glyph { display: none; }
+}
+@media (max-width: 560px) {
+  /* The tools take the full width under the picture and the name, instead of
+   * the narrow column beside the picture, so they fit on one or two lines. */
+  .event-head .event-tools { grid-area: 2 / 1 / 3 / -1; }
+  .event-head .event-icon { grid-area: 1 / 1 / 2 / 2; }
+  .opening { padding: 10px; }
+}
