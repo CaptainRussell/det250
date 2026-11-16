@@ -122,8 +122,12 @@ async function boot() {
   showRoleControls();
   applyDefaultCadet();
   // Before anything is typed, so a shared assessment is what loads rather than
-  // something a reader has to clear first.
-  applyShareLink();
+  // something a reader has to clear first. Coming back to the same address in
+  // the same tab (from a reference document), what was there before comes
+  // back instead, including changes made after opening a shared link.
+  const saved = readProgress();
+  if (saved) applyShareLink(saved.q);
+  else applyShareLink();
   wireListen();
   wireMoreToggles();
   wireSliderAnchor();
@@ -238,10 +242,61 @@ async function boot() {
   $('share-result').addEventListener('click', shareResult);
 
   showEventIcons();
+  showHamrAudio();
   showNotFinished();
   showTrackPanel();
 
   update();
+  if (saved) restoreView(saved);
+  window.addEventListener('pagehide', saveProgress);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveProgress();
+  });
+}
+
+/* --- progress across a trip to a reference ---------------------------------
+ *
+ * A reference card opens in Documents and Policy, in the same tab, and its back
+ * button reloads this page. So what was entered is kept for the tab (Captain
+ * Russell, 16 Nov 2026): the same fields a share link carries, plus the open
+ * cards, the References fold and the scroll position. sessionStorage, so it
+ * ends with the tab and is never sent anywhere; Reset Everything clears it.
+ */
+const PROGRESS_KEY = 'd250-pfra-progress-v1';
+
+function saveProgress() {
+  try {
+    const q = new URL(buildShareLink()).search;
+    const open = CARDS.filter((c) => (c === 'bfa' ? $('bfa')
+      : document.querySelector(`.event[data-component="${c}"]`)).classList.contains('open'));
+    sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({
+      q, from: location.search, open, refs: $('refs-card').open, y: Math.round(window.scrollY)
+    }));
+  } catch { /* storage blocked: nothing to keep */ }
+}
+
+function readProgress() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(PROGRESS_KEY) || 'null');
+    return saved && typeof saved.q === 'string' && saved.from === location.search
+      ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearProgress() {
+  try { sessionStorage.removeItem(PROGRESS_KEY); } catch { /* nothing kept */ }
+}
+
+function restoreView(saved) {
+  for (const card of saved.open ?? []) if (CARDS.includes(card)) setCardOpen(card, true);
+  showExpandAll();
+  if (saved.refs) $('refs-card').open = true;
+  // After the charts and the score column have laid out, or the page is still
+  // shorter than where the reader was.
+  const y = Number(saved.y) || 0;
+  if (y > 0) setTimeout(() => window.scrollTo({ top: y, behavior: 'instant' }), 350);
 }
 
 const motion = () =>
@@ -485,9 +540,11 @@ function selectEvent(component, event) {
   $(`heading-${component}`).textContent = EVENT_LABELS[event];
   // A clip of the exercise just swapped out would be reading the wrong script.
   const reading = new Set(['general', 'whtr', ...Object.values(events)]);
+  if (events.cardiorespiratory === 'hamr_20m') reading.add('hamr_pacing');
   if (listening.key && !reading.has(listening.key)) stopListening();
   else paintListen();
   showEventIcons();
+  showHamrAudio();
   showNotFinished();
   showTrackPanel();
   update();
@@ -599,6 +656,16 @@ function buildEventOptions() {
     select.previousElementSibling.hidden = true;   // its "Event" label
     select.after(list);
   }
+}
+
+/** The HAMR pacing track, on the HAMR card only (Captain Russell, 16 Nov 2026). */
+function showHamrAudio() {
+  const host = $('hamr-audio');
+  if (!host.firstChild) {
+    host.append(listenPlayer('hamr_pacing', 'the HAMR pacing track', pageListen,
+      { title: 'HAMR pacing audio', sub: 'Beep track, 9 MB', aria: '' }));
+  }
+  host.hidden = events.cardiorespiratory !== 'hamr_20m';
 }
 
 const fieldOf = (component) => ({
@@ -737,6 +804,7 @@ function onAnyInput() {
 function resetAll() {
   // Who and what: the three answers that gate everything else.
   stopListening();
+  clearProgress();
   sex = null;
   ageBand = null;
   for (const button of document.querySelectorAll('.segment[data-sex], .segment[data-band]')) {
@@ -2283,8 +2351,8 @@ function buildShareLink() {
  * fields and lets the ordinary render path do the rest rather than reaching
  * into the score.
  */
-function applyShareLink() {
-  const params = new URLSearchParams(location.search);
+function applyShareLink(search = location.search) {
+  const params = new URLSearchParams(search);
   if (![...params.keys()].length) return false;
 
   const sexWanted = params.get('sex');
@@ -2471,8 +2539,14 @@ const LISTEN = Object.freeze({
   cross_leg_reverse_crunch: 74,
   forearm_plank: 128,
   run_2mile: 43,
-  hamr_20m: 102
+  hamr_20m: 102,
+  // Not a script: the HAMR pacing track itself, played from the HAMR card
+  // (Captain Russell, 16 Nov 2026). Same one-clip-at-a-time player.
+  hamr_pacing: 1314
 });
+
+/** Clips that are not audio/<key>.mp3. */
+const LISTEN_FILES = Object.freeze({ hamr_pacing: 'references/hamr-audio.m4a' });
 
 const LISTEN_SOURCE = 'https://www.afgsc.af.mil/News/Videos/videoid/1013334/';
 
@@ -2541,7 +2615,7 @@ function toggleListen(key, fromDialog = false) {
   stopListening();
   const audio = new Audio();
   audio.preload = 'none';
-  audio.src = `audio/${key}.mp3`;
+  audio.src = LISTEN_FILES[key] ?? `audio/${key}.mp3`;
   listening.key = key;
   listening.audio = audio;
   listening.fromDialog = fromDialog;
@@ -2605,15 +2679,16 @@ function wireListen() {
 }
 
 /** The fuller player at the top of the dialog, with a scrubber. */
-function listenPlayer(key, what) {
+function listenPlayer(key, what, painters = dialogListen,
+  words = { title: 'Listen', sub: 'Read aloud', aria: 'read aloud' }) {
   const wrap = el('div', 'listen');
   const play = el('button', 'listen-play');
   play.type = 'button';
 
   const main = el('div', 'listen-main');
   const label = el('p', 'listen-label');
-  label.append(el('span', 'listen-title', 'Listen'),
-    el('span', 'listen-sub', 'Read aloud'));
+  label.append(el('span', 'listen-title', words.title),
+    el('span', 'listen-sub', words.sub));
   const seek = el('input', 'slider listen-seek');
   seek.type = 'range';
   seek.min = '0';
@@ -2627,7 +2702,7 @@ function listenPlayer(key, what) {
   const paint = () => {
     const state = listenState(key);
     play.innerHTML = state.playing ? PAUSE_ICON : PLAY_ICON;
-    play.setAttribute('aria-label', `${state.playing ? 'Pause' : 'Play'} ${what} read aloud`);
+    play.setAttribute('aria-label', `${state.playing ? 'Pause' : 'Play'} ${what} ${words.aria}`.trim());
     wrap.classList.toggle('playing', state.playing);
     seek.max = String(Math.round(state.length));
     if (!seek.matches(':active')) seek.value = String(Math.round(state.at));
@@ -2637,7 +2712,7 @@ function listenPlayer(key, what) {
   };
   play.addEventListener('click', () => toggleListen(key, listening.key !== key || listening.fromDialog));
   seek.addEventListener('input', () => seekListen(key, Number(seek.value)));
-  dialogListen.add(paint);
+  painters.add(paint);
   paint();
   return wrap;
 }
