@@ -254,8 +254,11 @@ function advanceOnFull(fromId, toId, digits) {
  * screen). The arrow opens the full card, with its tools, sliders, chart range
  * and charts, and closes it again.
  */
+const CARDS = [...COMPONENTS, 'bfa'];
+
 function setCardOpen(component, open) {
-  const card = document.querySelector(`.event[data-component="${component}"]`);
+  const card = component === 'bfa'
+    ? $('bfa') : document.querySelector(`.event[data-component="${component}"]`);
   const button = card.querySelector('.more-toggle');
   card.classList.toggle('open', open);
   button.setAttribute('aria-expanded', String(open));
@@ -268,12 +271,12 @@ function wireMoreToggles() {
     const component = button.dataset.more;
     setCardOpen(component, false);
     button.addEventListener('click', () => {
-      setCardOpen(component, !button.closest('.event').classList.contains('open'));
+      setCardOpen(component, !button.closest('.event, .bfa').classList.contains('open'));
     });
   }
   $('expand-all').addEventListener('click', () => {
     const open = $('expand-all').getAttribute('aria-pressed') !== 'true';
-    for (const component of COMPONENTS) setCardOpen(component, open);
+    for (const component of CARDS) setCardOpen(component, open);
     showExpandAll();
   });
   document.addEventListener('click', (e) => {
@@ -283,8 +286,8 @@ function wireMoreToggles() {
 }
 
 function showExpandAll() {
-  const all = COMPONENTS.every((c) =>
-    document.querySelector(`.event[data-component="${c}"]`).classList.contains('open'));
+  const all = CARDS.every((c) => (c === 'bfa' ? $('bfa')
+    : document.querySelector(`.event[data-component="${c}"]`)).classList.contains('open'));
   $('expand-all').setAttribute('aria-pressed', String(all));
   $('expand-all').textContent = all ? 'Collapse all' : 'Expand all';
 }
@@ -1736,7 +1739,17 @@ function showBfa(result, complete) {
   if (bfa.ratio == null || bfa.ratio < BFA_RATIO) {
     if (bfa.applied) clearBfaExemption();
     bfa.opened = false;
-    panel.hidden = true;
+    // Greyed out with a line saying why, rather than gone (Captain Russell,
+    // Nov 2026), so the page always shows the same five blocks.
+    panel.hidden = false;
+    panel.classList.add('idle');
+    $('bfa-trigger').textContent = bfa.ratio == null
+      ? 'Only needed with a waist to height ratio of 0.55 or higher and an ' +
+        'unsatisfactory assessment (DAFMAN 36-2905 para 3.15.4.7).'
+      : `Not needed: a ratio of ${bfa.ratio.toFixed(2)} is under 0.55 ` +
+        '(DAFMAN 36-2905 para 3.15.4.7).';
+    setBfaChip('Not needed', '');
+    for (const button of document.querySelectorAll('.bfa-method')) button.hidden = true;
     $('bfa-body').hidden = true;
     $('bfa-optional').hidden = true;
     // workBfa owns these three and is not reached on this branch, so closing
@@ -1746,7 +1759,6 @@ function showBfa(result, complete) {
     // kind of state that is true until someone changes how it opens.
     $('bfa-result').hidden = true;
     $('bfa-note').hidden = true;
-    $('bfa-apply').hidden = true;
     return;
   }
 
@@ -1776,9 +1788,8 @@ function showBfa(result, complete) {
         'body fat assessment (DAFMAN 36-2905 para 3.15.4.7). Passing it has body ' +
         'composition scored as exempt; failing it is an unsatisfactory PFRA.'
       : settled
-        ? `A ratio of ${ratio} is at or above 0.55, but this assessment meets PFRA ` +
-          'standards. Para 3.15.4.7 asks for both before a secondary body fat ' +
-          'assessment is required, so none is.'
+        ? `Not needed: a ratio of ${ratio} is at or above 0.55, but this assessment ` +
+          'meets PFRA standards, and para 3.15.4.7 asks for both.'
         : `A ratio of ${ratio} is at or above 0.55. If this assessment does not meet ` +
           'PFRA standards, a secondary body fat assessment is required (DAFMAN ' +
           '36-2905 para 3.15.4.7).';
@@ -1792,8 +1803,9 @@ function showBfa(result, complete) {
   //
   const open = required || bfa.applied || bfa.opened;
   $('bfa-body').hidden = !open;
+  panel.classList.toggle('idle', !open);
   for (const button of document.querySelectorAll('.bfa-method')) button.hidden = !open;
-  setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not required' : 'Possible',
+  setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not needed' : 'Possible',
     bfa.applied ? 'filled' : required ? 'chip-fail' : '');
 
   const optional = $('bfa-optional');
@@ -1809,13 +1821,12 @@ function showBfa(result, complete) {
     // workBfa owns these and is not reached while the body is closed.
     $('bfa-result').hidden = true;
     $('bfa-note').hidden = true;
-    $('bfa-apply').hidden = true;
     return;
   }
 
   showBfaFields(sex);
   renderBfaSliders();
-  workBfa(sex);
+  workBfa(sex, required);
 }
 
 /** The outcome chip on the body fat card, like the score chip on the others. */
@@ -1925,17 +1936,15 @@ function onBfaSliderInput(id) {
 }
 
 /** Run the assessment and say what it means for the score. */
-function workBfa(sexCode) {
+function workBfa(sexCode, required) {
   const box = $('bfa-result');
   const note = $('bfa-note');
-  const apply = $('bfa-apply');
   const measurements = bfaMeasurements(sexCode);
 
   if (!measurements) {
-    if (bfa.applied) clearBfaExemption();
+    if (bfa.applied) { clearBfaExemption(); rescore(); }
     box.hidden = true;
     note.hidden = true;
-    apply.hidden = true;
     return;
   }
 
@@ -1953,7 +1962,6 @@ function workBfa(sexCode) {
     $('bfa-verdict').className = 'bfa-verdict';
     $('bfa-working').textContent = error.message;
     note.hidden = true;
-    apply.hidden = true;
     return;
   }
 
@@ -1981,17 +1989,25 @@ function workBfa(sexCode) {
   note.textContent = notes.join(' ');
   note.hidden = notes.length === 0;
 
+  // A pass exempts body composition on its own (Captain Russell, Nov 2026:
+  // no Apply button), but only where the assessment was required. A BFA
+  // worked out when the composite already passes changes nothing.
   if (!assessment.pass) {
-    if (bfa.applied) clearBfaExemption();
-    apply.hidden = true;
+    if (bfa.applied) { clearBfaExemption(); rescore(); }
     return;
   }
+  if (!bfa.applied && required) { applyBfaExemption(); rescore(); }
+  if (bfa.applied) {
+    $('bfa-verdict').textContent += ' Body composition is exempt.';
+  }
+}
 
-  apply.hidden = false;
-  apply.textContent = bfa.applied
-    ? 'Body composition is exempt on this BFA. Undo'
-    : 'Apply this pass (exempts body composition)';
-  apply.classList.toggle('on', bfa.applied);
+/** Score again once this update has finished, after the BFA changed it. */
+let rescoring = false;
+function rescore() {
+  if (rescoring) return;
+  rescoring = true;
+  queueMicrotask(() => { rescoring = false; update(); });
 }
 
 /** Hand the pass to the scorer as an exemption, the way para 3.7.2 reads. */
@@ -2072,11 +2088,6 @@ function wireBfa() {
     if (!bfa.opened) clearBfaFields();
     update();
   });
-  $('bfa-apply').addEventListener('click', () => {
-    if (bfa.applied) clearBfaExemption();
-    else applyBfaExemption();
-    update();
-  });
 }
 
 /** Empty the measurement fields, without touching the rest of the panel. */
@@ -2100,12 +2111,10 @@ function resetBfa() {
   // waiting to be read wrong. Put the markup back with the object.
   showBfaFields(sex);
   renderBfaSliders();
-  $('bfa').hidden = true;
   $('bfa-body').hidden = true;
   $('bfa-optional').hidden = true;
   $('bfa-result').hidden = true;
   $('bfa-note').hidden = true;
-  $('bfa-apply').hidden = true;
 }
 
 /* --- sharing an assessment by link ----------------------------------------
@@ -2984,9 +2993,16 @@ function fillChip(component, scored) {
     return;
   }
 
-  chip.textContent = `${scored.points.toFixed(1)} / ${scored.maxPoints.toFixed(0)}`;
+  // Exempt scores nothing and fails nothing, so it says so rather than
+  // showing a red 0.
+  if (scored.status === 'exempt') {
+    chip.textContent = 'Exempt';
+    chip.className = 'chip';
+  } else {
+    chip.textContent = `${scored.points.toFixed(1)} / ${scored.maxPoints.toFixed(0)}`;
+  }
   const failing = scored.status !== 'scored' || !scored.meetsMinimum;
-  chip.className = `chip filled${failing ? ' chip-fail' : ''}`;
+  if (scored.status !== 'exempt') chip.className = `chip filled${failing ? ' chip-fail' : ''}`;
 
   setMeter(`meter-${component}`, scored.points, scored.maxPoints,
     failing ? 'is-fail' : 'is-pass', scored.minimumPoints);
@@ -4046,7 +4062,7 @@ function renderWarnings(result) {
   // The body fat panel says this already, in more detail and nearer the
   // ratio it is about, so while it is on screen the warning is a repeat.
   // showBfa() runs before this, so the panel's state is current.
-  const warnings = $('bfa').hidden
+  const warnings = (bfa.ratio == null || bfa.ratio < BFA_RATIO)
     ? result.warnings
     : result.warnings.filter((warning) => !warning.includes('3.15.4.7'));
   if (warnings.length === 0) {

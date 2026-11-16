@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=charts1">
+<link rel="stylesheet" href="styles.css?v=bfa2">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -550,7 +550,7 @@
          which changes the composite, so it belongs in the calculator rather
          than in a footnote. The panel stays out of the way until the ratio
          reaches 0.55, which is the earliest point at which any of it applies. -->
-    <div class="bfa" id="bfa" hidden>
+    <div class="bfa idle" id="bfa">
       <!-- Every other block in the form is titled, and this one now sits
            among them rather than inside one, so it is titled too. -->
       <!-- Laid out like the component cards above it (Captain Russell, Nov
@@ -568,6 +568,10 @@
           <button type="button" class="bfa-method" data-bfa-method="scale">InBody Scale</button>
         </div>
         <output class="chip" id="chip-bfa" aria-live="polite"></output>
+        <button type="button" class="more-toggle" data-more="bfa" aria-expanded="false"
+                aria-label="Show details">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
       <p class="alt-note bfa-trigger" id="bfa-trigger"></p>
       <div class="bfa-body" id="bfa-body" hidden>
@@ -657,7 +661,6 @@
           <p class="bfa-working" id="bfa-working"></p>
         </div>
         <p class="bfa-note" id="bfa-note" hidden></p>
-        <button type="button" class="bfa-apply" id="bfa-apply" hidden></button>
       </div>
     </div>
 
@@ -935,6 +938,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=charts1"></script>
+<script type="module" src="app.js?v=bfa2"></script>
 </body>
 </html>
