@@ -1188,6 +1188,9 @@ function subVans(e, body){
   const offRoster = Object.keys(place).filter(k => !(e.roster || []).includes(k));
   const plan = ODT_PLANS[e.id] && !vans.length;
   const split = (e.rooms || []).filter(r => new Set(r.cadets.filter(k => place[k]).map(k => place[k][0])).size > 1);
+  const SLOT = {driver:"Driver", relief:"Relief driver", rider:"Rider"};
+  // every person is a face chip; the picker moves them to any van and seat, swapping with whoever holds a driver seat
+  const chip = (k, i, slot) => `<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">${k && P[k] ? face(k, 26) : ""}${slot !== "rider" ? `<span class="tag gold">${SLOT[slot]}</span>` : ""}${k ? esc(pname(k)) : `<span class="muted">none</span>`}${k ? `<select data-mv="${esc(k)}" data-from="${i}" data-slot="${slot}" aria-label="Move ${esc(pname(k))}" style="font-size:12px;padding:2px 4px">${vans.map((x, j) => ["driver", "relief", "rider"].map(sl => opt(`${j}:${sl}`, `${x.name} ${SLOT[sl].toLowerCase()}`, j === i && sl === slot)).join("")).join("")}</select>` : ""}</label>`;
   const used = v => [v.driver, v.relief].filter(Boolean).length + (v.riders || []).length;
   body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Vans <span class="tag">${vans.length}</span></h3><p class="hint" style="margin:4px 0 0">Each van has a driver, a relief driver and riders. <b>Auto-assign riders</b> keeps the drivers, keeps roommates in the same van, and spreads everyone else on the roster across the vans by AS class, leaving open seats in each van.</p></div>
       <div class="tools">${plan ? `<button class="btn small primary" type="button" id="vPlan">Apply the Offutt plan</button>` : ""}${vans.length ? `<button class="btn small" type="button" id="vAuto">Auto-assign riders</button>` : ""}<button class="btn small${plan ? "" : " primary"}" type="button" id="vAdd">Add a van</button></div></div>
@@ -1200,9 +1203,8 @@ function subVans(e, body){
       const counts = {}; for (const k of v.riders || []) counts[pcls(k)] = (counts[pcls(k)] || 0) + 1;
       return `<div class="item" style="align-items:flex-start"><div class="txt">
         <div class="t1">${esc(v.name)} <span class="tag">${esc(vanKind(v))}</span> <span class="tag${full ? "" : " gold"}">${u} of ${esc(v.seats || "?")} seats</span></div>
-        <div class="t2">Driver: ${v.driver ? esc(pname(v.driver)) : "none"} · Relief: ${v.relief ? esc(pname(v.relief)) : "none"}</div>
         <div class="t2">${VAN_ORDER.filter(c => counts[c]).map(c => `${esc(CLASS_LABEL[c] || c)} ${counts[c]}`).join(" · ") || "No riders yet"}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px">${(v.riders || []).map(k => `<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">${P[k] ? face(k, 26) : ""}${esc(pname(k))}<select data-mv="${esc(k)}" data-from="${i}" aria-label="Move ${esc(pname(k))} to another van" style="font-size:12px;padding:2px 4px">${vans.map((x, j) => opt(String(j), x.name, j === i)).join("")}</select></label>`).join("")}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px">${[["driver", v.driver], ["relief", v.relief], ...(v.riders || []).map(k => ["rider", k])].map(([slot, k]) => chip(k, i, slot)).join("")}</div>
         ${full ? `<div class="t2" style="color:var(--d250-cardinal-2,#ef4054)">Over capacity.</div>` : ""}</div>
         <div class="acts"><button class="btn small" type="button" data-vup="${i}" ${i ? "" : "disabled"} aria-label="Move ${esc(v.name)} up">↑</button><button class="btn small" type="button" data-vdown="${i}" ${i < vans.length - 1 ? "" : "disabled"} aria-label="Move ${esc(v.name)} down">↓</button><button class="btn small" type="button" data-vedit="${i}">Edit</button></div></div>`; }).join("") || `<p class="muted">No vans yet.</p>`}</div>`;
   const pl = $("#vPlan");
@@ -1225,9 +1227,15 @@ function subVans(e, body){
   body.querySelectorAll("[data-vup]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.vup, -1)));
   body.querySelectorAll("[data-vdown]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.vdown, 1)));
   body.querySelectorAll("[data-mv]").forEach(s => s.addEventListener("change", () => {
-    const k = s.dataset.mv, from = vans[+s.dataset.from], to = vans[+s.value];
-    from.riders = from.riders.filter(x => x !== k); (to.riders = to.riders || []).push(k);
-    changed(`${evName(e)}: moved ${pname(k)} to ${to.name}`); render();
+    const k = s.dataset.mv, a = s.dataset.slot, from = vans[+s.dataset.from], [j, b] = s.value.split(":"), to = vans[+j];
+    if (from === to && a === b) return;
+    const take = (v, sl) => { if (sl === "rider") v.riders = (v.riders || []).filter(x => x !== k); else v[sl] = ""; };
+    const put = (v, sl, x) => { if (sl === "rider") (v.riders = v.riders || []).push(x); else v[sl] = x; };
+    take(from, a);
+    let msg = `moved ${pname(k)} to ${to.name} ${SLOT[b].toLowerCase()}`;
+    if (b !== "rider" && to[b]){ const o = to[b]; to[b] = ""; put(from, a, o); msg = `swapped ${pname(k)} with ${pname(o)} (${pname(k)} is now ${to.name} ${SLOT[b].toLowerCase()})`; }
+    put(to, b, k);
+    changed(`${evName(e)}: ${msg}`); render();
   }));
 }
 function vanDialog(e, i){
