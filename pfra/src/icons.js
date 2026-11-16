@@ -57,6 +57,11 @@ const SHAPES = Object.freeze({
     'M17 10.5 L21 13 L24 10.5 M17 10.5 L13 12.5 L11 15.5"/>' +
     '<path d="M4 29 H28 M7 26.5 L4 29 L7 31.5 M25 26.5 L28 29 L25 31.5" ' +
     'class="icon-accent icon-thin"/>',
+  // The tape at the neck and the abdomen, the two sites every tape BFA reads.
+  body_fat:
+    head(16, 6) +
+    '<path d="M16 10 V20 M16 20 L13 29.5 M16 20 L19 29.5 M16 12 L10 18 M16 12 L22 18"/>' +
+    '<path d="M12.5 10 Q16 12 19.5 10 M11 17 Q16 20 21 17" class="icon-accent"/>',
   // Upright where the runner leans, a straight front leg and a bent back
   // knee, and the arms swung opposite: a stride, not a stance.
   walk_2km:

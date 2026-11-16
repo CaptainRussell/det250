@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../shared/det250-patch-icon.png" type="image/png">
-<link rel="stylesheet" href="styles.css?v=slide1">
+<link rel="stylesheet" href="styles.css?v=charts1">
 <link rel="stylesheet" href="../shared/det250.css">
 </head>
 <body>
@@ -553,26 +553,31 @@
     <div class="bfa" id="bfa" hidden>
       <!-- Every other block in the form is titled, and this one now sits
            among them rather than inside one, so it is titled too. -->
-      <h2 class="bfa-title">Secondary Body Fat Assessment</h2>
-      <p class="bfa-trigger" id="bfa-trigger"></p>
-      <!-- Para 3.15.4.7 needs both a ratio of 0.55 or higher and an assessment
-           that does not meet standards, so the measurement fields only open
-           when both hold. This is the way in for anyone who wants the number
-           anyway: a cadre member counselling a cadet who passed this time, or
-           a diagnostic run. -->
-      <button type="button" class="bfa-optional" id="bfa-optional" hidden></button>
+      <!-- Laid out like the component cards above it (Captain Russell, Nov
+           2026): picture, name, a tools row, and a chip for the outcome. -->
+      <div class="event-head">
+        <span class="event-icon" id="icon-bfa" aria-hidden="true"></span>
+        <h2 class="bfa-title">Secondary Body Fat Assessment</h2>
+        <div class="event-tools">
+          <!-- Para 3.15.4.7 needs both a ratio of 0.55 or higher and an
+               assessment that does not meet standards, so the measurement
+               fields only open when both hold. This is the way in for anyone
+               who wants the number anyway. -->
+          <button type="button" class="bfa-optional" id="bfa-optional" hidden></button>
+          <button type="button" class="bfa-method on" data-bfa-method="tape">Tape</button>
+          <button type="button" class="bfa-method" data-bfa-method="scale">InBody Scale</button>
+        </div>
+        <output class="chip" id="chip-bfa" aria-live="polite"></output>
+      </div>
+      <p class="alt-note bfa-trigger" id="bfa-trigger"></p>
       <div class="bfa-body" id="bfa-body" hidden>
         <!-- Tape first and tape by default: para 3.15.4.7 prefers the InBody
              where one is available, but a detachment assessment is run with a
              tape in hand far more often than beside a scale, so the method
              that is actually used is the one that does not need selecting. -->
-        <div class="bfa-methods" role="group" aria-label="Body fat assessment method">
-          <button type="button" class="bfa-method on" data-bfa-method="tape">Tape</button>
-          <button type="button" class="bfa-method" data-bfa-method="scale">InBody Scale</button>
-        </div>
         <p class="hint" id="bfa-method-hint"></p>
 
-        <div class="row bfa-fields" id="bfa-fields-scale" hidden>
+        <div class="row measure-row bfa-fields" id="bfa-fields-scale" hidden>
           <div class="field">
             <label for="bfa-percent">Body Fat (percent)</label>
             <input type="number" id="bfa-percent" inputmode="decimal" min="0" max="75"
@@ -592,7 +597,7 @@
           </div>
         </div>
 
-        <div class="row bfa-fields" id="bfa-fields-tape">
+        <div class="row measure-row bfa-fields" id="bfa-fields-tape">
           <div class="field">
             <label for="bfa-neck">Neck</label>
             <input type="number" id="bfa-neck" inputmode="decimal" min="8" max="30"
@@ -930,6 +935,6 @@
     {id: "dafman36-2905-afrotcsup", note: "28 April 2023, awaiting revision. It still describes a 1.5 mile run and BMI; HQ confirmed on 1 October 2026 that BMI is gone. Read it for AFROTC administration nothing newer covers, not for what is tested."}
   ]});
 </script>
-<script type="module" src="app.js?v=default1"></script>
+<script type="module" src="app.js?v=charts1"></script>
 </body>
 </html>

@@ -497,6 +497,83 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   .chart-body { max-height: none; overflow: visible; }
 }
 
+/* The real chart pages (Captain Russell, Nov 2026). Each page is a picture of
+ * the official PDF in its own scrolling window, zoomed so the print is
+ * readable and scrolled so the outlined box is in the middle. */
+.chart-body.pictured {
+  max-height: none;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  display: grid;
+  gap: 12px;
+}
+.chart-pic {
+  margin: 0;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.chart-pic-scroll {
+  max-height: 22rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+}
+.chart-pic-frame {
+  position: relative;
+  width: calc(var(--w) * .62px);
+  max-width: none;
+}
+.chart-pic.whole .chart-pic-frame { width: 100%; }
+.chart-pic.whole .chart-pic-scroll { max-height: none; }
+.chart-pic-frame img { display: block; width: 100%; height: auto; }
+.chart-pic-col,
+.chart-pic-row,
+.chart-pic-cell { position: absolute; pointer-events: none; }
+.chart-pic-col,
+.chart-pic-row { background: rgba(200, 16, 46, .08); }
+.chart-pic-cell {
+  background: rgba(241, 190, 72, .38);
+  outline: 3px solid #c8102e;
+  outline-offset: 1px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 6px rgba(200, 16, 46, .18);
+}
+.chart-pic figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  font-size: .82rem;
+  color: var(--ink-soft);
+}
+.chart-pic-what { font-weight: 600; color: var(--ink); }
+.chart-pic-tools { display: flex; gap: 8px; align-items: center; }
+.chart-pic-zoom,
+.chart-pic-open {
+  min-height: 0;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+.chart-pic-zoom:hover,
+.chart-pic-open:hover { border-color: var(--cardinal); color: var(--cardinal); }
+.chart-pic-zoom:focus-visible,
+.chart-pic-open:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+@media print { .chart-pic-scroll { max-height: none; } .chart-pic-tools { display: none; } }
+
 /* The Fitness Award: earned reads as a reward, blocked as a caveat. Neither is
  * a pass or a fail, so neither borrows the green and red that mean those. */
 .award-line {
@@ -2080,51 +2157,43 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   display: grid;
   gap: 10px;
   padding: 14px var(--gutter);
-  border: 1px solid var(--gold-deep);
-  border-left: 4px solid var(--gold);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--warn-bg);
+  transition: border-color .2s ease;
 }
+.bfa:focus-within { border-color: var(--cardinal); }
 
-.bfa-title {
-  margin: 0;
-  font-size: 1rem;
-}
+.bfa-title { margin: 0; font-size: 1rem; }
 
-.bfa-trigger {
-  margin: 0;
-  font-size: .82rem;
-  line-height: 1.5;
-  color: var(--ink);
-}
+.bfa-trigger { margin: 0; line-height: 1.5; }
 
 .bfa-body {
   display: grid;
   gap: 10px;
 }
 
-.bfa-methods {
-  display: flex;
-  gap: 8px;
-}
-
-.bfa-method {
-  flex: 1;
-  padding: 9px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink-soft);
+/* Tape or scale: two of the tool pills, the chosen one gold like a set
+ * Exempt. */
+.bfa-method,
+.bfa-optional {
+  min-height: 0;
+  padding: 4px 10px;
   font: inherit;
-  font-size: .82rem;
+  font-size: .72rem;
   font-weight: 600;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-faint);
+  border-radius: 999px;
   cursor: pointer;
 }
-
+.bfa-method:not(.on):hover,
+.bfa-optional:hover { border-color: var(--cardinal); color: var(--cardinal); }
 .bfa-method.on {
-  border-color: var(--gold);
-  background: var(--page);
-  color: var(--ink);
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  color: #2a2205;
+  font-weight: 700;
 }
 
 .bfa-fields {
@@ -2182,22 +2251,6 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   color: var(--ink-soft);
 }
 
-/* The way into a body fat assessment that the manual does not require. Set as
- * a quiet secondary control: it is an option, not the next step. */
-.bfa-optional {
-  justify-self: start;
-  padding: 8px 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: .78rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.bfa-optional:hover { color: var(--ink); border-color: var(--gold-deep); }
 
 /* --- lap pace -------------------------------------------------------------
  *
@@ -2336,6 +2389,20 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   transition: transform .15s ease;
 }
 .pace-bar.on .pace-bar-chevron { transform: rotate(180deg); }
+
+/* Open, the bar and what it opens are one blue section (Captain Russell, Nov
+ * 2026): the panel hangs from the bar in the same colour and edge, so it reads
+ * as the bar's own section and not as more of the run card. */
+#track-inline { gap: 0; }
+.pace-bar.on { border-radius: 8px 8px 0 0; }
+.pace-bar.on + .track-body {
+  border: 1px solid var(--pace-accent);
+  border-left-width: 4px;
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  background: color-mix(in srgb, var(--pace-accent) 7%, var(--surface));
+  padding-left: 11px;   /* the 3px the thicker edge adds, so nothing inside moves */
+}
 @media (prefers-reduced-motion: reduce) {
   .pace-bar-chevron { transition: none; }
 }
