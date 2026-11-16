@@ -21,7 +21,7 @@ import {
 } from './src/engine.js?v=c1401fb0cb';
 import { createAnalyzer, describeSeconds } from './src/analysis.js?v=c1401fb0cb';
 import { VERBIAGE, VERBIAGE_SOURCE, verbiageFor } from './src/verbiage.js?v=c1401fb0cb';
-import { eventIcon } from './src/icons.js?v=c1401fb0cb';
+import { eventIcon } from './src/icons.js?v=bfa1';
 import {
   TRACK_DISTANCES, TRACK_LENGTHS, trackPlan, pointOnTrack, trackExtent, lapPace, distanceById, TRACK_LENGTH_RANGE, metresFromFeet
 } from './src/track.js?v=c1401fb0cb';
@@ -118,6 +118,7 @@ async function boot() {
 
   fillBandOptions();
   fillAltitudeOptions();
+  loadChartMap();
   showRoleControls();
   applyDefaultCadet();
   // Before anything is typed, so a shared assessment is what loads rather than
@@ -501,6 +502,7 @@ function showNotFinished() {
  */
 function showEventIcons() {
   $('icon-body_composition').innerHTML = eventIcon('waist_to_height');
+  $('icon-bfa').innerHTML = eventIcon('body_fat');
   for (const [component, event] of Object.entries(events)) {
     const icon = $(`icon-${component}`);
     icon.innerHTML = eventIcon(event);
@@ -1177,10 +1179,34 @@ function renderCharts(band) {
       ? scored.chartRowIndex : -1;
 
     const wasHidden = host.hidden;
-    host.replaceChildren(buildChartTable(chart, currentIndex, component));
-    host.hidden = false;
     toggle.setAttribute('aria-expanded', 'true');
     toggle.textContent = 'Hide Chart';
+
+    // The real chart page, with the scored box outlined, when its picture
+    // is in. The table is the fallback (a standalone copy, or no map yet).
+    const pictures = chartPicturesFor(component, chart.event, scored);
+    if (pictures) {
+      host.hidden = false;
+      host.classList.add('pictured');
+      const key = `${sex}|${band}|` + pictures.map((p) => p.key).join('|');
+      if (host.dataset.pics !== pictures.map((p) => p.page).join(',')) {
+        host.replaceChildren(...pictures.map(buildChartPicture));
+        host.dataset.pics = pictures.map((p) => p.page).join(',');
+      } else {
+        pictures.forEach((pic, i) => markChartPicture(host.children[i], pic));
+      }
+      if (wasHidden || chartMarked.get(component) !== key) {
+        chartMarked.set(component, key);
+        requestAnimationFrame(() => {
+          for (const fig of host.querySelectorAll('.chart-pic')) centreChartPicture(fig);
+        });
+      }
+      continue;
+    }
+    host.classList.remove('pictured');
+    delete host.dataset.pics;
+    host.replaceChildren(buildChartTable(chart, currentIndex, component));
+    host.hidden = false;
 
     // Bring the marked row into view inside the scrolling table, so a cadet
     // does not have to hunt for the thing that was highlighted for them.
@@ -1224,6 +1250,156 @@ function buildChartTable(chart, currentIndex, component) {
   }
   table.append(body);
   return table;
+}
+
+/* --- the real chart pages -------------------------------------------------
+ *
+ * Captain Russell, Nov 2026: show the page of the official scoring charts the
+ * score was read from, with the box outlined, so an observer checks the
+ * regulation itself rather than a table the tool drew. The pages are pictures
+ * of pfra-scoring-charts.pdf made by tools/pfra-chart-art.py, and charts/map.json
+ * says where every row and column sits on each picture.
+ */
+let chartMap = null;
+
+function loadChartMap() {
+  return fetch('./charts/map.json?v=1').then((r) => (r.ok ? r.json() : null))
+    .then((map) => {
+      chartMap = map;
+      if (chartOpen.size) renderCharts(ageBand);
+    })
+    .catch(() => { chartMap = null; });
+}
+
+const CHART_DOC = '../documents/view/?id=pfra-scoring-charts&from=pfra';
+const SEX_WORD = { M: 'Male', F: 'Female' };
+
+/** What to show for one component: one page, or two for waist to height. */
+function chartPicturesFor(component, event, scored) {
+  if (!chartMap) return null;
+  const counted = scored && !['exempt', 'dns', 'dnf'].includes(scored.status) ? scored : null;
+  const bandLabel = scorer.data.age_band_ranges[ageBand];
+  const who = `${SEX_WORD[sex]}, ${bandLabel}`;
+
+  if (event === 'walk_2km') {
+    const page = chartMap.pages.walk_2km;
+    if (!page) return null;
+    const group = scorer.data.walk_age_groups[ageBand];
+    return [{ page, row: group, col: sex, key: `${group}:${sex}`,
+      label: `${SEX_WORD[sex]}, ${scorer.data.walk_age_group_labels[group]}: the maximum time` }];
+  }
+
+  const page = chartMap.pages[event];
+  if (!page) return null;
+  const col = `${ageBand}:${sex}`;
+  const points = counted?.chartRow ? counted.points : (event === 'whtr' && counted?.measured?.ratio != null ? counted.points : null);
+  const row = points != null ? points.toFixed(1) : null;
+  const main = {
+    page, row: row in page.rows ? row : null, col, key: `${row}:${col}`,
+    below: counted?.status === 'below_minimum' && !(row in page.rows),
+    label: row != null && row in page.rows
+      ? `${who}: the ${row} point row`
+      : counted?.status === 'below_minimum'
+        ? `${who}: below the lowest row, so 0 points`
+        : `${who}: your column`
+  };
+  if (event !== 'whtr') return [main];
+
+  // Waist to height reads two pages: the grid turns waist and height into the
+  // ratio, then page 1 turns the ratio into points.
+  const grid = chartMap.pages.whtr_grid;
+  const m = counted?.measured;
+  const h = m?.heightInches != null ? String(Number(m.heightInches).toFixed(1)) : null;
+  const w = m?.waistInches != null ? String(Number(m.waistInches).toFixed(1)) : null;
+  const inGrid = grid && h in grid.rows && w in grid.cols;
+  const first = grid ? [{
+    page: grid, row: inGrid ? h : null, col: inGrid ? w : null, key: `${h}:${w}`,
+    label: inGrid ? `Height ${h} in, waist ${w} in: the ratio`
+      : m?.heightInches != null ? 'Your height or waist is off this grid; the ratio is worked out the same way'
+        : 'Waist to height ratio grid'
+  }] : [];
+  return [...first, main];
+}
+
+const pct = (v, of) => `${(v / of) * 100}%`;
+
+function buildChartPicture(pic) {
+  const { page } = pic;
+  const fig = el('figure', 'chart-pic');
+  const scroll = el('div', 'chart-pic-scroll');
+  const frame = el('div', 'chart-pic-frame');
+  frame.style.setProperty('--w', page.w);
+  frame.style.aspectRatio = `${page.w} / ${page.h}`;
+  const img = el('img');
+  img.src = `./charts/p${page.page}.webp?v=1`;
+  img.width = page.w;
+  img.height = page.h;
+  img.alt = '';
+  img.decoding = 'async';
+  frame.append(img, el('span', 'chart-pic-col'), el('span', 'chart-pic-row'),
+    el('span', 'chart-pic-cell'));
+  scroll.append(frame);
+
+  const cap = el('figcaption');
+  const what = el('span', 'chart-pic-what');
+  const tools = el('span', 'chart-pic-tools');
+  const zoom = el('button', 'chart-pic-zoom', 'Whole page');
+  zoom.type = 'button';
+  zoom.setAttribute('aria-pressed', 'false');
+  zoom.addEventListener('click', () => {
+    const whole = fig.classList.toggle('whole');
+    zoom.textContent = whole ? 'Zoom in' : 'Whole page';
+    zoom.setAttribute('aria-pressed', String(whole));
+    if (!whole) requestAnimationFrame(() => centreChartPicture(fig));
+  });
+  const open = el('a', 'chart-pic-open', `PDF page ${page.page}`);
+  open.href = `${CHART_DOC}&page=${page.page}`;
+  tools.append(zoom, open);
+  cap.append(what, tools);
+  fig.append(scroll, cap);
+  markChartPicture(fig, pic);
+  return fig;
+}
+
+function place(node, box) {
+  if (!box) { node.hidden = true; return; }
+  node.hidden = false;
+  for (const [k, v] of Object.entries(box)) node.style[k] = v;
+}
+
+function markChartPicture(fig, pic) {
+  const { page, row, col } = pic;
+  const r = row != null ? page.rows[row] : null;
+  const c = col != null ? page.cols[col] : null;
+  const [colNode, rowNode, cellNode] = fig.querySelectorAll(
+    '.chart-pic-col, .chart-pic-row, .chart-pic-cell');
+  place(colNode, c && { left: pct(c[0], page.w), width: pct(c[1] - c[0], page.w), top: '0', height: '100%' });
+  place(rowNode, r && { top: pct(r[0], page.h), height: pct(r[1] - r[0], page.h), left: '0', width: '100%' });
+  place(cellNode, r && c && {
+    left: pct(c[0], page.w), width: pct(c[1] - c[0], page.w),
+    top: pct(r[0], page.h), height: pct(r[1] - r[0], page.h)
+  });
+  fig.querySelector('.chart-pic-what').textContent = pic.label;
+  fig.classList.toggle('below', Boolean(pic.below));
+  const img = fig.querySelector('img');
+  img.alt = `Scoring chart, PDF page ${page.page}. ${pic.label}.`;
+}
+
+/** Put the outlined box (or the column) in the middle of the chart's window. */
+function centreChartPicture(fig) {
+  const scroll = fig.querySelector('.chart-pic-scroll');
+  const target = ['.chart-pic-cell', '.chart-pic-row', '.chart-pic-col']
+    .map((q) => fig.querySelector(q)).find((n) => n && !n.hidden);
+  if (!target || fig.classList.contains('whole')) return;
+  const box = target.getBoundingClientRect();
+  const host = scroll.getBoundingClientRect();
+  scroll.scrollLeft += (box.left - host.left) - (scroll.clientWidth - box.width) / 2;
+  if (target.classList.contains('chart-pic-cell') || target.classList.contains('chart-pic-row')) {
+    scroll.scrollTop += (box.top - host.top) - (scroll.clientHeight - box.height) / 2;
+  }
+  // Below the chart: the asterisked minimum at the foot of the column is the
+  // row that was missed, so that is what is shown.
+  else if (fig.classList.contains('below')) scroll.scrollTop = scroll.scrollHeight;
 }
 
 /**
@@ -1614,21 +1790,19 @@ function showBfa(result, complete) {
   // the exemption is what the score rests on, and the way to undo it is the
   // button inside.
   //
-  // Not for a cadet, though. The proctor takes these measurements, not the
-  // cadet, so for them the panel is the one sentence above with the numbers
-  // behind a link, to try if they want to.
-  const open = (required && !cadet) || bfa.applied || bfa.opened;
+  const open = required || bfa.applied || bfa.opened;
   $('bfa-body').hidden = !open;
+  for (const button of document.querySelectorAll('.bfa-method')) button.hidden = !open;
+  setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not required' : 'Possible',
+    bfa.applied ? 'filled' : required ? 'chip-fail' : '');
 
   const optional = $('bfa-optional');
-  optional.hidden = (required && !cadet) || bfa.applied;
+  optional.hidden = required || bfa.applied;
   optional.textContent = bfa.opened
-    ? (cadet ? 'Hide the numbers' : 'Hide the body fat assessment')
-    : cadet
-      ? 'Try the numbers'
-      : settled
-        ? 'Work one out anyway'
-        : 'Work out a body fat assessment now';
+    ? 'Hide the body fat assessment'
+    : settled
+      ? 'Work one out anyway'
+      : 'Work out a body fat assessment now';
   optional.setAttribute('aria-expanded', String(open));
 
   if (!open) {
@@ -1642,6 +1816,13 @@ function showBfa(result, complete) {
   showBfaFields(sex);
   renderBfaSliders();
   workBfa(sex);
+}
+
+/** The outcome chip on the body fat card, like the score chip on the others. */
+function setBfaChip(text, tone) {
+  const chip = $('chip-bfa');
+  chip.textContent = text;
+  chip.className = `chip ${tone}`.trim();
 }
 
 /** Which measurement fields this member's BFA needs. */
@@ -1781,6 +1962,8 @@ function workBfa(sexCode) {
     ? `${assessment.percent}% body fat, within the ${assessment.standard}% standard.`
     : `${assessment.percent}% body fat, over the ${assessment.standard}% standard.`;
   $('bfa-verdict').className = `bfa-verdict ${assessment.pass ? 'pass' : 'fail'}`;
+  setBfaChip(assessment.pass ? `Pass · ${assessment.percent}%` : `Fail · ${assessment.percent}%`,
+    assessment.pass ? 'filled' : 'chip-fail');
   $('bfa-working').textContent = assessment.measured.method === 'tape'
     ? `${assessment.measured.arithmetic} = ${assessment.measured.circumferenceValue}, ` +
       `read against ${assessment.measured.heightInches} inches.`
