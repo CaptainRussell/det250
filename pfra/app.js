@@ -119,6 +119,7 @@ async function boot() {
   fillBandOptions();
   fillAltitudeOptions();
   showRoleControls();
+  applyDefaultCadet();
   // Before anything is typed, so a shared assessment is what loads rather than
   // something a reader has to clear first.
   applyShareLink();
@@ -570,6 +571,15 @@ const fieldOf = (component) => ({
   muscular_strength: 'hrpu', core_endurance: 'situp', cardiorespiratory: 'run'
 }[component]);
 
+/**
+ * Most cadets are men under 25, so the page opens on that chart (Captain
+ * Russell, Nov 2026). A share link or a tap changes it like any other answer.
+ */
+function applyDefaultCadet() {
+  selectSex('M');
+  selectAgeGroup('under25');
+}
+
 function selectSex(value) {
   sex = value;
   for (const button of document.querySelectorAll('.segment[data-sex]')) {
@@ -701,6 +711,7 @@ function resetAll() {
   }
   $('band-picker').hidden = true;
   $('age-band').value = '';
+  applyDefaultCadet();
 
   // Statuses before fields: clearing an exemption re-enables the inputs it
   // disabled, and doing it the other way round leaves them disabled.
