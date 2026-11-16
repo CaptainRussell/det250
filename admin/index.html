@@ -816,6 +816,7 @@ function seedData(x){
     out.events.push({...blank, id:"offutt-2026-12", name:x.title || "Offutt Dec 3-4 ODT", place:"Offutt AFB, Nebraska", start:"2026-12-03", end:"2026-12-04", note:x.note || "",
       sections:x.sections || [], roster:[...new Set(rooms.flatMap(r => r.cadets))], rooms});
   }
+  for (const e of out.events) if (ODT_PLANS[e.id] && !(e.vans || []).length) applyPlan(e);   // cadre, rooms and vans for Offutt
   return out;
 }
 const O = () => OD.data;
@@ -842,7 +843,7 @@ function curEvent(){
   }
   return E.find(e => e.id === UI.ev) || null;
 }
-const SUBS = [["details","Details"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"]];
+const SUBS = [["details","Details"],["itinerary","Itinerary"],["roster","Roster"],["rooms","Rooms"],["vans","Vans"]];
 const LISTS = {
   info:{label:"Things to know", one:"item", order:true, fields:[["title","Title","text",true,"Uniform"],["text","Text","area",false,"OCPs for travel. PT gear for Friday."]],
     show:x => [x.title, x.text]},
@@ -850,14 +851,14 @@ const LISTS = {
 
 function renderRooms(){
   const el = $("#tab-rooms");
-  const head = `<div class="tabhd"><div><h2>ODT Module</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Module</a> page: one entry per ODT with its details, itinerary file, roster (cadets and cadre), rooms and documents. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
+  const head = `<div class="tabhd"><div><h2>ODT Module</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Module</a> page: one entry per ODT with its details, itinerary file, roster (cadets and cadre), rooms, vans and documents. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
   if (!OD.data){
     const known = !!CFG.locks.docs;
     const setup = !OD.exists;
     el.innerHTML = `${head}</div>
       <div class="panel"><div class="panel-bd" style="display:flex;flex-direction:column;gap:12px;max-width:560px">
         <b>${setup ? "Set up the ODT Module" : "Unlock the ODT Module"}</b>
-        <p class="muted" style="margin:0">${setup ? `This makes the locked ODT file.${OD.seed ? " The Offutt rooms move into it from the old public room list, which is then deleted." : ""} Nothing changes on the live site until you publish.` : known ? "The saved cadet password doesn't open the ODT file. Enter the current cadet password." : "Enter the cadet password once. It is saved, locked with the admin password, the next time you publish."}</p>
+        <p class="muted" style="margin:0">${setup ? `This makes the locked ODT file.${OD.seed ? " The Offutt rooms move into it from the old public room list, which is then deleted. Lt Col Cacic, Capt Russell, SSgt Moore and Capt Orr are added with rooms of their own, and the four vans get their drivers and riders (check the Vans tab)." : ""} Nothing changes on the live site until you publish.` : known ? "The saved cadet password doesn't open the ODT file. Enter the current cadet password." : "Enter the cadet password once. It is saved, locked with the admin password, the next time you publish."}</p>
         ${setup && known ? "" : `<div class="field"><label class="label" for="odPw">Cadet password</label><input id="odPw" type="password" autocomplete="off"></div>`}
         <div class="err" id="odErr" role="alert"></div>
         <div><button class="btn primary" id="odGo" type="button">${setup ? "Set up" : "Unlock"}</button></div>
@@ -870,7 +871,7 @@ function renderRooms(){
         if (setup){
           try{ await REKEY.docs(pw, null); }catch(_){ throw new Error("That isn't the cadet password (it doesn't open the Documents and Policy files)."); }
           OD.pw = pw; OD.data = seedData(OD.seed); OD.orig = "";
-          changed(`Set up the ODT Module, locked with the cadet password${OD.seed ? " (Offutt rooms moved in from the public room list)" : ""}`);
+          changed(`Set up the ODT Module, locked with the cadet password${OD.seed ? " (Offutt rooms moved in from the public room list; Offutt cadre, cadre rooms and vans set up)" : ""}`);
         } else {
           let data; try{ data = await openOdt(pw, OD.vault); }catch(_){ throw new Error("That password doesn't open the ODT file."); }
           OD.pw = pw; OD.data = data; OD.orig = JSON.stringify(data);
@@ -901,7 +902,7 @@ function renderRooms(){
   });
   document.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () => { UI.odtSub = b.dataset.sub; saveUI(); render(); }));
   const body = $("#odBody");
-  ({details:subDetails, itinerary:subItin, roster:subRoster, rooms:subRooms})[UI.odtSub](e, body);
+  ({details:subDetails, itinerary:subItin, roster:subRoster, rooms:subRooms, vans:subVans})[UI.odtSub](e, body);
 }
 const val2 = id => (document.getElementById(id) || {}).value || "";
 
@@ -1022,7 +1023,7 @@ function subRoster(e, body){
     ${missing.length ? `<div class="note">${missing.length} cadet${missing.length === 1 ? " has" : "s have"} a room but ${missing.length === 1 ? "isn't" : "aren't"} on the roster: ${esc(missing.map(pname).join(", "))}.</div>` : ""}
     <div class="people">${sortedRos.map(k => `<div class="item">${P[k] ? face(k, 32) : ""}<span class="txt"><span class="t1">${esc(pname(k))}</span><span class="t2"> ${esc(CLASS_LABEL[(personRow(k) || [])[2]] || "")}</span></span><div class="acts"><button class="btn small" type="button" data-rrm="${esc(k)}" aria-label="Take ${esc(pname(k))} off the roster">Remove</button></div></div>`).join("") || `<p class="muted">Nobody yet.</p>`}</div>`;
   const add = $("#rAddRooms"); if (add) add.addEventListener("click", () => { ros.push(...missing); changed(`${evName(e)}: added ${missing.length} cadets with rooms to the roster`); render(); });
-  body.querySelectorAll("[data-rrm]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.rrm; e.roster = ros.filter(x => x !== k); changed(`${evName(e)}: took ${pname(k)} off the roster`); render(); }));
+  body.querySelectorAll("[data-rrm]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.rrm; e.roster = ros.filter(x => x !== k); for (const v of e.vans || []) v.riders = (v.riders || []).filter(x => x !== k); changed(`${evName(e)}: took ${pname(k)} off the roster`); render(); }));
   $("#rAdd").addEventListener("click", () => {
     const keys = Object.keys(P).filter(k => !ros.includes(k)).sort((a, b) => (order.indexOf(P[a][2]) - order.indexOf(P[b][2])) || sortName(P[a]).localeCompare(sortName(P[b])));
     openDialog(`Add cadets to ${evName(e)}`, `<div class="field"><label class="label" for="rq">Find</label><input id="rq" type="search" placeholder="Last or first name"></div>
@@ -1072,6 +1073,170 @@ function subRooms(e, body){
     changed(`${evName(e)}: gave ${cadNo.map(pname).join(", ")} ${cadNo.length === 1 ? "a room" : "rooms"} of their own`); render();
   });
 }
+/* ---------- vans (Captain Russell, 16 Nov 2026) ----------
+   e.vans = [{id, name, kind, seats, driver, relief, riders:[keys]}]. Seats counts everyone, driver included.
+   Auto-assign keeps each van's driver and relief driver, keeps roommates together (a driver's or relief
+   driver's roommate rides in their van), then deals everyone else on the ODT roster across the vans in
+   proportion to the open seats (so every van keeps a little room), spreading each AS class evenly. */
+const VAN_ORDER = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
+const VAN_KINDS = [["isu15","15-passenger ISU van",15],["gov11","11-passenger GOV",11],["other","Other vehicle",0]];
+const vanKind = v => (VAN_KINDS.find(k => k[0] === v.kind) || VAN_KINDS[2])[1];
+const pcls = k => (personRow(k) || [])[2] || "";
+function vanAuto(e){
+  const vans = e.vans || [], fixed = new Map();
+  vans.forEach((v, i) => { for (const k of [v.driver, v.relief]) if (k) fixed.set(k, i); });
+  const onRoster = new Set(e.roster || []), done = new Set(fixed.keys());
+  // roommates ride together (Captain Russell, 16 Nov 2026): each room is one group; a room with a driver or
+  // relief driver in it rides in that person's van
+  const groups = [];
+  for (const r of e.rooms || []){
+    const g = r.cadets.filter(k => onRoster.has(k) && !done.has(k)), pin = r.cadets.map(k => fixed.get(k)).find(x => x != null);
+    if (!g.length) continue; g.forEach(k => done.add(k)); groups.push({keys:g, pin});
+  }
+  for (const k of e.roster || []) if (!done.has(k)){ done.add(k); groups.push({keys:[k]}); }
+  const rank = g => Math.min(...g.keys.map(k => VAN_ORDER.indexOf(pcls(k)) + 1 || 99));
+  groups.sort((a, b) => (a.pin != null ? 0 : 1) - (b.pin != null ? 0 : 1) || rank(a) - rank(b) || b.keys.length - a.keys.length || sortName(personRow(a.keys[0]) || [a.keys[0], ""]).localeCompare(sortName(personRow(b.keys[0]) || [b.keys[0], ""])));
+  const free = vans.map(v => Math.max(0, (+v.seats || 0) - (v.driver ? 1 : 0) - (v.relief ? 1 : 0)));
+  const total = free.reduce((a, b) => a + b, 0), n = Math.min(groups.reduce((t, g) => t + g.keys.length, 0), total);
+  const raw = free.map(f => total ? n * f / total : 0), target = raw.map(Math.floor);   // share of riders per van, by open seats
+  let left = n - target.reduce((a, b) => a + b, 0);
+  for (const i of raw.map((x, i) => i).sort((a, b) => (raw[b] - target[b]) - (raw[a] - target[a]))){ if (left <= 0) break; if (target[i] < free[i]){ target[i]++; left--; } }
+  vans.forEach(v => { v.riders = []; });
+  const per = vans.map(() => ({})), over = [];
+  const put = (g, i) => { for (const k of g.keys){ vans[i].riders.push(k); per[i][pcls(k)] = (per[i][pcls(k)] || 0) + 1; } };
+  for (const g of groups){
+    if (g.pin != null && vans[g.pin].riders.length + g.keys.length <= free[g.pin]){ put(g, g.pin); continue; }
+    const c = pcls(g.keys[0]); let best = -1;
+    const score = i => [(per[i][c] || 0), vans[i].riders.length / Math.max(target[i], 1)];
+    vans.forEach((v, i) => {                        // within each van's share: spread the class, then the load
+      if (v.riders.length + g.keys.length > target[i]) return;
+      if (best < 0){ best = i; return; }
+      const a = score(i), b = score(best);
+      if (a[0] < b[0] || (a[0] === b[0] && a[1] < b[1])) best = i;
+    });
+    if (best < 0) vans.forEach((v, i) => {          // a pair that fits no share: the van with the most open seats
+      if (v.riders.length + g.keys.length > free[i]) return;
+      if (best < 0 || free[i] - v.riders.length > free[best] - vans[best].riders.length) best = i;
+    });
+    if (best < 0){ over.push(...g.keys); continue; }
+    put(g, best);
+  }
+  return over;
+}
+function giveCadreRooms(e){
+  e.rooms = e.rooms || []; e.sections = e.sections || [];
+  const seen = new Set(e.rooms.flatMap(r => r.cadets)), need = (e.roster || []).filter(k => isCadre(k) && !seen.has(k));
+  if (!need.length) return need;
+  if (!e.sections.includes("Cadre")) e.sections.unshift("Cadre");
+  let next = e.rooms.map(r => +r.room).filter(x => x > 0).reduce((a, b) => Math.max(a, b), 0);
+  for (const k of need) e.rooms.push({room:String(++next), sec:"Cadre", cadets:[k]});
+  return need;
+}
+/* The Offutt plan Captain Russell gave on 16 Nov 2026: four cadre go, each drives a van, Capt Russell takes
+   the 11-passenger GOV, and four AS 300s are the relief drivers. Applied once at Set up, or from the Vans tab. */
+const ODT_PLANS = {
+  "offutt-2026-12": {cadre:["CacicJohn","RussellScott","MooreGabrielle","OrrTy"], vans:[
+    {name:"Van 1", kind:"isu15", seats:15, driver:"CacicJohn", relief:"MarschangAllissaA"},
+    {name:"Van 2", kind:"isu15", seats:15, driver:"OrrTy", relief:"HelleNicolasD"},
+    {name:"Van 3", kind:"isu15", seats:15, driver:"MooreGabrielle", relief:"AshbackerMiloK"},
+    {name:"GOV", kind:"gov11", seats:11, driver:"RussellScott", relief:"BourekAkrynJ"}]},
+};
+function applyPlan(e){
+  const P = ODT_PLANS[e.id]; if (!P) return null;
+  e.roster = e.roster || [];
+  const add = [...P.cadre, ...P.vans.map(v => v.relief)].filter(k => R().people[k] && !e.roster.includes(k));
+  e.roster.push(...add);
+  const rooms = giveCadreRooms(e);
+  e.vans = P.vans.map((v, i) => ({id:"van" + (i + 1), ...v, riders:[]}));
+  const over = vanAuto(e);
+  return {add, rooms, over};
+}
+
+function subVans(e, body){
+  const vans = e.vans = e.vans || [], P = R().people;
+  const place = {}; vans.forEach(v => { for (const k of [v.driver, v.relief, ...(v.riders || [])].filter(Boolean)) (place[k] = place[k] || []).push(v.name); });
+  const loose = (e.roster || []).filter(k => !place[k]), dup = Object.keys(place).filter(k => place[k].length > 1);
+  const offRoster = Object.keys(place).filter(k => !(e.roster || []).includes(k));
+  const plan = ODT_PLANS[e.id] && !vans.length;
+  const split = (e.rooms || []).filter(r => new Set(r.cadets.filter(k => place[k]).map(k => place[k][0])).size > 1);
+  const used = v => [v.driver, v.relief].filter(Boolean).length + (v.riders || []).length;
+  body.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Vans <span class="tag">${vans.length}</span></h3><p class="hint" style="margin:4px 0 0">Each van has a driver, a relief driver and riders. <b>Auto-assign riders</b> keeps the drivers, keeps roommates in the same van, and spreads everyone else on the roster across the vans by AS class, leaving open seats in each van.</p></div>
+      <div class="tools">${plan ? `<button class="btn small primary" type="button" id="vPlan">Apply the Offutt plan</button>` : ""}${vans.length ? `<button class="btn small" type="button" id="vAuto">Auto-assign riders</button>` : ""}<button class="btn small${plan ? "" : " primary"}" type="button" id="vAdd">Add a van</button></div></div>
+    ${plan ? `<div class="note">Offutt plan: Lt Col Cacic, Capt Russell, SSgt Moore and Capt Orr go and each drive a van (Capt Russell the 11-passenger GOV). Relief drivers are Marschang, Helle, Ashbacker and Bourek. Applying it adds the cadre to the roster with rooms of their own and assigns riders.</div>` : ""}
+    ${loose.length && vans.length ? `<div class="note">On the roster without a van: ${esc(loose.map(pname).join(", "))}.</div>` : ""}
+    ${dup.length ? `<div class="note bad">In more than one van: ${esc(dup.map(pname).join(", "))}.</div>` : ""}
+    ${split.length ? `<div class="note">Roommates in different vans: ${esc(split.map(r => `room ${r.room} (${r.cadets.map(pname).join(", ")})`).join("; "))}.</div>` : ""}
+    ${offRoster.length ? `<div class="note bad">In a van but not on the roster: ${esc(offRoster.map(pname).join(", "))}.</div>` : ""}
+    <div class="list">${vans.map((v, i) => { const u = used(v), full = +v.seats && u > +v.seats;
+      const counts = {}; for (const k of v.riders || []) counts[pcls(k)] = (counts[pcls(k)] || 0) + 1;
+      return `<div class="item" style="align-items:flex-start"><div class="txt">
+        <div class="t1">${esc(v.name)} <span class="tag">${esc(vanKind(v))}</span> <span class="tag${full ? "" : " gold"}">${u} of ${esc(v.seats || "?")} seats</span></div>
+        <div class="t2">Driver: ${v.driver ? esc(pname(v.driver)) : "none"} · Relief: ${v.relief ? esc(pname(v.relief)) : "none"}</div>
+        <div class="t2">${VAN_ORDER.filter(c => counts[c]).map(c => `${esc(CLASS_LABEL[c] || c)} ${counts[c]}`).join(" · ") || "No riders yet"}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px">${(v.riders || []).map(k => `<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px">${P[k] ? face(k, 26) : ""}${esc(pname(k))}<select data-mv="${esc(k)}" data-from="${i}" aria-label="Move ${esc(pname(k))} to another van" style="font-size:12px;padding:2px 4px">${vans.map((x, j) => opt(String(j), x.name, j === i)).join("")}</select></label>`).join("")}</div>
+        ${full ? `<div class="t2" style="color:var(--d250-cardinal-2,#ef4054)">Over capacity.</div>` : ""}</div>
+        <div class="acts"><button class="btn small" type="button" data-vup="${i}" ${i ? "" : "disabled"} aria-label="Move ${esc(v.name)} up">↑</button><button class="btn small" type="button" data-vdown="${i}" ${i < vans.length - 1 ? "" : "disabled"} aria-label="Move ${esc(v.name)} down">↓</button><button class="btn small" type="button" data-vedit="${i}">Edit</button></div></div>`; }).join("") || `<p class="muted">No vans yet.</p>`}</div>`;
+  const pl = $("#vPlan");
+  if (pl) pl.addEventListener("click", () => {
+    const r = applyPlan(e);
+    changed(`${evName(e)}: applied the van plan (${e.vans.length} vans${r.add.length ? `, added ${r.add.map(pname).join(", ")} to the roster` : ""}${r.rooms.length ? `, cadre rooms for ${r.rooms.map(pname).join(", ")}` : ""})`);
+    if (r.over.length) alert(`Not enough seats for: ${r.over.map(pname).join(", ")}. Add a van or more seats.`);
+    render();
+  });
+  const au = $("#vAuto");
+  if (au) au.addEventListener("click", () => {
+    if (vans.some(v => (v.riders || []).length) && !confirm("Re-deal every rider across the vans? Drivers and relief drivers stay put; any moves you made by hand are replaced.")) return;
+    const over = vanAuto(e); changed(`${evName(e)}: auto-assigned van riders`);
+    if (over.length) alert(`Not enough seats for: ${over.map(pname).join(", ")}. Add a van or more seats.`);
+    render();
+  });
+  $("#vAdd").addEventListener("click", () => vanDialog(e, -1));
+  body.querySelectorAll("[data-vedit]").forEach(b => b.addEventListener("click", () => vanDialog(e, +b.dataset.vedit)));
+  const mv = (i, d) => { const j = i + d; [vans[i], vans[j]] = [vans[j], vans[i]]; changed(`${evName(e)}: reordered vans`); render(); };
+  body.querySelectorAll("[data-vup]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.vup, -1)));
+  body.querySelectorAll("[data-vdown]").forEach(b => b.addEventListener("click", () => mv(+b.dataset.vdown, 1)));
+  body.querySelectorAll("[data-mv]").forEach(s => s.addEventListener("change", () => {
+    const k = s.dataset.mv, from = vans[+s.dataset.from], to = vans[+s.value];
+    from.riders = from.riders.filter(x => x !== k); (to.riders = to.riders || []).push(k);
+    changed(`${evName(e)}: moved ${pname(k)} to ${to.name}`); render();
+  }));
+}
+function vanDialog(e, i){
+  const vans = e.vans, isNew = i < 0, v = isNew ? {name:`Van ${vans.length + 1}`, kind:"isu15", seats:15, driver:"", relief:"", riders:[]} : vans[i];
+  const pool = [...new Set([...(e.roster || []), ...Object.keys(R().people)])]
+    .sort((a, b) => ((e.roster || []).includes(b) - (e.roster || []).includes(a)) || (VAN_ORDER.indexOf(pcls(a)) - VAN_ORDER.indexOf(pcls(b))) || sortName(personRow(a) || [a, ""]).localeCompare(sortName(personRow(b) || [b, ""])));
+  const people = sel => opt("", "(nobody)", !sel) + pool.map(k => opt(k, `${sortName(personRow(k) || [k, ""])} (${CLASS_LABEL[pcls(k)] || pcls(k) || "?"})${(e.roster || []).includes(k) ? "" : " · not on the ODT roster"}`, k === sel)).join("");
+  openDialog(isNew ? `Add a van to ${evName(e)}` : `Edit ${v.name}`, `
+    <div class="grid3">
+      <div class="field"><label class="label" for="vName">Name</label><input id="vName" type="text" value="${esc(v.name)}" required></div>
+      <div class="field"><label class="label" for="vKind">Vehicle</label><select id="vKind">${VAN_KINDS.map(([k, l]) => opt(k, l, k === v.kind)).join("")}</select></div>
+      <div class="field"><label class="label" for="vSeats">Seats (driver included)</label><input id="vSeats" type="number" min="1" max="60" value="${esc(v.seats || "")}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="vDriver">Driver</label><select id="vDriver">${people(v.driver)}</select></div>
+      <div class="field"><label class="label" for="vRelief">Relief driver</label><select id="vRelief">${people(v.relief)}</select></div>
+    </div>
+    <p class="hint">Picking a driver or relief driver who is riding in another van moves them here. Anyone picked who isn't on the ODT roster is added to it.</p>`,
+    `${isNew ? "" : `<button class="btn danger" id="vDel" type="button">Remove van</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="vSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
+  dlg.querySelector("#vKind").addEventListener("change", ev => { const k = VAN_KINDS.find(x => x[0] === ev.target.value); if (k && k[2]) dlg.querySelector("#vSeats").value = k[2]; });
+  dlg.querySelector("#vSave").addEventListener("click", () => {
+    const name = val("vName").trim(), seats = +val("vSeats") || 0, driver = val("vDriver"), relief = val("vRelief");
+    if (!name){ alert("A name is required."); return; }
+    if (driver && driver === relief){ alert("The driver and the relief driver must be different people."); return; }
+    const before = JSON.stringify(v);
+    for (const k of [driver, relief].filter(Boolean)) for (const x of vans){
+      if (x !== v){ x.riders = (x.riders || []).filter(y => y !== k); if (x.driver === k) x.driver = ""; if (x.relief === k) x.relief = ""; }
+    }
+    Object.assign(v, {name, kind:val("vKind"), seats, driver, relief});
+    v.riders = (v.riders || []).filter(k => k !== driver && k !== relief);
+    if (isNew){ let n = vans.length + 1; while (vans.some(x => x.id === "van" + n)) n++; v.id = "van" + n; vans.push(v); }
+    const add = [driver, relief].filter(k => k && !(e.roster || []).includes(k)); if (add.length){ e.roster = [...(e.roster || []), ...add]; changed(`${evName(e)}: added ${add.map(pname).join(", ")} to the roster`); }
+    if (isNew) changed(`${evName(e)}: added ${name}`); else if (before !== JSON.stringify(v)) changed(`${evName(e)}: updated ${name}`);
+    dlg.close(); render();
+  });
+  const del = dlg.querySelector("#vDel");
+  if (del) del.addEventListener("click", () => { if (!confirm(`Remove ${v.name}? Its riders go back to having no van.`)) return; vans.splice(i, 1); dlg.close(); changed(`${evName(e)}: removed ${v.name}`); render(); });
+}
 function eventDialog(id){
   const X = O(), e = id ? X.events.find(x => x.id === id) : {id:"", name:"", place:"", start:"", end:"", note:"", sections:["Cadre","Men · POC","Women","Men · GMC"]};
   const others = [...X.events].sort((x, y) => (y.start || "").localeCompare(x.start || ""));
@@ -1098,7 +1263,7 @@ function eventDialog(id){
     if (!id){
       let base = slug(name + " " + start.slice(0, 7)), nid = base, i = 2;
       while (X.events.some(x => x.id === nid)) nid = base + "-" + i++;
-      Object.assign(e, {id:nid, info:[], roster:[], rooms:[], docs:[]});
+      Object.assign(e, {id:nid, info:[], roster:[], rooms:[], docs:[], vans:[]});
       const from = val("eCopy"), src = from && X.events.find(x => x.id === from);
       if (src){
         const live = k => !!R().people[k];
