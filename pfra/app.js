@@ -123,6 +123,7 @@ async function boot() {
   // something a reader has to clear first.
   applyShareLink();
   wireListen();
+  wireMoreToggles();
   wireEnterToNext();
   wireBfa();
   wireTrack();
@@ -243,6 +244,47 @@ function advanceOnFull(fromId, toId, digits) {
   $(fromId).addEventListener('input', () => {
     if ($(fromId).value.length >= digits) $(toId).focus();
   });
+}
+
+/**
+ * Each component starts as one line: the picture, the name, the number boxes
+ * and the score (Captain Russell, Nov 2026: every component on one desktop
+ * screen). The arrow opens the full card, with its tools, sliders, chart range
+ * and charts, and closes it again.
+ */
+function setCardOpen(component, open) {
+  const card = document.querySelector(`.event[data-component="${component}"]`);
+  const button = card.querySelector('.more-toggle');
+  card.classList.toggle('open', open);
+  button.setAttribute('aria-expanded', String(open));
+  button.setAttribute('aria-label',
+    `${open ? 'Hide' : 'Show'} details for ${card.querySelector('h2').textContent}`);
+}
+
+function wireMoreToggles() {
+  for (const button of document.querySelectorAll('.more-toggle')) {
+    const component = button.dataset.more;
+    setCardOpen(component, false);
+    button.addEventListener('click', () => {
+      setCardOpen(component, !button.closest('.event').classList.contains('open'));
+    });
+  }
+  $('expand-all').addEventListener('click', () => {
+    const open = $('expand-all').getAttribute('aria-pressed') !== 'true';
+    for (const component of COMPONENTS) setCardOpen(component, open);
+    showExpandAll();
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.more-toggle')) showExpandAll();
+  });
+  showExpandAll();
+}
+
+function showExpandAll() {
+  const all = COMPONENTS.every((c) =>
+    document.querySelector(`.event[data-component="${c}"]`).classList.contains('open'));
+  $('expand-all').setAttribute('aria-pressed', String(all));
+  $('expand-all').textContent = all ? 'Collapse all' : 'Expand all';
 }
 
 /**
