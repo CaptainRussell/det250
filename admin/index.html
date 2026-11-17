@@ -116,7 +116,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
       <h1>Cadre Admin</h1>
-      <p class="d250-head-sub">Update the roster, photos, org chart, hub cards, document links and the ODT Module without touching code.</p>
+      <p class="d250-head-sub">Update the roster, photos, org chart, hub cards, document links and the ODT Tool without touching code.</p>
     </div>
   </div>
 </header>
@@ -377,7 +377,7 @@ $("#publish").addEventListener("click", async () => {
     let cfgAfter = null;
     if (odtDirty()){
       const now = await GH.readText(ODT_PATH);
-      if ((now ? now.sha : null) !== OD.sha) throw new Error("Someone else changed the ODT Module since you opened this page. Copy down your changes, reload, and make them again.");
+      if ((now ? now.sha : null) !== OD.sha) throw new Error("Someone else changed the ODT Tool since you opened this page. Copy down your changes, reload, and make them again.");
       files.push({path:ODT_PATH, text:await sealOdt(OD.pw, OD.data)});
       const keep = docIds(OD.data);
       for (const [id, f] of Object.entries(OD.files)) if (keep.has(id)) files.push({path:odtFile(id), text:JSON.stringify(await sealRaw(OD.pw, f.bytes)) + "\n"});
@@ -803,7 +803,7 @@ async function loadOdt(){
   }
 }
 function seedData(x){
-  const out = {title:"ODT Module", former:{}, events:[]};
+  const out = {title:"ODT Tool", former:{}, events:[]};
   if (!x) return out;
   out.former = x.former || {};
   const blank = {info:[], docs:[]};
@@ -852,13 +852,13 @@ const LISTS = {
 
 function renderRooms(){
   const el = $("#tab-rooms");
-  const head = `<div class="tabhd"><div><h2>ODT Module</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Module</a> page: one entry per ODT with its details, itinerary file, roster (cadets and cadre), rooms, vans and documents. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
+  const head = `<div class="tabhd"><div><h2>ODT Tool</h2><p>Everything cadets see on the <a class="linkbtn" href="../odt/" target="_blank" rel="noopener">ODT Tool</a> page: one entry per ODT with its details, itinerary file, roster (cadets and cadre), rooms, vans and documents. It is locked with the cadet password (the Documents and Policy password), so nothing here is public.</p></div>`;
   if (!OD.data){
     const known = !!CFG.locks.docs;
     const setup = !OD.exists;
     el.innerHTML = `${head}</div>
       <div class="panel"><div class="panel-bd" style="display:flex;flex-direction:column;gap:12px;max-width:560px">
-        <b>${setup ? "Set up the ODT Module" : "Unlock the ODT Module"}</b>
+        <b>${setup ? "Set up the ODT Tool" : "Unlock the ODT Tool"}</b>
         <p class="muted" style="margin:0">${setup ? `This makes the locked ODT file.${OD.seed ? " The Offutt rooms move into it from the old public room list, which is then deleted. Lt Col Cacic, Capt Russell, SSgt Moore and Capt Orr are added with rooms of their own, and the four vans get their drivers and riders (check the Vans tab)." : ""} Nothing changes on the live site until you publish.` : known ? "The saved cadet password doesn't open the ODT file. Enter the current cadet password." : "Enter the cadet password once. It is saved, locked with the admin password, the next time you publish."}</p>
         ${setup && known ? "" : `<div class="field"><label class="label" for="odPw">Cadet password</label><input id="odPw" type="password" autocomplete="off"></div>`}
         <div class="err" id="odErr" role="alert"></div>
@@ -872,7 +872,7 @@ function renderRooms(){
         if (setup){
           try{ await REKEY.docs(pw, null); }catch(_){ throw new Error("That isn't the cadet password (it doesn't open the Documents and Policy files)."); }
           OD.pw = pw; OD.data = seedData(OD.seed); OD.orig = "";
-          changed(`Set up the ODT Module, locked with the cadet password${OD.seed ? " (Offutt rooms moved in from the public room list; Offutt cadre, cadre rooms and vans set up)" : ""}`);
+          changed(`Set up the ODT Tool, locked with the cadet password${OD.seed ? " (Offutt rooms moved in from the public room list; Offutt cadre, cadre rooms and vans set up)" : ""}`);
         } else {
           let data; try{ data = await openOdt(pw, OD.vault); }catch(_){ throw new Error("That password doesn't open the ODT file."); }
           OD.pw = pw; OD.data = data; OD.orig = JSON.stringify(data);
@@ -890,7 +890,7 @@ function renderRooms(){
     <div class="panel" style="margin-bottom:14px"><div class="panel-bd row" style="gap:12px;align-items:flex-end">
       <div class="field" style="flex:1;min-width:220px"><label class="label" for="rmEv">ODT</label><select id="rmEv">${sorted.map(x => opt(x.id, `${evName(x)}${x.start ? " (" + x.start + ")" : ""}`, e && x.id === e.id)).join("") || opt("", "None yet", true)}</select></div>
       ${e ? `<button class="btn" id="delEv" type="button">Remove this ODT</button>` : ""}
-      <div class="field" style="flex:1;min-width:200px"><label class="label" for="rmTitle">Tool name in the header</label><input id="rmTitle" type="text" value="${esc(X.title || "")}" placeholder="ODT Module"></div>
+      <div class="field" style="flex:1;min-width:200px"><label class="label" for="rmTitle">Tool name in the header</label><input id="rmTitle" type="text" value="${esc(X.title || "")}" placeholder="ODT Tool"></div>
     </div></div>
     ${e ? `<div class="seg" role="group" aria-label="ODT section" style="margin-bottom:14px">${SUBS.map(([k, l]) => `<button type="button" data-sub="${k}" aria-pressed="${UI.odtSub === k}">${l}</button>`).join("")}</div><div id="odBody"></div>` : `<p class="muted">No ODTs yet. Press <b>New ODT</b> to add the first one.</p>`}`;
   $("#rmTitle").addEventListener("change", ev => { const v = ev.target.value.trim(); if (v !== (X.title || "")){ X.title = v; changed(`ODT: tool name set to ${v || "(blank)"}`); } });
@@ -1157,6 +1157,7 @@ function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order 
   if (cadre.length) e.sections = [...(e.sections || []).filter(s => s !== "Cadre"), "Cadre"];   // cadre rooms show after the cadets
 }
 function applyPendingPlans(){                         // an ODT that was set up before its plan existed gets it on open
+  if (OD.data && OD.data.title === "ODT Module"){ OD.data.title = "ODT Tool"; changed(`Tool name is now "ODT Tool"`); }   // renamed 17 Nov 2026
   for (const e of (OD.data ? OD.data.events : [])) if (/same gender/i.test(e.note || "")){   // Captain Russell, 16 Nov 2026: the line under the name says what the trip is
     e.note = "Base Visit"; changed(`${evName(e)}: line under the name is now "Base Visit"`);
   }
@@ -1382,7 +1383,7 @@ function roomDialog(e, i){
 async function renderHistory(){
   const el = $("#tab-history");
   el.innerHTML = `
-    <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards, documents and the ODT Module. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
+    <div class="tabhd"><div><h2>History</h2><p>Recent changes to the roster, hub cards, documents and the ODT Tool. Undo puts every file that change touched back the way it was, as a new change you can also undo.</p></div></div>
     <div class="list hist" id="hist"><p class="muted">Loading…</p></div>
     <h3 class="grp" style="margin-top:28px">Site passwords</h3>
     <p class="hint" style="margin:0 0 10px">The passwords cadets and cadre type to open locked parts of Storm HQ. Any admin can see or change them here without knowing the old one. Changing one locks the files again with the new password; the old one stops working about a minute later. The Cadre Dashboard always uses the admin password, so it changes with it.</p>
@@ -1455,7 +1456,7 @@ function vaultDialog(newKey){
 
 /* ---------- site passwords (re-lock the encrypted files with a new password) ---------- */
 const LOCKS = {
-  docs:  {label:"Documents and Policy (cadet password)", what:"Opens the OPLAN, Policy Packet, cadre duties roster, weekly OPORDs and the ODT Module."},
+  docs:  {label:"Documents and Policy (cadet password)", what:"Opens the OPLAN, Policy Packet, cadre duties roster, weekly OPORDs and the ODT Tool."},
   fse:   {label:"Flight Staff Evaluation", what:"Opens the Flight Staff Evaluation page."},
   cadre: {label:"Cadre Dashboard", what:"Opens the Peer Feedback and Flight Staff Evaluation results."},
 };
@@ -1506,9 +1507,9 @@ const REKEY = {
     }
     const vault = {...V, iter:310000, salt:bytesB64(salt), check:bytesB64(await seal(enc.encode("storm-hq-vault-ok")))};
     out.push({path:"documents/restricted/vault.json", text:JSON.stringify(vault, null, 1) + "\n"});
-    const odt = await GH.readText(ODT_PATH);          // the ODT Module uses the same cadet password
+    const odt = await GH.readText(ODT_PATH);          // the ODT Tool uses the same cadet password
     if (odt){
-      let data; try{ data = await openOdt(oldPw, JSON.parse(odt.text)); }catch(_){ throw new Error("The ODT Module file doesn't open with this password. Ask a technical person to check odt/vault.json."); }
+      let data; try{ data = await openOdt(oldPw, JSON.parse(odt.text)); }catch(_){ throw new Error("The ODT Tool file doesn't open with this password. Ask a technical person to check odt/vault.json."); }
       out.push({path:ODT_PATH, text:await sealOdt(newPw, data)});
       for (const id of docIds(data)){                  // and its supporting documents
         const f = await GH.readText(odtFile(id)); if (!f) continue;

@@ -147,7 +147,7 @@ const GROUPS = [
     {href:"../admin/#chart", art:"org-chart", tone:"#2f7d32", name:"Org chart", blurb:"Who holds each seat, ranks, Flip Week holders and who reports to whom."},
     {href:"../admin/#hub", icon:"hub", tone:"#c8102e", name:"Hub cards", blurb:"Edit, hide or reorder the cards on the Storm HQ home page."},
     {href:"../admin/#docs", art:"documents", tone:"#0369a1", name:"Documents and Policy", blurb:"Add, edit or reorder documents: outside links or uploaded PDFs."},
-    {href:"../admin/#rooms", art:"odt", tone:"#155e75", name:"ODT Module", blurb:"Each ODT's details, itinerary, roster, rooms and supporting documents."},
+    {href:"../admin/#rooms", art:"odt", tone:"#155e75", name:"ODT Tool", blurb:"Each ODT's details, itinerary, roster, rooms and supporting documents."},
     {href:"../admin/#history", icon:"history", tone:"#475569", name:"History and undo", blurb:"Recent changes with Undo, the admin password and the GitHub key."},
     {href:"../admin/#history", icon:"key", tone:"#a06f00", name:"Site passwords", blurb:"Show or change the cadet, Flight Staff Evaluation and cadre passwords."}
   ]},
@@ -170,7 +170,7 @@ function show(){
   $("#lockwrap").hidden = true; $("#app").hidden = false;
   let i = 0;
   $("#cards").innerHTML = GROUPS.map((g, n) => `<section class="grp" aria-labelledby="g${n}"><div class="sechead"><h2 id="g${n}">${g.title}</h2></div><div class="grid">${g.cards.map(c => card(c, i++)).join("")}</div></section>`).join("");
-  const missing = [!SI.has("docs") && "Documents and Policy and the ODT Module (cadet password)", !SI.has("fse") && "Flight Staff Evaluation"].filter(Boolean);
+  const missing = [!SI.has("docs") && "Documents and Policy and the ODT Tool (cadet password)", !SI.has("fse") && "Flight Staff Evaluation"].filter(Boolean);
   $("#notes").innerHTML = missing.length ? `<p class="note">Cadre sign-in doesn't open ${missing.join(" or ")} yet. Save ${missing.length > 1 ? "those passwords" : "that password"} once on <a href="../admin/#history">Site passwords</a> (press "Enter it once"), and it will from then on.</p>` : "";
 }
 $("#f").addEventListener("submit", async e => {

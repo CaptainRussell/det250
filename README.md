@@ -22,7 +22,7 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
 ## Cadre only
-- **Sign-in:** the home page asks for the cadet or cadre password once per tab (or Skip). Cadet opens the locked documents and ODT Module; cadre also shows the Admin card.
+- **Sign-in:** the home page asks for the cadet or cadre password once per tab (or Skip). Cadet opens the locked documents and ODT Tool; cadre also shows the Admin card.
 - **Admin** (`admin-hub/`): one page with every cadre and back-end page: Cadre Dashboard, Cadre Admin tabs, Site passwords, the admin guide and GitHub.
 - **Cadre Admin** (`admin/`, admin password): update the roster and photos, org chart positions, hub cards and document links without code. Each Publish is one change on GitHub and can be undone. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
 

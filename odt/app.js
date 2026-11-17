@@ -1,4 +1,4 @@
-/* Storm HQ ODT Module.
+/* Storm HQ ODT Tool.
    Every ODT's details live in odt/vault.json, encrypted with the cadet password (the same one
    as Documents and Policy): PBKDF2-SHA256 + AES-256-GCM, the layout of tools/encrypt.mjs.
    Cadre edit it on the Cadre Admin ODT tab. People, photos, ranks and positions come from
@@ -221,14 +221,13 @@ function docs(e){                                   // the itinerary first, then
   return jump + info + oldItin + L.map(d => `<section class="sec docview" id="doc-${esc(d.id)}"><h2>${esc(d.title)}<span class="dbtns"><button class="btn small" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn small" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button></span></h2>${d.note ? `<p class="muted">${esc(d.note)}</p>` : ""}<p class="derr" role="status"></p>
     <div class="pdfpages" data-pdf="${esc(d.id)}" data-label="${esc(d.title)}"><p class="empty">Opening ${esc(d.title)}…</p></div></section>`).join("");
 }
+/* the emblem of the command an ODT visits, in place of the calendar date (Captain Russell, 17 Nov 2026) */
+const EMBLEM = {"offutt-2026-12": {src:"../documents/storm-standard/art/official/cocom-usstratcom.webp", name:"U.S. Strategic Command"}};
 function allList(){
-  const card = e => { const rs = e.rooms || [], ros = rosterOf(e), d = day(e.start);
-    const cad = ros.filter(k => who(k).cls === "Cadre"), n = ros.length - cad.length;
-    const faces = (cad.length ? cad : ros).slice(0, 4).map(k => face(who(k), 30)).join("");   // the cadre going, else the first cadets
+  const card = e => { const d = day(e.start);         // emblem, name and date only (Captain Russell, 17 Nov 2026)
     return `<button type="button" class="evcard${isPast(e) ? " past" : ""}" data-ev="${esc(e.id)}">
-      <span class="cal" aria-hidden="true"><small>${d ? MON[d.getMonth()].toUpperCase() : ""}</small><b>${d ? d.getDate() : "?"}</b></span>
-      <span><span class="t1">${esc(e.name)}</span><br><span class="t2">${esc([dates(e), e.place].filter(Boolean).join(" · "))}</span><br><span class="t2">${n} cadet${n === 1 ? "" : "s"}${cad.length ? ` · ${cad.length} cadre` : ""}${rs.length ? ` · ${rs.length} rooms` : ""}</span></span>
-      <span class="stack" aria-hidden="true">${faces}</span></button>`; };
+      ${EMBLEM[e.id] ? `<span class="emblem" aria-hidden="true"><img src="${esc(EMBLEM[e.id].src)}" alt="" width="60" height="60"></span>` : `<span class="cal" aria-hidden="true"><small>${d ? MON[d.getMonth()].toUpperCase() : ""}</small><b>${d ? d.getDate() : "?"}</b></span>`}
+      <span><span class="t1">${esc(e.name)}</span><br><span class="t2">${esc(dates(e))}</span></span></button>`; };
   const up = EVENTS.filter(e => !isPast(e)).sort((x, y) => (x.start || "").localeCompare(y.start || "")), past = EVENTS.filter(isPast);
   return (up.length ? `<section class="sec"><h2>Current and upcoming<span>${up.length}</span></h2><div class="evlist">${up.map(card).join("")}</div></section>` : "") +
     (past.length ? `<section class="sec"><h2>Past<span>${past.length}</span></h2><div class="evlist">${past.map(card).join("")}</div></section>` : "") ||
@@ -246,7 +245,7 @@ function render(){
     $("#ev").innerHTML = `<div><h2>All ODTs</h2><div class="meta">Pick an ODT to find your room, your van and its documents.</div></div>`;
     $("#me").innerHTML = "";
     $("#view").innerHTML = allList();
-    document.title = `All ODTs · ${D.title || "ODT Module"} · Storm HQ`;
+    document.title = `All ODTs · ${D.title && D.title !== "ODT Module" ? D.title : "ODT Tool"} · Storm HQ`;
   } else {
     $("#ev").innerHTML = `<div><button class="linkbtn back" type="button" data-all>‹ All ODTs</button><h2>${esc(e.name)}${pill(e)}</h2><div class="meta">${esc([dates(e), e.place, e.note].filter(Boolean).join(" · "))}</div></div>`;
     $("#me").innerHTML = meBox(e);
@@ -299,13 +298,13 @@ window.addEventListener("hashchange", () => { if (D) route(); });
 let V = null;
 function show(data){
   D = data; EVENTS = (D.events || []).slice().sort((x, y) => (y.start || "").localeCompare(x.start || ""));
-  if (D.title) $("#title").textContent = D.title;
+  if (D.title && D.title !== "ODT Module") $("#title").textContent = D.title;   // renamed ODT Tool, 17 Nov 2026
   $("#lockwrap").hidden = true; $("#app").hidden = false; route();
 }
 async function start(){
   try{ const r = await fetch("vault.json", {cache:"no-store"}); V = r.ok ? await r.json() : null; }catch(_){ V = null; }
   $("#loading").hidden = true;
-  if (!V){ $("#lockwrap").hidden = false; $("#unlock").hidden = true; $("#lockMsg").textContent = "The ODT Module isn't set up yet. Cadre set it up on the Cadre Admin page (ODT tab)."; return; }
+  if (!V){ $("#lockwrap").hidden = false; $("#unlock").hidden = true; $("#lockMsg").textContent = "The ODT Tool isn't set up yet. Cadre set it up on the Cadre Admin page (ODT tab)."; return; }
   let saved = ""; try{ saved = sessionStorage.getItem(PASS_KEY) || ""; }catch(_){}
   if (saved){ try{ const data = await open(saved, V); PW = saved; show(data); return; }catch(_){} }
   $("#lockwrap").hidden = false; $("#pw").focus();
