@@ -30,12 +30,34 @@ button,input,select{font:inherit;color:inherit}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--d250-shadow)}
 .panel>h2,.panel .ph{margin:0;padding:14px 16px 10px;font-size:15px;font-weight:800;letter-spacing:.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ph .rt{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--soft)}
-.search{display:flex;gap:8px;padding:0 16px 12px}
-.search input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+.search{position:relative;display:flex;margin-top:12px}
+.search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.search input{flex:1;min-width:0;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+/* PFRA-style bars at the top of the picker */
+.tbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:16px 16px 0;padding:9px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:13px;color:var(--soft)}
+.tbar b{color:var(--ink);font-size:13.5px}
+.gbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:14px 16px 12px}
+.gbar h2{margin:0;font-size:15px;font-weight:800;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gtools{margin-left:auto;display:flex;align-items:center;gap:10px}
+.gtools .cnt{font-size:12.5px;font-weight:700;color:var(--soft)}
+.reset-pill{padding:6px 15px;border-radius:999px;border:1px solid var(--d250-cardinal);background:var(--d250-cardinal);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:filter .14s}
+.reset-pill:hover{filter:brightness(1.1)}
+.reset-pill.armed{background:transparent;color:var(--d250-cardinal)}
+:root[data-theme="dark"] .reset-pill{background:#ef4054;border-color:#ef4054}
+:root[data-theme="dark"] .reset-pill.armed{background:transparent;color:#ef4054}
+.kicker{margin:0;text-align:center;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:800;color:var(--faint)}
+.rcount{margin:2px 0 12px;text-align:center;font-size:13px;color:var(--soft)}
 .gnote{margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .psnote{margin:0 16px 12px}
 .psnote b{color:var(--ink)}
 /* the picker: a grid laid out like the AFROTC Ribbon Chart (Sup Figure 10.4), highest first, left to right */
+/* slim header, as on the PFRA Calculator, so the picker starts high on the screen */
+.d250-head.masthead .d250-head-in{padding-top:8px;padding-bottom:8px;gap:10px}
+.d250-head.masthead .d250-head-icon{width:36px;height:36px;border-radius:10px}
+.d250-head.masthead .d250-eyebrow{display:none}
+.d250-head.masthead h1{font-size:1.2rem;margin:0}
+.d250-head.masthead .d250-head-sub{margin:0;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){.d250-head.masthead .d250-head-sub{display:none}}
 .pickcol{container-type:inline-size}
 .cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:2px 16px 14px}
 @container (min-width:460px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -54,13 +76,23 @@ button,input,select{font:inherit;color:inherit}
 .tsp{display:inline-block;width:20px}
 @container (max-width:459px){.cgrid{gap:6px;padding:2px 10px 14px}.tg{padding:9px 5px 7px}.tn{font-size:11.5px}}
 .tile.on .tn{color:var(--ink);font-weight:700}
+.tile.split{flex-direction:column}
+.tile.split .halves{display:flex;flex:1}
+.tile.split .tg{position:relative;padding:9px 4px 6px;gap:5px}
+.tile.split .tg+.tg{border-left:1px dashed var(--line-strong);border-radius:0 10px 10px 0}
+.tile.split .tg:first-child{border-radius:10px 0 0 10px}
+.tile.split .tg .sw{max-width:60px}
+.tile.split .tn{font-size:13px;font-weight:800;letter-spacing:.04em}
+.tile.split .tg.on{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.tile.split .tg.on .tn{color:var(--ink);font-weight:700}
+.tile.split .stn{display:block;padding:0 26px 8px 8px;text-align:center;font-size:11.5px;color:var(--soft);line-height:1.25}
+.tile.split.on .tg::before{display:none}
+.tile.split .tg.on::before{content:"";display:block;position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316161a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .tile.on .tg::before{content:"";position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316161a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .ti{position:absolute;right:1px;bottom:1px;width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
 .ti:hover{color:var(--ink);background:var(--line)}
 .ti svg{width:16px;height:16px}
-.offh{margin:0 16px 8px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
-.offh span{font-weight:600;letter-spacing:0;text-transform:none}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
+.legend-x{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .legend b{color:var(--ink)}
 .nomatch{margin:0 16px 12px;font-size:13px;color:var(--soft)}
 /* ribbon details pop-out: criteria, source and devices */
@@ -102,7 +134,7 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 /* rack */
 .rackcol{position:sticky;top:calc(var(--d250-bar-h,42px) + 12px)}
 @media (max-width:900px){.rackcol{position:static}}
-.rackbox{padding:4px 16px 16px}
+.rackbox{padding:20px 16px 16px}
 .stage{background:#2b3c63;background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:26px 14px;display:grid;place-items:center;min-height:150px;overflow:hidden}
 .stage svg{max-width:100%;height:auto;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 .stage .rb{cursor:pointer}
@@ -131,6 +163,14 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--d250-gold-bg);color:var(--ink);font-size:13px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
 .shared{margin-bottom:14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notes{margin-top:20px}
+/* folds, as on the PFRA Calculator: title, a short hint, caret at the right */
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:18px 20px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{margin:0;font-size:17px;font-weight:800}
+details.fold>summary::after{content:"▾";margin-left:auto;color:var(--faint)}
+details.fold[open]>summary::after{content:"▴"}
+details.fold[open]>summary{padding-bottom:10px}
+.hint{font-size:13px;font-weight:500;color:var(--faint);letter-spacing:0}
 .notes .body{padding:0 16px 14px;font-size:14px;color:var(--soft)}
 .notes ul{margin:0;padding-left:20px}
 .notes li{margin:6px 0}
@@ -150,14 +190,6 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .nameline input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--surface-2)}
 #printSheet{display:none}
 /* AFROTC ribbon chart pop-out (Sup Figure 10.4) */
-.chartcta{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 16px;padding:10px 14px 10px 10px;border-radius:12px;border:2px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface));color:var(--ink);text-align:left;cursor:pointer;transition:background-color .14s,transform .14s}
-.chartcta:hover{background:color-mix(in srgb,var(--gold) 22%,var(--surface))}
-.chartcta:active{transform:scale(.99)}
-.chartcta img{width:84px;height:56px;object-fit:cover;border-radius:7px;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.chartcta .ct{flex:1;min-width:0}
-.chartcta b{display:block;font-size:16px;line-height:1.25}
-.chartcta small{display:block;margin-top:2px;font-size:13px;color:var(--soft)}
-.chartcta .go{flex:none;color:var(--gold)}
 .chartthumb{display:block;width:92px;flex:none;border-radius:6px;border:1px solid var(--line-strong);cursor:zoom-in;padding:0;background:none;overflow:hidden}
 .chartthumb img{display:block;width:100%;height:auto}
 dialog.chart{padding:0;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden}
@@ -190,7 +222,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
 
-<header class="d250-head" style="--tone:#4338ca">
+<header class="d250-head masthead" style="--tone:#4338ca">
   <div class="d250-head-in">
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/ribbon-rack.webp" alt="" width="56" height="56"></span>
     <div class="d250-head-text">
@@ -207,26 +239,28 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <button class="btn" id="startOwn" type="button">Start my own rack</button>
   </div>
 
-  <button class="chartcta" type="button" data-chart aria-haspopup="dialog"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160"><span class="ct"><b>View the official AFROTC Ribbon Chart</b><small>Every ribbon in order of precedence, from DAFI36-2903_AFROTCSUP Figure 10.4</small></span><svg class="go" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   <div class="layout">
     <section class="panel pickcol" aria-labelledby="h-pick">
-      <h2 class="ph" id="h-pick">Your ribbons<span class="rt" id="pickCount">0 selected</span></h2>
-      <div class="search">
-        <input id="q" type="search" placeholder="Find a ribbon, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Find a ribbon" autocomplete="off">
+      <div class="tbar"><b>How to pick</b><span>Tap a ribbon to add or remove it. Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg> for criteria and devices.</span></div>
+      <div class="gbar">
+        <h2 id="h-pick">Ribbons <span class="hint">Figure 10.4 order, highest first</span></h2>
+        <span class="gtools"><span class="cnt" id="pickCount">0 selected</span><button type="button" class="reset-pill" id="clearBtn" title="Clears every ribbon, the name and the layout.">Reset Everything</button></span>
       </div>
-      <p class="legend"><span><b>Tap a ribbon</b> to add or remove it.</span><span><b>Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></b> for criteria and devices.</span><span>Same order as Figure 10.4: left to right, highest first.</span></p>
       <p class="nomatch hidden" id="nomatch">No ribbon matches that.</p>
       <div class="cgrid" id="grid" aria-label="AFROTC ribbons in order of precedence"></div>
-      <p class="offh" id="offh">Also authorized <span>· not on Figure 10.4</span></p>
-      <div class="cgrid" id="gridx"></div>
       <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span></p>
       <p class="gnote psnote"><b>CAP, JROTC or another service's ROTC?</b> Awards earned there may also be worn. They aren't built here; ask your cadre where they go in your rack. Valor awards from those programs go right below the AFROTC valor awards. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1; AFROTCI 36-2011V3 15.4.1</span></p>
     </section>
 
     <aside class="panel rackcol" aria-labelledby="h-rack">
-      <h2 class="ph" id="h-rack">Your rack <span class="rt" id="rackCount"></span></h2>
       <div class="rackbox">
+        <h2 class="kicker" id="h-rack">Your rack</h2>
+        <p class="rcount" id="rackCount">No ribbons yet</p>
         <div class="stage" id="stage" aria-live="polite"></div>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Find a ribbon, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Find a ribbon" autocomplete="off">
+        </div>
         <div class="ctrls">
           <span class="lbl" id="perLbl">Ribbons per row</span>
           <div class="seg" role="group" aria-labelledby="perLbl">
@@ -249,7 +283,6 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
           <button class="btn primary" type="button" id="printBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print actual size</button>
           <button class="btn" type="button" id="pngBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Save image</button>
           <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy share link</button>
-          <button class="btn" type="button" id="clearBtn">Reset rack</button>
         </div>
         <div id="warns"></div>
         <ol class="order" id="orderList" aria-label="Rack order, highest first"></ol>
@@ -257,29 +290,8 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     </aside>
   </div>
 
-  <section class="panel notes" aria-labelledby="h-notes">
-    <h2 class="ph" id="h-notes">How to wear it</h2>
-    <div class="body">
-      <ul>
-        <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.1, Fig 10.4</span></li>
-        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span> Awards earned in CAP or in any service's ROTC or JROTC program may also be worn. They are not on the AFROTC ribbon chart, so the tool doesn't build them. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1</span></li>
-        <li><b>Valor awards:</b> active duty valor awards go above all AFROTC awards. An AFJROTC valor award counts as the AFROTC award; CAP, Army ROTC and Navy ROTC valor awards go below the AFROTC valor awards and above everything else. If several valor awards are given for the same act, wear only one. <span class="cite">AFROTCI 36-2011V3 15.4, 15.4.1</span></li>
-        <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">DAFI36-2903_AFROTCSUP Fig 10.4</span></li>
-        <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
-        <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
-        <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
-        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
-        <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.3, 10.8.1.4</span></li>
-        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. Your first 100, at the detachment or at Field Training, adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.4; AFROTCI 36-2011V3 Table 15.1</span></li>
-        <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; DAFI36-2903_AFROTCSUP 10.8.1.4</span></li>
-        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, Sons of the American Revolution, MOWW) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (gold, silver or bronze by AS class). <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span> ROA and MOWW work the same way: one gold, silver or bronze medal device, no oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span></li>
-        <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="panel notes refs" aria-labelledby="h-refs">
-    <h2 class="ph" id="h-refs">References</h2>
+  <details class="panel notes fold refs" id="refs">
+    <summary><h2 id="h-refs">References</h2><span class="hint">The chart, regulations and award sources behind the rack</span></summary>
     <div class="body">
       <div class="doc">
         <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160" loading="lazy"></button>
@@ -322,7 +334,28 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
         <div class="da"><a class="btn" href="https://vmi.edu/news/headlines/2020-2021/two-cadets-receive-military-engineering-award.php" target="_blank" rel="noopener">Open</a></div>
       </div>
     </div>
-  </section>
+  </details>
+  <details class="panel notes fold wear" id="wear">
+    <summary><h2 id="h-notes">How to wear it</h2><span class="hint">Rows, devices and placement on the uniform</span></summary>
+    <div class="body">
+      <ul>
+        <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.1, Fig 10.4</span></li>
+        <li><b>Prior service ribbons</b> earned on active duty go ahead of all AFROTC ribbons. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span> Awards earned in CAP or in any service's ROTC or JROTC program may also be worn. They are not on the AFROTC ribbon chart, so the tool doesn't build them. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1</span></li>
+        <li><b>Valor awards:</b> active duty valor awards go above all AFROTC awards. An AFJROTC valor award counts as the AFROTC award; CAP, Army ROTC and Navy ROTC valor awards go below the AFROTC valor awards and above everything else. If several valor awards are given for the same act, wear only one. <span class="cite">AFROTCI 36-2011V3 15.4, 15.4.1</span></li>
+        <li><b>Civil Air Patrol:</b> wear only your highest CAP award. <span class="cite">DAFI36-2903_AFROTCSUP Fig 10.4</span></li>
+        <li><b>Service dress coat:</b> wear all or some ribbons, centered and resting on (but not over) the edge of the pocket on your left. The bottom of the name tag lines up with the bottom of the ribbons. <span class="cite">DAFI 36-2903 4.5.2.2, 4.5.2.3</span></li>
+        <li><b>Blue shirt or blouse:</b> ribbons are optional. If worn, center them on your left, parallel with the ground, with the bottom of the ribbons even with the bottom of the name tag. <span class="cite">DAFI 36-2903 4.7.3</span></li>
+        <li><b>Rows and the short top row:</b> the coat lapel may cover part of the rack. Figure 13.1 shows racks where the lapel does not cover the ribbons (or on other uniforms) with the short top row centered, and racks where the lapel covers part of them with the short rows kept to the outside, away from the lapel. Other arrangements are authorized as needed. No space between rows. <span class="cite">DAFI 36-2903 13.1.2, 13.5.2</span></li>
+        <li><b>Devices:</b> a bronze oak leaf cluster for each added award (each completed scholarship year on the College Scholarship ribbon); a silver cluster replaces five bronze. Silver devices go to the wearer's right of bronze. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.5, 10.8.1.6; DAFI 36-2903 13.6</span></li>
+        <li><b>Stars:</b> silver star on the FT Distinguished Graduate ribbon, the national winner of the Outstanding CTA award, and the AFA Outstanding Cadet of the Year. Bronze star on the two weapon Expert Marksmanship ribbon and the AFA Lovelace award. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.3, 10.8.1.4</span></li>
+        <li><b>Fitness Award:</b> earned with a 95 or higher on the PFA, once per term. Your first 100, at the detachment or at Field Training, adds one silver star, worn centered or to the wearer's right of any oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.4; AFROTCI 36-2011V3 Table 15.1</span></li>
+        <li><b>FT Distinguished Graduate and Superior Performer:</b> both use the same ribbon. The DG wears it with a silver star; the Superior Performer wears it without a device, right after the DG. <span class="cite">NOTACC CY25-119; DAFI36-2903_AFROTCSUP 10.8.1.4</span></li>
+        <li><b>Organizational awards</b> (Legion of Valor, American Legion, ROA, Sons of the American Revolution, MOWW) wear only one device, centered, even if earned more than once. If you earned different levels, wear only the highest (gold, silver or bronze by AS class). <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span> ROA and MOWW work the same way: one gold, silver or bronze medal device, no oak leaf clusters. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.7</span></li>
+        <li><b>Badges:</b> your first badge is centered 1/2 inch above the top row of ribbons. <span class="cite">DAFI 36-2903 12.2.4</span></li>
+      </ul>
+    </div>
+  </details>
+
 </div>
 
 <footer class="d250-foot">
@@ -697,34 +730,45 @@ function searchText(r){
   const g = GROUPS.find(x => x.id === r.grp) || {title: ""};
   return [r.name.replace(/[“”]/g, ""), g.title.replace(/\s*\(.*\)/, ""), initials(r.name), ALIAS[r.id] || ""].join(" ").toLowerCase();
 }
-/* The grid mirrors Figure 10.4: the 60 ribbons on the chart, in its order. Ribbons that are authorized but not on the
-   chart (FT Superior Performer) sit in a short row under it; the rack still places them by precedence. */
-const OFF_CHART = new Set(["ftsp"]);
+/* The grid mirrors Figure 10.4: the ribbons on the chart, in its order. The FT Superior Performer wears the same ribbon
+   as the FT Distinguished Graduate (no device, right after the DG; not on the chart), so the DG spot is one split tile:
+   half Distinguished Graduate, half Superior Performer. A cadet earns one or the other. */
+const SPLIT = {ftdg: ["ftdg", "ftsp", "Field Training Distinguished Graduate / Superior Performer"]};
+const IN_SPLIT = new Set(["ftsp"]);
 function tileArt(r){
   const s = state.sel[r.id];
   if (!s) return swatch(r);
   const it = rackItem(r, s);
   return swatch(it.r, it.devs);
 }
+const INFO_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg>`;
+const SHORT = {ftdg: "DG", ftsp: "SP"};
 function tileHTML(r){
+  const sp = SPLIT[r.id];
+  if (sp) return `<div class="tile split" data-id="${r.id}" data-q="${esc(sp.slice(0, 2).map(id => searchText(BY[id])).join(" "))}">
+    <div class="halves">${sp.slice(0, 2).map(id => `<button class="tg" type="button" data-id="${id}" aria-pressed="false" aria-label="${esc(BY[id].name)}">${swatch(BY[id])}<span class="tn">${esc(SHORT[id])}</span></button>`).join("")}</div>
+    <span class="stn">Field Training Distinguished Graduate or Superior Performer</span>
+    <button class="ti" type="button" aria-label="${esc(sp[2])}: criteria and devices">${INFO_ICON}</button></div>`;
   return `<div class="tile" data-id="${r.id}" data-q="${esc(searchText(r))}">
-    <button class="tg" type="button" aria-pressed="false">${swatch(r)}<span class="tn">${esc(r.name)}<i class="tsp"></i></span></button>
-    <button class="ti" type="button" aria-label="${esc(r.name)}: criteria and devices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></button></div>`;
+    <button class="tg" type="button" data-id="${r.id}" aria-pressed="false">${swatch(r)}<span class="tn">${esc(r.name)}<i class="tsp"></i></span></button>
+    <button class="ti" type="button" aria-label="${esc(r.name)}: criteria and devices">${INFO_ICON}</button></div>`;
 }
 function buildGroups(){
-  $("grid").innerHTML = R.filter(r => !OFF_CHART.has(r.id)).map(tileHTML).join("");
-  $("gridx").innerHTML = R.filter(r => OFF_CHART.has(r.id)).map(tileHTML).join("");
+  $("grid").innerHTML = R.filter(r => !IN_SPLIT.has(r.id)).map(tileHTML).join("");
 }
+const tileOf = id => { const b = document.querySelector(`.tg[data-id="${id}"]`); return b && b.closest(".tile"); };
 function syncPicker(){
   R.forEach(r => {
-    const el = document.querySelector(`.tile[data-id="${r.id}"]`); if (!el) return;
+    const b = document.querySelector(`.tg[data-id="${r.id}"]`); if (!b) return;
+    const el = b.closest(".tile"), split = el.classList.contains("split");
     const s = state.sel[r.id];
-    el.classList.toggle("on", !!s);
-    el.querySelector(".tg").setAttribute("aria-pressed", String(!!s));
+    (split ? b : el).classList.toggle("on", !!s);
+    b.setAttribute("aria-pressed", String(!!s));
     // redraw the little ribbon only when its devices changed, so the chosen devices show on the tile too
     const sig = s ? JSON.stringify(s) : "";
-    if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.querySelector(".sw").outerHTML = tileArt(r); }
+    if (b.dataset.sig !== sig) { b.dataset.sig = sig; b.querySelector(".sw").outerHTML = tileArt(r); }
   });
+  document.querySelectorAll(".tile.split").forEach(el => el.classList.toggle("on", !!el.querySelector(".tg.on")));
   const total = Object.keys(state.sel).length;
   $("pickCount").textContent = total + " selected";
   syncInfo();
@@ -738,7 +782,7 @@ function openInfo(id){
   const g = GROUPS.find(x => x.id === r.grp);
   $("infoTitle").textContent = r.name;
   $("infoCrit").innerHTML = r.crit ? `${esc(r.crit)} <span class="cite">${esc(r.ref)}</span>` : "";
-  $("infoNote").textContent = (OFF_CHART.has(id) ? "Not on the Figure 10.4 chart; worn right after the Field Training Distinguished Graduate Award. " : "") + (g && g.note ? g.note : "");
+  $("infoNote").textContent = (r.excl === "ftdgsp" ? "The Distinguished Graduate and the Superior Performer share one ribbon. A cadet earns one or the other; picking one clears the other. " : "") + (g && g.note ? g.note : "");
   $("infoOpts").innerHTML = optsHTML(r);
   syncInfo(true);
   const dlg = $("infoDlg");
@@ -771,7 +815,7 @@ function toggle(id){
     if (r.excl) {
       const gone = R.filter(x => x.excl === r.excl && x.id !== id && state.sel[x.id]);
       gone.forEach(x => delete state.sel[x.id]);
-      if (gone.length) toast(`Removed ${gone.map(x => x.name).join(", ")}. ${r.excl === "cap" ? "Only your highest CAP award is worn." : "A cadet earns the DG or the Superior Performer, not both."}`);
+      if (gone.length) toast(r.excl === "cap" ? `Removed ${gone.map(x => x.name).join(", ")}. Only your highest CAP award is worn.` : `Switched to ${r.id === "ftdg" ? "Distinguished Graduate" : "Superior Performer"}. A cadet earns one or the other.`);
     }
     state.sel[id] = defaults(r);
     if (!hinted && r.kind === "award" && !$("infoDlg").open) { hinted = true; toast("Earned it more than once? Tap ⓘ to add oak leaf clusters."); }
@@ -792,7 +836,7 @@ function render(){
   else stage.innerHTML = rackSVG(items, state.per, {align: state.align, pop, popDev});
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
-  $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
+  $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "No ribbons yet";
   // the order list, split by row as the rack shows it (the top row holds the leftovers)
   const top = items.length % state.per || state.per, rowsN = Math.ceil(items.length / state.per);
   let ol = "";
@@ -806,7 +850,7 @@ function render(){
   const w = [];
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
   $("who").value = state.who;
-  ["printBtn", "pngBtn", "linkBtn", "clearBtn"].forEach(id => $(id).disabled = !items.length);
+  ["printBtn", "pngBtn", "linkBtn"].forEach(id => $(id).disabled = !items.length);
 }
 function devText(devs){
   const c = {ss:0, bs:0, so:0, bo:0}, org = devs.find(d => d.startsWith("org:"));
@@ -826,11 +870,13 @@ function changed(){
 function wire(){
   const pick = e => {
     const t = e.target.closest(".tg, .ti"); if (!t) return;
-    const id = t.closest(".tile").dataset.id;
-    if (t.classList.contains("ti")) openInfo(id); else toggle(id);
+    const tile = t.closest(".tile");
+    if (t.classList.contains("tg")) return toggle(t.dataset.id);
+    // the split tile's info opens whichever half is picked
+    const sp = SPLIT[tile.dataset.id];
+    openInfo(sp ? (sp.slice(0, 2).find(id => state.sel[id]) || sp[0]) : tile.dataset.id);
   };
   $("grid").addEventListener("click", pick);
-  $("gridx").addEventListener("click", pick);
   $("infoToggle").addEventListener("click", () => toggle(infoId));
   $("infoOpts").addEventListener("change", e => {
     const t = e.target, s = state.sel[infoId]; if (!s) return;
@@ -851,9 +897,9 @@ function wire(){
   info.addEventListener("click", e => { if (e.target === info) info.close(); });   // click on the backdrop
   info.addEventListener("close", () => {
     // back on the grid, show which tile it was
-    const el = document.querySelector(`.tile[data-id="${infoId}"]`); if (!el) return;
+    const el = tileOf(infoId); if (!el) return;
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
-    el.querySelector(".tg").focus({preventScroll: true});
+    document.querySelector(`.tg[data-id="${infoId}"]`).focus({preventScroll: true});
   });
   // tap a ribbon in the rack (or a line in the order list) for its details and devices
   $("stage").addEventListener("click", e => { const g = e.target.closest(".rb"); if (g) openInfo(g.dataset.id); });
@@ -868,21 +914,24 @@ function wire(){
     let any = 0;
     document.querySelectorAll(".tile").forEach(el => { const hit = !q || el.dataset.q.includes(q); el.classList.toggle("dim", !hit); any += hit; });
     $("nomatch").classList.toggle("hidden", !!any);
+    const first = q && document.querySelector(".tile:not(.dim)");
+    if (first) { const r = first.getBoundingClientRect(); if (r.top < 60 || r.bottom > innerHeight) first.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center"}); }
   });
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.addEventListener("click", () => { state.align = b.dataset.align; changed(); }));
   $("who").addEventListener("input", () => { state.who = $("who").value.slice(0, 60); save(); });
-  // Reset asks once on the button itself: first press arms it, a second press within 4 s clears
+  // Reset Everything asks once on the button itself: first press arms it, a second press within 4 s clears
+  // every ribbon, the name and the layout (the rack is all a cadet has typed, so one stray tap shouldn't lose it)
   $("clearBtn").addEventListener("click", () => {
-    const b = $("clearBtn");
+    const b = $("clearBtn"), idle = () => { delete b.dataset.armed; b.textContent = "Reset Everything"; b.classList.remove("armed"); };
     if (!b.dataset.armed){
-      b.dataset.armed = "1"; b.textContent = "Press again to reset"; b.classList.add("danger");
-      clearTimeout(b.t); b.t = setTimeout(() => { delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger"); }, 4000);
+      b.dataset.armed = "1"; b.textContent = "Press again to reset"; b.classList.add("armed");
+      clearTimeout(b.t); b.t = setTimeout(idle, 4000);
       return;
     }
-    clearTimeout(b.t); delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger");
-    state = Object.assign(blank(), {per: state.per, align: state.align}); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
-    changed(); toast("Rack reset");
+    clearTimeout(b.t); idle();
+    state = blank(); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
+    changed(); toast("Everything reset");
   });
   $("startOwn").addEventListener("click", () => {
     viewingShared = false; state = load(); $("sharedBar").classList.add("hidden");
