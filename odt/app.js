@@ -17,7 +17,9 @@
    Cadre (class "Cadre" in the roster) can be on the roster and always have a room to themselves.
    Older ODTs may still hold an itinerary list (itinerary:[{date, time, end, what, where, note}]); it shows
    when there is no itinerary file. Lodging and meal lists are no longer shown.
-   Links: #<event id>/<tab> (tabs: overview, itinerary, docs, roster, rooms, vans), #all. */
+   Page (Captain Russell, 17 Nov 2026: a cadet comes for their room and van): All ODTs, then per ODT a
+   "Find your room and van" box (the pick is kept in localStorage d250-odt-me-v1) and three tabs.
+   Links: #<event id>/<tab> (tabs: rooms, vans, docs; old overview, roster, itinerary links still land), #all. */
 (function(){
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -27,12 +29,12 @@ const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",A
 const LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS300:"AS 300",AS400:"AS 400",AS500:"AS 500",Graybeard:"Graybeard",Cadre:"Cadre"};
 const CLASS_ORDER = ["Cadre","AS400","AS300","Graybeard","AS500","AS250","AS200","AS100"];
 const FL = {afl:"Alpha",bfl:"Bravo",cfl:"Charlie",dfl:"Delta"};
-const TABS = [["overview","Overview"],["itinerary","Itinerary"],["docs","Documents"],["roster","Roster"],["rooms","Rooms"],["vans","Vans"]];
+const TABS = [["rooms","Rooms"],["vans","Vans"],["docs","Itinerary & docs"]];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let D = null, EVENTS = [], EV = "", TAB = "overview";
+let D = null, EVENTS = [], EV = "", TAB = "rooms";
 
 /* ---------- crypto ---------- */
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -124,56 +126,62 @@ function legend(keys){
 }
 const rosterOf = e => e.roster && e.roster.length ? e.roster : [...new Set((e.rooms || []).flatMap(r => r.cadets))];
 const empty = t => `<p class="empty">${esc(t)}</p>`;
-const findBox = (ph) => `<div class="toolbar"><div class="find"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><label class="sr" for="q">${esc(ph)}</label><input id="q" type="search" placeholder="${esc(ph)}" autocomplete="off"></div><button class="btn" id="print" type="button">Print</button><span class="stats" id="stats"></span></div><p class="found" id="found" role="status" aria-live="polite"></p>`;
-const printBar = () => `<div class="toolbar"><button class="btn" id="print" type="button">Print</button></div>`;
+
+/* ---------- what a cadet comes for: their room and van, then the itinerary and documents ---------- */
+const ME_KEY = "d250-odt-me-v1";                     // the cadet this browser last picked, so their assignment shows first
+let ME = ""; try{ ME = localStorage.getItem(ME_KEY) || ""; }catch(_){}
+let JUMP = false;                                    // scroll to your own room or van after the tab opens
+const ridersOf = v => [v.driver, v.relief, ...(v.riders || [])].filter(Boolean);
+const roomOf = (e, k) => (e.rooms || []).find(r => r.cadets.includes(k));
+const vanOf = (e, k) => (e.vans || []).find(v => ridersOf(v).includes(k));
+const roleIn = (v, k) => v.driver === k ? "Driver" : v.relief === k ? "Relief driver" : "";
+const nameKey = c => (c.first + " " + c.last + " " + c.last + " " + c.first).toLowerCase();
+const short = c => [c.rank, c.last].filter(Boolean).join(" ");
+const SEARCH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`;
+function meBox(e){
+  const ros = rosterOf(e);
+  if (!ros.length) return "";
+  if (!ME || !ros.includes(ME)) return `<section class="me" aria-labelledby="meH"><h2 id="meH">Find your room and van</h2>
+    <div class="find">${SEARCH}<label class="sr" for="meq">Type your name</label><input id="meq" type="search" placeholder="Type your name" autocomplete="off" aria-controls="meHits"></div>
+    <div class="hits" id="meHits"></div></section>`;
+  const c = who(ME), r = roomOf(e, ME), v = vanOf(e, ME);
+  const mates = r ? r.cadets.filter(k => k !== ME).map(who) : [];
+  const roomTxt = !(e.rooms || []).length ? "Not posted yet" : !r ? "Not assigned yet" : mates.length ? `With ${mates.map(m => `${face(m, 26)}<span>${esc(fullName(m))}</span>`).join(" and ")}` : "A room to yourself";
+  const role = v ? roleIn(v, ME) : "", drv = v && v.driver && v.driver !== ME ? who(v.driver) : null;
+  const vanTxt = !(e.vans || []).length ? "Not posted yet" : !v ? "Not assigned yet" : [role ? `You're the ${role.toLowerCase()}` : "", drv ? `Driver: ${short(drv)}` : "", KIND[v.kind] || ""].filter(Boolean).map(esc).join(" · ");
+  return `<section class="me set" aria-label="Your assignment">
+    <div class="mehd">${face(c, 52)}<div class="txt"><div class="nm">${esc(fullName(c))}</div><div class="pos">Your assignment for this ODT</div></div><button class="linkbtn" id="notMe" type="button">Not you?</button></div>
+    <div class="slots">
+      <button class="slot" type="button" data-jump="rooms"${r ? "" : " disabled"}><small>Room</small><b>${r ? esc(r.room) : "None"}</b><span class="with">${roomTxt}</span></button>
+      <button class="slot" type="button" data-jump="vans"${v ? "" : " disabled"}><small>Van</small><b>${v ? esc(v.name) : "None"}</b><span class="with">${vanTxt}</span></button>
+    </div></section>`;
+}
+function wireMe(e){
+  const nm = $("#notMe");
+  if (nm) nm.addEventListener("click", () => { ME = ""; try{ localStorage.removeItem(ME_KEY); }catch(_){} render(); const q = $("#meq"); if (q) q.focus(); });
+  document.querySelectorAll("[data-jump]").forEach(b => b.addEventListener("click", () => { JUMP = true; go(`${EV}/${b.dataset.jump}`); }));
+  const q = $("#meq"); if (!q) return;
+  const pick = k => { ME = k; try{ localStorage.setItem(ME_KEY, k); }catch(_){} render(); };
+  const ros = rosterOf(e).map(who);
+  const list = () => {
+    const s = q.value.trim().toLowerCase(), box = $("#meHits");
+    if (s.length < 2){ box.innerHTML = ""; return []; }
+    const hits = ros.filter(c => nameKey(c).includes(s)).sort((a, b) => (a.last + a.first).localeCompare(b.last + b.first)).slice(0, 8);
+    box.innerHTML = hits.length ? hits.map(c => `<button type="button" class="hit" data-me="${esc(c.key)}">${face(c, 32)}<span>${esc(fullName(c))}</span></button>`).join("")
+      : `<p class="miss">No one by that name is on this ODT.</p>`;
+    box.querySelectorAll("[data-me]").forEach(b => b.addEventListener("click", () => pick(b.dataset.me)));
+    return hits;
+  };
+  q.addEventListener("input", list);
+  q.addEventListener("keydown", ev => { if (ev.key === "Enter"){ const h = list(); if (h.length) pick(h[0].key); } });
+}
 
 /* ---------- tabs ---------- */
-function overview(e){
-  const ros = rosterOf(e), rooms = e.rooms || [];
-  const nc = ros.filter(k => who(k).cls !== "Cadre").length, nk = ros.length - nc;
-  const tile = (tab, k, v, s) => `<button type="button" class="tile" data-go="${tab}"><small>${esc(k)}</small><b>${esc(v)}</b>${s ? `<span>${esc(s)}</span>` : ""}</button>`;
-  return `${printBar()}<div class="tiles">
-      ${tile("itinerary", "Dates", dates(e) || "Not set", e.itin || (e.itinerary || []).length ? "See the itinerary" : "Itinerary not posted yet")}
-      ${tile("roster", "Going", `${nc} cadet${nc === 1 ? "" : "s"}`, nk ? `and ${nk} cadre` : "See the roster")}
-      ${tile("rooms", "Rooms", rooms.length ? `${rooms.length} rooms` : "Not posted", rooms.length ? "Find your room" : "")}
-      ${tile("vans", "Vans", (e.vans || []).length ? `${e.vans.length} vans` : "Not posted", (e.vans || []).length ? "Find your van" : "")}
-    </div>
-    ${(e.docs || []).length || e.itin ? `<section class="sec"><h2>Documents<span>${(e.docs || []).length + (e.itin ? 1 : 0)}</span></h2><div class="cards">${e.itin ? `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>Itinerary</h3><p>The schedule, the hotel address and the meals provided.</p><div class="dbtns"><button class="btn" type="button" data-go="itinerary">View</button><button class="btn" type="button" data-doc="${esc(e.itin.id)}">Open</button><button class="btn" type="button" data-dl="${esc(e.itin.id)}" data-name="${esc(e.itin.name || "Itinerary.pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>` : ""}${(e.docs || []).map(d => `<div class="card doc"><span class="dico">${PDF_ICON}</span><div class="dtx"><h3>${esc(d.title)}</h3>${d.note ? `<p>${esc(d.note)}</p>` : ""}<div class="dbtns"><button class="btn" type="button" data-see="${esc(d.id)}">View</button><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div></div></div>`).join("")}</div></section>` : ""}
-    ${(e.info || []).length ? `<section class="sec"><h2>Things to know<span>${e.info.length}</span></h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : ""}`;
-}
-function byDay(list, row){
-  const groups = {};
-  for (const x of list) (groups[x.date || ""] = groups[x.date || ""] || []).push(x);
-  return Object.keys(groups).sort().map(d => `<div class="day"><h3>${esc(dayLabel(d))}</h3>${groups[d].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map(row).join("")}</div>`).join("");
-}
-function itinerary(e){
-  if (e.itin) return `<div class="toolbar"><button class="btn" type="button" data-doc="${esc(e.itin.id)}">Open</button><button class="btn" type="button" data-dl="${esc(e.itin.id)}" data-name="${esc(e.itin.name || "Itinerary.pdf")}">Download</button><button class="btn" id="print" type="button">Print</button><span class="derr" role="status"></span></div>
-    <div class="pdfpages" id="itinPages" data-id="${esc(e.itin.id)}"><p class="empty">Opening the itinerary…</p></div>`;
-  const L = e.itinerary || [];
-  if (!L.length) return empty("The itinerary isn't posted yet.");
-  return printBar() + byDay(L, x => `<div class="row"><div class="t">${esc(x.time || "")}${x.end ? `<span class="s"> to ${esc(x.end)}</span>` : ""}</div>
-    <div><div class="w">${esc(x.what || "")}</div>${x.where ? `<div class="s">${esc(x.where)}</div>` : ""}${x.note ? `<div class="s">${esc(x.note)}</div>` : ""}</div></div>`);
-}
-function docs(e){                                   // every supporting document drawn open, like the itinerary
-  const L = e.docs || [];
-  if (!L.length) return empty("No documents are posted for this ODT.");
-  return L.map(d => `<section class="sec docview" id="doc-${esc(d.id)}"><h2>${esc(d.title)}</h2>${d.note ? `<p class="muted">${esc(d.note)}</p>` : ""}
-    <div class="toolbar"><button class="btn" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button><span class="derr" role="status"></span></div>
-    <div class="pdfpages" data-pdf="${esc(d.id)}" data-label="${esc(d.title)}"><p class="empty">Opening ${esc(d.title)}…</p></div></section>`).join("");
-}
-function roster(e){
-  const ros = rosterOf(e).map(who);
-  if (!ros.length) return empty("The roster isn't posted yet.");
-  const groups = CLASS_ORDER.concat([...new Set(ros.map(c => c.cls))].filter(c => !CLASS_ORDER.includes(c)));
-  return findBox("Find a cadet") + legend(ros.map(c => c.key)) + groups.map(cls => {
-    const L = ros.filter(c => c.cls === cls).sort((a, b) => (a.last + a.first).localeCompare(b.last + b.first)); if (!L.length) return "";
-    return `<section class="sec"><h2>${esc(LABEL[cls] || cls || "Other")}<span>${L.length}</span></h2><div class="ppl">${L.map(c => `<div class="person" data-name="${esc((c.first + " " + c.last + " " + c.last + " " + c.first).toLowerCase())}">${face(c, 40)}<div class="txt"><div class="nm">${esc(fullName(c))}</div>${c.pos ? `<div class="pos">${esc(c.pos)}</div>` : c.flt ? `<div class="pos">${esc(c.flt)} Flight</div>` : ""}</div></div>`).join("")}</div></section>`;
-  }).join("");
-}
+const printBar = keys => `<div class="toolbar">${legend(keys)}<button class="btn small" id="print" type="button">Print</button></div>`;
 function room(r){
   const ppl = (r.cadets || []).map(who), solo = ppl.length === 1, label = String(r.room || "");
-  const cad = solo && ppl[0].cls === "Cadre";
-  return `<article class="room${solo ? " solo" : ""}${cad ? " cadre" : ""}" data-room="${esc(label)}" aria-label="Room ${esc(label)}: ${esc(ppl.map(c => c.first + " " + c.last).join(" and "))}">
+  const cad = solo && ppl[0].cls === "Cadre", mine = r.cadets.includes(ME);
+  return `<article class="room${solo ? " solo" : ""}${cad ? " cadre" : ""}${mine ? " mine" : ""}" data-room="${esc(label)}" aria-label="Room ${esc(label)}: ${esc(ppl.map(c => c.first + " " + c.last).join(" and "))}">
     <div class="rn"><small>ROOM</small><b${label.length > 3 ? ` class="long"` : ""}>${esc(label)}</b></div>
     <div class="pp">${ppl.map(person).join("")}${solo ? `<div class="p bonus"><span class="star" aria-hidden="true">★</span><div class="txt"><div class="nm">${cad ? "Cadre room" : "Bonus room"}</div><div class="pos">Single occupancy</div></div></div>` : ""}</div></article>`;
 }
@@ -181,12 +189,37 @@ function rooms(e){
   const L = e.rooms || [];
   if (!L.length) return empty("Rooms aren't posted yet.");
   const secs = [...(e.sections || [])]; for (const r of L) if (!secs.includes(r.sec)) secs.push(r.sec);
-  return findBox("Find your room: type your name") + legend(L.flatMap(r => r.cadets)) + `<div id="rooms">${secs.map(s => {
+  return printBar(L.flatMap(r => r.cadets)) + `<div id="rooms">${secs.map(s => {
     const list = L.filter(r => r.sec === s); if (!list.length) return "";
-    const all = list.flatMap(r => r.cadets), k = all.filter(x => who(x).cls === "Cadre").length, c = all.length - k;
-    const cnt = [c ? `${c} cadet${c === 1 ? "" : "s"}` : "", k ? `${k} cadre` : ""].filter(Boolean).join(" · ");
-    return `<section class="sec"><h2>${esc(s)}<span>${list.length} room${list.length === 1 ? "" : "s"} · ${cnt}</span></h2><div class="grid">${list.map(room).join("")}</div></section>`;
+    return `<section class="sec"><h2>${esc(s)}<span>${list.length} room${list.length === 1 ? "" : "s"}</span></h2><div class="grid">${list.map(room).join("")}</div></section>`;
   }).join("")}</div>`;
+}
+const KIND = {isu15:"15-passenger ISU van", gov11:"11-passenger GOV"};
+function vans(e){
+  const L = e.vans || [];
+  if (!L.length) return empty("Van assignments aren't posted yet.");
+  const card = (k, role) => { const c = who(k);
+    return `<div class="person${role ? " role" : ""}${k === ME ? " mine" : ""}">${face(c, 40)}<div class="txt"><div class="nm">${esc(fullName(c))}</div><div class="pos">${role ? `<b>${esc(role)}</b>` : esc(LABEL[c.cls] || "")}</div></div></div>`; };
+  return printBar(L.flatMap(ridersOf)) + L.map(v => {
+    const riders = (v.riders || []).slice().sort((a, b) => { const x = who(a), y = who(b); return (CLASS_ORDER.indexOf(x.cls) - CLASS_ORDER.indexOf(y.cls)) || (x.last + x.first).localeCompare(y.last + y.first); });
+    return `<section class="sec van"><h2>${esc(v.name)}<span>${esc(KIND[v.kind] || "Vehicle")} · ${ridersOf(v).length} people</span></h2>
+      <div class="ppl">${v.driver ? card(v.driver, "Driver") : ""}${v.relief ? card(v.relief, "Relief driver") : ""}${riders.map(k => card(k, "")).join("")}</div></section>`;
+  }).join("");
+}
+function byDay(list, row){
+  const groups = {};
+  for (const x of list) (groups[x.date || ""] = groups[x.date || ""] || []).push(x);
+  return Object.keys(groups).sort().map(d => `<div class="day"><h3>${esc(dayLabel(d))}</h3>${groups[d].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map(row).join("")}</div>`).join("");
+}
+function docs(e){                                   // the itinerary first, then each supporting document, drawn open
+  const L = [...(e.itin ? [{id:e.itin.id, title:"Itinerary", note:"The schedule, the hotel address and the meals provided.", name:e.itin.name || "Itinerary.pdf"}] : []), ...(e.docs || [])];
+  const info = (e.info || []).length ? `<section class="sec"><h2>Things to know</h2><div class="cards">${e.info.map(i => `<div class="card"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join("")}</div></section>` : "";
+  const oldItin = !e.itin && (e.itinerary || []).length ? `<section class="sec"><h2>Itinerary</h2>${byDay(e.itinerary, x => `<div class="row"><div class="t">${esc(x.time || "")}${x.end ? `<span class="s"> to ${esc(x.end)}</span>` : ""}</div>
+    <div><div class="w">${esc(x.what || "")}</div>${x.where ? `<div class="s">${esc(x.where)}</div>` : ""}${x.note ? `<div class="s">${esc(x.note)}</div>` : ""}</div></div>`)}</section>` : "";
+  if (!L.length && !info && !oldItin) return empty("No itinerary or documents are posted for this ODT yet.");
+  const jump = L.length > 1 ? `<nav class="doclinks" aria-label="Documents on this page">${L.map(d => `<a href="#" data-to="doc-${esc(d.id)}">${PDF_ICON}<span>${esc(d.title)}</span></a>`).join("")}</nav>` : "";
+  return jump + info + oldItin + L.map(d => `<section class="sec docview" id="doc-${esc(d.id)}"><h2>${esc(d.title)}<span class="dbtns"><button class="btn small" type="button" data-doc="${esc(d.id)}">Open</button><button class="btn small" type="button" data-dl="${esc(d.id)}" data-name="${esc(d.name || d.title + ".pdf")}">Download</button></span></h2>${d.note ? `<p class="muted">${esc(d.note)}</p>` : ""}<p class="derr" role="status"></p>
+    <div class="pdfpages" data-pdf="${esc(d.id)}" data-label="${esc(d.title)}"><p class="empty">Opening ${esc(d.title)}…</p></div></section>`).join("");
 }
 function allList(){
   const card = e => { const rs = e.rooms || [], ros = rosterOf(e), d = day(e.start);
@@ -201,56 +234,39 @@ function allList(){
     (past.length ? `<section class="sec"><h2>Past<span>${past.length}</span></h2><div class="evlist">${past.map(card).join("")}</div></section>` : "") ||
     empty("No ODTs are posted yet.");
 }
-const KIND = {isu15:"15-passenger ISU van", gov11:"11-passenger GOV"};
-function vans(e){
-  const L = e.vans || [];
-  if (!L.length) return empty("Van assignments aren't posted yet.");
-  const all = L.flatMap(v => [v.driver, v.relief, ...(v.riders || [])].filter(Boolean));
-  const card = (k, role) => { const c = who(k);
-    return `<div class="person${role ? " role" : ""}" data-name="${esc((c.first + " " + c.last + " " + c.last + " " + c.first).toLowerCase())}">${face(c, 40)}<div class="txt"><div class="nm">${esc(fullName(c))}</div><div class="pos">${role ? `<b>${esc(role)}</b>` : esc(c.pos || (c.flt ? c.flt + " Flight" : LABEL[c.cls] || ""))}</div></div></div>`; };
-  return findBox("Find your van: type your name") + legend(all) + L.map(v => {
-    const ppl = [v.driver, v.relief].filter(Boolean).length + (v.riders || []).length;
-    const riders = (v.riders || []).slice().sort((a, b) => { const x = who(a), y = who(b); return (CLASS_ORDER.indexOf(x.cls) - CLASS_ORDER.indexOf(y.cls)) || (x.last + x.first).localeCompare(y.last + y.first); });
-    return `<section class="sec van"><h2>${esc(v.name)}<span>${esc(KIND[v.kind] || "Vehicle")}${v.seats ? ` · ${ppl} of ${esc(v.seats)} seats` : ""}</span></h2>
-      <div class="ppl">${v.driver ? card(v.driver, "Driver") : ""}${v.relief ? card(v.relief, "Relief driver") : ""}${riders.map(k => card(k, "")).join("")}</div></section>`;
-  }).join("");
-}
-const VIEWS = {overview, itinerary, docs, roster, rooms, vans};
+const VIEWS = {rooms, vans, docs};
+const OLD_TABS = {overview:"rooms", roster:"rooms", itinerary:"docs"};   // links from the first layout still land
 
 /* ---------- render ---------- */
 function render(){
   const all = TAB === "all", e = EVENTS.find(x => x.id === EV);
-  $("#allBtn").classList.toggle("on", all); $("#allBtn").setAttribute("aria-pressed", String(all));
-  $("#tabs").hidden = all || !e;
+  $("#modbar").hidden = all || !e;
   $("#tabs").innerHTML = TABS.map(([id, label]) => `<button type="button" role="tab" data-tab="${id}" aria-selected="${!all && TAB === id}" tabindex="${!all && TAB === id ? 0 : -1}">${label}</button>`).join("");
   if (all || !e){
-    $("#ev").innerHTML = `<div><h2>All ODTs</h2><div class="meta">Every ODT, upcoming first. Pick one to see its details.</div></div>`;
+    $("#ev").innerHTML = `<div><h2>All ODTs</h2><div class="meta">Pick an ODT to find your room, your van and its documents.</div></div>`;
+    $("#me").innerHTML = "";
     $("#view").innerHTML = allList();
     document.title = `All ODTs · ${D.title || "ODT Module"} · Storm HQ`;
   } else {
-    $("#ev").innerHTML = `<div><h2>${esc(e.name)}${pill(e)}</h2><div class="meta">${esc([dates(e), e.place].filter(Boolean).join(" · "))}</div>${e.note ? `<div class="note">${esc(e.note)}</div>` : ""}</div>`;
+    $("#ev").innerHTML = `<div><button class="linkbtn back" type="button" data-all>‹ All ODTs</button><h2>${esc(e.name)}${pill(e)}</h2><div class="meta">${esc([dates(e), e.place, e.note].filter(Boolean).join(" · "))}</div></div>`;
+    $("#me").innerHTML = meBox(e);
     $("#view").innerHTML = VIEWS[TAB](e);
     $("#view").setAttribute("aria-label", `${e.name}: ${TABS.find(t => t[0] === TAB)[1]}`);
     document.title = `${e.name} ${TABS.find(t => t[0] === TAB)[1]} · Storm HQ`;
+    wireMe(e);
   }
   wireView();
 }
 function wireView(){
   document.querySelectorAll("#tabs [data-tab]").forEach(b => b.addEventListener("click", () => go(`${EV}/${b.dataset.tab}`)));
-  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => go(`${EV}/${b.dataset.go}`)));
-  document.querySelectorAll("[data-ev]").forEach(b => b.addEventListener("click", () => go(`${b.dataset.ev}/overview`)));
+  document.querySelectorAll("[data-ev]").forEach(b => b.addEventListener("click", () => go(`${b.dataset.ev}/rooms`)));
+  document.querySelectorAll("[data-all]").forEach(b => b.addEventListener("click", () => go("all")));
   const pr = $("#print"); if (pr) pr.addEventListener("click", () => window.print());
-  const ip = $("#itinPages");
-  if (ip) drawPdf(ip.dataset.id, ip).catch(() => { ip.innerHTML = `<p class="empty">Couldn't show the itinerary here. Use Open or Download.</p>`; });
-  const seeId = TAB === "docs" ? SEE : ""; SEE = "";
-  const see = () => { const t = seeId && document.getElementById("doc-" + seeId); if (t) t.scrollIntoView({block:"start"}); };
-  see();
-  (async () => { for (const box of document.querySelectorAll("[data-pdf]")){   // one at a time, top to bottom
-    await drawPdf(box.dataset.pdf, box, box.dataset.label).catch(() => { box.innerHTML = `<p class="empty">Couldn't show this document here. Use Open or Download.</p>`; });
-    if (box.closest(".docview").id === "doc-" + seeId) see();     // the pages above it are drawn, so it stays put now
-  } })();
-  document.querySelectorAll("[data-see]").forEach(b => b.addEventListener("click", () => { SEE = b.dataset.see; go(`${EV}/docs`); }));
-  const fail = b => { const m = b.parentNode.querySelector(".derr"); if (m) m.textContent = "Couldn't open it. Reload and try again."; };
+  if (JUMP){ JUMP = false; const t = document.querySelector(".room.mine, .person.mine"); if (t) setTimeout(() => t.scrollIntoView({block:"center", behavior:reduce ? "auto" : "smooth"}), 30); }
+  document.querySelectorAll("[data-to]").forEach(a => a.addEventListener("click", ev => { ev.preventDefault(); const t = document.getElementById(a.dataset.to); if (t) t.scrollIntoView({block:"start", behavior:reduce ? "auto" : "smooth"}); }));
+  (async () => { for (const box of document.querySelectorAll("[data-pdf]"))   // one at a time, top to bottom
+    await drawPdf(box.dataset.pdf, box, box.dataset.label).catch(() => { box.innerHTML = `<p class="empty">Couldn't show this document here. Use Open or Download.</p>`; }); })();
+  const fail = b => { const m = b.closest(".sec").querySelector(".derr"); if (m) m.textContent = "Couldn't open it. Reload and try again."; };
   document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", async () => {
     const w = window.open("", "_blank");             // opened now, so the browser doesn't block it
     if (w) w.document.title = "Opening…";
@@ -261,50 +277,17 @@ function wireView(){
     try{ const a = document.createElement("a"); a.href = await docUrl(b.dataset.dl); a.download = b.dataset.name; document.body.appendChild(a); a.click(); a.remove(); }
     catch(_){ fail(b); }
   }));
-  const q = $("#q"); if (!q) return;
-  const e = EVENTS.find(x => x.id === EV);
-  if (TAB === "rooms"){
-    const L = e.rooms || [];
-    $("#stats").textContent = `${L.reduce((t, r) => t + r.cadets.length, 0)} people · ${L.length} rooms`;
-    q.addEventListener("input", () => {
-      const s = q.value.trim().toLowerCase(), box = $("#rooms"); box.classList.toggle("searching", !!s);
-      const hits = [];
-      document.querySelectorAll(".room").forEach(r => { const on = !!s && [...r.querySelectorAll(".p[data-name]")].some(p => p.dataset.name.includes(s)); r.classList.toggle("hit", on); if (on) hits.push(r); });
-      let msg = "";
-      if (s && !hits.length) msg = "No one by that name.";
-      else if (hits.length > 1) msg = `${hits.length} rooms match.`;
-      else if (hits.length === 1){
-        const r = hits[0], me = [...r.querySelectorAll(".p[data-name]")], mine = me.find(p => p.dataset.name.includes(s)), rest = me.filter(p => p !== mine);
-        const nm = p => p.querySelector(".nm").textContent;
-        msg = `${nm(mine)}: Room ${r.dataset.room}${rest.length ? ", with " + rest.map(nm).join(" and ") : " (bonus room)"}.`;
-        r.scrollIntoView({block:"center", behavior:reduce ? "auto" : "smooth"});
-      }
-      $("#found").textContent = msg;
-    });
-  } else {
-    $("#stats").textContent = `${rosterOf(e).length} people`;
-    q.addEventListener("input", () => {
-      const s = q.value.trim().toLowerCase(); let n = 0;
-      document.querySelectorAll(".person").forEach(p => { const on = !s || p.dataset.name.includes(s); p.classList.toggle("hide", !on); if (on) n++; });
-      document.querySelectorAll("#view .sec").forEach(sec => { sec.hidden = !!s && !sec.querySelector(".person:not(.hide)"); });
-      let msg = s ? (n ? `${n} match${n === 1 ? "" : "es"}.` : "No one by that name.") : "";
-      const hit = [...document.querySelectorAll(".person:not(.hide)")];
-      if (s && TAB === "vans" && hit.length === 1){ const v = hit[0].closest(".van"), role = hit[0].querySelector(".pos b"); msg = `${hit[0].querySelector(".nm").textContent}: ${v.querySelector("h2").firstChild.textContent}${role ? ` (${role.textContent})` : ""}.`; }
-      $("#found").textContent = msg;
-    });
-  }
 }
-let SEE = "";                                       // the document to scroll to on the Documents tab
 function go(h){ if (location.hash.slice(1) !== h) location.hash = h; else route(); }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   if (h === "all" || !h){ if (!EVENTS.some(e => e.id === EV)) EV = defaultEvent(); TAB = "all"; render(); return; }   // opens on All ODTs
-  const [id, tab] = h.split("/");
+  let [id, tab] = h.split("/"); tab = OLD_TABS[tab] || tab; id = OLD_TABS[id] || id;
   EV = EVENTS.some(e => e.id === id) ? id : (EVENTS.some(e => e.id === EV) ? EV : defaultEvent());
-  TAB = TABS.some(t => t[0] === tab) ? tab : TABS.some(t => t[0] === id) ? id : "overview";
+  TAB = TABS.some(t => t[0] === tab) ? tab : TABS.some(t => t[0] === id) ? id : "rooms";
   render();
 }
-$("#allBtn").addEventListener("click", () => go(TAB === "all" ? `${EV || defaultEvent()}/overview` : "all"));
+
 $("#tabs").addEventListener("keydown", ev => {
   if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
   const i = TABS.findIndex(t => t[0] === TAB), j = (i + (ev.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;

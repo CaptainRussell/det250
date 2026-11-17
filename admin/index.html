@@ -942,7 +942,7 @@ function subItin(e, body){
 const mb = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
 function subDocs(e, box){
   const docs = e.docs = e.docs || [];
-  box.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Supporting documents <span class="tag">${docs.length}</span></h3><p class="hint" style="margin:4px 0 0">PDFs cadets open from the ODT Overview, such as the excusal letter for professors. Each one is locked with the cadet password, like the rest of the ODT.</p></div>
+  box.innerHTML = `<div class="tabhd" style="margin-top:4px"><div><h3 class="grp" style="margin:0">Supporting documents <span class="tag">${docs.length}</span></h3><p class="hint" style="margin:4px 0 0">PDFs cadets read on the ODT Itinerary &amp; docs tab, such as the excusal letter for professors. Each one is locked with the cadet password, like the rest of the ODT.</p></div>
       <div class="tools"><button class="btn small primary" type="button" id="docAdd">Add a document</button></div></div>
     <div class="list">${docs.map((d, i) => `<div class="item"><div class="txt"><div class="t1">${esc(d.title)}${OD.files[d.id] ? ` <span class="tag gold">Not published</span>` : ""}</div><div class="t2">${esc([d.name, d.size ? mb(d.size) : "", d.note].filter(Boolean).join(" · "))}</div></div>
       <div class="acts"><button class="btn small" type="button" data-dup="${i}" ${i ? "" : "disabled"} aria-label="Move up">↑</button><button class="btn small" type="button" data-ddown="${i}" ${i < docs.length - 1 ? "" : "disabled"} aria-label="Move down">↓</button><button class="btn small" type="button" data-dedit="${i}">Edit</button></div></div>`).join("") || `<p class="muted">Nothing yet.</p>`}</div>`;

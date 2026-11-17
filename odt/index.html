@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>ODT Module · Storm HQ</title>
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
-<meta name="description" content="Det 250 ODT Module: dates, itinerary, roster, rooms, vans and documents for each ODT. Cadet password.">
+<meta name="description" content="Det 250 ODT Module: your room and van for each ODT, plus the itinerary and documents. Cadet password.">
 <link rel="stylesheet" href="../shared/det250.css">
 <link rel="stylesheet" href="../shared/instructor.css">
 <style>
@@ -110,19 +110,43 @@ input[type="password"],input[type="search"]{font:inherit}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 /* module bar */
 .modbar{position:sticky;top:var(--d250-bar-h,42px);z-index:20;background:var(--d250-page);padding:10px 0;margin:-10px 0 6px;border-bottom:1px solid var(--d250-line)}
-.modbar .in{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-.modbar .seg{flex:1 1 auto}
-.modbar .allbtn{margin-left:auto}
+.modbar .seg{display:flex;width:100%}
+.modbar .seg button{flex:1 1 0;padding:7px 6px;white-space:nowrap}
+@media (max-width:420px){ .modbar .seg button{font-size:13.5px;padding:7px 4px} }
+.linkbtn.back{font-size:13.5px;text-decoration:none;margin-bottom:6px}
+.linkbtn.back:hover{text-decoration:underline}
+.toolbar .legend{flex:1;margin:0}
 .btn.on{border-color:var(--d250-gold);color:var(--d250-gold)}
-/* overview */
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+/* your assignment: the first thing on an ODT */
+.me{background:var(--d250-surface);border:1px solid var(--d250-line);border-left:4px solid var(--d250-gold);border-radius:16px;padding:16px 18px;margin:0 0 14px;box-shadow:var(--d250-shadow)}
+.me h2{margin:0 0 10px;font-size:17px;font-weight:800}
+.me .find{max-width:460px}
+.hits{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hits .hit{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--d250-line-strong);background:var(--d250-page);cursor:pointer;font-weight:700}
+.hits .hit:hover{border-color:var(--d250-gold);color:var(--d250-gold)}
+.hits .miss{margin:0;color:var(--d250-soft);font-size:14px}
+.mehd{display:flex;align-items:center;gap:12px}
+.mehd .txt{flex:1;min-width:0}
+.mehd .nm{font-size:17px}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.slot{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--d250-line-strong);background:var(--d250-page);cursor:pointer;min-width:0;transition:border-color .2s}
+.slot:hover:not(:disabled){border-color:var(--d250-gold)}
+.slot:disabled{cursor:default;opacity:.8}
+.slot small{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--d250-soft)}
+.slot b{font-size:26px;line-height:1.15;font-weight:800;color:var(--d250-gold);overflow-wrap:anywhere}
+.slot .with{font-size:13.5px;color:var(--d250-soft);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.slot .with span{color:var(--d250-ink);font-weight:700}
+.room.mine,.person.mine{border-color:var(--d250-gold);box-shadow:0 0 0 2px var(--d250-gold)}
+.doclinks{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 4px}
+.doclinks a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;border:1px solid var(--d250-line-strong);color:var(--d250-ink);text-decoration:none;font-weight:700;font-size:13.5px}
+.doclinks a:hover{border-color:var(--d250-gold);color:var(--d250-gold)}
+.doclinks svg{width:18px;height:18px;color:var(--d250-gold)}
+.docview h2{align-items:center}
+.docview .dbtns{display:inline-flex;gap:6px}
+.docview .derr{margin:0;min-height:0;color:var(--d250-cardinal-2,#ef4054);font-size:13px}
+@media (max-width:720px){ .me{padding:14px} .slots{grid-template-columns:minmax(0,1fr)} }
 .person.role{border-color:color-mix(in srgb,var(--d250-gold) 55%,var(--d250-line))}
 .person.role .pos b{color:var(--d250-gold);font-weight:800}
-.tile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;box-shadow:var(--d250-shadow);cursor:pointer;min-width:0;transition:border-color .2s}
-.tile:hover{border-color:var(--d250-gold)}
-.tile small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
-.tile b{font-size:18px;font-weight:800;overflow-wrap:anywhere}
-.tile span{font-size:13px;color:var(--d250-soft);overflow-wrap:anywhere}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .card{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:14px;padding:14px 16px;box-shadow:var(--d250-shadow);break-inside:avoid;min-width:0}
 .card h3{margin:0 0 4px;font-size:15.5px;font-weight:800;overflow-wrap:anywhere}
@@ -149,9 +173,8 @@ input[type="password"],input[type="search"]{font:inherit}
 .ppl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .person{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:12px;min-width:0;break-inside:avoid}
 .person.hide{display:none}
-@media (max-width:900px){ .tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .ppl{grid-template-columns:repeat(2,minmax(0,1fr))} }
-@media (max-width:720px){ .cards,.ppl{grid-template-columns:minmax(0,1fr)} .row{grid-template-columns:minmax(0,1fr)} .modbar .allbtn{margin-left:0} }
-@media (max-width:420px){ .tiles{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:900px){ .ppl{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:720px){ .cards,.ppl{grid-template-columns:minmax(0,1fr)} .row{grid-template-columns:minmax(0,1fr)} }
 
 /* Print: white paper, Letter, the tab on screen only. */
 @media print{
@@ -160,13 +183,13 @@ input[type="password"],input[type="search"]{font:inherit}
     --as100:#2b67ad;--as200:#8f3a7c;--as250:#0f7b7b;--as300:#2f7d32;--as400:#b45309;--as500:#b42318;--gb:#1b2f57;--cadre:#475569;color-scheme:light}
   body{font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .wrap{max-width:none;padding:0}
-  .modbar,.toolbar,.found,.ev .other,.d250-foot .source-line,.noprint{display:none!important}
+  .modbar,.toolbar,.found,#me,.doclinks,.dbtns,.ev .other,.d250-foot .source-line,.noprint{display:none!important}
   .ev{margin:6px 0 4px}.ev h2{font-size:17px}.ev .meta,.ev .note{font-size:11px;margin-top:0}
   .searching .room:not(.hit){opacity:1}
   .room.hit{box-shadow:none;border-color:var(--d250-line)}
   .grid{grid-template-columns:1fr 1fr;gap:6px}
   .sec{margin-top:10px}
-  .room,.card,.day,.person,.tile{box-shadow:none}
+  .room,.card,.day,.person{box-shadow:none}
   .room{border-radius:10px}
   .rn{flex-basis:46px}.rn b{font-size:21px}
   .p{padding:3px 8px;gap:8px}
@@ -188,7 +211,7 @@ input[type="password"],input[type="search"]{font:inherit}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
       <h1 id="title">ODT Module</h1>
-      <p class="d250-head-sub">Everything for each ODT: dates, itinerary, who's going, rooms, vans and documents.</p>
+      <p class="d250-head-sub">Find your room and van for each ODT, plus the itinerary and documents.</p>
     </div>
   </div>
 </header>
@@ -211,11 +234,9 @@ input[type="password"],input[type="search"]{font:inherit}
   </div>
 
   <div id="app" hidden>
-    <div class="modbar"><div class="in">
-      <div class="seg" role="tablist" aria-label="ODT sections" id="tabs"></div>
-      <button class="btn allbtn" id="allBtn" type="button">All ODTs</button>
-    </div></div>
     <div class="ev" id="ev"></div>
+    <div id="me"></div>
+    <div class="modbar" id="modbar"><div class="seg" role="tablist" aria-label="ODT sections" id="tabs"></div></div>
     <section id="view" role="tabpanel"></section>
   </div>
 </main>
