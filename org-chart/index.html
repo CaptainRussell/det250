@@ -64,7 +64,7 @@ header.top{--d250-measure:1240px}
 /* thin sticky chart bar under the header: which chart, and (on the proposed charts) which team */
 .chartbar{position:sticky;top:var(--d250-bar-h,42px);z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--border)}
 .chartbar-in{max-width:1240px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 20px;margin-bottom:6px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 20px;margin:10px 0 6px}
 .toolbar .search{order:2}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 h1{margin:0;font-size:22px;line-height:1.15}
@@ -418,9 +418,9 @@ section.band{margin-top:26px}
 <link rel="stylesheet" href="proposals.css">
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/org-chart.webp" alt="" width="24" height="24"><span>Det 250 Org Chart</span></span></a>
 <script>document.documentElement.classList.add('js');document.documentElement.dataset.mode=new URLSearchParams(location.search).get('view')==='flip'?'flip':'poc';</script>
-<header class="top d250-head" style="--tone:#2f7d32">
+<header class="top d250-head inbar" style="--tone:#2f7d32">
   <div class="d250-head-in">
       <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/org-chart.webp" alt="" width="56" height="56"></span>
       <div class="d250-head-text">

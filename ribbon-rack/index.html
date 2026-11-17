@@ -148,13 +148,14 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .seg button{border:0;background:var(--surface-2);padding:7px 12px;font-weight:700;font-size:13.5px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--go);color:#fff}
 .ctrls .lbl{font-size:13px;color:var(--soft);font-weight:600}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:12px}
+.actions .btn{padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
+.actions .btn svg{width:15px;height:15px;flex:none}
 .count{font-size:13px;color:var(--soft);margin-top:10px}
 .jump{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:0;background:var(--d250-cardinal);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer;transition:opacity .14s,transform .14s}
 .jump.off{opacity:0;transform:translateY(12px);pointer-events:none}
 @media (max-width:900px){.jump{display:inline-flex}.toast{bottom:74px}}
 .warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--d250-gold-bg);color:var(--ink);font-size:13px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
-.shared{margin-bottom:14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notes{margin-top:20px}
 /* folds, as on the PFRA Calculator: title, a short hint, caret at the right */
 details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:18px 20px}
@@ -213,9 +214,9 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/ribbon-rack.webp" alt="" width="24" height="24"><span>Ribbon Rack Builder</span></span></a>
 
-<header class="d250-head masthead" style="--tone:#4338ca">
+<header class="d250-head masthead inbar" style="--tone:#4338ca">
   <div class="d250-head-in">
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/ribbon-rack.webp" alt="" width="56" height="56"></span>
     <div class="d250-head-text">
@@ -227,10 +228,6 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 </header>
 
 <div class="wrap">
-  <div class="shared hidden" id="sharedBar" role="status">
-    <span id="sharedMsg">You're viewing a shared rack.</span>
-    <button class="btn" id="startOwn" type="button">Start my own rack</button>
-  </div>
 
   <div class="layout">
     <section class="panel pickcol" aria-label="Ribbons, in Figure 10.4 order, highest first">
@@ -270,9 +267,9 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
           <input id="who" type="text" placeholder="Name for the printout (optional)" aria-label="Name for the printout" maxlength="60" autocomplete="off">
         </div>
         <div class="actions">
-          <button class="btn primary" type="button" id="printBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print actual size</button>
+          <button class="btn primary" type="button" id="printBtn" title="Prints the rack at actual size (1 3/8 x 3/8 in per ribbon)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print</button>
           <button class="btn" type="button" id="pngBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Save image</button>
-          <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy share link</button>
+          <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy link</button>
         </div>
         <div id="warns"></div>
       </div>
@@ -866,7 +863,7 @@ function devText(devs){
   return t.join(", ");
 }
 function changed(){
-  if (viewingShared) { viewingShared = false; $("sharedBar").classList.add("hidden"); history.replaceState(null, "", location.pathname); }
+  if (viewingShared) { viewingShared = false; history.replaceState(null, "", location.pathname); }
   save(); syncPicker(); render();
 }
 
@@ -935,10 +932,6 @@ function wire(){
     clearTimeout(b.t); idle();
     state = blank(); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
     changed(); toast("Everything reset");
-  });
-  $("startOwn").addEventListener("click", () => {
-    viewingShared = false; state = load(); $("sharedBar").classList.add("hidden");
-    history.replaceState(null, "", location.pathname); syncPicker(); render();
   });
   $("linkBtn").addEventListener("click", async () => {
     const url = location.origin + location.pathname + "#" + encode();
@@ -1016,8 +1009,7 @@ buildGroups();
 const shared = decode(location.hash);
 if (shared){
   state = shared; viewingShared = true;
-  $("sharedBar").classList.remove("hidden");
-  $("sharedMsg").textContent = state.who ? `You're viewing ${state.who}'s rack. Changing anything saves it as your rack in this browser.` : "You're viewing a shared rack. Changing anything saves it as your rack in this browser.";
+  // a shared link just shows that rack (no banner); changing anything saves it as this browser's rack
 } else state = load();
 wire(); syncPicker(); render();
 })();
