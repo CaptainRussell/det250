@@ -4,11 +4,11 @@
    No password is written in this file. A password is checked by opening a file it
    already locks:
      cadet  documents/restricted/vault.json (its "check" field), the Documents and Policy
-            and ODT Module password
+            and ODT Tool password
      cadre  admin/vault.json, the admin password (the Cadre Dashboard uses the same one)
    On success the password is put in the sessionStorage keys the locked tools already
    read, so they open without asking again in this browser tab:
-     cadet  d250-docs-pass (Documents and Policy, ODT Module)
+     cadet  d250-docs-pass (Documents and Policy, ODT Tool)
      cadre  d250-admin-pass, d250-cadre-pass (Cadre Admin, Cadre Dashboard), plus the
             Site passwords saved in the admin vault: locks.docs -> d250-docs-pass and
             locks.fse -> d250-gmc-pass (Flight Staff Evaluation). Save those once on

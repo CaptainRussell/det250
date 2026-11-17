@@ -9,7 +9,7 @@ This guide is for the cadre member who keeps Storm HQ up to date. You don't need
 
 When someone opens Storm HQ, the home page asks for a password once per browser tab:
 
-- The **cadet password** (the Documents and Policy password) opens the locked plans, OPORDs and the ODT Module without asking again.
+- The **cadet password** (the Documents and Policy password) opens the locked plans, OPORDs and the ODT Tool without asking again.
 - The **cadre password** (the admin password) shows the **Admin** card and opens the Cadre Dashboard and Cadre Admin without asking again. If the cadet and Flight Staff Evaluation passwords are saved under Site passwords (see below), it opens those tools too.
 - **Skip for now** shows every open tool, and each locked tool still asks for its own password.
 
@@ -17,7 +17,7 @@ When someone opens Storm HQ, the home page asks for a password once per browser 
 
 ## How it works
 
-Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits three data files, the locked ODT Module and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
+Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits three data files, the locked ODT Tool and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
 
 | What you edit | Where it shows up |
 | --- | --- |
@@ -25,7 +25,7 @@ Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage
 | Org chart positions | Org Chart (POC chart and Flip Week), Know Your Wing ranks and positions |
 | Hub cards | The Storm HQ home page |
 | Documents | Documents and Policy, and every tool that cites a regulation |
-| ODT | The ODT Module (every ODT, current and past, behind the cadet password) |
+| ODT | The ODT Tool (every ODT, current and past, behind the cadet password) |
 
 Every change is kept in the history, so nothing you do is permanent. You can undo any change from the **History and settings** tab.
 
@@ -79,11 +79,11 @@ On the Hub cards tab, press **Hide** on its card. Hide a tool nobody maintains, 
 
 On the Documents tab, press **Edit** on the card. Air Force publications should be outside links to e-Publishing, so cadets always get the current version. Upload a PDF only for detachment or HQ AFROTC files that have no official link. Keep PDFs under 50 MB.
 
-### The ODT Module
+### The ODT Tool
 
-The ODT Module page holds everything for each ODT: details and things to know, the itinerary, who's going (cadets and cadre), rooms, vans and documents. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
+The ODT Tool page holds everything for each ODT: details and things to know, the itinerary, who's going (cadets and cadre), rooms, vans and documents. Cadets see the next ODT first, and **All ODTs** lists every ODT, upcoming and past. The whole module is locked with the cadet password (the same one as Documents and Policy), so none of it is public.
 
-**First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. It also adds the Offutt cadre (Lt Col Cacic, Capt Russell, SSgt Moore, Capt Orr) with rooms of their own, numbers the rooms (cadets 1 to 21 in page order, then Russell 22, Orr 23, Moore 24, Cacic 25) and sets up the four vans. If the ODT Module was already set up, this happens the first time the ODT tab opens. Check the Rooms and Vans tabs, then publish.
+**First time only:** ODT tab, **Set up**. If the cadet password isn't saved on the admin page yet, type it. This moves the Offutt rooms into the locked file and deletes the old public room list. It also adds the Offutt cadre (Lt Col Cacic, Capt Russell, SSgt Moore, Capt Orr) with rooms of their own, numbers the rooms (cadets 1 to 21 in page order, then Russell 22, Orr 23, Moore 24, Cacic 25) and sets up the four vans. If the ODT Tool was already set up, this happens the first time the ODT tab opens. Check the Rooms and Vans tabs, then publish.
 
 **Add a new ODT**
 
@@ -99,7 +99,7 @@ The ODT Module page holds everything for each ODT: details and things to know, t
 - **Rooms:** press **Edit** on a room to change its number, section or cadets. Picking a cadet who is already in another room moves them. Leave cadet 2 empty for a bonus (single) room. The tab warns about roster cadets without a room, anyone in two rooms, and rooms that mix POC with GMC. Cadre always get a room to themselves: **Give the cadre their rooms** puts each cadre member on the roster in a room of their own, in a Cadre section. Gender isn't in the roster, so keep each section to one gender yourself.
 - **Vans:** one entry per van with its vehicle (15-passenger ISU van, 11-passenger GOV or other), seats (driver included), driver and relief driver. **Auto-assign riders** keeps the drivers, keeps roommates in the same van (a driver's roommate rides in that van), and spreads everyone else on the roster across the vans by AS class, leaving open seats in each van. Move anyone by hand with the van picker next to their name. The tab warns about people without a van, anyone in two vans, roommates split up and vans over capacity.
 
-**Remove this ODT** deletes it and everything in it. Removing a cadet from the roster keeps them in past ODTs, so history stays complete. Changing the cadet password (History and settings) locks the ODT Module again with the new password too.
+**Remove this ODT** deletes it and everything in it. Removing a cadet from the roster keeps them in past ODTs, so history stays complete. Changing the cadet password (History and settings) locks the ODT Tool again with the new password too.
 
 ### Change a site password
 
@@ -161,7 +161,7 @@ These still need someone comfortable with the technical side, or Claude Code wor
 | `data/roster.js` | People, positions and flights |
 | `data/hub.js` | Hub cards |
 | `data/documents.js` | Documents and Policy cards |
-| `odt/vault.json` | The ODT Module, locked with the cadet password |
+| `odt/vault.json` | The ODT Tool, locked with the cadet password |
 | `odt/files/` | The ODT supporting documents (PDFs), each locked with the cadet password |
 | `org-chart/photos/` | 240 px photos, named by each person's key |
 | `whos-that-cadet/photos/` | 600 px photos for Know Your Wing |
