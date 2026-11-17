@@ -25,43 +25,66 @@ button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .wrap{max-width:1180px;margin:0 auto;padding:20px 16px 0}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:20px;align-items:start}
+@media (max-width:1120px){.layout{grid-template-columns:minmax(0,1fr) minmax(0,340px)}}
 @media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.rackcol{order:-1}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--d250-shadow)}
 .panel>h2,.panel .ph{margin:0;padding:14px 16px 10px;font-size:15px;font-weight:800;letter-spacing:.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ph .rt{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--soft)}
 .search{display:flex;gap:8px;padding:0 16px 12px}
 .search input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
-.grp{border-top:1px solid var(--line)}
-.grp>summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
-.grp>summary::-webkit-details-marker{display:none}
-.grp>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(-45deg);transition:transform .14s var(--d250-ease);flex:none}
-.grp[open]>summary::before{transform:rotate(45deg)}
-.grp>summary .n{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
-.grp>summary .n.on{color:var(--gold)}
-.gnote{margin:-4px 16px 10px;font-size:12.5px;color:var(--soft)}
+.gnote{margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .psnote{margin:0 16px 12px}
 .psnote b{color:var(--ink)}
-.rib{border-top:1px dashed var(--line);padding:8px 16px;transition:background-color .14s}
-.rib.on{background:color-mix(in srgb,var(--gold) 7%,transparent)}
-.rib.flash{animation:ribflash .9s ease-out}
-@keyframes ribflash{0%,35%{background:color-mix(in srgb,var(--gold) 26%,transparent)}}
-.rib:first-of-type{border-top:0}
-.rib label.main{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:36px}
-.rib input[type=checkbox].pick{width:20px;height:20px;flex:none;accent-color:var(--accent)}
-.rib .sw{flex:none;width:66px;height:18px;display:block;border-radius:1px;box-shadow:0 1px 2px rgba(0,0,0,.35)}
-.rib .nm{flex:1;min-width:0;font-size:14px;line-height:1.3}
-.rib.on .nm{font-weight:700}
-.nm .crit{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:var(--soft);line-height:1.4}
-.nm .crit .cite{white-space:normal}
-.opts{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:8px 0 4px 32px;font-size:13.5px;color:var(--soft)}
-.rib.on .opts{display:flex;animation:optsin .14s ease-out}
-@keyframes optsin{from{opacity:0;transform:translateY(-4px)}}
+/* the picker: a grid laid out like the AFROTC Ribbon Chart (Sup Figure 10.4), highest first, left to right */
+.pickcol{container-type:inline-size}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:2px 16px 14px}
+@container (min-width:460px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@container (min-width:600px){.cgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.tile{position:relative;display:flex;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);transition:border-color .14s,background-color .14s,opacity .14s}
+.tile:hover{border-color:var(--line-strong)}
+.tile.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 13%,var(--surface-2));box-shadow:inset 0 0 0 1px var(--gold)}
+.tile.dim{opacity:.28}
+.tile.flash{animation:ribflash .9s ease-out}
+@keyframes ribflash{0%,35%{box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 60%,transparent)}}
+.tg{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 8px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.tg:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.tg:active .sw{transform:scale(.96)}
+.tg .sw{display:block;width:100%;max-width:120px;height:auto;aspect-ratio:110/30;border-radius:1px;box-shadow:0 1px 3px rgba(0,0,0,.45);transition:transform .1s}
+.tn{display:block;width:100%;text-align:center;font-size:12px;line-height:1.25;color:var(--soft);overflow-wrap:break-word;hyphens:auto}
+.tsp{display:inline-block;width:20px}
+@container (max-width:459px){.cgrid{gap:6px;padding:2px 10px 14px}.tg{padding:9px 5px 7px}.tn{font-size:11.5px}}
+.tile.on .tn{color:var(--ink);font-weight:700}
+.tile.on .tg::before{content:"";position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316161a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ti{position:absolute;right:1px;bottom:1px;width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
+.ti:hover{color:var(--ink);background:var(--line)}
+.ti svg{width:16px;height:16px}
+.offh{margin:0 16px 8px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.offh span{font-weight:600;letter-spacing:0;text-transform:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
+.legend b{color:var(--ink)}
+.nomatch{margin:0 16px 12px;font-size:13px;color:var(--soft)}
+/* ribbon details pop-out: criteria, source and devices */
+dialog.info{padding:0;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.55)}
+dialog.info[open]{animation:dlgin .16s ease-out}
+dialog.info::backdrop{background:rgba(6,8,14,.72)}
+.info .ch{display:flex;align-items:flex-start;gap:10px;padding:14px 14px 0 16px}
+.info .ch h2{margin:0;font-size:16px;font-weight:800;flex:1;min-width:0;line-height:1.3;padding-top:5px}
+.info .ib{padding:12px 16px 16px}
+.info .big{background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:22px 14px;display:grid;place-items:center}
+.info .big .sw{width:min(240px,70%);height:auto;aspect-ratio:110/30;border-radius:2px;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.info .tgl{width:100%;margin-top:12px}
+.info .tgl.on{background:var(--surface-2);border-color:var(--line-strong);color:var(--ink)}
+.info .opts{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:12px 0 0;padding:12px;border-radius:10px;background:var(--surface-2);font-size:13.5px;color:var(--soft)}
+.info .opts:empty{display:none}
+.info .crit{margin:14px 0 0;font-size:14px;line-height:1.5;color:var(--ink)}
+.info .cite{display:block;margin-top:6px}
+.info .gn{margin:10px 0 0;font-size:13px;color:var(--soft)}
 .opts .dv{font-size:12.5px;font-weight:700;color:var(--gold)}
 .opts label{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;cursor:pointer;max-width:100%}
 .opts input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
-.opts select{padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface-2);max-width:100%;min-width:0}
+.opts select{padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);max-width:100%;min-width:0}
 .step{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden}
-.step button{width:32px;height:32px;border:0;background:var(--surface-2);cursor:pointer;font-weight:800;font-size:16px}
+.step button{width:32px;height:32px;border:0;background:var(--surface);cursor:pointer;font-weight:800;font-size:16px}
 .step button:hover{background:var(--line)}
 .step output{min-width:32px;text-align:center;font-weight:800;color:var(--ink)}
 .devnote{font-size:12.5px;color:var(--faint)}
@@ -189,11 +212,15 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     <section class="panel pickcol" aria-labelledby="h-pick">
       <h2 class="ph" id="h-pick">Your ribbons<span class="rt" id="pickCount">0 selected</span></h2>
       <div class="search">
-        <input id="q" type="search" placeholder="Search ribbons, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Search ribbons" autocomplete="off">
+        <input id="q" type="search" placeholder="Find a ribbon, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Find a ribbon" autocomplete="off">
       </div>
+      <p class="legend"><span><b>Tap a ribbon</b> to add or remove it.</span><span><b>Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></b> for criteria and devices.</span><span>Same order as Figure 10.4: left to right, highest first.</span></p>
+      <p class="nomatch hidden" id="nomatch">No ribbon matches that.</p>
+      <div class="cgrid" id="grid" aria-label="AFROTC ribbons in order of precedence"></div>
+      <p class="offh" id="offh">Also authorized <span>· not on Figure 10.4</span></p>
+      <div class="cgrid" id="gridx"></div>
       <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span></p>
       <p class="gnote psnote"><b>CAP, JROTC or another service's ROTC?</b> Awards earned there may also be worn. They aren't built here; ask your cadre where they go in your rack. Valor awards from those programs go right below the AFROTC valor awards. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1; AFROTCI 36-2011V3 15.4.1</span></p>
-      <div id="groups"></div>
     </section>
 
     <aside class="panel rackcol" aria-labelledby="h-rack">
@@ -318,6 +345,16 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
   <div class="cb"><img id="chartImg" alt="AFROTC Ribbon Chart, Figure 10.4 of DAFI36-2903_AFROTCSUP: every AFROTC ribbon in order of precedence, read left to right and top to bottom, from the Gold Valor Award to the Scabbard and Blade Membership Ribbon." width="1500" height="2000"></div>
   <p class="cf">Order of precedence: left to right, top to bottom, highest first. Tap the chart to zoom. * Only your highest CAP award is worn.</p>
 </dialog>
+<dialog class="info" id="infoDlg" aria-labelledby="infoTitle">
+  <div class="ch"><h2 id="infoTitle"></h2><button class="iconbtn" type="button" id="infoClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="ib">
+    <div class="big" id="infoArt"></div>
+    <button class="btn primary tgl" type="button" id="infoToggle"></button>
+    <div class="opts" id="infoOpts"></div>
+    <p class="crit" id="infoCrit"></p>
+    <p class="gn" id="infoNote"></p>
+  </div>
+</dialog>
 <button class="jump off" id="jumpBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg><span id="jumpTxt">View rack</span></button>
 
 <script src="ribbons.js"></script>
@@ -432,13 +469,13 @@ function devicesFor(r, s){
    (no second ribbon: the ribbon itself is the first award, so a second ribbon read as an extra award). */
 function rack(){
   const out = [];
-  R.forEach(r => {
-    const s = state.sel[r.id]; if (!s) return;
-    const rk = r.ranks && s.rk && r.ranks.list.find(x => x[0] === s.rk);
-    if (rk) out.push({r: Object.assign({}, r, {s: r.ranks.s, h: null, fixed: [], bars: rk[2]}), devs: [], label: `Scabbard and Blade Rank Ribbon (${rk[1]})`});
-    else out.push({r, devs: devicesFor(r, s), label: r.name});
-  });
+  R.forEach(r => { const s = state.sel[r.id]; if (s) out.push(rackItem(r, s)); });
   return out;
+}
+function rackItem(r, s){
+  const rk = r.ranks && s.rk && r.ranks.list.find(x => x[0] === s.rk);
+  if (rk) return {r: Object.assign({}, r, {s: r.ranks.s, h: null, fixed: [], bars: rk[2]}), devs: [], label: `Scabbard and Blade Rank Ribbon (${rk[1]})`};
+  return {r, devs: devicesFor(r, s), label: r.name};
 }
 
 /* ---------------- drawing ----------------
@@ -621,9 +658,9 @@ function rackSVG(items, per, opts){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" ${size} role="img" aria-label="Ribbon rack with ${n} ribbon${n === 1 ? "" : "s"}">${defs(p)}${cloths}${devs}</svg>`;
 }
 function rackPx(items, per){ const rows = Math.ceil(items.length / per), cols = Math.min(per, items.length); return [cols * W + 2 * M, rows * H + 2 * M]; }
-function swatch(r){
+function swatch(r, worn){
   const p = ++uid;
-  const devs = r.orgdev ? ["org:" + r.orgdev + ":g"] : (r.fixed || []).filter(d => d === "ss" || d === "bs");
+  const devs = worn || (r.orgdev ? ["org:" + r.orgdev + ":g"] : (r.fixed || []).filter(d => d === "ss" || d === "bs"));
   return `<svg class="sw" viewBox="0 0 ${W} ${H}" aria-hidden="true">${defs(p)}${cloth(r, p)}${devices(devs, p)}<rect x=".25" y=".25" width="${W-.5}" height="${H-.5}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".5"/></svg>`;
 }
 /* Used by the test page to compare drawings with the chart. */
@@ -656,42 +693,90 @@ const SMALL = new Set(["of", "the", "and", "for", "us", "award", "ribbon", "memb
 function initials(name){
   return name.replace(/[“”"]/g, "").split(/[\s/]+/).filter(w => w && !SMALL.has(w.toLowerCase())).map(w => w[0]).join("");
 }
-function searchText(r, g){
+function searchText(r){
+  const g = GROUPS.find(x => x.id === r.grp) || {title: ""};
   return [r.name.replace(/[“”]/g, ""), g.title.replace(/\s*\(.*\)/, ""), initials(r.name), ALIAS[r.id] || ""].join(" ").toLowerCase();
 }
+/* The grid mirrors Figure 10.4: the 60 ribbons on the chart, in its order. Ribbons that are authorized but not on the
+   chart (FT Superior Performer) sit in a short row under it; the rack still places them by precedence. */
+const OFF_CHART = new Set(["ftsp"]);
+function tileArt(r){
+  const s = state.sel[r.id];
+  if (!s) return swatch(r);
+  const it = rackItem(r, s);
+  return swatch(it.r, it.devs);
+}
+function tileHTML(r){
+  return `<div class="tile" data-id="${r.id}" data-q="${esc(searchText(r))}">
+    <button class="tg" type="button" aria-pressed="false">${swatch(r)}<span class="tn">${esc(r.name)}<i class="tsp"></i></span></button>
+    <button class="ti" type="button" aria-label="${esc(r.name)}: criteria and devices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></button></div>`;
+}
 function buildGroups(){
-  $("groups").innerHTML = GROUPS.map(g => {
-    const list = R.filter(r => r.grp === g.id);
-    return `<details class="grp" data-g="${g.id}" open><summary>${esc(g.title)} <span class="n" data-count="${g.id}"></span></summary>
-      ${g.note ? `<p class="gnote">${esc(g.note)}</p>` : ""}
-      ${list.map(r => `<div class="rib" data-id="${r.id}" data-q="${esc(searchText(r, g))}">
-        <label class="main"><input class="pick" type="checkbox" aria-describedby="nm-${r.id}"><span class="nm" id="nm-${r.id}">${esc(r.name)}${r.crit ? `<small class="crit">${esc(r.crit)} <span class="cite">${esc(r.ref)}</span></small>` : ""}</span>${swatch(r)}</label>
-        <div class="opts">${optsHTML(r)}</div></div>`).join("")}</details>`;
-  }).join("");
+  $("grid").innerHTML = R.filter(r => !OFF_CHART.has(r.id)).map(tileHTML).join("");
+  $("gridx").innerHTML = R.filter(r => OFF_CHART.has(r.id)).map(tileHTML).join("");
 }
 function syncPicker(){
   R.forEach(r => {
-    const el = document.querySelector(`.rib[data-id="${r.id}"]`); if (!el) return;
+    const el = document.querySelector(`.tile[data-id="${r.id}"]`); if (!el) return;
     const s = state.sel[r.id];
     el.classList.toggle("on", !!s);
-    el.querySelector(".pick").checked = !!s;
-    if (!s) return;
-    const n = el.querySelector('[data-role="n"]'); if (n) n.textContent = s.n;
-    const o = el.querySelector('[data-role="o"]');
-    if (o) { if (o.type === "checkbox") o.checked = !!s.o; else o.value = s.o || ""; }
-    const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
-    const rk = el.querySelector('[data-role="rk"]'); if (rk) rk.value = s.rk || "";
-    const lv = el.querySelector('[data-role="lv"]'); if (lv) { lv.value = s.lv || "g"; lv.disabled = !s.d; }
-    const dv = el.querySelector('[data-role="dv"]');
-    if (dv) { const olc = devicesFor(r, s).filter(x => x === "so" || x === "bo"); dv.textContent = olc.length ? devText(olc) : "no oak leaf cluster"; }
-  });
-  GROUPS.forEach(g => {
-    const c = R.filter(r => r.grp === g.id && state.sel[r.id]).length;
-    const el = document.querySelector(`[data-count="${g.id}"]`);
-    if (el) { el.textContent = c ? c + " selected" : ""; el.classList.toggle("on", !!c); }
+    el.querySelector(".tg").setAttribute("aria-pressed", String(!!s));
+    // redraw the little ribbon only when its devices changed, so the chosen devices show on the tile too
+    const sig = s ? JSON.stringify(s) : "";
+    if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.querySelector(".sw").outerHTML = tileArt(r); }
   });
   const total = Object.keys(state.sel).length;
   $("pickCount").textContent = total + " selected";
+  syncInfo();
+}
+
+/* ---------------- ribbon details pop-out ---------------- */
+let infoId = null;
+function openInfo(id){
+  const r = BY[id]; if (!r) return;
+  infoId = id;
+  const g = GROUPS.find(x => x.id === r.grp);
+  $("infoTitle").textContent = r.name;
+  $("infoCrit").innerHTML = r.crit ? `${esc(r.crit)} <span class="cite">${esc(r.ref)}</span>` : "";
+  $("infoNote").textContent = (OFF_CHART.has(id) ? "Not on the Figure 10.4 chart; worn right after the Field Training Distinguished Graduate Award. " : "") + (g && g.note ? g.note : "");
+  $("infoOpts").innerHTML = optsHTML(r);
+  syncInfo(true);
+  const dlg = $("infoDlg");
+  if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
+  $("infoToggle").focus();
+}
+function syncInfo(full){
+  if (!infoId || (!full && !$("infoDlg").open)) return;
+  const r = BY[infoId], s = state.sel[infoId], el = $("infoOpts");
+  $("infoArt").innerHTML = tileArt(r);
+  const t = $("infoToggle");
+  t.textContent = s ? "Remove from my rack" : "Add to my rack";
+  t.classList.toggle("on", !!s);
+  el.classList.toggle("hidden", !s || !el.innerHTML);
+  if (!s) return;
+  const n = el.querySelector('[data-role="n"]'); if (n) n.textContent = s.n;
+  const o = el.querySelector('[data-role="o"]');
+  if (o) { if (o.type === "checkbox") o.checked = !!s.o; else o.value = s.o || ""; }
+  const d = el.querySelector('[data-role="d"]'); if (d) d.checked = !!s.d;
+  const rk = el.querySelector('[data-role="rk"]'); if (rk) rk.value = s.rk || "";
+  const lv = el.querySelector('[data-role="lv"]'); if (lv) { lv.value = s.lv || "g"; lv.disabled = !s.d; }
+  const dv = el.querySelector('[data-role="dv"]');
+  if (dv) { const olc = devicesFor(r, s).filter(x => x === "so" || x === "bo"); dv.textContent = olc.length ? devText(olc) : "no oak leaf cluster"; }
+}
+let hinted = false;
+function toggle(id){
+  const r = BY[id];
+  if (state.sel[id]) delete state.sel[id];
+  else {
+    if (r.excl) {
+      const gone = R.filter(x => x.excl === r.excl && x.id !== id && state.sel[x.id]);
+      gone.forEach(x => delete state.sel[x.id]);
+      if (gone.length) toast(`Removed ${gone.map(x => x.name).join(", ")}. ${r.excl === "cap" ? "Only your highest CAP award is worn." : "A cadet earns the DG or the Superior Performer, not both."}`);
+    }
+    state.sel[id] = defaults(r);
+    if (!hinted && r.kind === "award" && !$("infoDlg").open) { hinted = true; toast("Earned it more than once? Tap ⓘ to add oak leaf clusters."); }
+  }
+  changed();
 }
 
 /* ---------------- render ---------------- */
@@ -739,47 +824,40 @@ function changed(){
 
 /* ---------------- events ---------------- */
 function wire(){
-  $("groups").addEventListener("change", e => {
-    const t = e.target, rib = t.closest(".rib");
-    if (rib){
-      const id = rib.dataset.id, r = BY[id];
-      if (t.classList.contains("pick")){
-        if (t.checked){
-          if (r.excl) {
-            const gone = R.filter(x => x.excl === r.excl && x.id !== id && state.sel[x.id]);
-            gone.forEach(x => delete state.sel[x.id]);
-            if (gone.length) toast(`Removed ${gone.map(x => x.name).join(", ")}. ${r.excl === "cap" ? "Only your highest CAP award is worn." : "A cadet earns the DG or the Superior Performer, not both."}`);
-          }
-          state.sel[id] = defaults(r);
-        } else delete state.sel[id];
-      } else if (t.dataset.role === "o") state.sel[id].o = t.type === "checkbox" ? t.checked : t.value;
-      else if (t.dataset.role === "d") state.sel[id].d = t.checked;
-      else if (t.dataset.role === "lv") state.sel[id].lv = t.value;
-      else if (t.dataset.role === "rk") state.sel[id].rk = t.value;
-      changed();
-    }
-  });
-  $("groups").addEventListener("click", e => {
-    const b = e.target.closest("button"); if (!b) return;
-    const rib = b.closest(".rib");
-    if (rib && b.dataset.act){
-      const s = state.sel[rib.dataset.id]; if (!s) return;
-      s.n = Math.max(minN(BY[rib.dataset.id]), Math.min(30, s.n + (b.dataset.act === "inc" ? 1 : -1)));
-      changed(); return;
-    }
-  });
-
-  // tap a ribbon in the rack (or a line in the order list) to find it in the list
-  const goto = id => {
-    const el = document.querySelector(`.rib[data-id="${id}"]`); if (!el) return;
-    if ($("q").value) { $("q").value = ""; $("q").dispatchEvent(new Event("input")); }
-    const g = el.closest("details"); if (g) g.open = true;
-    el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center"});
-    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
-    el.querySelector(".pick").focus({preventScroll: true});
+  const pick = e => {
+    const t = e.target.closest(".tg, .ti"); if (!t) return;
+    const id = t.closest(".tile").dataset.id;
+    if (t.classList.contains("ti")) openInfo(id); else toggle(id);
   };
-  $("stage").addEventListener("click", e => { const g = e.target.closest(".rb"); if (g) goto(g.dataset.id); });
-  $("orderList").addEventListener("click", e => { const b = e.target.closest("[data-goto]"); if (b) goto(b.dataset.goto); });
+  $("grid").addEventListener("click", pick);
+  $("gridx").addEventListener("click", pick);
+  $("infoToggle").addEventListener("click", () => toggle(infoId));
+  $("infoOpts").addEventListener("change", e => {
+    const t = e.target, s = state.sel[infoId]; if (!s) return;
+    if (t.dataset.role === "o") s.o = t.type === "checkbox" ? t.checked : t.value;
+    else if (t.dataset.role === "d") s.d = t.checked;
+    else if (t.dataset.role === "lv") s.lv = t.value;
+    else if (t.dataset.role === "rk") s.rk = t.value;
+    else return;
+    changed();
+  });
+  $("infoOpts").addEventListener("click", e => {
+    const b = e.target.closest("button[data-act]"), s = state.sel[infoId]; if (!b || !s) return;
+    s.n = Math.max(minN(BY[infoId]), Math.min(30, s.n + (b.dataset.act === "inc" ? 1 : -1)));
+    changed();
+  });
+  const info = $("infoDlg");
+  $("infoClose").addEventListener("click", () => info.close());
+  info.addEventListener("click", e => { if (e.target === info) info.close(); });   // click on the backdrop
+  info.addEventListener("close", () => {
+    // back on the grid, show which tile it was
+    const el = document.querySelector(`.tile[data-id="${infoId}"]`); if (!el) return;
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    el.querySelector(".tg").focus({preventScroll: true});
+  });
+  // tap a ribbon in the rack (or a line in the order list) for its details and devices
+  $("stage").addEventListener("click", e => { const g = e.target.closest(".rb"); if (g) openInfo(g.dataset.id); });
+  $("orderList").addEventListener("click", e => { const b = e.target.closest("[data-goto]"); if (b) openInfo(b.dataset.goto); });
   $("jumpBtn").addEventListener("click", () => {
     $("h-rack").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
   });
@@ -787,12 +865,9 @@ function wire(){
 
   $("q").addEventListener("input", () => {
     const q = $("q").value.trim().toLowerCase();
-    document.querySelectorAll(".rib").forEach(el => el.classList.toggle("hidden", !!q && !el.dataset.q.includes(q)));
-    document.querySelectorAll(".grp").forEach(g => {
-      const any = g.querySelectorAll(".rib:not(.hidden)").length;
-      g.classList.toggle("hidden", !any);
-      if (q && any) g.open = true;
-    });
+    let any = 0;
+    document.querySelectorAll(".tile").forEach(el => { const hit = !q || el.dataset.q.includes(q); el.classList.toggle("dim", !hit); any += hit; });
+    $("nomatch").classList.toggle("hidden", !!any);
   });
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.addEventListener("click", () => { state.align = b.dataset.align; changed(); }));
