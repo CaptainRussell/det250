@@ -59,7 +59,7 @@ button,input,select{font:inherit;color:inherit}
 .d250-head.masthead .d250-head-sub{margin:0;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:560px){.d250-head.masthead .d250-head-sub{display:none}}
 .pickcol{container-type:inline-size}
-.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:2px 16px 14px}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:2px 16px 14px}
 @container (min-width:460px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @container (min-width:600px){.cgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .tile{position:relative;display:flex;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);transition:border-color .14s,background-color .14s,opacity .14s}
@@ -68,28 +68,30 @@ button,input,select{font:inherit;color:inherit}
 .tile.dim{opacity:.28}
 .tile.flash{animation:ribflash .9s ease-out}
 @keyframes ribflash{0%,35%{box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 60%,transparent)}}
-.tg{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 8px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.tg{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 6px 5px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}
 .tg:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .tg:active .sw{transform:scale(.96)}
 .tg .sw{display:block;width:100%;max-width:120px;height:auto;aspect-ratio:110/30;border-radius:1px;box-shadow:0 1px 3px rgba(0,0,0,.45);transition:transform .1s}
-.tn{display:block;width:100%;text-align:center;font-size:12px;line-height:1.25;color:var(--soft);overflow-wrap:break-word;hyphens:auto}
-.tsp{display:inline-block;width:20px}
-@container (max-width:459px){.cgrid{gap:6px;padding:2px 10px 14px}.tg{padding:9px 5px 7px}.tn{font-size:11.5px}}
+.tn{display:block;width:100%;text-align:center;font-size:12px;line-height:1.2;color:var(--soft);overflow-wrap:break-word;hyphens:auto}
+.tsp{display:inline-block;width:18px}
+.tn.l{font-size:11.5px}
+.tn.xl{font-size:11px;letter-spacing:-.01em}
+@container (max-width:459px){.cgrid{gap:5px;padding:2px 10px 14px}.tg{padding:7px 4px 5px}.tn{font-size:11.5px}.tn.l{font-size:11px}.tn.xl{font-size:10.5px}}
 .tile.on .tn{color:var(--ink);font-weight:700}
 .tile.split{flex-direction:column}
 .tile.split .halves{display:flex;flex:1}
-.tile.split .tg{position:relative;padding:9px 4px 6px;gap:5px}
+.tile.split .tg{position:relative;padding:7px 4px 3px;gap:4px}
 .tile.split .tg+.tg{border-left:1px dashed var(--line-strong);border-radius:0 10px 10px 0}
 .tile.split .tg:first-child{border-radius:10px 0 0 10px}
 .tile.split .tg .sw{max-width:60px}
-.tile.split .tn{font-size:13px;font-weight:800;letter-spacing:.04em}
+.tile.split .tn{font-size:12.5px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
 .tile.split .tg.on{background:color-mix(in srgb,var(--gold) 14%,transparent)}
 .tile.split .tg.on .tn{color:var(--ink);font-weight:700}
-.tile.split .stn{display:block;padding:0 26px 8px 8px;text-align:center;font-size:11.5px;color:var(--soft);line-height:1.25}
+.tile.split .stn{display:block;padding:0 22px 5px 6px;text-align:center;font-size:11px;color:var(--soft);line-height:1.25}
 .tile.split.on .tg::before{display:none}
 .tile.split .tg.on::before{content:"";display:block;position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316161a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .tile.on .tg::before{content:"";position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316161a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
-.ti{position:absolute;right:1px;bottom:1px;width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
+.ti{position:absolute;right:0;bottom:0;width:24px;height:24px;border:0;border-radius:8px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
 .ti:hover{color:var(--ink);background:var(--line)}
 .ti svg{width:16px;height:16px}
 .legend-x{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
@@ -149,14 +151,6 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .ctrls .lbl{font-size:13px;color:var(--soft);font-weight:600}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .count{font-size:13px;color:var(--soft);margin-top:10px}
-.order{margin:10px 0 0;padding:0 0 0 22px;font-size:13px;color:var(--soft);max-height:220px;overflow:auto}
-.order li{margin:2px 0}
-.order li b{color:var(--ink);font-weight:600}
-.order button{all:unset;display:block;width:100%;text-align:left;cursor:pointer;border-radius:4px}
-.order button:hover b{text-decoration:underline}
-.order button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.order .rowh{display:block;list-style:none;margin:8px 0 2px -22px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
-.order .rowh:first-child{margin-top:0}
 .jump{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:0;background:var(--d250-cardinal);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer;transition:opacity .14s,transform .14s}
 .jump.off{opacity:0;transform:translateY(12px);pointer-events:none}
 @media (max-width:900px){.jump{display:inline-flex}.toast{bottom:74px}}
@@ -285,7 +279,6 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
           <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy share link</button>
         </div>
         <div id="warns"></div>
-        <ol class="order" id="orderList" aria-label="Rack order, highest first"></ol>
       </div>
     </aside>
   </div>
@@ -730,11 +723,26 @@ function searchText(r){
   const g = GROUPS.find(x => x.id === r.grp) || {title: ""};
   return [r.name.replace(/[“”]/g, ""), g.title.replace(/\s*\(.*\)/, ""), initials(r.name), ALIAS[r.id] || ""].join(" ").toLowerCase();
 }
-/* The grid mirrors Figure 10.4: the ribbons on the chart, in its order. The FT Superior Performer wears the same ribbon
-   as the FT Distinguished Graduate (no device, right after the DG; not on the chart), so the DG spot is one split tile:
-   half Distinguished Graduate, half Superior Performer. A cadet earns one or the other. */
-const SPLIT = {ftdg: ["ftdg", "ftsp", "Field Training Distinguished Graduate / Superior Performer"]};
+/* The grid mirrors Figure 10.4: the ribbons on the chart, in its order. Two spots are split tiles, two choices in one:
+   - the FT DG spot: the Superior Performer wears the same ribbon as the DG (no device, right after it; not on the chart),
+     so the tile is half Distinguished Graduate, half Superior Performer. A cadet earns one or the other.
+   - the Physical Fitness Award: half 95 or higher, half a 100 (adds the silver star; Sup 10.8.1.4), like the PFRA Calculator.
+   A half with o picks that ribbon with its star option set (o true) or clear (o false). */
+const SPLIT = {
+  ftdg: {cap: "FT Distinguished Graduate or Superior Performer", halves: [{id: "ftdg", label: "DG"}, {id: "ftsp", label: "SP"}]},
+  pf: {cap: "Physical Fitness Award", halves: [{id: "pf", o: false, label: "95+", aria: "Physical Fitness Award, 95 or higher"}, {id: "pf", o: true, label: "100 ★", aria: "Physical Fitness Award with silver star, scored 100"}]}
+};
 const IN_SPLIT = new Set(["ftsp"]);
+const halfOn = h => { const s = state.sel[h.id]; return !!s && (h.o === undefined || !!s.o === h.o); };
+function halfArt(h){ return halfOn(h) ? tileArt(BY[h.id]) : swatch(BY[h.id], h.o ? ["ss"] : undefined); }
+function pickHalf(h){
+  const s = state.sel[h.id];
+  if (halfOn(h)) { delete state.sel[h.id]; changed(); return; }
+  if (h.o === undefined) return toggle(h.id);
+  if (!s) state.sel[h.id] = defaults(BY[h.id]);
+  state.sel[h.id].o = h.o;
+  changed();
+}
 function tileArt(r){
   const s = state.sel[r.id];
   if (!s) return swatch(r);
@@ -742,15 +750,16 @@ function tileArt(r){
   return swatch(it.r, it.devs);
 }
 const INFO_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg>`;
-const SHORT = {ftdg: "DG", ftsp: "SP"};
+/* Long names step the type down a little so every tile keeps to about three lines. */
+const fit = name => name.length >= 52 ? " xl" : name.length >= 38 ? " l" : "";
 function tileHTML(r){
   const sp = SPLIT[r.id];
-  if (sp) return `<div class="tile split" data-id="${r.id}" data-q="${esc(sp.slice(0, 2).map(id => searchText(BY[id])).join(" "))}">
-    <div class="halves">${sp.slice(0, 2).map(id => `<button class="tg" type="button" data-id="${id}" aria-pressed="false" aria-label="${esc(BY[id].name)}">${swatch(BY[id])}<span class="tn">${esc(SHORT[id])}</span></button>`).join("")}</div>
-    <span class="stn">Field Training Distinguished Graduate or Superior Performer</span>
-    <button class="ti" type="button" aria-label="${esc(sp[2])}: criteria and devices">${INFO_ICON}</button></div>`;
+  if (sp) return `<div class="tile split" data-id="${r.id}" data-q="${esc([...new Set(sp.halves.map(h => h.id))].map(id => searchText(BY[id])).join(" "))}">
+    <div class="halves">${sp.halves.map((h, k) => `<button class="tg" type="button" data-id="${h.id}" data-h="${k}" aria-pressed="false" aria-label="${esc(h.aria || BY[h.id].name)}">${halfArt(h)}<span class="tn">${esc(h.label)}</span></button>`).join("")}</div>
+    <span class="stn">${esc(sp.cap)}</span>
+    <button class="ti" type="button" aria-label="${esc(sp.cap)}: criteria and devices">${INFO_ICON}</button></div>`;
   return `<div class="tile" data-id="${r.id}" data-q="${esc(searchText(r))}">
-    <button class="tg" type="button" data-id="${r.id}" aria-pressed="false">${swatch(r)}<span class="tn">${esc(r.name)}<i class="tsp"></i></span></button>
+    <button class="tg" type="button" data-id="${r.id}" aria-pressed="false">${swatch(r)}<span class="tn${fit(r.name)}">${esc(r.name)}<i class="tsp"></i></span></button>
     <button class="ti" type="button" aria-label="${esc(r.name)}: criteria and devices">${INFO_ICON}</button></div>`;
 }
 function buildGroups(){
@@ -759,16 +768,25 @@ function buildGroups(){
 const tileOf = id => { const b = document.querySelector(`.tg[data-id="${id}"]`); return b && b.closest(".tile"); };
 function syncPicker(){
   R.forEach(r => {
+    if (IN_SPLIT.has(r.id) || SPLIT[r.id]) return;
     const b = document.querySelector(`.tg[data-id="${r.id}"]`); if (!b) return;
-    const el = b.closest(".tile"), split = el.classList.contains("split");
     const s = state.sel[r.id];
-    (split ? b : el).classList.toggle("on", !!s);
+    b.closest(".tile").classList.toggle("on", !!s);
     b.setAttribute("aria-pressed", String(!!s));
     // redraw the little ribbon only when its devices changed, so the chosen devices show on the tile too
     const sig = s ? JSON.stringify(s) : "";
     if (b.dataset.sig !== sig) { b.dataset.sig = sig; b.querySelector(".sw").outerHTML = tileArt(r); }
   });
-  document.querySelectorAll(".tile.split").forEach(el => el.classList.toggle("on", !!el.querySelector(".tg.on")));
+  Object.keys(SPLIT).forEach(key => {
+    const el = document.querySelector(`.tile.split[data-id="${key}"]`); if (!el) return;
+    SPLIT[key].halves.forEach((h, k) => {
+      const b = el.querySelector(`.tg[data-h="${k}"]`), on = halfOn(h);
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+      const sig = on ? JSON.stringify(state.sel[h.id]) : "";
+      if (b.dataset.sig !== sig) { b.dataset.sig = sig; b.querySelector(".sw").outerHTML = halfArt(h); }
+    });
+    el.classList.toggle("on", !!el.querySelector(".tg.on"));
+  });
   const total = Object.keys(state.sel).length;
   $("pickCount").textContent = total + " selected";
   syncInfo();
@@ -837,15 +855,6 @@ function render(){
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
   $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "No ribbons yet";
-  // the order list, split by row as the rack shows it (the top row holds the leftovers)
-  const top = items.length % state.per || state.per, rowsN = Math.ceil(items.length / state.per);
-  let ol = "";
-  items.forEach((it, i) => {
-    const row = i < top ? 0 : 1 + Math.floor((i - top) / state.per);
-    if (rowsN > 1 && (i === 0 || (i - top) % state.per === 0 && i >= top)) ol += `<li class="rowh" aria-hidden="true">${row === 0 ? "Top row" : row === rowsN - 1 ? "Bottom row" : "Row " + (row + 1)}</li>`;
-    ol += `<li><button type="button" data-goto="${it.r.id}"><b>${esc(it.label)}</b>${it.devs.length ? " · " + devText(it.devs) : ""}</button></li>`;
-  });
-  $("orderList").innerHTML = ol;
   updateJump(items.length);
   const w = [];
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
@@ -871,10 +880,10 @@ function wire(){
   const pick = e => {
     const t = e.target.closest(".tg, .ti"); if (!t) return;
     const tile = t.closest(".tile");
-    if (t.classList.contains("tg")) return toggle(t.dataset.id);
-    // the split tile's info opens whichever half is picked
     const sp = SPLIT[tile.dataset.id];
-    openInfo(sp ? (sp.slice(0, 2).find(id => state.sel[id]) || sp[0]) : tile.dataset.id);
+    if (t.classList.contains("tg")) return sp ? pickHalf(sp.halves[+t.dataset.h]) : toggle(t.dataset.id);
+    // the split tile's info opens whichever half is picked
+    openInfo(sp ? (sp.halves.find(halfOn) || sp.halves[0]).id : tile.dataset.id);
   };
   $("grid").addEventListener("click", pick);
   $("infoToggle").addEventListener("click", () => toggle(infoId));
@@ -901,9 +910,8 @@ function wire(){
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
     document.querySelector(`.tg[data-id="${infoId}"]`).focus({preventScroll: true});
   });
-  // tap a ribbon in the rack (or a line in the order list) for its details and devices
+  // tap a ribbon in the rack for its details and devices
   $("stage").addEventListener("click", e => { const g = e.target.closest(".rb"); if (g) openInfo(g.dataset.id); });
-  $("orderList").addEventListener("click", e => { const b = e.target.closest("[data-goto]"); if (b) openInfo(b.dataset.goto); });
   $("jumpBtn").addEventListener("click", () => {
     $("h-rack").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
   });
