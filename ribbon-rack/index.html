@@ -718,11 +718,11 @@ function searchText(r){
 }
 /* The grid mirrors Figure 10.4: the ribbons on the chart, in its order. Two spots are split tiles, two choices in one:
    - the FT DG spot: the Superior Performer wears the same ribbon as the DG (no device, right after it; not on the chart),
-     so the tile is half Distinguished Graduate, half Superior Performer. A cadet earns one or the other.
+     so the tile is half Superior Performer, half Distinguished Graduate (the higher award on the right, like the 100 on the Fitness tile). A cadet earns one or the other.
    - the Physical Fitness Award: half 95 or higher, half a 100 (adds the silver star; Sup 10.8.1.4), like the PFRA Calculator.
    A half with o picks that ribbon with its star option set (o true) or clear (o false). */
 const SPLIT = {
-  ftdg: {cap: "FT Distinguished Graduate or Superior Performer", halves: [{id: "ftdg", label: "DG"}, {id: "ftsp", label: "SP"}]},
+  ftdg: {cap: "FT Superior Performer or Distinguished Graduate", halves: [{id: "ftsp", label: "SP"}, {id: "ftdg", label: "DG"}]},
   pf: {cap: "Physical Fitness Award", halves: [{id: "pf", o: false, label: "95+", aria: "Physical Fitness Award, 95 or higher"}, {id: "pf", o: true, label: "100 ★", aria: "Physical Fitness Award with silver star, scored 100"}]}
 };
 const IN_SPLIT = new Set(["ftsp"]);
@@ -875,7 +875,7 @@ function wire(){
     const sp = SPLIT[tile.dataset.id];
     if (t.classList.contains("tg")) return sp ? pickHalf(sp.halves[+t.dataset.h]) : toggle(t.dataset.id);
     // the split tile's info opens whichever half is picked
-    openInfo(sp ? (sp.halves.find(halfOn) || sp.halves[0]).id : tile.dataset.id);
+    openInfo(sp ? (sp.halves.find(halfOn) || sp.halves[sp.halves.length - 1]).id : tile.dataset.id);
   };
   $("grid").addEventListener("click", pick);
   $("infoToggle").addEventListener("click", () => toggle(infoId));
