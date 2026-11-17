@@ -14,9 +14,10 @@
   --ink:var(--d250-ink); --soft:var(--d250-soft); --faint:var(--d250-faint);
   --line:var(--d250-line); --line-strong:var(--d250-line-strong);
   --accent:var(--d250-cardinal); --gold:var(--d250-gold); --tone:#4338ca;
+  --go:#1d7a4c; /* green for the rack options and Print, so Reset Everything is the only red */
   color-scheme:light;
 }
-:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="dark"]{color-scheme:dark;--go:#238a59}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -34,19 +35,17 @@ button,input,select{font:inherit;color:inherit}
 .search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--faint);pointer-events:none}
 .search input{flex:1;min-width:0;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
 /* PFRA-style bars at the top of the picker */
-.tbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:16px 16px 0;padding:9px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:13px;color:var(--soft)}
-.tbar b{color:var(--ink);font-size:13.5px}
-.gbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:14px 16px 12px}
-.gbar h2{margin:0;font-size:15px;font-weight:800;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.gtools{margin-left:auto;display:flex;align-items:center;gap:10px}
-.gtools .cnt{font-size:12.5px;font-weight:700;color:var(--soft)}
+
+
 .reset-pill{padding:6px 15px;border-radius:999px;border:1px solid var(--d250-cardinal);background:var(--d250-cardinal);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:filter .14s}
 .reset-pill:hover{filter:brightness(1.1)}
 .reset-pill.armed{background:transparent;color:var(--d250-cardinal)}
 :root[data-theme="dark"] .reset-pill{background:#ef4054;border-color:#ef4054}
 :root[data-theme="dark"] .reset-pill.armed{background:transparent;color:#ef4054}
-.kicker{margin:0;text-align:center;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:800;color:var(--faint)}
-.rcount{margin:2px 0 12px;text-align:center;font-size:13px;color:var(--soft)}
+.rhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.rhead>div{flex:1;min-width:0}
+.kicker{margin:0;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:800;color:var(--faint)}
+.rcount{margin:2px 0 0;font-size:13px;color:var(--soft)}
 .gnote{margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .psnote{margin:0 16px 12px}
 .psnote b{color:var(--ink)}
@@ -59,7 +58,7 @@ button,input,select{font:inherit;color:inherit}
 .d250-head.masthead .d250-head-sub{margin:0;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:560px){.d250-head.masthead .d250-head-sub{display:none}}
 .pickcol{container-type:inline-size}
-.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:2px 16px 14px}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:16px 16px 14px}
 @container (min-width:460px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @container (min-width:600px){.cgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .tile{position:relative;display:flex;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);transition:border-color .14s,background-color .14s,opacity .14s}
@@ -76,7 +75,7 @@ button,input,select{font:inherit;color:inherit}
 .tsp{display:inline-block;width:18px}
 .tn.l{font-size:11.5px}
 .tn.xl{font-size:11px;letter-spacing:-.01em}
-@container (max-width:459px){.cgrid{gap:5px;padding:2px 10px 14px}.tg{padding:7px 4px 5px}.tn{font-size:11.5px}.tn.l{font-size:11px}.tn.xl{font-size:10.5px}}
+@container (max-width:459px){.cgrid{gap:5px;padding:10px 10px 14px}.tg{padding:7px 4px 5px}.tn{font-size:11.5px}.tn.l{font-size:11px}.tn.xl{font-size:10.5px}}
 .tile.on .tn{color:var(--ink);font-weight:700}
 .tile.split{flex-direction:column}
 .tile.split .halves{display:flex;flex:1}
@@ -115,7 +114,7 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .info .gn{margin:10px 0 0;font-size:13px;color:var(--soft)}
 .opts .dv{font-size:12.5px;font-weight:700;color:var(--gold)}
 .opts label{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;cursor:pointer;max-width:100%}
-.opts input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
+.opts input[type=checkbox]{width:17px;height:17px;accent-color:var(--go)}
 .opts select{padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);max-width:100%;min-width:0}
 .step{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden}
 .step button{width:32px;height:32px;border:0;background:var(--surface);cursor:pointer;font-weight:800;font-size:16px}
@@ -128,7 +127,7 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .iconbtn:disabled{opacity:.35;cursor:default}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);font-weight:700;font-size:14px;cursor:pointer;text-decoration:none}
 .btn:hover{background:var(--line)}
-.btn.primary{background:var(--d250-cardinal);border-color:var(--d250-cardinal);color:#fff}
+.btn.primary{background:var(--go);border-color:var(--go);color:#fff}
 .btn.primary:hover{filter:brightness(1.08)}
 .btn.danger{border-color:var(--d250-cardinal);color:var(--d250-cardinal)}
 .btn svg{width:16px;height:16px}
@@ -147,7 +146,7 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .ctrls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:12px}
 .seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
 .seg button{border:0;background:var(--surface-2);padding:7px 12px;font-weight:700;font-size:13.5px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
+.seg button[aria-pressed="true"]{background:var(--go);color:#fff}
 .ctrls .lbl{font-size:13px;color:var(--soft);font-weight:600}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .count{font-size:13px;color:var(--soft);margin-top:10px}
@@ -234,12 +233,7 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
   </div>
 
   <div class="layout">
-    <section class="panel pickcol" aria-labelledby="h-pick">
-      <div class="tbar"><b>How to pick</b><span>Tap a ribbon to add or remove it. Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg> for criteria and devices.</span></div>
-      <div class="gbar">
-        <h2 id="h-pick">Ribbons <span class="hint">Figure 10.4 order, highest first</span></h2>
-        <span class="gtools"><span class="cnt" id="pickCount">0 selected</span><button type="button" class="reset-pill" id="clearBtn" title="Clears every ribbon, the name and the layout.">Reset Everything</button></span>
-      </div>
+    <section class="panel pickcol" aria-label="Ribbons, in Figure 10.4 order, highest first">
       <p class="nomatch hidden" id="nomatch">No ribbon matches that.</p>
       <div class="cgrid" id="grid" aria-label="AFROTC ribbons in order of precedence"></div>
       <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span></p>
@@ -248,8 +242,10 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 
     <aside class="panel rackcol" aria-labelledby="h-rack">
       <div class="rackbox">
-        <h2 class="kicker" id="h-rack">Your rack</h2>
-        <p class="rcount" id="rackCount">No ribbons yet</p>
+        <div class="rhead">
+          <div><h2 class="kicker" id="h-rack">Your rack</h2><p class="rcount" id="rackCount">No ribbons yet</p></div>
+          <button type="button" class="reset-pill" id="clearBtn" title="Clears every ribbon, the name and the layout.">Reset Everything</button>
+        </div>
         <div class="stage" id="stage" aria-live="polite"></div>
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -788,7 +784,6 @@ function syncPicker(){
     el.classList.toggle("on", !!el.querySelector(".tg.on"));
   });
   const total = Object.keys(state.sel).length;
-  $("pickCount").textContent = total + " selected";
   syncInfo();
 }
 
