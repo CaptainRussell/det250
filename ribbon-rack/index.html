@@ -30,8 +30,23 @@ button,input,select{font:inherit;color:inherit}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--d250-shadow)}
 .panel>h2,.panel .ph{margin:0;padding:14px 16px 10px;font-size:15px;font-weight:800;letter-spacing:.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ph .rt{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--soft)}
-.search{display:flex;gap:8px;padding:0 16px 12px}
-.search input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+.search{position:relative;display:flex;margin-top:12px}
+.search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.search input{flex:1;min-width:0;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+/* PFRA-style bars at the top of the picker */
+.tbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:16px 16px 0;padding:9px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:13px;color:var(--soft)}
+.tbar b{color:var(--ink);font-size:13.5px}
+.gbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:14px 16px 12px}
+.gbar h2{margin:0;font-size:15px;font-weight:800;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gtools{margin-left:auto;display:flex;align-items:center;gap:10px}
+.gtools .cnt{font-size:12.5px;font-weight:700;color:var(--soft)}
+.reset-pill{padding:6px 15px;border-radius:999px;border:1px solid var(--d250-cardinal);background:var(--d250-cardinal);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:filter .14s}
+.reset-pill:hover{filter:brightness(1.1)}
+.reset-pill.armed{background:transparent;color:var(--d250-cardinal)}
+:root[data-theme="dark"] .reset-pill{background:#ef4054;border-color:#ef4054}
+:root[data-theme="dark"] .reset-pill.armed{background:transparent;color:#ef4054}
+.kicker{margin:0;text-align:center;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:800;color:var(--faint)}
+.rcount{margin:2px 0 12px;text-align:center;font-size:13px;color:var(--soft)}
 .gnote{margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .psnote{margin:0 16px 12px}
 .psnote b{color:var(--ink)}
@@ -77,7 +92,7 @@ button,input,select{font:inherit;color:inherit}
 .ti{position:absolute;right:1px;bottom:1px;width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
 .ti:hover{color:var(--ink);background:var(--line)}
 .ti svg{width:16px;height:16px}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
+.legend-x{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 16px 10px;font-size:12.5px;color:var(--soft)}
 .legend b{color:var(--ink)}
 .nomatch{margin:0 16px 12px;font-size:13px;color:var(--soft)}
 /* ribbon details pop-out: criteria, source and devices */
@@ -119,7 +134,7 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 /* rack */
 .rackcol{position:sticky;top:calc(var(--d250-bar-h,42px) + 12px)}
 @media (max-width:900px){.rackcol{position:static}}
-.rackbox{padding:4px 16px 16px}
+.rackbox{padding:20px 16px 16px}
 .stage{background:#2b3c63;background:linear-gradient(180deg,#24345a,#1b2847);border-radius:12px;padding:26px 14px;display:grid;place-items:center;min-height:150px;overflow:hidden}
 .stage svg{max-width:100%;height:auto;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 .stage .rb{cursor:pointer}
@@ -148,11 +163,14 @@ dialog.info::backdrop{background:rgba(6,8,14,.72)}
 .warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--d250-gold-bg);color:var(--ink);font-size:13px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
 .shared{margin-bottom:14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notes{margin-top:20px}
-details.wear>summary{list-style:none;cursor:pointer;padding:14px 16px}
-details.wear>summary::-webkit-details-marker{display:none}
-details.wear>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(-45deg);transition:transform .14s var(--d250-ease);flex:none}
-details.wear[open]>summary::before{transform:rotate(45deg)}
-details.wear[open]>summary{padding-bottom:10px}
+/* folds, as on the PFRA Calculator: title, a short hint, caret at the right */
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:18px 20px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{margin:0;font-size:17px;font-weight:800}
+details.fold>summary::after{content:"▾";margin-left:auto;color:var(--faint)}
+details.fold[open]>summary::after{content:"▴"}
+details.fold[open]>summary{padding-bottom:10px}
+.hint{font-size:13px;font-weight:500;color:var(--faint);letter-spacing:0}
 .notes .body{padding:0 16px 14px;font-size:14px;color:var(--soft)}
 .notes ul{margin:0;padding-left:20px}
 .notes li{margin:6px 0}
@@ -223,11 +241,11 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
 
   <div class="layout">
     <section class="panel pickcol" aria-labelledby="h-pick">
-      <h2 class="ph" id="h-pick">Your ribbons<span class="rt" id="pickCount">0 selected</span></h2>
-      <div class="search">
-        <input id="q" type="search" placeholder="Find a ribbon, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Find a ribbon" autocomplete="off">
+      <div class="tbar"><b>How to pick</b><span>Tap a ribbon to add or remove it. Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg> for criteria and devices.</span></div>
+      <div class="gbar">
+        <h2 id="h-pick">Ribbons <span class="hint">Figure 10.4 order, highest first</span></h2>
+        <span class="gtools"><span class="cnt" id="pickCount">0 selected</span><button type="button" class="reset-pill" id="clearBtn" title="Clears every ribbon, the name and the layout.">Reset Everything</button></span>
       </div>
-      <p class="legend"><span><b>Tap a ribbon</b> to add or remove it.</span><span><b>Tap <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg></b> for criteria and devices.</span><span>Same order as Figure 10.4: left to right, highest first.</span></p>
       <p class="nomatch hidden" id="nomatch">No ribbon matches that.</p>
       <div class="cgrid" id="grid" aria-label="AFROTC ribbons in order of precedence"></div>
       <p class="gnote psnote"><b>Prior service?</b> Ribbons earned on active duty precede all AFROTC ribbons and are worn ahead of this rack. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.8</span></p>
@@ -235,9 +253,14 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     </section>
 
     <aside class="panel rackcol" aria-labelledby="h-rack">
-      <h2 class="ph" id="h-rack">Your rack <span class="rt" id="rackCount"></span></h2>
       <div class="rackbox">
+        <h2 class="kicker" id="h-rack">Your rack</h2>
+        <p class="rcount" id="rackCount">No ribbons yet</p>
         <div class="stage" id="stage" aria-live="polite"></div>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Find a ribbon, like &quot;fitness&quot; or &quot;AAS&quot;" aria-label="Find a ribbon" autocomplete="off">
+        </div>
         <div class="ctrls">
           <span class="lbl" id="perLbl">Ribbons per row</span>
           <div class="seg" role="group" aria-labelledby="perLbl">
@@ -260,7 +283,6 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
           <button class="btn primary" type="button" id="printBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Print actual size</button>
           <button class="btn" type="button" id="pngBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Save image</button>
           <button class="btn" type="button" id="linkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Copy share link</button>
-          <button class="btn" type="button" id="clearBtn">Reset rack</button>
         </div>
         <div id="warns"></div>
         <ol class="order" id="orderList" aria-label="Rack order, highest first"></ol>
@@ -268,8 +290,8 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
     </aside>
   </div>
 
-  <section class="panel notes refs" aria-labelledby="h-refs">
-    <h2 class="ph" id="h-refs">References</h2>
+  <details class="panel notes fold refs" id="refs">
+    <summary><h2 id="h-refs">References</h2><span class="hint">The chart, regulations and award sources behind the rack</span></summary>
     <div class="body">
       <div class="doc">
         <button class="chartthumb" type="button" data-chart aria-label="Open the AFROTC Ribbon Chart"><img src="references/afrotc-ribbon-chart-thumb.jpg" alt="" width="240" height="160" loading="lazy"></button>
@@ -312,9 +334,9 @@ dialog.chart::backdrop{background:rgba(6,8,14,.72)}
         <div class="da"><a class="btn" href="https://vmi.edu/news/headlines/2020-2021/two-cadets-receive-military-engineering-award.php" target="_blank" rel="noopener">Open</a></div>
       </div>
     </div>
-  </section>
-  <details class="panel notes wear" id="wear">
-    <summary class="ph" id="h-notes">How to wear it<span class="rt">Rows, devices and placement</span></summary>
+  </details>
+  <details class="panel notes fold wear" id="wear">
+    <summary><h2 id="h-notes">How to wear it</h2><span class="hint">Rows, devices and placement on the uniform</span></summary>
     <div class="body">
       <ul>
         <li><b>Order.</b> Highest award is on the top row at the wearer's right (your left when you look at the rack). The top row holds the leftovers and is centered. <span class="cite">DAFI36-2903_AFROTCSUP 10.8.1.1, Fig 10.4</span></li>
@@ -814,7 +836,7 @@ function render(){
   else stage.innerHTML = rackSVG(items, state.per, {align: state.align, pop, popDev});
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.per === state.per)));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.align === state.align)));
-  $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "";
+  $("rackCount").textContent = items.length ? `${items.length} ribbon${items.length === 1 ? "" : "s"} · ${Math.ceil(items.length / state.per)} row${Math.ceil(items.length / state.per) === 1 ? "" : "s"}` : "No ribbons yet";
   // the order list, split by row as the rack shows it (the top row holds the leftovers)
   const top = items.length % state.per || state.per, rowsN = Math.ceil(items.length / state.per);
   let ol = "";
@@ -828,7 +850,7 @@ function render(){
   const w = [];
   $("warns").innerHTML = w.map(t => `<div class="warn">${esc(t)}</div>`).join("");
   $("who").value = state.who;
-  ["printBtn", "pngBtn", "linkBtn", "clearBtn"].forEach(id => $(id).disabled = !items.length);
+  ["printBtn", "pngBtn", "linkBtn"].forEach(id => $(id).disabled = !items.length);
 }
 function devText(devs){
   const c = {ss:0, bs:0, so:0, bo:0}, org = devs.find(d => d.startsWith("org:"));
@@ -892,21 +914,24 @@ function wire(){
     let any = 0;
     document.querySelectorAll(".tile").forEach(el => { const hit = !q || el.dataset.q.includes(q); el.classList.toggle("dim", !hit); any += hit; });
     $("nomatch").classList.toggle("hidden", !!any);
+    const first = q && document.querySelector(".tile:not(.dim)");
+    if (first) { const r = first.getBoundingClientRect(); if (r.top < 60 || r.bottom > innerHeight) first.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center"}); }
   });
   document.querySelectorAll(".seg button[data-per]").forEach(b => b.addEventListener("click", () => { state.per = +b.dataset.per; changed(); }));
   document.querySelectorAll(".seg button[data-align]").forEach(b => b.addEventListener("click", () => { state.align = b.dataset.align; changed(); }));
   $("who").addEventListener("input", () => { state.who = $("who").value.slice(0, 60); save(); });
-  // Reset asks once on the button itself: first press arms it, a second press within 4 s clears
+  // Reset Everything asks once on the button itself: first press arms it, a second press within 4 s clears
+  // every ribbon, the name and the layout (the rack is all a cadet has typed, so one stray tap shouldn't lose it)
   $("clearBtn").addEventListener("click", () => {
-    const b = $("clearBtn");
+    const b = $("clearBtn"), idle = () => { delete b.dataset.armed; b.textContent = "Reset Everything"; b.classList.remove("armed"); };
     if (!b.dataset.armed){
-      b.dataset.armed = "1"; b.textContent = "Press again to reset"; b.classList.add("danger");
-      clearTimeout(b.t); b.t = setTimeout(() => { delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger"); }, 4000);
+      b.dataset.armed = "1"; b.textContent = "Press again to reset"; b.classList.add("armed");
+      clearTimeout(b.t); b.t = setTimeout(idle, 4000);
       return;
     }
-    clearTimeout(b.t); delete b.dataset.armed; b.textContent = "Reset rack"; b.classList.remove("danger");
-    state = Object.assign(blank(), {per: state.per, align: state.align}); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
-    changed(); toast("Rack reset");
+    clearTimeout(b.t); idle();
+    state = blank(); $("q").value = ""; $("q").dispatchEvent(new Event("input"));
+    changed(); toast("Everything reset");
   });
   $("startOwn").addEventListener("click", () => {
     viewingShared = false; state = load(); $("sharedBar").classList.add("hidden");
