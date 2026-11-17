@@ -814,7 +814,7 @@ function seedData(x){
     }
   } else if (Array.isArray(x.rooms)){                   // the first, single-ODT layout
     const rooms = x.rooms.map(r => ({room:r.room, sec:r.sec, cadets:r.cadets}));
-    out.events.push({...blank, id:"offutt-2026-12", name:x.title || "Offutt Dec 3-4 ODT", place:"Offutt AFB, Nebraska", start:"2026-12-03", end:"2026-12-04", note:x.note || "",
+    out.events.push({...blank, id:"offutt-2026-12", name:"Offutt AFB, 3-4 Dec 2026", place:"Offutt AFB, Nebraska", start:"2026-12-03", end:"2026-12-04", note:x.note || "",
       sections:x.sections || [], roster:[...new Set(rooms.flatMap(r => r.cadets))], rooms});
   }
   for (const e of out.events) if (ODT_PLANS[e.id] && !(e.vans || []).length) applyPlan(e);   // cadre, rooms and vans for Offutt
@@ -1161,6 +1161,9 @@ function applyPendingPlans(){                         // an ODT that was set up 
   for (const e of (OD.data ? OD.data.events : [])) if (/same gender/i.test(e.note || "")){   // Captain Russell, 16 Nov 2026: the line under the name says what the trip is
     e.note = "Base Visit"; changed(`${evName(e)}: line under the name is now "Base Visit"`);
   }
+  for (const e of (OD.data ? OD.data.events : [])) if (e.id === "offutt-2026-12" && /^Offutt\b.*\bODT$/i.test((e.name || "").trim())){   // Captain Russell, 17 Nov 2026
+    e.name = "Offutt AFB, 3-4 Dec 2026"; changed(`Offutt ODT renamed to "Offutt AFB, 3-4 Dec 2026"`);
+  }
   for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
     const r = applyPlan(e);
     if (r.drop.length) changed(`${evName(e)}: took ${r.drop.map(pname).join(", ")} off the roster`);
@@ -1288,7 +1291,7 @@ function eventDialog(id){
   const X = O(), e = id ? X.events.find(x => x.id === id) : {id:"", name:"", place:"", start:"", end:"", note:"", sections:["Cadre","Men · POC","Women","Men · GMC"]};
   const others = [...X.events].sort((x, y) => (y.start || "").localeCompare(x.start || ""));
   openDialog(id ? `Edit ${evName(e)}` : "New ODT", `
-    <div class="field"><label class="label" for="eName">Name</label><input id="eName" type="text" value="${esc(e.name)}" placeholder="Offutt Dec 3-4 ODT" required></div>
+    <div class="field"><label class="label" for="eName">Name</label><input id="eName" type="text" value="${esc(e.name)}" placeholder="Offutt AFB, 3-4 Dec 2026" required></div>
     <div class="grid3">
       <div class="field"><label class="label" for="ePlace">Place</label><input id="ePlace" type="text" value="${esc(e.place || "")}" placeholder="Offutt AFB, Nebraska"></div>
       <div class="field"><label class="label" for="eStart">First day</label><input id="eStart" type="date" value="${esc(e.start || "")}" required></div>
