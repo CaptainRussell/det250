@@ -133,6 +133,7 @@ async function boot() {
   wireSliderAnchor();
   wireEnterToNext();
   wireBfa();
+  wireFineTune();
   wireTrack();
   wireProctor();
   for (const button of document.querySelectorAll('.exempt-toggle')) {
@@ -154,7 +155,7 @@ async function boot() {
     update();
   });
   for (const button of document.querySelectorAll('.step')) {
-    button.addEventListener('click', () => nudge(button.dataset.target,
+    holdToRepeat(button, () => nudge(button.dataset.target,
       Number(button.dataset.step)));
   }
   // [data-component] only: the BFA tracks are .slider for the look of them but
@@ -3024,6 +3025,260 @@ function onSliderInput(component) {
   $(`slide-${component}`).setAttribute('aria-valuetext',
     SLIDER_MEASURES[sliderKind(component)].format(raw));
   update();
+}
+
+/* --- fine tune (Captain Russell, Nov 2026) ---------------------------------
+ *
+ * The sliders are the quick way to get close; this is the way to land on the
+ * exact number. Letting go of a slider, or tapping the number box beside it,
+ * opens a small panel with a big minus and plus that move one unit at a time
+ * (a rep, a shuttle, a second, half an inch) and repeat while held. The box
+ * itself is still where a number is typed.
+ *
+ * Like the slider it is not a second source of truth: every press writes the
+ * same number fields and fires their own input event, so scoring, the slider
+ * handle and the BFA reset all follow exactly as they do when a cadet types.
+ */
+
+/**
+ * Press and hold to repeat, slowly at first and then faster, for the panel and
+ * for the steppers on the open cards. A keyboard press (Enter or Space) is an
+ * ordinary click and steps once.
+ */
+function holdToRepeat(button, act) {
+  let timer = null;
+  let pressed = false;
+  const stop = () => { clearTimeout(timer); timer = null; };
+  button.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || button.disabled) return;
+    // Keep focus (and a phone keyboard) where it is.
+    e.preventDefault();
+    pressed = true;
+    act();
+    let count = 0;
+    const again = () => {
+      count += 1;
+      act();
+      timer = setTimeout(again, count < 8 ? 110 : count < 30 ? 55 : 25);
+    };
+    stop();
+    timer = setTimeout(again, 420);
+  });
+  for (const type of ['pointerup', 'pointerleave', 'pointercancel']) {
+    button.addEventListener(type, stop);
+  }
+  button.addEventListener('contextmenu', (e) => e.preventDefault());
+  button.addEventListener('click', (e) => {
+    // The pointer already stepped on the way down.
+    if (pressed) { pressed = false; return; }
+    if (e.detail === 0) act();
+  });
+}
+
+/** What the panel is adjusting, worked out from the box or slider it is for. */
+function fineTarget(id) {
+  const time = (fields, component, unit) => ({
+    fields, kind: 'time', step: 1, min: 0, max: 59 * 60 + 59, unit,
+    slider: component && $(`slide-${component}`), component
+  });
+  const count = (field, component, unit) => ({
+    fields: [field], kind: 'count', step: 1,
+    min: Number($(field).min) || 0, max: Number($(field).max) || 999, unit,
+    slider: $(`slide-${component}`), component
+  });
+  const inches = (field, slider, step, unit = 'in') => ({
+    fields: [field], kind: 'decimal', step,
+    min: Number($(field).min), max: Number($(field).max), unit,
+    slider: $(slider), component: null
+  });
+
+  if (id === 'height' || id === 'slide-height') return inches('height', 'slide-height', 0.5);
+  if (id === 'waist' || id === 'slide-body_composition') {
+    return { ...inches('waist', 'slide-body_composition', 0.5), component: 'body_composition' };
+  }
+  const bfaId = id.replace(/^slide-/, '');
+  if (BFA_SLIDERS[bfaId]) {
+    return inches(bfaId, `slide-${bfaId}`, BFA_SLIDERS[bfaId].step,
+      bfaId === 'bfa-percent' ? '%' : 'in');
+  }
+
+  const component = id.startsWith('slide-') ? id.slice(6)
+    : { hrpu: 'muscular_strength', situp: 'core_endurance', 'plank-min': 'core_endurance',
+      'plank-sec': 'core_endurance', hamr: 'cardiorespiratory', 'run-min': 'cardiorespiratory',
+      'run-sec': 'cardiorespiratory' }[id];
+  if (!component || !events[component]) return null;
+  const control = CONTROLS[events[component]];
+  if (Array.isArray(control.field)) return time(control.field, component, '');
+  return count(control.field, component, control.kind === 'shuttles' ? 'shuttles' : 'reps');
+}
+
+/** The number the fields hold now, or where the slider sits when they are empty. */
+function fineValue(target) {
+  const [first, second] = target.fields;
+  if (target.kind === 'time') {
+    const m = wholeNumber(first);
+    const sec = wholeNumber(second);
+    if (m != null || sec != null) return (m ?? 0) * 60 + Math.min(59, sec ?? 0);
+  } else {
+    const v = target.kind === 'count' ? wholeNumber(first) : decimal(first);
+    if (v != null) return v;
+  }
+  const slider = target.slider;
+  if (slider && slider.offsetParent !== null) {
+    const bounds = target.component ? sliderBounds[target.component] : null;
+    return bounds ? toRaw(bounds, Number(slider.value)) : Number(slider.value);
+  }
+  return target.kind === 'time' ? 0 : target.min;
+}
+
+function fineFormat(target, value) {
+  if (target.kind === 'time') return formatTime(value);
+  if (target.kind === 'count') return String(value);
+  if (target.step === 0.1) return value.toFixed(1);
+  if (target.step === 0.25) return trimQuarter(value);
+  return value.toFixed(1);
+}
+
+/** Write a new value into the fields, as if it had been typed. */
+function fineWrite(target, value) {
+  const [first, second] = target.fields;
+  if (target.kind === 'time') {
+    $(first).value = String(Math.floor(value / 60));
+    $(second).value = String(value % 60).padStart(2, '0');
+    $(second).dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+  $(first).value = fineFormat(target, value);
+  $(first).dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function wireFineTune() {
+  const panel = document.createElement('div');
+  panel.className = 'fine-tune';
+  panel.id = 'fine-tune';
+  panel.setAttribute('role', 'group');
+  panel.hidden = true;
+  panel.innerHTML = `
+    <button type="button" class="fine-step" data-fine="-1">&minus;</button>
+    <output class="fine-value" aria-live="polite"><b></b><span></span></output>
+    <button type="button" class="fine-step" data-fine="1">+</button>`;
+  document.body.append(panel);
+  const valueEl = panel.querySelector('.fine-value b');
+  const unitEl = panel.querySelector('.fine-value span');
+  const [minus, plus] = panel.querySelectorAll('.fine-step');
+
+  let open = null; // { target, anchor, key }
+
+  const show = () => {
+    if (!open) return;
+    const value = fineValue(open.target);
+    valueEl.textContent = fineFormat(open.target, value);
+    unitEl.textContent = open.target.unit;
+    minus.disabled = value <= open.target.min;
+    plus.disabled = value >= open.target.max;
+  };
+
+  // In the page, under the slider (or the box when there is no slider), so it
+  // never covers the next field. Scrolled into view above the running total.
+  const reveal = () => {
+    const tally = document.querySelector('.tally');
+    // The running total is position: fixed, so it has no offsetParent to test.
+    const bar = tally && !tally.hidden ? tally.getBoundingClientRect() : null;
+    const floor = (bar && bar.height ? bar.top : window.innerHeight) - 8;
+    const r = panel.getBoundingClientRect();
+    if (r.bottom > floor) window.scrollBy(0, r.bottom - floor);
+  };
+
+  const openFor = (id, anchor) => {
+    const target = fineTarget(id);
+    if (!target || target.fields.some((f) => $(f).disabled)) { close(); return; }
+    // An open card already has its own minus and plus beside a rep or shuttle
+    // count (they repeat when held too), so a second pair would be a repeat.
+    const stepper = $(target.fields[0]).closest('.stepper');
+    if (target.kind === 'count' && stepper?.closest('.event.open')
+      && stepper.querySelector('.step')?.offsetParent !== null) { close(); return; }
+    const label = $(target.fields[0]).getAttribute('aria-label')
+      || document.querySelector(`label[for="${target.fields[0]}"]`)?.textContent || 'value';
+    panel.setAttribute('aria-label', `Fine tune ${label}`);
+    minus.setAttribute('aria-label', `Down one ${target.kind === 'time' ? 'second' : 'step'}`);
+    plus.setAttribute('aria-label', `Up one ${target.kind === 'time' ? 'second' : 'step'}`);
+    const row = target.slider?.closest('.slider-row');
+    const after = row && row.offsetParent !== null ? row : anchor;
+    if (after.nextElementSibling !== panel) after.after(panel);
+    open = { target, anchor, card: panel.closest('.event, .bfa, .field') || after.parentElement };
+    panel.hidden = false;
+    show();
+    reveal();
+  };
+
+  function close() {
+    open = null;
+    panel.hidden = true;
+  }
+
+  const step = (dir) => {
+    if (!open) return;
+    const t = open.target;
+    const now = fineValue(t);
+    // Off the step grid (a typed 34.3) lands on the nearest step first.
+    const snapped = Math.round(now / t.step) * t.step;
+    let next = snapped !== now && Math.sign(snapped - now) === dir ? snapped : snapped + dir * t.step;
+    next = Math.round(Math.min(t.max, Math.max(t.min, next)) * 100) / 100;
+    fineWrite(t, next);
+    show();
+  };
+  holdToRepeat(minus, () => step(-1));
+  holdToRepeat(plus, () => step(1));
+
+  // A tap on a number box, or tabbing into one.
+  const boxes = ['hrpu', 'situp', 'plank-min', 'plank-sec', 'hamr', 'run-min', 'run-sec',
+    'height', 'waist', ...Object.keys(BFA_SLIDERS)];
+  for (const id of boxes) {
+    // A tap or click, not focus: tabbing or pressing Enter through the boxes
+    // to type a whole assessment should not open and close a panel each time.
+    $(id).addEventListener('click', () => {
+      const box = $(id);
+      openFor(id, box.closest('.time-inputs') || box);
+    });
+    $(id).addEventListener('input', show);
+  }
+
+  // Letting go of a slider: drag to get close, then fine tune.
+  let held = null;
+  for (const slider of document.querySelectorAll('.slider[data-component], .slider[data-bfa-slider]')) {
+    slider.addEventListener('pointerdown', () => { held = slider; });
+    slider.addEventListener('input', () => { if (open) show(); });
+  }
+  window.addEventListener('pointerup', () => {
+    if (!held) return;
+    const slider = held;
+    held = null;
+    // After the window's own pointerup has re-scored and re-seated things.
+    requestAnimationFrame(() => openFor(slider.id, slider));
+  });
+  window.addEventListener('pointercancel', () => { held = null; });
+
+  // A press anywhere else puts it away. Not on another slider or box, which
+  // moves the panel there once the finger is up, so nothing shifts under a
+  // finger that is starting a drag.
+  const owns = (el) => panel.contains(el) || open.card.contains(el)
+    || el.matches?.('input[type="range"], input[type="number"]');
+  document.addEventListener('pointerdown', (e) => {
+    if (open && !owns(e.target)) close();
+  }, true);
+  document.addEventListener('focusin', (e) => {
+    if (!open || panel.contains(e.target)) return;
+    // Enter or Tab on to another box: this panel is for the one it left.
+    if (e.target.matches?.('input[type="number"]') && !open.target.fields.includes(e.target.id)) close();
+    else if (!owns(e.target)) close();
+  });
+  // A new exercise is a new number to tune.
+  document.addEventListener('change', (e) => {
+    if (open && e.target.matches?.('select')) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open) close();
+  });
 }
 
 // The Minimum / Full marks strip under each component was removed (Captain
