@@ -3094,7 +3094,8 @@ function fineTarget(id) {
 
   if (id === 'height' || id === 'slide-height') return inches('height', 'slide-height', 0.5);
   if (id === 'waist' || id === 'slide-body_composition') {
-    return { ...inches('waist', 'slide-body_composition', 0.5), component: 'body_composition' };
+    return { ...inches('waist', 'slide-body_composition', 0.5), component: 'body_composition',
+      descending: true };
   }
   const bfaId = id.replace(/^slide-/, '');
   if (BFA_SLIDERS[bfaId]) {
@@ -3108,7 +3109,10 @@ function fineTarget(id) {
       'run-sec': 'cardiorespiratory' }[id];
   if (!component || !events[component]) return null;
   const control = CONTROLS[events[component]];
-  if (Array.isArray(control.field)) return time(control.field, component, '');
+  // A run or walk time falls as the handle moves right; a plank hold rises.
+  if (Array.isArray(control.field)) {
+    return { ...time(control.field, component, ''), descending: control.kind !== 'hold' };
+  }
   return count(control.field, component, control.kind === 'shuttles' ? 'shuttles' : 'reps');
 }
 
@@ -3159,9 +3163,9 @@ function wireFineTune() {
   panel.setAttribute('role', 'group');
   panel.hidden = true;
   panel.innerHTML = `
-    <button type="button" class="fine-step" data-fine="-1">&minus;</button>
+    <button type="button" class="fine-step" data-fine="-1"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <output class="fine-value" aria-live="polite"><b></b><span></span></output>
-    <button type="button" class="fine-step" data-fine="1">+</button>`;
+    <button type="button" class="fine-step" data-fine="1"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
   document.body.append(panel);
   const valueEl = panel.querySelector('.fine-value b');
   const unitEl = panel.querySelector('.fine-value span');
@@ -3174,8 +3178,10 @@ function wireFineTune() {
     const value = fineValue(open.target);
     valueEl.textContent = fineFormat(open.target, value);
     unitEl.textContent = open.target.unit;
-    minus.disabled = value <= open.target.min;
-    plus.disabled = value >= open.target.max;
+    const atMin = value <= open.target.min;
+    const atMax = value >= open.target.max;
+    minus.disabled = open.target.descending ? atMax : atMin;
+    plus.disabled = open.target.descending ? atMin : atMax;
   };
 
   // In the page, under the slider (or the box when there is no slider), so it
@@ -3200,8 +3206,11 @@ function wireFineTune() {
     const label = $(target.fields[0]).getAttribute('aria-label')
       || document.querySelector(`label[for="${target.fields[0]}"]`)?.textContent || 'value';
     panel.setAttribute('aria-label', `Fine tune ${label}`);
-    minus.setAttribute('aria-label', `Down one ${target.kind === 'time' ? 'second' : 'step'}`);
-    plus.setAttribute('aria-label', `Up one ${target.kind === 'time' ? 'second' : 'step'}`);
+    // The arrows move the way the slider does (Captain Russell, Nov 2026): right
+    // is toward full marks, so on a run or a waist right makes the number smaller.
+    const unit = target.kind === 'time' ? 'second' : 'step';
+    minus.setAttribute('aria-label', `${target.descending ? 'Up' : 'Down'} one ${unit}`);
+    plus.setAttribute('aria-label', `${target.descending ? 'Down' : 'Up'} one ${unit}`);
     const row = target.slider?.closest('.slider-row');
     const after = row && row.offsetParent !== null ? row : anchor;
     if (after.nextElementSibling !== panel) after.after(panel);
@@ -3216,9 +3225,10 @@ function wireFineTune() {
     panel.hidden = true;
   }
 
-  const step = (dir) => {
+  const step = (side) => {
     if (!open) return;
     const t = open.target;
+    const dir = t.descending ? -side : side;
     const now = fineValue(t);
     // Off the step grid (a typed 34.3) lands on the nearest step first.
     const snapped = Math.round(now / t.step) * t.step;
@@ -3263,13 +3273,20 @@ function wireFineTune() {
   // finger that is starting a drag.
   const owns = (el) => panel.contains(el) || open.card.contains(el)
     || el.matches?.('input[type="range"], input[type="number"]');
+  // A box being pressed keeps the panel where it is until the click lands, so
+  // the box does not jump out from under the pointer; the click then moves it.
+  let pressing = false;
   document.addEventListener('pointerdown', (e) => {
+    pressing = !!e.target.matches?.('input[type="number"]');
     if (open && !owns(e.target)) close();
   }, true);
+  document.addEventListener('pointerup', () => { setTimeout(() => { pressing = false; }); }, true);
   document.addEventListener('focusin', (e) => {
     if (!open || panel.contains(e.target)) return;
     // Enter or Tab on to another box: this panel is for the one it left.
-    if (e.target.matches?.('input[type="number"]') && !open.target.fields.includes(e.target.id)) close();
+    if (e.target.matches?.('input[type="number"]') && !open.target.fields.includes(e.target.id)) {
+      if (!pressing) close();
+    }
     else if (!owns(e.target)) close();
   });
   // A new exercise is a new number to tune.
