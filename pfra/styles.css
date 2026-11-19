@@ -2387,7 +2387,8 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:not(.open) .event-icon svg { width: 22px; height: 22px; }
 .bfa:not(.open) .bfa-title { font-size: .95rem; }
 .bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
-.bfa:not(.open) .event-tools,
+/* The Cadet / Active Duty pair stays, since it changes what the chip means. */
+.bfa:not(.open) .event-tools > :not(.bfa-who-set),
 .bfa:not(.open):not(.idle) .bfa-trigger,
 .bfa:not(.open) #bfa-method-hint,
 .bfa:not(.open) .bfa-fields .hint,
@@ -2447,6 +2448,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 /* Tape or scale: two of the tool pills, the chosen one gold like a set
  * Exempt. */
 .bfa-method,
+.bfa-who,
 .bfa-optional {
   min-height: 0;
   padding: 4px 10px;
@@ -2460,7 +2462,21 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   cursor: pointer;
 }
 .bfa-method:not(.on):hover,
+.bfa-who:not(.on):hover,
 .bfa-optional:hover { border-color: var(--cardinal); color: var(--cardinal); }
+/* Cadet or Active Duty: a joined pair, gold when chosen like the Sex and
+ * Age segments. */
+.bfa-who-set {
+  display: inline-flex;
+}
+.bfa-who-set .bfa-who:first-child { border-radius: 999px 0 0 999px; }
+.bfa-who-set .bfa-who:last-child { border-radius: 0 999px 999px 0; margin-left: -1px; }
+.bfa-who.on {
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  color: #2a2205;
+  font-weight: 700;
+}
 .bfa-method.on {
   background: var(--gold);
   border-color: var(--gold-deep);

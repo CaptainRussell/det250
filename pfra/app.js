@@ -583,8 +583,9 @@ function showCadetFlag() {
   }
   const text = any
     ? `${parts.join(' ')} Cadets test on hand-release push-ups, sit-ups ` +
-      'and the 2 mile run, with no exemption except body composition after a passed ' +
-      'body fat assessment (NOTACC CY26-092, AFROTCI 36-2011 V3). It does not count ' +
+      'and the 2 mile run, with no exemptions; a passed body fat assessment does not ' +
+      'change a cadet\'s score (AFROTC Guidance Memorandum 2026-01 paras 3.1.3 and 3.4.5.4.3, NOTACC ' +
+      'CY26-092, AFROTCI 36-2011 V3). It does not count ' +
       'toward the Fitness Award.'
     : '';
   for (const id of ['cadet-flag', 'cadet-flag-wait']) {
@@ -1126,7 +1127,7 @@ function update() {
   // straight away so it happens once.
   if (sharedBfaPending && bfa.ratio != null && !bfa.applied) {
     sharedBfaPending = false;
-    if (bfaMeasurements(sex)) {
+    if (!bfaCadet() && bfaMeasurements(sex)) {
       applyBfaExemption();
       update();
       return;
@@ -1687,8 +1688,8 @@ function showAltitudeGroup() {
   if (!group) {
     note.textContent =
       'DAFMAN 36-2905 Attachment 3. No correction applies below 5,250 feet, ' +
-      'and none applies at Field Training whatever the elevation (2023 AFROTC ' +
-      'Supplement para 5.5.7, awaiting revision). Det 250 assesses at Ames, ' +
+      'and Field Training follows its own guidance (AFROTC Guidance Memorandum ' +
+      '2026-01, para 3.15.16.2). Det 250 assesses at Ames, ' +
       'about 955 feet.';
     note.classList.remove('altitude-on');
     toggle.textContent = 'Altitude';
@@ -1819,7 +1820,10 @@ const BFA_RATIO = 0.55;
  * hand than beside a scale, so the method that is actually used is the one
  * that costs no tap.
  */
-const bfa = { method: 'tape', applied: false, ratio: null, opened: false };
+const bfa = { method: 'tape', who: 'cadet', applied: false, ratio: null, opened: false };
+
+/** Who the BFA is scored for: 'cadet' (AFROTC GM 2026-01) or 'ad' (DAFMAN). */
+const bfaCadet = () => bfa.who === 'cadet';
 
 /** The measurements the chosen method needs, or null if they are not all in. */
 function bfaMeasurements(sexCode) {
@@ -1871,11 +1875,16 @@ function showBfa(result, complete) {
     // Nov 2026), so the page always shows the same five blocks.
     panel.hidden = false;
     panel.classList.add('idle');
+    const cite = bfaCadet()
+      ? '(AFROTC Guidance Memorandum 2026-01 para 3.4.5.4)'
+      : '(DAFMAN 36-2905 para 3.15.4.7)';
     $('bfa-trigger').textContent = bfa.ratio == null
-      ? 'Only needed with a waist to height ratio of 0.55 or higher and an ' +
-        'unsatisfactory assessment (DAFMAN 36-2905 para 3.15.4.7).'
-      : `Not needed: a ratio of ${bfa.ratio.toFixed(2)} is under 0.55 ` +
-        '(DAFMAN 36-2905 para 3.15.4.7).';
+      ? (bfaCadet()
+        ? `Only needed with a waist to height ratio of 0.55 or higher ${cite}.`
+        : `Only needed with a waist to height ratio of 0.55 or higher and an ` +
+          `unsatisfactory assessment ${cite}.`)
+      : `Not needed: a ratio of ${bfa.ratio.toFixed(2)} is under 0.55 ${cite}.`;
+    showBfaWho();
     setBfaChip('Not needed', '');
     for (const button of document.querySelectorAll('.bfa-method')) button.hidden = true;
     $('bfa-body').hidden = true;
@@ -1900,10 +1909,19 @@ function showBfa(result, complete) {
   // An applied pass is the exception. Once body composition is exempt the
   // composite is being carried by the BFA, so a passing score is not evidence
   // that none was needed and the fields stay where the member can see them.
-  const required = complete && result.pass === false;
-  const settled = complete && result.pass === true && !bfa.applied;
+  // A cadet's BFA never touches the PFA score (GM 2026-01 para 3.4.5.4.3), so
+  // there is nothing to apply, and it is called for by the ratio alone.
+  if (bfaCadet() && bfa.applied) { clearBfaExemption(); rescore(); }
+  const required = bfaCadet() ? true : complete && result.pass === false;
+  const settled = !bfaCadet() && complete && result.pass === true && !bfa.applied;
   const ratio = bfa.ratio.toFixed(2);
-  $('bfa-trigger').textContent = bfa.applied
+  showBfaWho();
+  $('bfa-trigger').textContent = bfaCadet()
+    ? `A ratio of ${ratio} is 0.55 or higher, so a cadet needs a secondary body fat ` +
+      'assessment at contracting, scholarship activation, before Field Training and at ' +
+      'commissioning (AFROTC Guidance Memorandum 2026-01 para 3.4.5.4). It is pass or ' +
+      'fail and does not change the PFA score above (para 3.4.5.4.3).'
+    : bfa.applied
     // Said in the past tense on purpose. The composite passes *because* this
     // was applied, so describing the requirement as open would misread the
     // score sitting above it.
@@ -1934,7 +1952,7 @@ function showBfa(result, complete) {
   panel.classList.toggle('idle', !open);
   for (const button of document.querySelectorAll('.bfa-method')) button.hidden = !open;
   setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not needed' : 'Possible',
-    bfa.applied ? 'filled' : required ? 'chip-fail' : '');
+    bfa.applied ? 'filled' : required && !bfaCadet() ? 'chip-fail' : '');
 
   const optional = $('bfa-optional');
   optional.hidden = required || bfa.applied;
@@ -2106,13 +2124,11 @@ function workBfa(sexCode, required) {
     : 'Taken from the scale, so there is no tape arithmetic to show.';
 
   const notes = [...assessment.warnings];
-  {
+  if (bfaCadet()) {
     notes.push(
-      'Cadets are assessed on body fat against the DAFMAN standard, not BMI. HQ ' +
-      'confirmed at a Check 6 on 1 October 2026 that AFROTC will not set a figure ' +
-      'tighter than DAFMAN 36-2905. The 2023 supplement on the shelf still says ' +
-      'BMI and a tighter percentage; the revision carrying this has not been ' +
-      'published.');
+      'Cadets are assessed on body fat against the DAFMAN 36-2905 Table 3.2 ' +
+      'standard, not BMI (AFROTC Guidance Memorandum 2026-01, para 3.4.5.4.1, ' +
+      'which deleted the old BMI limits and tighter percentages).');
   }
   note.textContent = notes.join(' ');
   note.hidden = notes.length === 0;
@@ -2120,6 +2136,12 @@ function workBfa(sexCode, required) {
   // A pass exempts body composition on its own (Captain Russell, Nov 2026:
   // no Apply button), but only where the assessment was required. A BFA
   // worked out when the composite already passes changes nothing.
+  if (bfaCadet()) {
+    $('bfa-verdict').textContent += assessment.pass
+      ? ' Body composition requirement met. The PFA score does not change.'
+      : ' Body composition requirement not met. The PFA score does not change.';
+    return;
+  }
   if (!assessment.pass) {
     if (bfa.applied) { clearBfaExemption(); rescore(); }
     return;
@@ -2170,12 +2192,30 @@ function bfaExemptionNote(on) {
   note.textContent =
     'Exempt because the secondary body fat assessment passed (DAFMAN 36-2905 para ' +
     '3.7.2). It scores no points, fails nothing, and the composite is worked out ' +
-    'over the three components that were assessed. This is the one exemption ' +
-    'cadets are allowed.';
+    'over the three components that were assessed. Active duty scoring: for a ' +
+    'cadet a passed BFA does not change the score (AFROTC Guidance Memorandum ' +
+    '2026-01 para 3.4.5.4.3).';
   note.hidden = false;
 }
 
+/** Light the Cadet / Active Duty pair to match `bfa.who`. */
+function showBfaWho() {
+  for (const button of document.querySelectorAll('.bfa-who')) {
+    const on = button.dataset.bfaWho === bfa.who;
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-pressed', String(on));
+  }
+}
+
 function wireBfa() {
+  for (const button of document.querySelectorAll('.bfa-who')) {
+    button.addEventListener('click', () => {
+      if (bfa.who === button.dataset.bfaWho) return;
+      bfa.who = button.dataset.bfaWho;
+      clearBfaExemption();
+      update();
+    });
+  }
   for (const button of document.querySelectorAll('.bfa-method')) {
     button.addEventListener('click', () => {
       bfa.method = button.dataset.bfaMethod;
@@ -2230,6 +2270,8 @@ function clearBfaFields() {
 /** Put the BFA panel back to its starting state. */
 function resetBfa() {
   bfa.method = 'tape';
+  bfa.who = 'cadet';
+  showBfaWho();
   bfa.applied = false;
   bfa.ratio = null;
   bfa.opened = false;
@@ -2323,7 +2365,9 @@ function buildShareLink() {
   // A passed BFA is part of the result: it is what exempts body composition
   // and re-bases the composite, so a link without it rebuilds a different
   // score from the same measurements.
-  if (bfa.applied) {
+  if (bfa.who === 'ad') params.set('bwho', 'ad');
+  if (bfa.applied || (bfaCadet() && bfaMeasurements(sex)
+      && bfa.ratio != null && bfa.ratio >= BFA_RATIO)) {
     params.set('bfa', bfa.method);
     if (bfa.method === 'scale') {
       params.set('bfp', $('bfa-percent').value);
@@ -2388,6 +2432,7 @@ function applyShareLink(search = location.search) {
   // distance while the pace is closed.
   applySharedPace(params);
 
+  bfa.who = params.get('bwho') === 'ad' ? 'ad' : 'cadet';
   if (params.get('bfa')) {
     bfa.method = params.get('bfa') === 'scale' ? 'scale' : 'tape';
     bfa.opened = true;
