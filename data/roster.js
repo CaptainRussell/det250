@@ -147,7 +147,6 @@ window.D250_ROSTER = {
   {"id":"a34","des":"A34/SEO","title":"Special Events Officer","poc":["GaulStephenJ","C/Capt"],"flip":"UtterbackChristopherD","parent":"a3"},
   {"id":"dseo","des":"Dep SEO","title":"Deputy Special Events Officer","poc":["StatesEricD","C/3C"],"parent":"a34"},
   {"id":"a4","des":"A4/DT","title":"Logistics Director","poc":["CoulthardNikalo","C/Capt"],"flip":"HoangLinhY","parent":"wgcos","dir":"A4"},
-  {"id":"a41","des":"A41/FUNO","title":"Fundraising Officer","poc":["CoulthardNikalo","C/Capt"],"flip":"ReedMaxC","parent":"a4"},
   {"id":"a5","des":"A5/DT","title":"Planning Director","poc":["DonahoeWilliamJ","C/Maj"],"flip":"MorenoRyanA","parent":"wgcos","dir":"A5"},
   {"id":"a5d","des":"Dep A5/DT","title":"Deputy Planning Director","poc":["CooperTylerL","C/Capt"],"flip":"HutchinsonScottC","parent":"a5","flipDes":"A5/DPT","flipTitle":"Planning Director Deputy"},
   {"id":"a51","des":"A51/CTO","title":"Chief of Training Officer","poc":["HaderAshtenM","C/Capt"],"flip":"KasparekCamdenL","parent":"a5"},
