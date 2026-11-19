@@ -1146,6 +1146,7 @@ const ODT_PLANS = {
     {name:"Van 3", kind:"isu15", seats:15, driver:"MooreGabrielle", relief:"AshbackerMiloK"},
     {name:"GOV", kind:"gov11", seats:11, driver:"RussellScott", relief:"BourekAkrynJ"}]},
 };
+const ODT_GONE_NAMES = {FigueroaBacaAngel:"Angel Figueroa-Baca", McConnellLaurenL:"Liam McConnell"}, ODT_GONE = Object.keys(ODT_GONE_NAMES);   // left the program (Captain Russell, 19 Nov 2026)
 function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order cadets see them, cadre last
   const secIdx = s => { const i = (e.sections || []).indexOf(s); return i < 0 ? 999 : i; };
   const cad = r => r.sec === "Cadre" || (r.cadets.length === 1 && isCadre(r.cadets[0]));
@@ -1163,6 +1164,15 @@ function applyPendingPlans(){                         // an ODT that was set up 
   }
   for (const e of (OD.data ? OD.data.events : [])) if (e.id === "offutt-2026-12" && /^Offutt\b.*\bODT$/i.test((e.name || "").trim())){   // Captain Russell, 17 Nov 2026
     e.name = "Offutt AFB, 3-4 Dec 2026"; changed(`Offutt ODT renamed to "Offutt AFB, 3-4 Dec 2026"`);
+  }
+  for (const e of (OD.data ? OD.data.events : [])) if (!(e.end && e.end < new Date().toISOString().slice(0, 10))){   // left the program: off every ODT still to come (Captain Russell, 19 Nov 2026)
+    const gone = ODT_GONE.filter(k => (e.roster || []).includes(k) || (e.rooms || []).some(r => r.cadets.includes(k)) || (e.vans || []).some(v => [v.driver, v.relief, ...(v.riders || [])].includes(k)));
+    if (!gone.length) continue;
+    e.roster = (e.roster || []).filter(k => !gone.includes(k));
+    for (const r of e.rooms || []) r.cadets = r.cadets.filter(k => !gone.includes(k));
+    e.rooms = (e.rooms || []).filter(r => r.cadets.length);
+    for (const v of e.vans || []){ v.riders = (v.riders || []).filter(k => !gone.includes(k)); if (gone.includes(v.driver)) v.driver = ""; if (gone.includes(v.relief)) v.relief = ""; }
+    changed(`${evName(e)}: took ${gone.map(k => ODT_GONE_NAMES[k]).join(", ")} off the roster, rooms and vans`);
   }
   for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
     const r = applyPlan(e);

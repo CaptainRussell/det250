@@ -187,8 +187,6 @@ const GENDER = {
   'Donahoe': 'm',
   'Luhring': 'm',
   'Hyman': 'm',
-  'Figueroa-Baca': 'm',
-  'Figueroa': 'm',
   'Metz': 'm',
   'Plassman': 'm',
   'Alt': 'm',
@@ -262,7 +260,6 @@ const GENDER = {
   'Kilker': 'm',
   'McCarthy': 'm',
   'Kluesner': 'm',
-  'McConnell': 'm',
   'McJannet': 'm',
   'Nelsen': 'm',
   'Mafnas': 'm',
@@ -297,13 +294,13 @@ const civTitle = name => ({ m: 'Mr.', f: 'Ms.' })[GENDER[name]] || 'Civ.';
 // Compound surnames remain intact; duplicate surnames are assigned only once.
 const ROSTER_OPTIONS = [
   { id: 'as400', name: 'AS 400’s and Graybeards', rank: 'Cadet Colonels', insignia: 'insignia/cadet-colonel.png',
-    names: ['Donahoe','Figueroa','Kingery','Warner','Luhring','Metz','Albert','Gross','Hyman','Plassman','Cerfogli','Chien','Edwardson','Salas','Alt'] },
+    names: ['Donahoe','Kingery','Warner','Luhring','Metz','Albert','Gross','Hyman','Plassman','Cerfogli','Chien','Edwardson','Salas','Alt'] },
   { id: 'as300', name: 'AS 300’s', rank: 'Cadet Captains', insignia: 'insignia/cadet-captain.png',
     names: ['Helle','Bourek','Barszcz','Marschang','Ashbacker','Cooper','Coulthard','Davis','Collier','Gaul','Van Devander','Bradlee','Curtis','Davila','Humiston','Jalodia','Hader','Tu'] },
   { id: 'as200', name: 'AS 200’s, AS 250’s, and AS 500’s', rank: 'Cadets Third Class', insignia: 'insignia/cadet-third-class.png',
     names: ['Brady','Estes','Martinez','Condon-Matzke','Bendinger','Budde','Dybvig','Hutchinson','Fennel','Hemauer','Jordan','Moreno','Hoang','McNamara','Mueller','Ramsey','Sanderson','Kasparek','Reed','Urbanowicz','Reid','Utterback','Wenthold','Schnute'] },
   { id: 'as100', name: 'AS 100’s', rank: 'Cadets Fourth Class', insignia: 'insignia/cadet-fourth-class.png',
-    names: ['Aldana Castro','Andersen','Burdick','Gardner','Chandler','Dobbs','Johnson','George','Goodin','Kilker','McCarthy','Kluesner','McConnell','McJannet','Nelsen','Mafnas','Phan','Miller','Peterson','Malin','Ruehle-May',"O’Toole",'Wheeler','Tidgewell','Sheldon','Sinclair','Theis'] }
+    names: ['Aldana Castro','Andersen','Burdick','Gardner','Chandler','Dobbs','Johnson','George','Goodin','Kilker','McCarthy','Kluesner','McJannet','Nelsen','Mafnas','Phan','Miller','Peterson','Malin','Ruehle-May',"O’Toole",'Wheeler','Tidgewell','Sheldon','Sinclair','Theis'] }
 ];
 
 // vet = takes years in the Air Force: never drawn for the newest Airman (slot B)

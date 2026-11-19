@@ -12,18 +12,18 @@
       director('A1','Luhring'),director('A2','Cooper'),director('A3','Curtis'),director('A4','Bradlee'),director('A5','Gross'),director('A6','Marschang'),director('A9','Ashbacker'),
       officer('ro','RO','Recruiting Officer','Barszcz','A1'),officer('pa','PA','Public Affairs','Albert','A1'),officer('acdo','ACDO','Academic Officer','Tu','A1'),officer('wello','WELLO','Wellness Officer','Davis','A1'),officer('devo','DEVO','Development Officer','Collier','A1'),
       seat('fso','FSO','Flight Simulator Officer','TBD','','A2'),
-      officer('spo','SPO','Special Projects Officer','Figueroa-Baca','A3'),officer('dc','D&C/CC','Drill and Ceremonies Commander','Jalodia','A3'),officer('jro','JRO','Joint Relations Officer','Chien','A3'),
+      officer('spo','SPO','Special Projects Officer','TBD','A3'),officer('dc','D&C/CC','Drill and Ceremonies Commander','Jalodia','A3'),officer('jro','JRO','Joint Relations Officer','Chien','A3'),
       officer('cto','COTO','Chief of Training Officer','Bienfang','A5'),officer('pfo','PFO','Physical Fitness Officer','Edwardson','A5'),officer('cono','CONO','CONOPS Officer','Bourek','A5')
     ]},
     {id:'alt-bourek',name:'Alt / Bourek',source:'S27 Proposed Unit Manning',seats:[
       ...wing('Alt','Bourek','Hyman','Marschang'),seat('poca','WG/POCA','POC Advisor','Kingery','C/Maj','cd'),advisor('cd'),squadron('BC','Bienfang','cd'),squadron('BCL','Cerfogli','cd'),
       director('A1','Chien'),director('A2','Salas'),director('A3','Edwardson'),director('A4','Van Devander'),director('A5','Gross'),director('A6','Jalodia'),
       officer('acdo','A11/ACDO','Academic Officer','Luhring','A1'),officer('devo','A12/DEVO','Development Officer','Coulthard','A1'),officer('da2','Dep A2/DT','Deputy Intelligence Director','Cooper','A2'),
-      officer('seo','A31/SEO','Special Events Officer','Helle','A3'),officer('dc','A32/D&C/CC','Drill and Ceremonies Commander','Figueroa-Baca','A3'),officer('tso','A33/TSO','Tri-Service Officer','Bradlee','A3'),
+      officer('seo','A31/SEO','Special Events Officer','Helle','A3'),officer('dc','A32/D&C/CC','Drill and Ceremonies Commander','TBD','A3'),officer('tso','A33/TSO','Tri-Service Officer','Bradlee','A3'),
       seat('cto','A51/COTO','Chief of Training Officer','Ashbacker','C/Maj','A5'),officer('pfo','A52/PFO','Physical Fitness Officer','Davis','A5'),officer('cono','A53/CONO','CONOPS Officer','Barszcz','A5'),officer('ooo','A54/OOO','Objectives and OPORDS Officer','Curtis','A5'),officer('paro','A61/PARO','Public Affairs and Recruiting Officer','Albert','A6')
     ]},
     {id:'salas-bienfang',name:'Salas / Bienfang',source:'Proposed 2027 Organizational Wing Chart',seats:[
-      ...wing('Salas','Bienfang','Chien','Figueroa-Baca'),seat('poca','POCA','POC Advisor','Cerfogli','C/Maj','cd'),advisor('cd'),seat('cto','CTO','Chief of Training Officer','Hyman','C/Maj','ig'),squadron('BC','Humiston','cc'),squadron('BCL','Luhring','cc'),
+      ...wing('Salas','Bienfang','Chien','TBD'),seat('poca','POCA','POC Advisor','Cerfogli','C/Maj','cd'),advisor('cd'),seat('cto','CTO','Chief of Training Officer','Hyman','C/Maj','ig'),squadron('BC','Humiston','cc'),squadron('BCL','Luhring','cc'),
       director('A1','Barszcz'),director('A2','Coulthard'),director('A3','Bourek'),director('A4','Helle'),director('A5','Cooper'),director('A6','Albert'),director('A9','Gross'),
       officer('acwelo','A11 ACWELO','Academics and Wellness Officer','Bradlee','A1'),officer('paro','A12 PARO','Public Affairs and Recruiting Officer','Alt','A1'),officer('devo','A13 DEVO','Development Officer','Collier','A1'),
       officer('spo','A31 SPO','Special Projects Officer','Davis','A3'),officer('dc','A32 D&C/CC','Drill and Ceremonies Commander','Edwardson','A3'),officer('tso','A33 TSO','Tri-Service Officer','Van Devander','A3'),
