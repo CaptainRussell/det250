@@ -321,7 +321,7 @@ const POSITION_DESCRIPTIONS = {
       "Create a fundraising SMART Goal for the Fall 2026 semester, along with incentives for cadets to volunteer in fundraising events.",
       "Ensures the successful planning and execution of fundraising events."
     ],
-    "note": "The A41 Fundraising Officer seat is vacant and on the back burner, so its duties fall to the Logistics Director (Capt Russell, 19 Nov 2026).",
+    "note": "The A41 Fundraising Officer seat is vacant on the POC chart and on the back burner, so its duties fall to the Logistics Director (Capt Russell, 19 Nov 2026).",
     "sources": [
       "Fall 2026 OPLAN, Section B, A4 Logistics Director (A4/DT), PDF pp. 16",
       "Fall 2026 OPLAN, Section B, A41 Fundraising Officer (FUNO), PDF pp. 16"
