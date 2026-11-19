@@ -511,6 +511,14 @@
                fields only open when both hold. This is the way in for anyone
                who wants the number anyway. -->
           <button type="button" class="bfa-optional" id="bfa-optional" hidden></button>
+          <!-- Who is being scored (Captain Russell, 19 Nov 2026). A passed BFA
+               re-bases an active duty composite (DAFMAN 36-2905 para 3.7.2) but
+               leaves a cadet's PFA score alone (AFROTC GM 2026-01 para
+               3.4.5.4.3), so the two are worked out separately. -->
+          <span class="bfa-who-set" role="group" aria-label="Scored as">
+            <button type="button" class="bfa-who on" data-bfa-who="cadet" aria-pressed="true">Cadet</button>
+            <button type="button" class="bfa-who" data-bfa-who="ad" aria-pressed="false">Active Duty</button>
+          </span>
           <button type="button" class="bfa-method on" data-bfa-method="tape">Tape</button>
           <button type="button" class="bfa-method" data-bfa-method="scale">InBody Scale</button>
         </div>
