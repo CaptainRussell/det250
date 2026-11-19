@@ -17,12 +17,13 @@ When someone opens Storm HQ, the home page asks for a password once per browser 
 
 ## How it works
 
-Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits three data files, the locked ODT Tool and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
+Storm HQ is a set of web pages stored on GitHub. GitHub Pages turns that storage into the live site. The admin page edits four data files, the locked ODT Tool and the photos, then saves them to GitHub as one change. The live site updates about a minute later.
 
 | What you edit | Where it shows up |
 | --- | --- |
 | People (the roster) | Org Chart, Know Your Wing, the instructor tool preset groups, Peer Feedback |
 | Org chart positions | Org Chart (POC chart and Flip Week), Know Your Wing ranks and positions |
+| Org chart semesters | The Org Chart home page: one card per semester, and the chart buttons inside it |
 | Hub cards | The Storm HQ home page |
 | Documents | Documents and Policy, and every tool that cites a regulation |
 | ODT | The ODT Tool (every ODT, current and past, behind the cadet password) |
@@ -44,13 +45,15 @@ Give the admin password only to cadre who maintain Storm HQ. Change it whenever 
 
 Do this each August and January, after the new cadet wing is set.
 
-1. **People tab:** set **Semester shown on the tools** (for example "Spring 2027").
-2. **People tab:** add new cadets, remove cadets who left, and fix classes (AS 100 to AS 200 and so on). Set each cadet's flight.
-3. **Org chart tab:** put the new cadet staff in each position, with ranks. Set the Flip Week holder for each position, or leave it hidden.
-4. **Hub cards tab:** update any card that names a semester or a due date (for example the Org Chart and Peer Feedback cards).
-5. **Documents tab:** check the links still work. Upload or link any new instruction.
-6. Publish, then look over the Org Chart and Know Your Wing on the live site.
-7. Ask whoever runs Peer Feedback to rebuild the cadet codes (see "What the admin page doesn't do").
+1. **Org chart tab, Semesters:** press **Freeze** on the semester that just ended. Its POC chart and Flip Week keep the people and positions they have today, so the steps below don't change them.
+2. **Org chart tab, Semesters:** open the new semester (or **Add a semester**), set it as the current semester, and give it a POC Chart and a Flip Week chart. Remove the proposed packages that weren't picked, or the picked one too once its people are in the positions.
+3. **People tab:** set **Semester shown on the tools** (for example "Spring 2027").
+4. **People tab:** add new cadets, remove cadets who left, and fix classes (AS 100 to AS 200 and so on). Set each cadet's flight.
+5. **Org chart tab:** put the new cadet staff in each position, with ranks. Set the Flip Week holder for each position, or leave it hidden.
+6. **Hub cards tab:** update any card that names a semester or a due date (for example the Org Chart and Peer Feedback cards).
+7. **Documents tab:** check the links still work. Upload or link any new instruction.
+8. Publish, then look over the Org Chart and Know Your Wing on the live site.
+9. Ask whoever runs Peer Feedback to rebuild the cadet codes (see "What the admin page doesn't do").
 
 ### Add a cadet
 
@@ -70,6 +73,17 @@ Open the person and press **Remove from roster**. If they still hold a position,
 ### Change who holds a position
 
 On the Org chart tab, press **Edit** on the position. Pick who holds it, their rank, who holds it during Flip Week, and who it reports to. **Add a position** creates a new one. Flip Week ranks are set automatically.
+
+### Add or change a semester on the Org Chart
+
+The Org Chart opens on a home page with a card for each semester. Each semester has a button for each of its charts:
+
+- **POC Chart** and **Flip Week** show the positions on the Org chart tab (or, once the semester is frozen, the copy saved when you pressed **Freeze**).
+- **Proposed package** shows one of the proposed wing command packages. Adding a brand new package needs whoever maintains the code (it lives in `org-chart/proposals.js`).
+
+On the Org chart tab, under **Semesters**: **Add a semester** makes a new card. **Edit** changes its name, description and charts (add, remove, reorder, rename the buttons), marks it as the current semester, or removes it. The arrows change the order on the home page (newest shows first). Only one semester that isn't frozen should have a POC Chart or Flip Week; the page warns you if two do.
+
+A position can be **Vacant on the POC chart** (tick it in the position's Edit window). It then shows only during Flip Week, and the person in **Held by** covers its duties.
 
 ### Hide a tool
 
