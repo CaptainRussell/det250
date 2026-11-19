@@ -1,4 +1,4 @@
-/* Spring 2027 proposals. Only organization-chart information is included. */
+/* Proposed org charts (packages). Only organization-chart information is included. Which ones a semester shows is set in data/charts.js. */
 (() => {
   const seat = (id, des, title, last, rank, parent) => ({id, des, title, last, rank, parent});
   const wing = (cc, cd, cos, ig) => [seat('cc','WG/CC','Wing Commander',cc,'C/Col',null),seat('cd','WG/CD','Deputy Wing Commander',cd,'C/Col','cc'),seat('cos','WG/COS','Chief of Staff',cos,'C/Lt Col','cc'),seat('ig','WG/IG','Inspector General',ig,'C/Lt Col','cc')];
@@ -61,14 +61,14 @@
   const root=document.documentElement,host=document.getElementById('spring-proposals');
   const params=new URLSearchParams(location.search);
   const mapId=id=>({cc:'wgcc',cd:'wgcd',cos:'wgcos',ig:'wgig'})[id]||'proposed-'+id;
-  let selected=proposals.some(p=>p.id===params.get('proposal'))?params.get('proposal'):'kingery-helle';
+  const T=window.D250_TERM||{name:'',charts:[]},inTerm=(T.charts||[]).filter(c=>c.kind==='proposal').map(c=>c.proposal).filter(id=>proposals.some(p=>p.id===id));
+  let selected=inTerm.includes(params.get('proposal'))?params.get('proposal'):inTerm[0];
   const panels=document.createElement('div');panels.id='chart-panels';
   document.getElementById('main').append(panels);
   ['cadre','command','staff','group'].forEach(id=>panels.append(document.getElementById(id)));
   document.getElementById('main').prepend(host);
-  host.innerHTML='<div class="bandhead"><h2>Proposed 2027 Org Charts</h2><span class="rt">Spring 2027 board review</span></div><p class="proposal-note">All proposed positions are shown. GMC cadet flight rosters are not assigned.</p>';
-  const teams=document.getElementById('team-tabs');   // the team picker lives in the thin sticky chart bar
-  teams.innerHTML=proposals.map(p=>'<button type="button" role="tab" id="team-tab-'+p.id+'" aria-controls="chart-panels" aria-selected="false" tabindex="-1" data-proposal="'+p.id+'">'+esc(p.name.replaceAll(' / ','/'))+'</button>').join('');
+  host.innerHTML='<div class="bandhead"><h2>Proposed Org Charts</h2><span class="rt">'+esc(T.name)+' wing command packages</span></div><p class="proposal-note">All proposed positions are shown. GMC cadet flight rosters are not assigned.</p>';
+  const seg=document.getElementById('chart-seg')||document.createElement('div');   // one button per package, in the thin sticky chart bar (data/charts.js)
   function updateIndex(seats){
     SEATS.splice(0,SEATS.length,...seats);
     Object.keys(byId).forEach(id=>delete byId[id]);SEATS.forEach(s=>byId[s.id]=s);
@@ -104,23 +104,23 @@
     const p=proposals.find(p=>p.id===id);if(!p)return;
     resetInteractions();selected=id;window.currentProposedChart=p;root.dataset.chartView='proposed';MODE='poc';root.dataset.mode='poc';
     updateIndex([...cadreSeats,...p.seats.map(s=>toNative(s,p))]);
-    host.hidden=false;teams.hidden=false;panels.setAttribute('role','tabpanel');panels.setAttribute('aria-labelledby','team-tab-'+p.id);
-    teams.querySelectorAll('[role="tab"]').forEach(tab=>{const on=tab.dataset.proposal===id;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;if(on&&focus)tab.focus();});
-    document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','true');
+    host.hidden=false;
+    seg.querySelectorAll('[data-proposal]').forEach(b=>{const on=b.dataset.proposal===id;b.setAttribute('aria-pressed',String(on));if(on&&focus)b.focus();});
     document.getElementById('h-group').textContent='Squadron and Flight Staff';
     document.querySelector('#group .rt').textContent='Proposed squadron commanders, flight commanders and deputies';
     document.querySelector('#staff .rt').textContent='Directors report to the WG/COS';
-    document.querySelector('.source-line').textContent=p.name+' proposed Spring 2027 organization. Cadre are shown for reference; proposed positions, reporting lines and duties follow the submitted package.';
+    document.querySelector('.source-line').textContent=p.name+' proposed '+T.name+' organization. Cadre are shown for reference; proposed positions, reporting lines and duties follow the submitted package.';
     rebuild();if(save)saveLocation();
   }
+  const currentLine=()=>!window.D250_TERM?document.querySelector('.source-line').textContent:'Positions reflect the '+T.name+' 250th Cadet Wing organization chart'+(window.D250_HAS_FLIP?', the Flip Week construct,':'')+' and flight assignments. Tap or click anyone for details; use the buttons at the top to switch charts.';
   function showCurrent(mode){
     if(window.currentProposedChart){
       resetInteractions();window.currentProposedChart=null;updateIndex(originalSeats);MODE='poc';root.dataset.mode='poc';root.dataset.chartView=mode;
       document.getElementById('h-group').textContent='Group Staff';document.querySelector('#group .rt').textContent='GP/CC reports to the WG/CC · GMC are assigned under each FLT/CC';
-      document.querySelector('.source-line').textContent='Positions reflect the Fall 2026 250th Cadet Wing organization chart, the Flip Week construct, and current flight assignments. Tap or click anyone for details; use the tabs at the top to switch charts.';
+      document.querySelector('.source-line').textContent=currentLine();
       rebuild();saveLocation();
     }
-    host.hidden=true;teams.hidden=true;panels.removeAttribute('role');panels.removeAttribute('aria-labelledby');root.dataset.chartView=mode;document.getElementById('proposed-chart-tab').setAttribute('aria-pressed','false');
+    host.hidden=true;root.dataset.chartView=mode;seg.querySelectorAll('[data-proposal]').forEach(b=>b.setAttribute('aria-pressed','false'));document.querySelector('.source-line').textContent=currentLine();
   }
   /* Keep the reader's place when switching charts (Captain Russell, 13 Nov 2026: compare charts without
      snapping to the top). Note which section sits under the sticky chart bar and how far into it, then hold
@@ -145,18 +145,13 @@
   const stopHold=()=>{holdUntil=0;cancelAnimationFrame(holdRaf);};
   ['wheel','touchmove'].forEach(t=>addEventListener(t,stopHold,{passive:true}));
   document.addEventListener('click',event=>{
-    if(event.target.closest('#proposed-chart-tab')){event.stopImmediatePropagation();const s=spot();showProposal(selected);hold(s);}
+    const pb=event.target.closest('#chart-seg [data-proposal]');
+    if(pb){event.stopImmediatePropagation();const s=spot();showProposal(pb.dataset.proposal);hold(s);}
     else {const tab=event.target.closest('[data-set-mode]');if(tab){const s=spot();showCurrent(tab.dataset.setMode);setTimeout(()=>hold(s),0);}}
   },true);
-  teams.addEventListener('click',event=>{const tab=event.target.closest('[data-proposal]');if(tab){const s=spot();showProposal(tab.dataset.proposal);hold(s);}});
-  teams.addEventListener('keydown',event=>{
-    const tabs=[...teams.querySelectorAll('[role="tab"]')];let i=tabs.indexOf(document.activeElement);if(i<0)return;
-    if(event.key==='ArrowRight')i=(i+1)%tabs.length;else if(event.key==='ArrowLeft')i=(i+tabs.length-1)%tabs.length;else if(event.key==='Home')i=0;else if(event.key==='End')i=tabs.length-1;else return;
-    event.preventDefault();const s=spot();showProposal(tabs[i].dataset.proposal,true);hold(s);
-  });
   const initialSeat=location.hash.slice(1)||params.get('member');
-  if(params.get('view')==='proposed'||location.hash==='#spring-proposals'||location.hash.startsWith('#proposal-')){
-    const hashTeam=location.hash.replace('#proposal-','');if(proposals.some(p=>p.id===hashTeam))selected=hashTeam;
+  if(selected&&(params.get('view')==='proposed'||location.hash==='#spring-proposals'||location.hash.startsWith('#proposal-')||(!params.get('view')&&(T.charts||[])[0]&&T.charts[0].kind==='proposal'))){
+    const hashTeam=location.hash.replace('#proposal-','');if(inTerm.includes(hashTeam))selected=hashTeam;
     showProposal(selected,false,false);
     if(initialSeat&&byId[initialSeat])openSeat(initialSeat);
     else if(initialSeat&&byId[mapId(initialSeat)])openSeat(mapId(initialSeat));

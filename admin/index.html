@@ -222,7 +222,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const PASS_KEY = "d250-admin-pass", UI_KEY = "d250-admin-ui-v1";
-const FILES = { roster:"data/roster.js", hub:"data/hub.js", docs:"data/documents.js" };
+const FILES = { roster:"data/roster.js", hub:"data/hub.js", docs:"data/documents.js", charts:"data/charts.js" };
 const CLASSES = ["AS100","AS200","AS250","AS500","AS300","AS400","Graybeard","Cadre"];
 const CLASS_LABEL = {AS100:"AS 100",AS200:"AS 200",AS250:"AS 250",AS500:"AS 500",AS300:"AS 300",AS400:"AS 400",Graybeard:"Graybeard",Cadre:"Cadre"};
 const RING = {AS100:"r100",AS200:"r200",AS250:"r250",AS300:"r300",AS400:"r400",AS500:"r500",Graybeard:"rgb"};
@@ -240,12 +240,13 @@ let GH = null;          // GitHub client
 let F = {};             // name -> { path, sha, file (parsed head/name), orig (JSON string), data }
 let PHOTOS = {};        // person key -> { small, large (base64 JPEG), url (preview) }
 let UPLOADS = {};       // repo path -> { base64, name }
+let ARCHIVES = {};      // repo path -> text: frozen copies of the roster for past semesters (data/org-archive/<id>.js)
 let LOG = [];           // what changed, in words (for the publish bar and the commit message)
 
 /* ---------- small helpers ---------- */
 function toast(t, ms = 3200){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), ms); }
 function note(html, bad){ $("#msg").innerHTML = html ? `<div class="note${bad ? " bad" : ""}" role="status">${html}</div>` : ""; }
-const R = () => F.roster.data, H = () => F.hub.data, D = () => F.docs.data;
+const R = () => F.roster.data, H = () => F.hub.data, D = () => F.docs.data, C = () => F.charts.data;
 const fullName = p => p ? (p[1] ? `${p[1]} ${p[0]}` : p[0]) : "(nobody)";
 const sortName = p => `${p[0]}, ${p[1]}`;
 function changed(what){ LOG.push(what); renderPub(); }
@@ -339,14 +340,14 @@ async function loadAll(){
     const file = D250DataFile.parse(r.text);
     F[name] = {path, sha:r.sha, file, orig:JSON.stringify(file.data), data:JSON.parse(JSON.stringify(file.data))};
   }
-  PHOTOS = {}; UPLOADS = {}; LOG = [];
+  PHOTOS = {}; UPLOADS = {}; ARCHIVES = {}; LOG = [];
   await loadOdt();
   renderPub();
 }
 function dirtyFiles(){ return Object.keys(F).filter(n => JSON.stringify(F[n].data) !== F[n].orig); }
 const odtDirty = () => !!(OD.data && (JSON.stringify(OD.data) !== OD.orig || Object.keys(OD.files).length));
 function renderPub(){
-  const n = dirtyFiles().length + Object.keys(PHOTOS).length + Object.keys(UPLOADS).length + (odtDirty() ? 1 : 0);
+  const n = dirtyFiles().length + Object.keys(PHOTOS).length + Object.keys(UPLOADS).length + Object.keys(ARCHIVES).length + (odtDirty() ? 1 : 0);
   $("#pub").hidden = !n;
   if (!n){ LOG = []; return; }
   $("#pubCount").textContent = `Not published yet (${LOG.length} change${LOG.length === 1 ? "" : "s"})`;
@@ -358,7 +359,7 @@ $("#discard").addEventListener("click", () => {
   for (const n of Object.keys(F)) F[n].data = JSON.parse(F[n].orig);
   if (OD.data){ if (OD.orig){ OD.data = JSON.parse(OD.orig); } else { OD.data = null; OD.pw = OD.savedPw; } }
   OD.files = {};
-  PHOTOS = {}; UPLOADS = {}; LOG = []; renderPub(); render(); toast("Changes discarded.");
+  PHOTOS = {}; UPLOADS = {}; ARCHIVES = {}; LOG = []; renderPub(); render(); toast("Changes discarded.");
 });
 $("#publish").addEventListener("click", async () => {
   const btn = $("#publish"); btn.disabled = true; btn.textContent = "Publishing…";
@@ -374,6 +375,7 @@ $("#publish").addEventListener("click", async () => {
       files.push({path:`whos-that-cadet/photos/${key}.jpg`, base64:ph.large});
     }
     for (const [path, up] of Object.entries(UPLOADS)) files.push({path, base64:up.base64});
+    for (const [path, text] of Object.entries(ARCHIVES)) files.push({path, text});
     let cfgAfter = null;
     if (odtDirty()){
       const now = await GH.readText(ODT_PATH);
@@ -590,8 +592,111 @@ function renderChart(){
       <div class="item">${face(s.poc[0])}<div class="txt"><div class="t1">${esc(s.des || s.title)} <span class="t2">${esc(s.des ? s.title : "")}</span></div>
         <div class="t2">${s.pocVacant ? "Vacant on the POC chart" : `${esc(s.poc[1])} ${esc(fullName(P[s.poc[0]]))}`}${s.cadre ? "" : ` · Flip Week: ${s.flip ? esc(fullName(P[s.flip])) : "hidden"}`}</div></div>
         <div class="acts"><button class="btn small" type="button" data-seat="${esc(s.id)}">Edit</button></div></div>`).join("")}</div>`).join("")}`;
+  $("#tab-chart").insertAdjacentHTML("afterbegin", semestersHTML());
+  wireSemesters();
   $("#addSeat").addEventListener("click", () => seatDialog(null));
   document.querySelectorAll("[data-seat]").forEach(b => b.addEventListener("click", () => seatDialog(b.dataset.seat)));
+}
+/* ---------- Org Chart semesters (data/charts.js): the cards on the Org Chart home page ---------- */
+const CHART_KIND = {poc:"POC Chart", flip:"Flip Week", proposal:"Proposed package"};
+let PROPOSALS = null;   // [{id, name}] read from org-chart/proposals.js
+async function loadProposals(){
+  if (PROPOSALS) return PROPOSALS;
+  try{ const t = await (await fetch("../org-chart/proposals.js", {cache:"no-store"})).text(); PROPOSALS = [...t.matchAll(/\{id:'([^']+)',\s*name:'([^']+)'/g)].map(m => ({id:m[1], name:m[2]})); }
+  catch(_){ PROPOSALS = []; }
+  return PROPOSALS;
+}
+const usesRoster = t => !t.frozen && (t.charts || []).some(c => c.kind !== "proposal");
+function semestersHTML(){
+  const S = C().semesters, live = S.filter(usesRoster);
+  return `<div class="tabhd"><div><h2>Semesters</h2><p>Each semester is a card on the Org Chart home page, with a button for each of its charts. The POC chart and Flip Week come from the positions below; once a semester is over, Freeze it so it keeps today's chart when the positions change.</p></div>
+      <div class="tools"><button class="btn primary" id="addTerm" type="button">Add a semester</button></div></div>
+    ${live.length > 1 ? `<div class="note bad" role="status">${esc(live.map(t => t.name).join(" and "))} both show the positions below. Freeze the one that is over.</div>` : ""}
+    <div class="list">${S.map((t, i) => `
+      <div class="item"><div class="txt"><div class="t1">${esc(t.name)}${t.id === C().current ? `<span class="tag gold">Current</span>` : ""}${t.frozen ? `<span class="tag">Frozen</span>` : ""}</div>
+        <div class="t2">${esc((t.charts || []).map(c => c.name).join(" · ") || "No charts yet")}</div></div>
+        <div class="acts"><button class="btn small" type="button" data-tup="${i}" ${i ? "" : "disabled"} aria-label="Move ${esc(t.name)} earlier">↑</button><button class="btn small" type="button" data-tdown="${i}" ${i < S.length - 1 ? "" : "disabled"} aria-label="Move ${esc(t.name)} later">↓</button>
+        ${usesRoster(t) ? `<button class="btn small" type="button" data-freeze="${i}">Freeze</button>` : ""}<button class="btn small" type="button" data-term="${i}">Edit</button></div></div>`).join("")}</div>
+    <div style="height:26px"></div>`;
+}
+function wireSemesters(){
+  const S = C().semesters;
+  const move = (i, d) => { const j = i + d; [S[i], S[j]] = [S[j], S[i]]; changed(`Moved the ${S[j].name} org charts ${d < 0 ? "earlier" : "later"}`); render(); };
+  document.querySelectorAll("[data-tup]").forEach(b => b.addEventListener("click", () => move(+b.dataset.tup, -1)));
+  document.querySelectorAll("[data-tdown]").forEach(b => b.addEventListener("click", () => move(+b.dataset.tdown, 1)));
+  document.querySelectorAll("[data-term]").forEach(b => b.addEventListener("click", () => termDialog(+b.dataset.term)));
+  document.querySelectorAll("[data-freeze]").forEach(b => b.addEventListener("click", () => freezeTerm(S[+b.dataset.freeze])));
+  $("#addTerm").addEventListener("click", () => termDialog(-1));
+}
+function freezeTerm(t){
+  if (!confirm(`Freeze ${t.name}? Its POC chart and Flip Week keep today's people and positions for good, so you can change the positions for the next semester. Photos still come from the site.`)) return;
+  const path = `data/org-archive/${t.id}.js`, head = `/* Storm HQ (Det 250): the roster as it stood for ${t.name}, saved by the admin page's Freeze button.\n   The Org Chart reads it for that semester (data/charts.js "frozen"). Plain JSON between the braces. */\n`;
+  ARCHIVES[path] = D250DataFile.write({head, name:"D250_ROSTER"}, JSON.parse(JSON.stringify(R())));
+  t.frozen = true; changed(`Froze the ${t.name} org charts`); render();
+}
+async function termDialog(i){
+  const S = C().semesters, isNew = i < 0, t = isNew ? {id:"", name:"", blurb:"", charts:[]} : S[i];
+  const props = await loadProposals();
+  let charts = JSON.parse(JSON.stringify(t.charts || []));
+  const row = (c, k) => `<div class="item" data-row="${k}" style="padding:8px 10px">
+      <select data-kind aria-label="Kind of chart">${Object.entries(CHART_KIND).map(([v, l]) => opt(v, l, c.kind === v)).join("")}</select>
+      ${c.kind === "proposal" ? `<select data-prop aria-label="Which package">${props.map(p => opt(p.id, p.name, p.id === c.proposal)).join("")}</select>` : ""}
+      <input data-name type="text" value="${esc(c.name)}" aria-label="Button text" style="flex:1;min-width:120px">
+      <div class="acts"><button class="btn small" type="button" data-cup ${k ? "" : "disabled"} aria-label="Move up">↑</button><button class="btn small" type="button" data-cdown ${k < charts.length - 1 ? "" : "disabled"} aria-label="Move down">↓</button><button class="btn small" type="button" data-cdel>Remove</button></div></div>`;
+  openDialog(isNew ? "Add a semester" : `Edit ${t.name}`, `
+    <div class="grid2">
+      <div class="field"><label class="label" for="tName">Name</label><input id="tName" type="text" value="${esc(t.name)}" placeholder="Fall 2027"></div>
+      <div class="field"><label class="label" for="tCur">Current semester</label><select id="tCur">${opt("no", "No", C().current !== t.id || isNew)}${opt("yes", "Yes (marked Current on the home page)", !isNew && C().current === t.id)}</select></div>
+    </div>
+    <div class="field"><label class="label" for="tBlurb">Description</label><input id="tBlurb" type="text" value="${esc(t.blurb || "")}" placeholder="Leave blank to list the charts"><p class="hint">One sentence. No em dashes.</p></div>
+    <div class="label" style="margin-top:6px">Charts (one button each, in this order)</div>
+    <div class="list" id="tCharts"></div>
+    <div style="margin-top:8px"><button class="btn small" type="button" id="tAdd">Add a chart</button></div>
+    ${t.frozen ? `<p class="hint">Frozen: the POC chart and Flip Week show the people saved when it was frozen.</p>` : ""}`,
+    `${isNew ? "" : `<button class="btn danger" id="tDel" type="button">Remove semester</button>`}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="tSave" type="button">${isNew ? "Add" : "Save"}</button></div>`);
+  const box = dlg.querySelector("#tCharts");
+  const read = () => box.querySelectorAll("[data-row]").forEach(r => { const c = charts[+r.dataset.row]; c.name = r.querySelector("[data-name]").value; const pp = r.querySelector("[data-prop]"); if (pp) c.proposal = pp.value; });
+  const defName = c => c.kind === "proposal" ? ((props.find(p => p.id === c.proposal) || {}).name || "Package").replaceAll(" / ", "/") : CHART_KIND[c.kind];
+  const draw = () => {
+    box.innerHTML = charts.map(row).join("") || `<p class="hint">No charts yet.</p>`;
+    box.querySelectorAll("[data-row]").forEach(r => {
+      const k = +r.dataset.row, c = charts[k];
+      r.querySelector("[data-kind]").addEventListener("change", e => { read(); const was = defName(c); c.kind = e.target.value; if (c.kind === "proposal") c.proposal = c.proposal || (props[0] || {}).id; else delete c.proposal; if (!c.name || c.name === was) c.name = defName(c); draw(); });
+      const pp = r.querySelector("[data-prop]");
+      if (pp) pp.addEventListener("change", () => { const was = defName(c); read(); c.proposal = pp.value; if (!c.name || c.name === was || r.querySelector("[data-name]").value === was) c.name = defName(c); draw(); });
+      r.querySelector("[data-cup]").addEventListener("click", () => { read(); [charts[k - 1], charts[k]] = [charts[k], charts[k - 1]]; draw(); });
+      r.querySelector("[data-cdown]").addEventListener("click", () => { read(); [charts[k + 1], charts[k]] = [charts[k], charts[k + 1]]; draw(); });
+      r.querySelector("[data-cdel]").addEventListener("click", () => { read(); charts.splice(k, 1); draw(); });
+    });
+  };
+  draw();
+  dlg.querySelector("#tAdd").addEventListener("click", () => { read(); const kinds = charts.map(c => c.kind); const kind = !kinds.includes("poc") ? "poc" : !kinds.includes("flip") ? "flip" : "proposal"; const c = {kind, name:""}; if (kind === "proposal") c.proposal = (props[0] || {}).id; c.name = defName(c); charts.push(c); draw(); });
+  const del = dlg.querySelector("#tDel");
+  if (del) del.addEventListener("click", () => {
+    if (!confirm(`Remove ${t.name} and its charts from the Org Chart home page?`)) return;
+    S.splice(i, 1); if (C().current === t.id) C().current = (S[S.length - 1] || {}).id || "";
+    dlg.close(); changed(`Removed the ${t.name} org charts`); render();
+  });
+  dlg.querySelector("#tSave").addEventListener("click", () => {
+    read();
+    const name = val("tName").trim();
+    if (!name){ alert("The semester needs a name, for example Fall 2027."); return; }
+    if (charts.some(c => !c.name.trim())){ alert("Every chart needs button text."); return; }
+    if (charts.some(c => c.kind === "proposal" && !c.proposal)){ alert("Pick a package for each proposed chart."); return; }
+    const before = JSON.stringify(t);
+    t.name = name; const b = val("tBlurb").trim(); if (b) t.blurb = b; else delete t.blurb;
+    t.charts = charts.map(c => c.kind === "proposal" ? {kind:"proposal", proposal:c.proposal, name:c.name.trim()} : {kind:c.kind, name:c.name.trim()});
+    if (isNew){
+      let base = slug(name), id = base, n = 2; while (S.some(x => x.id === id)) id = base + "-" + n++;
+      const fresh = {id, name:t.name}; if (t.blurb) fresh.blurb = t.blurb; fresh.charts = t.charts; S.push(fresh); t.id = id;
+    }
+    const wasCur = C().current;
+    if (val("tCur") === "yes") C().current = t.id; else if (C().current === t.id) C().current = (S.find(x => x.id !== t.id) || {}).id || "";
+    dlg.close();
+    if (isNew) changed(`Added the ${name} org charts`);
+    else if (before !== JSON.stringify(t) || wasCur !== C().current) changed(`Updated the ${name} org charts`);
+    render();
+  });
 }
 function personOptions(sel, allowNone, filter){
   const P = R().people;
