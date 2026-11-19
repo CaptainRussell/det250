@@ -38,7 +38,6 @@ window.D250_ROSTER = {
   "CurtisRobertT": ["Curtis","Robert","AS300",{"mi":"T."}],
   "TuMicahJ": ["Tu","Micah","AS300",{"mi":"J."}],
   "GaulStephenJ": ["Gaul","Stephen","AS300",{"mi":"J."}],
-  "FigueroaBacaAngel": ["Figueroa-Baca","Angel","Graybeard",{"as":"AS800"}],
   "CoulthardNikalo": ["Coulthard","Nikalo","AS300"],
   "DonahoeWilliamJ": ["Donahoe","William","Graybeard",{"mi":"J.","as":"AS800"}],
   "CooperTylerL": ["Cooper","Tyler","AS300",{"mi":"L."}],
@@ -99,7 +98,6 @@ window.D250_ROSTER = {
   "BurdickNathanielB": ["Burdick","Nathaniel","AS100",{"mi":"B."}],
   "DobbsPaxtonJ": ["Dobbs","Paxton","AS100",{"mi":"J."}],
   "GoodinEleanorK": ["Goodin","Eleanor","AS100",{"mi":"K."}],
-  "McConnellLaurenL": ["McConnell","Liam","AS100"],
   "PhanTaraT": ["Phan","Tara","AS100",{"mi":"T."}],
   "TheisJakeA": ["Theis","Jake","AS100",{"mi":"A."}],
   "JohnsonZariahA": ["Johnson","Zariah","AS100",{"mi":"A."}],
@@ -148,8 +146,8 @@ window.D250_ROSTER = {
   {"id":"a33","des":"A33/TSO","title":"Tri-Service Officer","poc":["TuMicahJ","C/Capt"],"flip":"NelsenOliverU","parent":"a3"},
   {"id":"a34","des":"A34/SEO","title":"Special Events Officer","poc":["GaulStephenJ","C/Capt"],"flip":"UtterbackChristopherD","parent":"a3"},
   {"id":"dseo","des":"Dep SEO","title":"Deputy Special Events Officer","poc":["StatesEricD","C/3C"],"parent":"a34"},
-  {"id":"a4","des":"A4/DT","title":"Logistics Director","poc":["FigueroaBacaAngel","C/Maj"],"flip":"HoangLinhY","parent":"wgcos","dir":"A4"},
-  {"id":"a41","des":"A41/FUNO","title":"Fundraising Officer","poc":["CoulthardNikalo","C/Capt"],"flip":"ReedMaxC","parent":"a4"},
+  {"id":"a4","des":"A4/DT","title":"Logistics Director","poc":["CoulthardNikalo","C/Capt"],"flip":"HoangLinhY","parent":"wgcos","dir":"A4"},
+  {"id":"a41","des":"A41/FUNO","title":"Fundraising Officer","poc":["CoulthardNikalo","C/Capt"],"flip":"ReedMaxC","parent":"a4","pocVacant":true},
   {"id":"a5","des":"A5/DT","title":"Planning Director","poc":["DonahoeWilliamJ","C/Maj"],"flip":"MorenoRyanA","parent":"wgcos","dir":"A5"},
   {"id":"a5d","des":"Dep A5/DT","title":"Deputy Planning Director","poc":["CooperTylerL","C/Capt"],"flip":"HutchinsonScottC","parent":"a5","flipDes":"A5/DPT","flipTitle":"Planning Director Deputy"},
   {"id":"a51","des":"A51/CTO","title":"Chief of Training Officer","poc":["HaderAshtenM","C/Capt"],"flip":"KasparekCamdenL","parent":"a5"},
@@ -172,12 +170,12 @@ window.D250_ROSTER = {
 "flights": {
   "afl": ["BendingerMatthewS","HutchinsonScottC","JordanCooperS","McNamaraZacharyA","RamseyKyleT","ReedMaxC","ReidElijahB","SchnuteIanW","AldanaCastroGeorgioF","ChandlerAmeliaM","JohnsonZionJ","McCarthyCalumJ","NelsenOliverU","PetersonMadelineM","WheelerAndrewT"],
   "bfl": ["BuddeCashJ","FennelHarperR","MorenoRyanA","MuellerCyR","SandersonWyattE","UrbanowiczCharlesL","UtterbackChristopherD","AndersenSamuelE","GeorgeWilliamD","KluesnerAidenC","MafnasMaxC","MalinLanceA","TidgewellCharlesA"],
-  "cfl": ["HemauerJulia","HoangLinhY","KasparekCamdenL","WentholdAddisonE","BurdickNathanielB","DobbsPaxtonJ","GoodinEleanorK","McConnellLaurenL","PhanTaraT","RuehleMayIsaiahH","SheldonElijahD","TheisJakeA"],
+  "cfl": ["HemauerJulia","HoangLinhY","KasparekCamdenL","WentholdAddisonE","BurdickNathanielB","DobbsPaxtonJ","GoodinEleanorK","PhanTaraT","RuehleMayIsaiahH","SheldonElijahD","TheisJakeA"],
   "dfl": ["BennettLiamB","CallTysonD","JonsErickL","PeterJulia","StatesEricD","TjadenAndrewJ","GardnerLaceyI","JohnsonZariahA","KilkerSamuelJ","McJannetMiloG","MillerMasonD","OTooleFinnP","SinclairHaydenH"]
 },
 "flightsPoc": {
   "afl": ["DonahoeWilliamJ","LuhringBlayneD","HymanNathanT","AshbackerMiloK","CooperTylerL","CoulthardNikalo","DavisMartiG"],
-  "bfl": ["FigueroaBacaAngel","MetzBakerA","PlassmanSimonE","AltTyceW","CollierJonathanG","GaulStephenJ","VanDevanderDonC"],
+  "bfl": ["MetzBakerA","PlassmanSimonE","AltTyceW","CollierJonathanG","GaulStephenJ","VanDevanderDonC"],
   "cfl": ["KingeryAlexL","AlbertJosephI","CerfogliCeliaA","ChienJohnJ","EdwardsonClaytonM","SalasAlfredoE","HaderAshtenM","TuMicahJ"],
   "dfl": ["WarnerNicole","GrossDylanG","BradleeColinR","CurtisRobertT","DavilaJoaquinD","HumistonVictoriaR","JalodiaAnika"]
 }

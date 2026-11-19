@@ -23,7 +23,7 @@ var CATS = ['lead', 'prof', 'team', 'comm'];
 var CAT_LABELS = ['Leadership', 'Professionalism', 'Teamwork', 'Communication'];
 var GROUP_LABELS = { poc: 'POC', gmc: 'AS 200 / 250 / 500', as100: 'AS 100' };
 // Cadets nobody rates (they still sign in and rate their own group). Capt Russell, 12 Nov 2026.
-var NOT_RATED = ['FigueroaBacaAngel'];
+var NOT_RATED = [];
 var NOTE_MAX = 600;   // characters kept per optional comment
 
 function norm_(code) { return String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }

@@ -148,6 +148,7 @@ section.band{margin-top:26px}
 
 /* ---------- POC-only seats (hidden during Flip Week) ---------- */
 [data-mode="flip"] .po{display:none !important}
+:root:not([data-mode="flip"]) .fo{display:none !important}
 .po.leaving{opacity:0 !important;transform:scale(.9);transition:opacity .25s ease,transform .25s ease}
 .po.entering>.card,.po.entering>.olist,.po.entering>ul{animation:rise .5s var(--ease) both;animation-delay:.35s}
 
@@ -531,7 +532,7 @@ const DIRNAMES = {A1:"Personnel",A2:"Intelligence",A3:"Operations",A4:"Logistics
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const byId = Object.fromEntries(SEATS.map(s => [s.id, s]));
-const inMode = (s, m = MODE) => m === "poc" || !!s.flip || !!s.cadre;
+const inMode = (s, m = MODE) => m === "poc" ? !s.pocVacant : (!!s.flip || !!s.cadre);   // pocVacant: an empty POC seat kept for Flip Week
 const kids = (id, m) => SEATS.filter(s => s.parent === id && (!m || inMode(s, m)));
 /* one color per AS level (plus Graybeard and Cadre) */
 const RINGS = {AS100:"r100", AS200:"r200", AS250:"r250", AS300:"r300", AS400:"r400", AS500:"r500", Graybeard:"rgb", Cadre:"rcadre"};
@@ -573,7 +574,7 @@ function card(seat, kind, i, o){
   return `<button type="button" class="card ${kind}${still ? " static" : ""}" data-seat="${seat.id}" style="--i:${i};--o:${o}">
     <span class="flip">${face(seat, "poc")}${still ? "" : face(seat, "flip")}</span></button>`;
 }
-const po = s => (s.flip || s.cadre) ? "" : "po";
+const po = s => s.pocVacant ? "fo" : (s.flip || s.cadre) ? "" : "po";   // fo: Flip Week only
 /* a <ul> whose children are all POC-only disappears during Flip Week */
 const ulClass = list => list.every(c => !c.flip && !c.cadre) ? "po" : "";
 
@@ -597,7 +598,7 @@ const flightGMC = fl => [...(cdOf(fl) ? [cdOf(fl).poc[0]] : []), ...(FLIGHTS[fl]
 const flightPOC = fl => [byId[fl].poc[0], ...(FLIGHTS_POC[fl] || [])];
 /* a person's main seat on the POC chart; GMC without a position fall back to their flight-member entry */
 function primaryOf(key){
-  return SEATS.find(x => !x.member && !x.cadre && x.poc && x.poc[0] === key) || SEATS.find(x => x.member && x.poc[0] === key);
+  return SEATS.find(x => !x.member && !x.cadre && !x.pocVacant && x.poc && x.poc[0] === key) || SEATS.find(x => x.member && x.poc[0] === key);
 }
 /* a FLT/CC leads every GMC in the flight; returns the ones not already named as a direct report */
 function flightLeads(seat, named){

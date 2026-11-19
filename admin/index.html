@@ -588,7 +588,7 @@ function renderChart(){
       <div class="tools"><button class="btn primary" id="addSeat" type="button">Add a position</button></div></div>
     ${order.filter(g => groups[g]).map(g => `<h3 class="grp">${esc(g)}</h3><div class="list">${groups[g].map(s => `
       <div class="item">${face(s.poc[0])}<div class="txt"><div class="t1">${esc(s.des || s.title)} <span class="t2">${esc(s.des ? s.title : "")}</span></div>
-        <div class="t2">${esc(s.poc[1])} ${esc(fullName(P[s.poc[0]]))}${s.cadre ? "" : ` · Flip Week: ${s.flip ? esc(fullName(P[s.flip])) : "hidden"}`}</div></div>
+        <div class="t2">${s.pocVacant ? "Vacant on the POC chart" : `${esc(s.poc[1])} ${esc(fullName(P[s.poc[0]]))}`}${s.cadre ? "" : ` · Flip Week: ${s.flip ? esc(fullName(P[s.flip])) : "hidden"}`}</div></div>
         <div class="acts"><button class="btn small" type="button" data-seat="${esc(s.id)}">Edit</button></div></div>`).join("")}</div>`).join("")}`;
   $("#addSeat").addEventListener("click", () => seatDialog(null));
   document.querySelectorAll("[data-seat]").forEach(b => b.addEventListener("click", () => seatDialog(b.dataset.seat)));
@@ -619,6 +619,7 @@ function seatDialog(id){
       <div class="field"><label class="label" for="sFlipDes">Flip Week designator (if different)</label><input id="sFlipDes" type="text" value="${esc(s.flipDes || "")}"></div>
       <div class="field"><label class="label" for="sFlipTitle">Flip Week title (if different)</label><input id="sFlipTitle" type="text" value="${esc(s.flipTitle || "")}"></div>
     </div>`}
+    ${cadre ? "" : `<label class="field" style="display:flex;gap:8px;align-items:center;cursor:pointer"><input id="sVacant" type="checkbox"${s.pocVacant ? " checked" : ""}> Vacant on the POC chart (shown only during Flip Week; "Held by" covers its duties)</label>`}
     <p class="hint">Flip Week ranks are automatic (AS 100 = C/4C, everyone else C/3C). Position descriptions in the drawer are kept with the OPLAN citations and are not edited here.</p>`,
     `${id && !cadre ? `<button class="btn danger" id="sDel" type="button">Remove position</button>` : ""}<div class="r"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" id="sSave" type="button">${id ? "Save" : "Add"}</button></div>`);
   dlg.querySelector("#sSave").addEventListener("click", () => {
@@ -630,6 +631,7 @@ function seatDialog(id){
     if (!cadre){
       const flip = val("sFlip"); if (flip) n.flip = flip; else delete n.flip;
       n.parent = val("sParent");
+      if (dlg.querySelector("#sVacant").checked) n.pocVacant = true; else delete n.pocVacant;
       for (const k of ["flipDes","flipTitle"]){ const v = val(k === "flipDes" ? "sFlipDes" : "sFlipTitle").trim(); if (v) n[k] = v; else delete n[k]; }
     }
     if (!id){
@@ -1146,6 +1148,7 @@ const ODT_PLANS = {
     {name:"Van 3", kind:"isu15", seats:15, driver:"MooreGabrielle", relief:"AshbackerMiloK"},
     {name:"GOV", kind:"gov11", seats:11, driver:"RussellScott", relief:"BourekAkrynJ"}]},
 };
+const ODT_GONE_NAMES = {FigueroaBacaAngel:"Angel Figueroa-Baca", McConnellLaurenL:"Liam McConnell"}, ODT_GONE = Object.keys(ODT_GONE_NAMES);   // left the program (Captain Russell, 19 Nov 2026)
 function renumberRooms(e, cadreOrder){              // 1, 2, 3 ... in the order cadets see them, cadre last
   const secIdx = s => { const i = (e.sections || []).indexOf(s); return i < 0 ? 999 : i; };
   const cad = r => r.sec === "Cadre" || (r.cadets.length === 1 && isCadre(r.cadets[0]));
@@ -1163,6 +1166,15 @@ function applyPendingPlans(){                         // an ODT that was set up 
   }
   for (const e of (OD.data ? OD.data.events : [])) if (e.id === "offutt-2026-12" && /^Offutt\b.*\bODT$/i.test((e.name || "").trim())){   // Captain Russell, 17 Nov 2026
     e.name = "Offutt AFB, 3-4 Dec 2026"; changed(`Offutt ODT renamed to "Offutt AFB, 3-4 Dec 2026"`);
+  }
+  for (const e of (OD.data ? OD.data.events : [])) if (!(e.end && e.end < new Date().toISOString().slice(0, 10))){   // left the program: off every ODT still to come (Captain Russell, 19 Nov 2026)
+    const gone = ODT_GONE.filter(k => (e.roster || []).includes(k) || (e.rooms || []).some(r => r.cadets.includes(k)) || (e.vans || []).some(v => [v.driver, v.relief, ...(v.riders || [])].includes(k)));
+    if (!gone.length) continue;
+    e.roster = (e.roster || []).filter(k => !gone.includes(k));
+    for (const r of e.rooms || []) r.cadets = r.cadets.filter(k => !gone.includes(k));
+    e.rooms = (e.rooms || []).filter(r => r.cadets.length);
+    for (const v of e.vans || []){ v.riders = (v.riders || []).filter(k => !gone.includes(k)); if (gone.includes(v.driver)) v.driver = ""; if (gone.includes(v.relief)) v.relief = ""; }
+    changed(`${evName(e)}: took ${gone.map(k => ODT_GONE_NAMES[k]).join(", ")} off the roster, rooms and vans`);
   }
   for (const e of (OD.data ? OD.data.events : [])) if (ODT_PLANS[e.id] && !(e.vans || []).length){
     const r = applyPlan(e);
