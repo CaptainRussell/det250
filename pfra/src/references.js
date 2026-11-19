@@ -46,34 +46,42 @@ export const SUPPLEMENT = Object.freeze({
   id: 'dafman36-2905-afrotcsup',
   title: 'DAFMAN 36-2905_AFROTCSUP, AFROTC Supplement',
   date: '28 April 2023',
-  // Written against the 2022 DAFMAN, and awaiting rewrite: NOTACC CY26-092
-  // states HQ AFROTC will revise it for the new assessment. Treat it as stale
-  // by default. Anything it says that NOTACC CY26-092, AFROTCI 36-2011 V3 or
-  // the 2026 DAFMAN also covers is superseded; what survives is AFROTC
-  // administration none of those three address. See docs/REGULATION-NOTES.md.
-  pendingRevision: true,
-  supersededOn: 'events, body composition method, and assessment administration'
+  // The 2023 supplement was written against the 2022 DAFMAN. AFROTC Guidance
+  // Memorandum 2026-01 (30 October 2026, the first eight pages of the file in
+  // references/) rewrites it for the 2026 DAFMAN and prevails over other
+  // AFROTC publications where they differ. It voids on 30 October 2027 or when
+  // the supplement is rewritten, whichever is first.
+  guidanceMemo: 'DAFMAN36-2905_AFROTCSUP_AFROTCGM2026-01, 30 October 2026',
+  memoExpires: '30 October 2027',
+  pendingRevision: false
 });
 
 // Quoted text keeps the publication's own wording, including PFA where the
 // publication says PFA. The tool's own prose says PFRA; misquoting a
 // regulation to match house style would be the worse error.
 export const REFERENCES = Object.freeze({
-  // Kept because nothing newer says it as plainly, but it sits behind
-  // NOTACC CY26-092 and AFROTCI 36-2011 V3, which is where the page cites from.
   'afrotcsup.3.1.3': {
     source: SUPPLEMENT.id,
-    paragraph: '3.1.3 (2023, awaiting revision)',
-    text: 'Alternate components or fitness exemptions are not authorized for ' +
-      'cadet PFAs. If a cadet is medically unable to accomplish a component, ' +
-      'they cannot test.'
+    paragraph: '3.1.3 (Guidance Memorandum 2026-01)',
+    text: 'The AFROTC cadet PFA consists of the following components: two-minute ' +
+      'hand-release push-ups, one-minute sit-ups, the 2-mile run and a body ' +
+      'composition assessment measured using WHtR in accordance with AFMAN 36-2905 ' +
+      'para 3.1.2.1. Alternate component modalities are not authorized for the ' +
+      'AFROTC cadet PFA.'
   },
-  'afrotcsup.5.5.7': {
+  'afrotcsup.3.1.3.2': {
     source: SUPPLEMENT.id,
-    paragraph: '5.5.7 (2023, awaiting revision)',
-    text: 'Detachments that conduct the PFA/QFR 5,250 feet or more above MSL will ' +
-      'manually adjust the cadet’s run times IAW DAFMAN 36-2905, Attachment 3. ' +
-      'Altitude corrections do not apply to fitness tests given at Field Training.'
+    paragraph: '3.1.3.2 (Guidance Memorandum 2026-01)',
+    text: 'A cadet passes the PFA by earning a composite score of at least 75 and ' +
+      'meeting the minimum score for cardiorespiratory fitness, muscular strength, ' +
+      'and core endurance components. The WHtR component does not have a minimum score.'
+  },
+  'afrotcsup.3.15.16.2': {
+    source: SUPPLEMENT.id,
+    paragraph: '3.15.16.2 (Guidance Memorandum 2026-01)',
+    text: 'When an official cadet PFA is conducted at an elevation of 5,250 feet or ' +
+      'higher, detachments will apply the altitude correction prescribed by AFMAN ' +
+      '36-2905, Attachment 3, unless separate field training guidance specifies otherwise.'
   },
   'afrotci.15.1': {
     source: INSTRUCTION.id,

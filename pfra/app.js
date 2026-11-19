@@ -584,7 +584,8 @@ function showCadetFlag() {
   const text = any
     ? `${parts.join(' ')} Cadets test on hand-release push-ups, sit-ups ` +
       'and the 2 mile run, with no exemption except body composition after a passed ' +
-      'body fat assessment (NOTACC CY26-092, AFROTCI 36-2011 V3). It does not count ' +
+      'body fat assessment (AFROTC Guidance Memorandum 2026-01 para 3.1.3, NOTACC ' +
+      'CY26-092, AFROTCI 36-2011 V3). It does not count ' +
       'toward the Fitness Award.'
     : '';
   for (const id of ['cadet-flag', 'cadet-flag-wait']) {
@@ -1687,8 +1688,8 @@ function showAltitudeGroup() {
   if (!group) {
     note.textContent =
       'DAFMAN 36-2905 Attachment 3. No correction applies below 5,250 feet, ' +
-      'and none applies at Field Training whatever the elevation (2023 AFROTC ' +
-      'Supplement para 5.5.7, awaiting revision). Det 250 assesses at Ames, ' +
+      'and Field Training follows its own guidance (AFROTC Guidance Memorandum ' +
+      '2026-01, para 3.15.16.2). Det 250 assesses at Ames, ' +
       'about 955 feet.';
     note.classList.remove('altitude-on');
     toggle.textContent = 'Altitude';
@@ -2108,11 +2109,9 @@ function workBfa(sexCode, required) {
   const notes = [...assessment.warnings];
   {
     notes.push(
-      'Cadets are assessed on body fat against the DAFMAN standard, not BMI. HQ ' +
-      'confirmed at a Check 6 on 1 October 2026 that AFROTC will not set a figure ' +
-      'tighter than DAFMAN 36-2905. The 2023 supplement on the shelf still says ' +
-      'BMI and a tighter percentage; the revision carrying this has not been ' +
-      'published.');
+      'Cadets are assessed on body fat against the DAFMAN 36-2905 Table 3.2 ' +
+      'standard, not BMI (AFROTC Guidance Memorandum 2026-01, para 3.4.5.4.1, ' +
+      'which deleted the old BMI limits and tighter percentages).');
   }
   note.textContent = notes.join(' ');
   note.hidden = notes.length === 0;
