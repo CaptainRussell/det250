@@ -59,12 +59,12 @@ Do this each August and January, after the new cadet wing is set.
 
 1. People tab, **Add a person**.
 2. Enter last name, first name, middle initial and class. Pick their flight.
-3. **Choose a photo**, then drag it and use the zoom slider so the face fills the circle.
+3. **Choose a photo**. The page finds the face and centers it in the circle by itself (nothing is uploaded until you publish). If it looks off, drag the photo or use the zoom slider; **Center on face** puts it back. If no face is found, line it up by hand.
 4. Press **Add**, then publish.
 
 ### Change a photo
 
-Open the person on the People tab, choose a new photo, line it up, save and publish. The page saves a small copy for the Org Chart and a larger copy for Know Your Wing.
+Open the person on the People tab, choose a new photo (it centers on the face by itself), adjust if needed, save and publish. The page saves a small copy for the Org Chart and a larger, looser copy for Know Your Wing, framed like the existing photos.
 
 ### Remove a cadet
 

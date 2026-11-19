@@ -89,6 +89,10 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .crop canvas{width:200px;height:200px;border-radius:50%;background:var(--d250-surface-2);touch-action:none;cursor:grab;border:3px solid var(--d250-line-strong)}
 .crop canvas:active{cursor:grabbing}
 .crop .side{flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px}
+.crop .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn.go{background:#1d7a4c;border-color:#1d7a4c;color:#fff}
+:root[data-theme="dark"] .btn.go{background:#238a59;border-color:#238a59}
+#faceNote:empty{display:none}
 input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 
 /* history */
@@ -211,6 +215,8 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 <script src="../documents/library.js"></script>
 <script src="datafile.js"></script>
 <script src="github.js"></script>
+<script src="../shared/vendor/pico/pico.js"></script>
+<script src="../shared/face-find.js"></script>
 <script>
 /* =====================================================================
    Cadre Admin. Edits the data files in data/ (roster, hub cards, documents)
@@ -476,9 +482,10 @@ function personDialog(key){
       <div class="crop">
         <canvas id="cropCv" width="480" height="480" tabindex="0" aria-label="Photo. Drag or use the arrow keys to move it."></canvas>
         <div class="side">
-          <label class="btn" style="align-self:flex-start">Choose a photo<input id="pPhoto" type="file" accept="image/*" class="sr"></label>
+          <div class="row"><label class="btn">Choose a photo<input id="pPhoto" type="file" accept="image/*" class="sr"></label><button class="btn go" id="pCenter" type="button" hidden>Center on face</button></div>
+          <p class="hint" id="faceNote" role="status"></p>
           <div class="field" id="zoomWrap" hidden><label class="label" for="pZoom">Zoom</label><input id="pZoom" type="range" min="1" max="4" step="0.01" value="1"></div>
-          <p class="hint">Drag the photo so the face fills the circle, eyes about a third of the way down. Saved as a 240 px chart photo and a 600 px card photo.</p>
+          <p class="hint">Drag or zoom to adjust. Saved as a 240 px chart photo and a 600 px card photo.</p>
         </div>
       </div>
     </div>
@@ -543,10 +550,30 @@ function setupCrop(key){
   dlg.querySelector("#pPhoto").addEventListener("change", e => {
     const file = e.target.files[0]; if (!file) return;
     const img = new Image();
-    img.onload = () => { CROP = {img, zoom:1, x:0, y:0}; dlg.querySelector("#pZoom").value = 1; dlg.querySelector("#zoomWrap").hidden = false; draw(); };
+    img.onload = () => { CROP = {img, zoom:1, x:0, y:0}; dlg.querySelector("#pZoom").max = 4; dlg.querySelector("#pZoom").value = 1; dlg.querySelector("#zoomWrap").hidden = false; draw(); autoCenter(); };
     img.onerror = () => alert("That file isn't a photo this browser can open. Try a JPG or PNG.");
     img.src = URL.createObjectURL(file);
   });
+  // find the face and place it like the existing chart photos: face about 59% of the width, a little above center
+  const note = dlg.querySelector("#faceNote"), btnC = dlg.querySelector("#pCenter");
+  const autoCenter = async () => {
+    const c = CROP; if (!c) return;
+    note.textContent = "Finding the face...";
+    let f = null; try { f = c.face !== undefined ? c.face : await D250FaceFind.find(c.img); } catch (e) { f = null; }
+    if (CROP !== c) return;
+    c.face = f; btnC.hidden = !f;
+    if (!f){ note.textContent = "No face found. Drag the photo so the face fills the circle."; return; }
+    const W = cv.width, w = c.img.width, h = c.img.height, base = Math.max(W / w, W / h);
+    const want = .59 * W / f.size / base, zs = dlg.querySelector("#pZoom");
+    zs.max = Math.max(4, Math.ceil(want * 2));   // big phone photos need more zoom than the slider's usual 4x
+    c.zoom = Math.min(+zs.max, Math.max(1, want));
+    const s = base * c.zoom, lim = (n, m) => Math.max(-m, Math.min(m, n));
+    c.x = lim(.49 * W - W / 2 - (f.x - w / 2) * s, Math.max(0, (w * s - W) / 2));
+    c.y = lim(.475 * W - W / 2 - (f.y - h / 2) * s, Math.max(0, (h * s - W) / 2));
+    dlg.querySelector("#pZoom").value = c.zoom; draw();
+    note.textContent = "Centered on the face.";
+  };
+  btnC.addEventListener("click", autoCenter);
   dlg.querySelector("#pZoom").addEventListener("input", e => { if (CROP){ CROP.zoom = +e.target.value; draw(); } });
   let drag = null;
   cv.addEventListener("pointerdown", e => { if (!CROP) return; drag = {x:e.clientX, y:e.clientY, ox:CROP.x, oy:CROP.y}; cv.setPointerCapture(e.pointerId); });
@@ -559,15 +586,22 @@ function setupCrop(key){
   setupCrop.draw = draw; setupCrop.cv = cv;
 }
 function cropOut(){
-  const src = setupCrop.cv, out = size => {
+  // the circle is the 240 px chart photo; the 600 px card photo is framed looser around the same face,
+  // like the existing card photos (face about 23% of the width, eyes a little higher)
+  const W = setupCrop.cv.width, {img, zoom, x, y} = CROP, w = img.width, h = img.height;
+  const s = Math.max(W / w, W / h) * zoom, side = W / s, cx = w / 2 - x / s, cy = h / 2 - y / s;
+  const fx = cx - .01 * side, fy = cy - .025 * side;
+  let big = Math.min(side * .59 / .232, Math.max(w, h)), bx = fx + .013 * big, by = fy + .062 * big;
+  if (big <= w) bx = Math.max(big / 2, Math.min(w - big / 2, bx));
+  if (big <= h) by = Math.max(big / 2, Math.min(h - big / 2, by));
+  const out = (size, ccx, ccy, sd) => {
     const c = document.createElement("canvas"); c.width = c.height = size;
-    const x = c.getContext("2d"); x.imageSmoothingQuality = "high";
-    const {img, zoom} = CROP, s = Math.max(src.width / img.width, src.height / img.height) * zoom * size / src.width;
-    x.fillStyle = "#fff"; x.fillRect(0, 0, size, size);
-    x.drawImage(img, size / 2 - img.width * s / 2 + CROP.x * size / src.width, size / 2 - img.height * s / 2 + CROP.y * size / src.width, img.width * s, img.height * s);
+    const g = c.getContext("2d"); g.imageSmoothingQuality = "high";
+    g.fillStyle = "#fff"; g.fillRect(0, 0, size, size);
+    const k = size / sd; g.drawImage(img, size / 2 - ccx * k, size / 2 - ccy * k, w * k, h * k);
     return c.toDataURL("image/jpeg", size > 300 ? .85 : .82);
   };
-  const small = out(240), large = out(600);
+  const small = out(240, cx, cy, side), large = out(600, bx, by, big);
   return {small:small.split(",")[1], large:large.split(",")[1], url:small};
 }
 
