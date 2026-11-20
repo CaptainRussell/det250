@@ -1513,9 +1513,9 @@ const pct = (v, of) => `${(v / of) * 100}%`;
 
 function buildChartPicture(pic) {
   const { page } = pic;
-  // Opens on the whole page (Captain Russell, Nov 2026), with Zoom in as the
-  // obvious next step.
-  const fig = el('figure', 'chart-pic whole');
+  // Opens zoomed in on the scored box (Captain Russell, 20 Nov 2026), with
+  // Zoom out for the whole page.
+  const fig = el('figure', 'chart-pic');
   const scroll = el('div', 'chart-pic-scroll');
   const frame = el('div', 'chart-pic-frame');
   frame.style.setProperty('--w', page.w);
@@ -1533,9 +1533,9 @@ function buildChartPicture(pic) {
   const cap = el('figcaption');
   const what = el('span', 'chart-pic-what');
   const tools = el('span', 'chart-pic-tools');
-  const zoom = el('button', 'chart-pic-zoom', 'Zoom in');
+  const zoom = el('button', 'chart-pic-zoom', 'Zoom out');
   zoom.type = 'button';
-  zoom.setAttribute('aria-pressed', 'true');
+  zoom.setAttribute('aria-pressed', 'false');
   zoom.addEventListener('click', () => {
     // The button stays where it was on screen (Captain Russell, Nov 2026):
     // it sits above the picture and keeps its size, and anything that still
@@ -1598,7 +1598,20 @@ function centreChartPicture(fig) {
   if (!target || fig.classList.contains('whole')) return;
   const box = target.getBoundingClientRect();
   const host = scroll.getBoundingClientRect();
-  scroll.scrollLeft += (box.left - host.left) - (scroll.clientWidth - box.width) / 2;
+  // Frame the box together with the nearer Points column when both fit, so a
+  // middle age band still shows what the row is worth (Captain Russell, 20 Nov
+  // 2026); otherwise centre on the box alone.
+  let left = box.left;
+  let right = box.right;
+  const pts = [...fig.querySelectorAll('.chart-pic-pts')].filter((n) => !n.hidden)
+    .map((n) => n.getBoundingClientRect())
+    .sort((a, b) => Math.abs(a.left - box.left) - Math.abs(b.left - box.left))[0];
+  if (pts && target.classList.contains('chart-pic-cell')) {
+    const l = Math.min(left, pts.left);
+    const r = Math.max(right, pts.right);
+    if (r - l <= scroll.clientWidth - 8) { left = l; right = r; }
+  }
+  scroll.scrollLeft += (left - host.left) - (scroll.clientWidth - (right - left)) / 2;
   if (target.classList.contains('chart-pic-cell') || target.classList.contains('chart-pic-row')) {
     scroll.scrollTop += (box.top - host.top) - (scroll.clientHeight - box.height) / 2;
   }
