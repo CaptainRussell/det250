@@ -90,9 +90,18 @@ def grid_page(img, ws):
     if right_pts:
         cx = right_pts[0]['cx']
         pcols.append([last, round(2 * cx - last)])
+    # The two header lines over the data: the age band, then M / F, so the
+    # member's band and sex can be outlined too (Captain Russell, 20 Nov 2026).
+    sex = cell(hl, heads[0]['cy'])
+    age = cell(hl, sex[0] - 4) if sex else None
+    heads_rows = {}
+    if sex:
+        heads_rows['sex'] = sex
+    if age:
+        heads_rows['age'] = age
     crop = [0, int(min(w['y0'] for w in ws) - 12 * SCALE), img.width,
             int(max(r[1] for r in rows.values()) + 8 * SCALE)]
-    return {'rows': rows, 'cols': cols, 'pcols': pcols, 'crop': crop}
+    return {'rows': rows, 'cols': cols, 'pcols': pcols, 'heads': heads_rows, 'crop': crop}
 
 
 def whtr_grid(img):
@@ -164,8 +173,9 @@ def main(pdf, out):
         if crop:
             img = img.crop(crop)
             dx, dy = crop[0], crop[1]
-            for key in ('rows',):
-                entry[key] = {k: [round(v[0] - dy), round(v[1] - dy)] for k, v in entry[key].items()}
+            for key in ('rows', 'heads'):
+                if key in entry:
+                    entry[key] = {k: [round(v[0] - dy), round(v[1] - dy)] for k, v in entry[key].items()}
             entry['cols'] = {k: [round(v[0] - dx), round(v[1] - dx)] for k, v in entry['cols'].items()}
             if 'pcols' in entry:
                 entry['pcols'] = [[round(v[0] - dx), round(v[1] - dx)] for v in entry['pcols']]

@@ -1463,7 +1463,7 @@ function buildChartTable(chart, currentIndex, component) {
 let chartMap = null;
 
 function loadChartMap() {
-  return fetch('./charts/map.json?v=2').then((r) => (r.ok ? r.json() : null))
+  return fetch('./charts/map.json?v=3').then((r) => (r.ok ? r.json() : null))
     .then((map) => {
       chartMap = map;
       if (chartOpen.size) renderCharts(ageBand);
@@ -1527,6 +1527,7 @@ function buildChartPicture(pic) {
   img.alt = '';
   img.decoding = 'async';
   frame.append(img, el('span', 'chart-pic-col'), el('span', 'chart-pic-row'),
+    el('span', 'chart-pic-head'), el('span', 'chart-pic-head'),
     el('span', 'chart-pic-cell'), el('span', 'chart-pic-pts'), el('span', 'chart-pic-pts'));
   scroll.append(frame);
 
@@ -1576,6 +1577,21 @@ function markChartPicture(fig, pic) {
     left: pct(c[0], page.w), width: pct(c[1] - c[0], page.w),
     top: pct(r[0], page.h), height: pct(r[1] - r[0], page.h)
   });
+  // The age band header over both of its columns, and the M / F header
+  // over the member's own column (Captain Russell, 20 Nov 2026).
+  const [ageNode, sexNode] = fig.querySelectorAll('.chart-pic-head');
+  const band = typeof col === 'string' && col.includes(':') ? col.split(':')[0] : null;
+  const bandM = band && page.cols[`${band}:M`];
+  const bandF = band && page.cols[`${band}:F`];
+  const heads = page.heads || {};
+  place(ageNode, heads.age && bandM && bandF && {
+    left: pct(bandM[0], page.w), width: pct(bandF[1] - bandM[0], page.w),
+    top: pct(heads.age[0], page.h), height: pct(heads.age[1] - heads.age[0], page.h)
+  });
+  place(sexNode, heads.sex && c && {
+    left: pct(c[0], page.w), width: pct(c[1] - c[0], page.w),
+    top: pct(heads.sex[0], page.h), height: pct(heads.sex[1] - heads.sex[0], page.h)
+  });
   // And the points that row is worth, in the Points columns at each edge.
   fig.querySelectorAll('.chart-pic-pts').forEach((node, i) => {
     const p = page.pcols?.[i];
@@ -1613,7 +1629,14 @@ function centreChartPicture(fig) {
   }
   scroll.scrollLeft += (left - host.left) - (scroll.clientWidth - (right - left)) / 2;
   if (target.classList.contains('chart-pic-cell') || target.classList.contains('chart-pic-row')) {
-    scroll.scrollTop += (box.top - host.top) - (scroll.clientHeight - box.height) / 2;
+    // Likewise keep the age band and M / F headers in view when they fit.
+    let top = box.top;
+    const head = fig.querySelector('.chart-pic-head:not([hidden])');
+    if (head) {
+      const h = head.getBoundingClientRect();
+      if (box.bottom - h.top <= scroll.clientHeight - 8) top = h.top;
+    }
+    scroll.scrollTop += (top - host.top) - (scroll.clientHeight - (box.bottom - top)) / 2;
   }
   // Below the chart: the asterisked minimum at the foot of the column is the
   // row that was missed, so that is what is shown.
