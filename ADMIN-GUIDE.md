@@ -80,7 +80,7 @@ The Org Chart opens on a home page with a card for each semester. Each semester 
 
 - **POC Chart** and **Flip Week** show the positions on the Org chart tab (or, once the semester is frozen, the copy saved when you pressed **Freeze**).
 - **Proposed package** shows a wing command package. Packages are kept locked with the cadre password in `org-chart/locked/<semester>.json`, so only cadre can open that semester (its card says "Cadre only"). Changing the cadre password (Change the admin password) re-locks them too. Adding a new package, or changing one, needs whoever maintains the code (`tools/org-lock.mjs`).
-- A package can mark the positions cadre changed. They get a gold outline, and a gold **Summary of Changes** button lists each change, what it was and what it is now.
+- A package can mark the positions cadre changed. A gold **Summary of Changes** button lists each change, what it was and what it is now.
 
 On the Org chart tab, under **Semesters**: **Add a semester** makes a new card. **Edit** changes its name, description and charts (add, remove, reorder, rename the buttons), marks it as the current semester, or removes it. The arrows change the order on the home page (newest shows first). Only one semester that isn't frozen should have a POC Chart or Flip Week; the page warns you if two do.
 

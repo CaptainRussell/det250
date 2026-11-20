@@ -32,8 +32,6 @@
 #lockbox .lk-err{color:var(--d250-cardinal);font-weight:600;min-height:1.4em}
 
 /* ---------- changed seats and the Summary of Changes ---------- */
-.card.chg .face.front{position:relative;border-color:var(--d250-gold);box-shadow:0 0 0 1px var(--d250-gold) inset,var(--shadow)}
-.tracing .card.chg.lit .face.front{border-color:var(--d250-gold)}
 .role-change{margin:0 0 12px!important;padding:8px 10px;border-radius:9px;border:1px solid color-mix(in srgb,var(--d250-gold) 50%,transparent);background:var(--d250-gold-bg);color:var(--text);font-weight:600;font-size:13px;line-height:1.45}
 .fmodal.summary .fpanel{width:min(820px,100%)}
 .chg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -64,10 +62,10 @@
 
 /* ---------- one-screen layout (desktop) ---------- */
 @media(min-width:1100px){
-  .compact main.wrap{max-width:none;padding:10px 24px 28px}
+  .compact main.wrap{max-width:none;padding:6px 24px 28px}
   .compact .chartbar-in{max-width:none;padding:6px 24px}
   .compact .toolbar{display:none}
-  .compact #chart-panels{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+  .compact #chart-panels{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
   .compact section.band{margin-top:0}
   .compact .bandhead{margin-bottom:5px;gap:2px 10px}
   .compact .bandhead h2{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
@@ -79,9 +77,9 @@
   .compact .tree{--gap:14px}
   .compact .tree .tcard{display:none}
   .compact .tree .rcard{display:block;width:224px}
-  .compact .rcard .face{gap:10px;padding:6px 10px;border-radius:11px}
-  .compact .rcard .av{width:42px;height:42px}
-  .compact .rcard.lead .av{width:46px;height:46px}
+  .compact .rcard .face{gap:10px;padding:4px 10px;border-radius:11px}
+  .compact .rcard .av{width:40px;height:40px}
+  .compact .rcard.lead .av{width:42px;height:42px}
   .compact .rcard .txt{min-width:0;gap:1px}
   .compact .rcard .nm{font-size:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .compact .rcard.lead .nm{font-size:14px}
@@ -90,32 +88,24 @@
   .compact .rcard .tags{max-width:100%;overflow:hidden}
 
   /* A-Staff: every directorate in one row */
-  .compact #staff{padding:10px 12px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px}
-  .compact .dirs{grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:8px}
+  .compact #staff{padding:8px 12px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px}
+  .compact .dirs{grid-template-columns:repeat(auto-fit,minmax(176px,252px));justify-content:center;gap:8px}
   .compact .dir{padding:8px;gap:6px;border-radius:12px;box-shadow:none}
   .compact .dirhead .cnt{display:none}
   .compact .dirhead .dname{font-size:14px}
   .compact .dir>.rcard .av{width:40px;height:40px}
   .compact .olist{padding:0 0 0 6px}
-  .compact .olist li{padding:6px 0 0 10px}
-  .compact .olist li.lv::before{height:30px}
-  .compact .olist li::after{top:30px;width:8px}
-  .compact .olist .rcard .face{gap:8px;padding:6px 8px}
+  .compact .olist li{padding:5px 0 0 10px}
+  .compact .olist li.lv::before{height:27px}
+  .compact .olist li::after{top:27px;width:8px}
+  .compact .olist .rcard .face{gap:8px;padding:4px 8px}
   .compact .olist .rcard .av{width:34px;height:34px}
   .compact .olist .rcard .nm{font-size:13px}
 
-  /* Squadrons: one row; each SQ/CC, then its flights side by side, FTO under its FLT/CC */
-  .compact #group .panel{padding:10px 12px 12px;background:var(--surface-2);box-shadow:none;border-radius:14px;overflow:visible}
-  .compact #group .tree{min-width:0}
-  .compact #group .tree li::before,.compact #group .tree li::after,.compact #group .tree ul ul::before{display:none!important}
-  .compact #group .tree .rcard{width:100%}
-  .compact #group .tree>ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:12px 18px;padding:0}
-  .compact #group .tree>ul>li{display:grid;grid-template-columns:minmax(0,224px) minmax(0,1fr);gap:0 16px;align-items:start;padding:0}
-  .compact #group .tree>ul>li>ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;padding:0 0 0 14px;border-left:2px solid var(--line);position:relative}
-  .compact #group .tree>ul>li>ul::after{content:"";position:absolute;left:-18px;top:28px;width:16px;border-top:2px solid var(--line)}
-  .compact #group .tree>ul>li>ul>li{display:flex;flex-direction:column;align-items:stretch;padding:0}
-  .compact #group .tree>ul>li>ul>li>ul{display:block;margin:6px 0 0 10px;padding:0 0 0 10px;border-left:2px solid var(--line)}
-  .compact #group .tree>ul>li>ul>li>ul>li{display:block;padding:0}
+  /* Squadrons: a top-down tree, each SQ/CC over its FLT/CCs, each FLT/CC over its FTO */
+  .compact #group .panel{padding:10px 12px;background:var(--surface-2);box-shadow:none;border-radius:14px}
+  .compact #group .tree>ul>li{padding:0 18px}
+  .compact #group .tree{--gap:11px}
 
   /* cadre: a pop-out under the Cadre button in the chart bar */
   .compact #cadre{position:fixed;z-index:35;top:var(--cadre-top,100px);left:24px;right:24px;margin:0;pointer-events:none}
