@@ -599,13 +599,14 @@ function renderChart(){
 }
 /* ---------- Org Chart semesters (data/charts.js): the cards on the Org Chart home page ---------- */
 const CHART_KIND = {poc:"POC Chart", flip:"Flip Week", proposal:"Proposed package"};
-let PROPOSALS = null;   // [{id, name}] read from the cadre-locked semesters, org-chart/locked/<id>.json
+let PROPOSALS = null;   // [{id, name}] read from org-chart/packages/<id>.json, or the cadre-locked org-chart/locked/<id>.json
 const orgLockPath = t => `org-chart/locked/${t.id}.json`;
 async function loadProposals(){
   if (PROPOSALS) return PROPOSALS;
   PROPOSALS = [];
-  for (const t of C().semesters.filter(t => t.lock)){
+  for (const t of C().semesters.filter(t => (t.charts || []).some(c => c.kind === "proposal"))){
     try{
+      if (!t.lock){ const d = await (await fetch(`../org-chart/packages/${t.id}.json`, {cache:"no-store"})).json(); (d.proposals || []).forEach(p => PROPOSALS.push({id:p.id, name:p.name})); continue; }
       const v = await (await fetch("../" + orgLockPath(t), {cache:"no-store"})).json();
       let data = null;
       for (const pw of [CFG.locks.cadre, ADMIN_PW].filter(Boolean)){ try{ data = JSON.parse(dec.decode(await openRaw(pw, v))); break; }catch(_){} }

@@ -1,7 +1,8 @@
-/* Package charts for a semester (kind "proposal" in data/charts.js), and the cadre-only lock.
+/* Package charts for a semester (kind "proposal" in data/charts.js), and the optional cadre-only lock.
 
-   The packages are not in the public repo. A semester with "lock":"cadre" keeps them in
-   org-chart/locked/<semester id>.json, sealed with the cadre password (PBKDF2 310k + AES-GCM,
+   An open semester keeps its packages in org-chart/packages/<semester id>.json (plain JSON, the
+   layout below; Spring 2027 was opened to everyone on 20 Nov 2026, Captain Russell). A semester
+   with "lock":"cadre" keeps them in org-chart/locked/<semester id>.json instead, sealed with the cadre password (PBKDF2 310k + AES-GCM,
    tools/org-lock.mjs; the admin page re-locks it when the cadre password changes). The page
    opens it with the password this tab already holds (hub sign-in as cadre, Cadre Admin or the
    Cadre Dashboard), or asks once.
@@ -181,5 +182,12 @@
     } else showCurrent(MODE);
     document.dispatchEvent(new Event('chartready'));
   }
-  if(T && T.lock) unlock(); else start(null);
+  async function openPackages(){
+    let data = null;
+    try{ const r = await fetch('packages/' + encodeURIComponent(T.id) + '.json', {cache:'no-cache'}); if(r.ok) data = await r.json(); }catch(_){}
+    start(data);
+  }
+  if(T && T.lock) unlock();
+  else if(T && (T.charts || []).some(c => c.kind === 'proposal')) openPackages();
+  else start(null);
 })();

@@ -1,0 +1,543 @@
+{
+ "v": 1,
+ "term": "spring-2027",
+ "proposals": [
+  {
+   "id": "kingery-helle",
+   "name": "Kingery / Helle",
+   "source": "Kingery / Helle Wing Command Package",
+   "seats": [
+    {
+     "id": "cc",
+     "des": "WG/CC",
+     "title": "Wing Commander",
+     "last": "Kingery",
+     "rank": "C/Col",
+     "parent": null
+    },
+    {
+     "id": "cd",
+     "des": "WG/CD",
+     "title": "Deputy Wing Commander",
+     "last": "Helle",
+     "rank": "C/Col",
+     "parent": "cc"
+    },
+    {
+     "id": "cos",
+     "des": "WG/COS",
+     "title": "Chief of Staff",
+     "last": "Salas",
+     "rank": "C/Lt Col",
+     "parent": "cc"
+    },
+    {
+     "id": "ig",
+     "des": "WG/IG",
+     "title": "Inspector General",
+     "last": "Hyman",
+     "rank": "C/Lt Col",
+     "parent": "cc"
+    },
+    {
+     "id": "gmca",
+     "des": "WG/GMCA",
+     "title": "GMC Advisor",
+     "last": "TBD",
+     "rank": "",
+     "parent": "cc"
+    },
+    {
+     "id": "BCL",
+     "des": "BCL SQ/CC",
+     "title": "BCL Squadron Commander",
+     "last": "Cerfogli",
+     "rank": "C/Maj",
+     "parent": "cd",
+     "changed": true,
+     "note": "Directed change: reports to the WG/CD instead of the WG/CC."
+    },
+    {
+     "id": "BC",
+     "des": "BC SQ/CC",
+     "title": "BC Squadron Commander",
+     "last": "Alt",
+     "rank": "C/Maj",
+     "parent": "cd",
+     "changed": true,
+     "note": "Directed change: reports to the WG/CD instead of the WG/CC."
+    },
+    {
+     "id": "A1",
+     "des": "A1/DT",
+     "title": "Personnel Director",
+     "last": "Luhring",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "A2",
+     "des": "A2/DT",
+     "title": "Intelligence Director",
+     "last": "Cooper",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "A3",
+     "des": "A3/DT",
+     "title": "Operations Director",
+     "last": "Chien",
+     "rank": "C/Maj",
+     "parent": "cos",
+     "changed": true
+    },
+    {
+     "id": "A4",
+     "des": "A4/DT",
+     "title": "Logistics Director",
+     "last": "Bradlee",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "A5",
+     "des": "A5/DT",
+     "title": "Planning Director",
+     "last": "Gross",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "A6",
+     "des": "A6/DT",
+     "title": "Communications Director",
+     "last": "Marschang",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "A9",
+     "des": "A9/DT",
+     "title": "Director of Efficiency",
+     "last": "Ashbacker",
+     "rank": "C/Maj",
+     "parent": "cos"
+    },
+    {
+     "id": "ro",
+     "des": "RO",
+     "title": "Recruiting Officer",
+     "last": "Barszcz",
+     "rank": "C/Capt",
+     "parent": "A1"
+    },
+    {
+     "id": "pa",
+     "des": "PA",
+     "title": "Public Affairs",
+     "last": "Albert",
+     "rank": "C/Capt",
+     "parent": "A1"
+    },
+    {
+     "id": "wello",
+     "des": "WELLO",
+     "title": "Wellness Officer",
+     "last": "Tu",
+     "rank": "C/Capt",
+     "parent": "A1",
+     "changed": true,
+     "note": "Directed change: the Academic Officer and Wellness Officer are one position. It holds both sets of duties."
+    },
+    {
+     "id": "devo",
+     "des": "DEVO",
+     "title": "Development Officer",
+     "last": "Collier",
+     "rank": "C/Capt",
+     "parent": "A1"
+    },
+    {
+     "id": "fso",
+     "des": "FSO",
+     "title": "Flight Simulator Officer",
+     "last": "TBD",
+     "rank": "",
+     "parent": "A2"
+    },
+    {
+     "id": "spo",
+     "des": "SPO",
+     "title": "Special Projects Officer",
+     "last": "Davis",
+     "rank": "C/Capt",
+     "parent": "A3",
+     "changed": true
+    },
+    {
+     "id": "dc",
+     "des": "D&C/CC",
+     "title": "Drill and Ceremonies Commander",
+     "last": "Jalodia",
+     "rank": "C/Capt",
+     "parent": "A3"
+    },
+    {
+     "id": "jro",
+     "des": "JRO",
+     "title": "Joint Relations Officer",
+     "last": "Coulthard",
+     "rank": "C/Capt",
+     "parent": "A3",
+     "changed": true
+    },
+    {
+     "id": "cto",
+     "des": "COTO",
+     "title": "Chief of Training Officer",
+     "last": "Bienfang",
+     "rank": "C/Capt",
+     "parent": "A5"
+    },
+    {
+     "id": "pfo",
+     "des": "PFO",
+     "title": "Physical Fitness Officer",
+     "last": "Edwardson",
+     "rank": "C/Capt",
+     "parent": "A5"
+    },
+    {
+     "id": "cono",
+     "des": "CONO",
+     "title": "CONOPS Officer",
+     "last": "Bourek",
+     "rank": "C/Capt",
+     "parent": "A5"
+    },
+    {
+     "id": "bc-a",
+     "des": "BC FLT/CC",
+     "title": "BC Flight Commander",
+     "last": "Humiston",
+     "rank": "C/Capt",
+     "parent": "BC"
+    },
+    {
+     "id": "bc-b",
+     "des": "BC FLT/CC",
+     "title": "BC Flight Commander",
+     "last": "Van Devander",
+     "rank": "C/Capt",
+     "parent": "BC"
+    },
+    {
+     "id": "bcl-e",
+     "des": "BCL FLT/CC",
+     "title": "BCL Flight Commander",
+     "last": "Gaul",
+     "rank": "C/Capt",
+     "parent": "BCL"
+    },
+    {
+     "id": "bcl-ed",
+     "des": "BCL FLT/FTO",
+     "title": "BCL Flight Training Officer",
+     "last": "Curtis",
+     "rank": "C/Lt",
+     "parent": "bcl-e",
+     "changed": true,
+     "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."
+    },
+    {
+     "id": "bcl-f",
+     "des": "BCL FLT/CC",
+     "title": "BCL Flight Commander",
+     "last": "Hader",
+     "rank": "C/Capt",
+     "parent": "BCL"
+    },
+    {
+     "id": "bcl-fd",
+     "des": "BCL FLT/FTO",
+     "title": "BCL Flight Training Officer",
+     "last": "Davila",
+     "rank": "C/Lt",
+     "parent": "bcl-f",
+     "changed": true,
+     "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."
+    }
+   ]
+  }
+ ],
+ "duties": {
+  "kingery-helle": {
+   "cc": {
+    "heading": "Wing Commander (WG/CC):",
+    "text": "Reports to: OFC\n\nSupervises: WG/CD, IG, COS, BC SQ/CC, BCL SQ/CC\n\nCritical Role: Oversees all development of cadets, ensuring it aligns with the goals of the cadet wing, Cadre, and the Air Force.\n\nResponsibilities:\n\n• Oversee all Cadet operations.\n\n• Enacts all policies set by Cadre for the Cadet Wing.\n\n• Holds the final decision on all cadet matters with the feedback of A-Staff.\n\n• Establishes semester goals and vision for the Cadet Wing.\n\n• Responsible for the completion and distribution of the OPLAN and Policy Packet.\n\n• Works with incoming WG/CC to ensure proper continuity between semesters.\n\n• Holds all POC accountable to job duties.\n\n• Holds ACAs and CEFs with WG/CD, IG, COS, BC SQ/CC, and BCL SQ/CC.",
+    "pages": [
+     8
+    ]
+   },
+   "cd": {
+    "heading": "Wing Commander Deputy (WG/CD):",
+    "text": "Reports to: WG/CC Supports supervision of: IG, COS, BC SQ/CC, BCL SQ/CC\n\nCritical Role: Represents the WG/CC when they are unavailable, assists in all responsibilities of the WG/CC\n\nResponsibilities:\n\n• Oversee the mentorship system and ensure mentorship opportunities occur monthly.\n\n• Creates and presents monthly Prop Awards.\n\n• Supervises the GMCA by reviewing the effectiveness of the position and ensuring morale events are implemented.\n\n• Holds all POC accountable to job duties.\n\n• Manage the Wing Feedback Form and regularly notify the Wing Command Team of any submissions with suggested resolutions.\n\n• Works with incoming WG/CC to ensure proper continuity between semesters.",
+    "pages": [
+     8
+    ]
+   },
+   "cos": {
+    "heading": "Chief of Staff (WG/COS):",
+    "text": "Reports to: WG/CC\n\nSupervises: A1-A9\n\nCritical Role: Keeps a record of continuity for the detachment.\n\nResponsibilities:\n\n• Oversees the collection and filing of ACAs, CEFs, POCIC evaluation forms, and Leadership Evaluation Form 2.\n\n• Organizes a collection of continuity for all positions via the Directors at the end of the term.\n\n• Updates and maintains the Policy Packet.\n\n• Maintains record of awards and disciplinary actions.\n\n• Responsible for the maintenance of the cadet file system for all cadets.\n\n• Will oversee all directorates providing feedback and mentorship to the directors.\n\n• Ensure Commander’s intent is being met within the directorates.",
+    "pages": [
+     8
+    ]
+   },
+   "ig": {
+    "heading": "Inspector General (WG/IG):",
+    "text": "Reports to: WG/CC\n\nCritical Role: Ensures that standards are upheld for all cadets; maintains a filing system for counseling’s.\n\nResponsibilities:\n\n• Provides feedback to WG/CC, WG/CD, and WG/COS regarding patterns and trends in counseling’s.\n\n• Creates the DA and counseling policy in the policy packet\n\n• Enforces all DA and counseling from the policy packet\n\n• Maintains a counseling file system to include Form 174s and 341s, LOCs, and LORs.\n\n• Collects counseling paperwork from POC supervisors.\n\n• Provides past counseling paperwork for reference when requested.\n\n• Enforces counseling for improper use of cadet property (i.e., lights on in the wing room, doors left open, destroyed property, etc.).\n\n• Holds all POC accountable to job duties.",
+    "pages": [
+     9
+    ]
+   },
+   "gmca": {
+    "heading": "General Military Course Advisor (GMCA):",
+    "text": "Reports to: WG/CC\n\nCritical Role: Advisor to Wing Staff regarding any morale-related trends among the GMC. Serves as the primary contact after the flight commander for the GMC. Ensures the promotion of esprit de corps across the Detachment.\n\nResponsibilities:\n\n• Work with the WG/CD to establish POC and GMC mentors and create a system for cadets to request assignments to specific mentors within the Detachment.\n\n• Oversees the planning and execution of GMC morale events. At least two flight morale events and two class morale events must occur during the semester.\n\n• Collaborates with the WG/CD to coordinate Detachment morale events, including a First Friday event every month.",
+    "pages": [
+     9
+    ]
+   },
+   "BCL": {
+    "heading": "BCL Squadron Commander (BCL SQ/CC):",
+    "text": "Reports to: WG/CC\n\nSupervises: FLT/CC\n\nCritical Role: Oversees the week-by-week tasking, instruction, and feedback of the BCL FLT/CCs.\n\nResponsibilities:\n\n• Works with BC SQ/CC to create and maintain a cadet flight roster.\n\n• Evaluates and completes ACAs and CEFs for BCL FLT/CCs.\n\n• Monitors the BCL flights’ performance and reports patterns and trends to the WG/CC or WG/CD.\n\n• Plans and executes flight meetings with the approval of the WG/CC, WG/CD.\n\n• Creates formal opportunities for feedback sessions for BCL cadets.\n\n• Works with BC SQ/CC to assign weekly flight duties.\n\n• Works with BC SQ/CC to maintain the attendance tracker.\n\n• Responsible for ensuring that attendance is reported by FLT/CCs for all SPMT events.\n\n• Works with BC SQ/CC to standardize wingroom cleanup checklist and enforcement of completed duty.\n\n• Works with A5/DT and POCIC to oversee the creation of extra LLABs for BCL cadets.\n\n• Reviews and approves all BCL only LLABs.",
+    "pages": [
+     9,
+     10
+    ]
+   },
+   "bclflight": {
+    "heading": "BCL Flight Commander (BCL FLT/CC)",
+    "text": "Reports to: BCL SQ/CC\n\nSupervises: BCL FLT/CD, BCL Cadets\n\nCritical Role: Primary contact for all BCL Cadets, serving as the evaluator and mentor for flight members.\n\nResponsibilities:\n\n• Acting as a mentor and focusing on individual Cadet improvement.\n\n• Responsible for exemplifying regulations and enforcing GMC adherence to standards.\n\n• Facilitates and reports attendance to BCL SQ/CC for all SPMT events.\n\n• Conducts feedback sessions for GMC cadets within the flight (ACAs, CEFs, etc.).\n\n• Regularly collects and reports GMC feedback to the BCL SQ/CC\n\n• Ensures completion of Flight duties (i.e., wing room cleanup and flags) and facilitates proper training of all cadets to achieve this.\n\n• Assign flight positions weekly.\n\n• Receives Warrior Knowledge quizzes from BCL SQ/CC and distributes them to the flight.\n\n• Works with BCL SQ/CC to help create and edit extra LLABs for BCL cadets.\n\n• Create BCL WK quiz and supplemental info for the week",
+    "pages": [
+     10
+    ]
+   },
+   "bcldeputy": {
+    "heading": "BCL Flight Commander Deputy (BCL FLT/CD)",
+    "text": "Reports to: BCL FLT/CC\n\nSupervises: BCL Cadets\n\nCritical Role: Representative of the FLT/CC when unavailable; aids in all FLT/CC duties when necessary. Provides additional input for the FLT/CCs.\n\nResponsibilities:\n\n• Supports FLT/CC in all duties except for holding ACAs and CEFs.\n\n• Supports in providing cadet feedback to be used in ACAs and CEFs, only when prompted by FLT/CC.\n\n• Acting as a mentor and focusing on individual cadet improvement.\n\n• Subject matter expert on all objectives.\n\n• Assists in exemplifying regulations and enforcing GMC adherence to standards.\n\n• Works with A5/DT, A51, A53 to help create and edit extra LLABs for BCL cadets.",
+    "pages": [
+     11
+    ]
+   },
+   "BC": {
+    "heading": "BC Squadron Commander (BC SQ/CC):",
+    "text": "Reports to: WG/CC\n\nSupervises: FLT/CC\n\nCritical Role: Oversees the week-by-week tasking, instruction, and feedback of the BCL FLT/CCs.\n\nResponsibilities:\n\n• Works with BCL SQ/CC to create and maintain a cadet flight roster.\n\n• Evaluates and completes ACAs and CEFs for BC FLT/CCs.\n\n• Monitors the BC flights’ performance and reports patterns and trends to the WG/CC or WG/CD.\n\n• Plans and executes flight meetings with the approval of the WG/CC, WG/CD.\n\n• Creates formal opportunities for feedback sessions for BCL cadets.\n\n• Works with BCL SQ/CC to assign weekly flight duties.\n\n• Works with BCL SQ/CC to maintain the attendance tracker.\n\n• Responsible for ensuring that attendance is reported by FLT/CCs for all SPMT events.\n\n• Works with BCL SQ/CC to standardize wingroom cleanup checklist and enforcement of completed duty.\n\n• Create BC WK quiz and supplemental info for the week",
+    "pages": [
+     11
+    ]
+   },
+   "bcflight": {
+    "heading": "BC Flight Commander (BC FLT/CC)",
+    "text": "Reports to: BC SQ/CC\n\nSupervises: BC Cadets\n\nCritical Role: Primary contact for all BC Cadets, serving as the evaluator and mentor for flight members.\n\nResponsibilities:\n\n• Responsible for exemplifying regulations and enforcing GMC adherence to standar ds.\n\n• Facilitates and reports attendance to BC SQ/CC for all SPMT events.\n\n• Conducts feedback sessions for GMC cadets within the flight (ACAs, CEF, etc.).\n\n• Regularly collects and reports GMC feedback to the BC SQ/CC.\n\n• Ensures completion of flight duties and facilitates proper training of cadets to achieve this.\n\n• Receives Warrior Knowledge quizzes from BC SQ/CC and distributes them to the flight. A1 Personnel/Support",
+    "pages": [
+     11,
+     12
+    ]
+   },
+   "A1": {
+    "heading": "A1 Personnel/Support Director (A1/DT):",
+    "text": "Reports to: WG/COS\n\nSupervises: A11-A15\n\nCritical Role: Oversees Detachment welfare and improvement metrics. Ensures the Cadet Wing has access to all resources provided through the A1/DT, and opportunities and events happen regularly throughout the semester.\n\nResponsibilities:\n\n• Grants approval for events proposed by A11-13.\n\n• Monitors A11-13 to ensure deadlines are met.\n\n• Organizes and assigns cadet lockers and mailboxes.\n\n• Responsible for updating lockers and mailboxes in accordance with personnel changes.\n\n• Assists WG/COS in the maintenance of cadet files.\n\n• Works with Cadre Recruiting Officer to collaborate with the A11.",
+    "pages": [
+     12
+    ]
+   },
+   "devo": {
+    "heading": "A12 Development Officer (DO):",
+    "text": "Reports to: A1/DT\n\nCritical Role: Provides access to career resources and professional development opportunities.\n\nResponsibilities:\n\n• Coordinates, plans, and successfully executes professional development opportunities, including but not limited to base visits, Brown Bags, and Air Force Association events.\n\n• Ensure professional development events happen at least once per month.\n\n• Work with the JRO to plan at least one tri-service professional development event.",
+    "pages": [
+     12,
+     13
+    ]
+   },
+   "pa": {
+    "heading": "A13 Public Affairs (PA)",
+    "text": "Reports to: A1/DT\n\nCritical Role: Responsible for the public image of the detachment through social media. Assists Cadre Recruiting Officer and facilitates participation from cadets.\n\nResponsibilities:\n\n• Update the detachment's social media accounts to reflect cadet activity to the public.\n\n• Assists SPO by creating a video for Dining-Out.\n\n• Coordinates and updates the semester’s cadet photos for cadets, if needed.\n\n• Updates the Detachment photo board on a monthly basis.",
+    "pages": [
+     13
+    ]
+   },
+   "ro": {
+    "heading": "A14 Recruiting Officer (RO)",
+    "text": "Reports to: A1/DT\n\nCritical Role: Responsible for the public image of the detachment both on campus and through social media. Assists Cadre Recruiting Officer and facilitates participation from cadets.\n\nResponsibilities:\n\n• Coordinates recruiting events with A1/DT and Cadre Recruiting Officer; ensures participation and support from the Cadet Wing at recruiting events.\n\n• Works with PFO to update the PFRA record board IAW cadet performance.\n\n• Works with ACDO to update the Academic Record board IAW cadet performance.\n\n• Updates and maintains detachment publicity boards within the Armory.",
+    "pages": [
+     13
+    ]
+   },
+   "wello": {
+    "heading": "Wellness Officer (WELLO), Academic and Wellness Officer combined",
+    "text": "Reports to: A1/DT\n\nCritical Role: Monitors the wellness and readiness of the cadets within the Detachment. Provides access to academic resources and assesses Wing academic readiness.\n\nResponsibilities:\n\n• Establishes a plan to monitor cadet wellness and reports monthly to A1/DT and Cadre as requested.\n\n• Distributes support resources for areas of struggle for cadets, as requested and as deemed fit.\n\n• Plans and executes at least one workshop of an area of struggle for cadets.\n\n• Works with the GMCA to create a shared vision and plan for morale-related events within the detachment.\n\n• Coordinates tutoring sessions through the Academic Success Center at ISU for cadets.\n\n• Plans and executes weekly study hours for the entire semester.\n\n• Organize tutoring sessions for cadets with similar majors and/or classes.\n\n• Works with the JRO to organize a tri-service tutoring opportunity if there are not enough AFROTC cadets with similar majors.",
+    "pages": [
+     12,
+     13,
+     14
+    ]
+   },
+   "A2": {
+    "heading": "A2 Intelligence Director (A2/CC):",
+    "text": "Reports to: WG/COS\n\nSupervises: FSO\n\nCritical Role: Oversees and mentors A32-35, ensuring their progress, development, and planning are being performed to high standards.\n\nResponsibilities:\n\n• Provide weekly current-event briefings to the entire Detachment.\n\n• Report changes in AFROTC policy to WG/COS.\n\n• Publish a weekly newsletter detailing current events applicable to the USAF/USSF – including updates and events happening in and around the Detachment.\n\n• Plans and runs the semester long detachment wargaming event.\n\n• In coordination with FSO, communicates with Iowa State University IT about any updates or maintenance requests for the Flight Simulators.",
+    "pages": [
+     14
+    ]
+   },
+   "fso": {
+    "heading": "A21 Flight Sim Officer (FSO):",
+    "text": "Reports to: A2/DT\n\nCritical Role: Manages the Flight Simulator staff, ensures cadets have access to Flight Simulators, and communicates maintenance requests to A2/DT.\n\nResponsibilities:\n\n• Facilitates the Flight Simulator Hours.\n\n• Establishes qualification metrics for Flight Simulator supervisors.\n\n• Communicates with A2/DT concerning updates and maintenance for the Flight Simulators.\n\n• Responsible for the cleanliness and organization of the Flight Simulator Room.",
+    "pages": [
+     14
+    ]
+   },
+   "A3": {
+    "heading": "A3 Operations Director (A3/CC):",
+    "text": "Reports to: WG/COS\n\nSupervises: A31-A33\n\nCritical Role: Oversees and mentors A31-A33, ensuring their progress, development, and planning align with the detachment’s vision.\n\nResponsibilities:\n\n• Creates and enforces deadlines IAW the schedule developed and coordinated with A31-A34.\n\n• Ensures A31-A34 are tracking deadlines and have plans to execute when called upon.\n\n• Approves the schedule of special events (O-Course opportunities, 5Ks, Dining Out, etc.).\n\n• Provides feedback and mentorship for A31-A34 as necessary.",
+    "pages": [
+     14
+    ]
+   },
+   "spo": {
+    "heading": "A31 Special Projects Officer (SPO):",
+    "text": "Reports to: A3/DT\n\nCritical Role: Responsible for the planning & execution of Dining Out, Spring 2027 Commissioning and other approved activities.\n\nResponsibilities:\n\n• Plans and executes at least one large-scale GLP event; it can be a JTD.\n\n• Coordinates Dining Out and Commissioning IAW the vision from Wing Command, Cadre, and Spring 2027 comissionees.\n\n• Responsible for brainstorming other opportunities for Detachment 250 cadets and for carrying out approved ideas.",
+    "pages": [
+     14,
+     15
+    ]
+   },
+   "dc": {
+    "heading": "A32 D&C Commander (D&C/CC):",
+    "text": "Reports to: A3/DT\n\nCritical Role: Responsible for training cadets to execute honor guard events both for the detachment and for the surrounding communities (ISU Athletics, City of Ames, etc.), and for coordinating marching opportunities for cadets.\n\nResponsibilities:\n\n• Proficient in all D&C commands and documents.\n\n• Reviews current Honor Guard manuals and provides updated guidance.\n\n• Trains and prepares details for opening ceremonies, color guard for ISU Athletic events, Commissioning, Dining-Out, and any presentation of colors/honor guard ceremonies requested by the community.\n\n• Seeks out opportunities to use color/honor guard detail outside of AFROTC events (ISU athletics, community events, etc.).\n\n• Communicates and educates the Wing on the standardization of Flag Duties.\n\n• Responsible for providing Honor Guard materials to all required Detachment 250 events.\n\n• Responsible for planning and organizing the Marching Assistance Program (MAP) IAW deficiencies noted during D&C, in consultation with FLT/CCs and SQ/CCs\n\n• Create a plan and budget for purchasing new Honor Guard Equipment to replace old items.\n\n• Gathers interest and communicates event requests with the Cadet Choir.",
+    "pages": [
+     15
+    ]
+   },
+   "jro": {
+    "heading": "A33 Joint Relations Officer (JRO):",
+    "text": "Reports to: A3/DT\n\nCritical Role: Establishes communication with AROTC and NROTC as a reliable contact for any tri-service event requests. Coordinates with cadets within the Detachment to ensure tri-service event goals are met.\n\nResponsibilities:\n\n• Communicating with the other branches when integration of tri-service is available.\n\n• Acts as the main point of contact for AFROTC for all tri-service requests.\n\n• Relays requests for tri-service events to the respective DT in a timely manner to increase collaboration time.\n\n• May coordinate small-scale tri-service events when necessary.\n\n• Must ensure the execution of at least three tri-service events throughout the semester.\n\n• Ensures tri-service event goals are met by working primarily with GMCA, DEVO, PFO, and ACDO.",
+    "pages": [
+     15,
+     16
+    ]
+   },
+   "A4": {
+    "heading": "A4 Logistics Director (A4/DT):",
+    "text": "Reports to: WG/COS\n\nCritical Role: Responsible for wingroom supplies, pop project, and all Peterson Squadron funding and purchases.\n\nResponsibilities:\n\n• Creates and follows a yearly budget for the Cadet Wing and reports it at the beginning of the semester, followed by weekly updates at Commander Update Briefings.\n\n• Gathers input from Detachment positions to estimate spending.\n\n• Coordinates all fundraising events throughout the semester.\n\n• SME regarding university financial management guidelines and policies.\n\n• Keeps pop project supplied and assigns pricing as necessary.\n\n• Purchases materials for the detachment as necessary.\n\n• Rents materials for SPMT or other approved activities (dodgeballs for Icarus\n\n• LLAB/Halloween PT, Notre Dame Basketball tournament, etc.)\n\n• Responsible for providing detachment medical equipment at all SPMT activities.",
+    "pages": [
+     16
+    ]
+   },
+   "A5": {
+    "heading": "A5 Planning Director (A5/DT):",
+    "text": "Reports to: WG/COS\n\nSupervises: A51-A53\n\nCritical Role: Responsible for overseeing the planning of all PMT events, approving final CONOPS, and creating OPORDS\n\nResponsibilities:\n\n• Coordinates with POCICs to request assistance from Cadre for SPMT events.\n\n• Coordinates with WG/CC and WG/CD to create an initial plan for the semester schedule of LLABs, including the objective completion and the Why for each one, to be added to the OPLAN for approval by Cadre.\n\n• Coordinates with WG/CC and WG/CD to update the semester schedule as necessary to ensure proper objective completion; communicates changes with Detachment.\n\n• SME on all objectives and ensures all personnel meet required objectives IAW AFROTCI 36-2011, Volume 1.\n\n• Responsible for providing, completing, standardizing, and maintaining the integrity of objective proficiency tracking documents for all LLAB events.\n\n• Objective tracking documents will only include objectives that still need to be completed.\n\n• Final CONOPS oversight authority for BC and BCL LLABs.\n\n• Approves final CONOPS and PT plans, sends them to OFC, and adds them to the POC chat in Teams.\n\n• Responsible for creating weekly OPORDS in advance for submission\n\n• to Detachment. OFC, and submission to A6 for Detachment distribution.\n\n• Attends all Execution Meetings and AAR Meetings.",
+    "pages": [
+     16
+    ]
+   },
+   "cto": {
+    "heading": "A51 Chief of Training Officer (COTO):",
+    "text": "Reports to: A5/DT\n\nCritical Role: Advises LLAB POCIC and POCIC evaluators, standardizes training for all LLAB POC Trainers\n\nResponsibilities:\n\n• Responsible for standardizing training among all LLAB POC Trainers, helping equip them to make decisions within the bounds of their authority.\n\n• Collects POCIC evaluation forms.\n\n• Organizes, schedules, and records the content of LLAB AARs, publishes AARs to POC Chat in Teams and records files for future reference and continuity in the Files Tab.\n\n• Creates accountability structure for POC Trainers in LLAB environments IAW Wing Command vision.",
+    "pages": [
+     17
+    ]
+   },
+   "cono": {
+    "heading": "A52 Concept of Operations Officer (CONO):",
+    "text": "Reports to: A5/DT\n\nCritical Role: Reviews and provides feedback for each LLAB CONOPS IAW Wing Command vision and A5/DT expectations.\n\nResponsibilities:\n\n• Oversees and attends all execution meetings for BC LLAB events.\n\n• Adds final CONOPS to Teams after approval of A5/DT.\n\n• Works with A5/DT to ensure all objectives are met correctly.\n\n• Sets and enforces all BC LLAB-related deadlines, including descriptions, CONOPS, and execution meetings.\n\n• Works with POCICs to provide feedback on each set of BC CONOPS and ensure final CONOPS are completed on time.",
+    "pages": [
+     17
+    ]
+   },
+   "pfo": {
+    "heading": "A53 Physical Fitness Officer (PFO):",
+    "text": "Reports to: A5/DT\n\nCritical Role: Plans and executes PT and PFRAs for the Detachment. Using the metrics from the latest PFRA, creates workouts that target specific necessary improvements for the Detachment.\n\nResponsibilities:\n\n• Plans, organizes, and executes mock and official PFRA(s). Responsible for bringing all necessary equipment for each.\n\n• Coordinates with A9/DT to keep record of scoring and Detachment fitness status/improvement areas.\n\n• Oversees all official and supplemental cadet fitness programs.\n\n• Coordinates with JRO for tri-service fitness events.\n\n• Tracks Warrior Points and facilitates how Warrior Points are to be submitted.\n\n• Creates opportunities during PT for flights to win Warrior Points.",
+    "pages": [
+     18
+    ]
+   },
+   "A6": {
+    "heading": "A6 Communications Director (A6/DT):",
+    "text": "Reports to: WG/COS\n\nCritical Role: Distributes all messages and announcements to the detachment.\n\nResponsibilities:\n\n• Update and maintain the Detachment Email distribution list and CyBox/Teams editor and admin access list.\n\n• Responsible for the upkeep of the Microsoft Teams platform, including channels and files.\n\n• Coordinate all Detachment communications, including Teams and email notifications.\n\n• Sends out weekly supplemental information and OPORDS to the Detachment.\n\n• Sends Outlook Calendar invites for all large events, including JTDs and Dining Out.\n\n• Responsible for the scheduling/reservation system of cadet academic spaces.\n\n• Creates and maintains a Detachment calendar system. – A9 Efficiency",
+    "pages": [
+     18
+    ]
+   },
+   "A9": {
+    "heading": "A9 Director of Efficiency (A9/DT):",
+    "text": "Reports to: WG/COS\n\nCritical Role: Conduct evaluations of SPMT and the directors throughout the semester.\n\nResponsibilities:\n\n• Evaluate every LLAB on a weekly basis.\n\n• Utilize Wing Staff and the A5 Director to assist with evaluations.\n\n• Evaluate PT sessions on a bi-weekly basis.\n\n• Identify areas for improvement in PT and LLAB organization, execution, and effectiveness.\n\n• Evaluate every directorate on a monthly basis.\n\n• Identify strengths, weaknesses, and opportunities for improvement within each directorate.\n\n• Communicate evaluation findings directly to the director or individual responsible.\n\n• Keep the COS informed and included in all evaluation communications.\n\n• Provide recommendations for improvement when deficiencies are identified.\n\n• Follow up on previous evaluations to ensure feedback is being implemented.",
+    "pages": [
+     18
+    ]
+   }
+  }
+ },
+ "changes": {
+  "kingery-helle": [
+   {
+    "title": "Squadron commanders report to the Deputy Wing Commander",
+    "before": "BCL and BC SQ/CC reported to the WG/CC (Kingery)",
+    "after": "They report to the WG/CD (Helle)",
+    "seats": [
+     "BCL",
+     "BC"
+    ]
+   },
+   {
+    "title": "Chien becomes the A3 Operations Director",
+    "before": "A3/DT: Curtis. Chien was the Joint Relations Officer",
+    "after": "A3/DT: Chien",
+    "seats": [
+     "A3"
+    ]
+   },
+   {
+    "title": "BCL Deputy Flight Commanders become Flight Training Officers",
+    "before": "BCL FLT/CD, Deputy Flight Commander",
+    "after": "BCL FLT/FTO, Flight Training Officer, same responsibilities",
+    "seats": [
+     "bcl-ed",
+     "bcl-fd"
+    ]
+   },
+   {
+    "title": "Curtis becomes a Flight Training Officer",
+    "before": "Coulthard was Gaul's BCL FLT/CD",
+    "after": "Curtis is Gaul's BCL FLT/FTO",
+    "seats": [
+     "bcl-ed"
+    ]
+   },
+   {
+    "title": "Coulthard becomes the Joint Relations Officer",
+    "before": "JRO: Chien",
+    "after": "JRO: Coulthard",
+    "seats": [
+     "jro"
+    ]
+   },
+   {
+    "title": "Davis becomes the Special Projects Officer",
+    "before": "SPO: TBD. Davis was the Wellness Officer",
+    "after": "SPO: Davis",
+    "seats": [
+     "spo"
+    ]
+   },
+   {
+    "title": "Academic Officer and Wellness Officer combine",
+    "before": "ACDO: Tu, and WELLO: Davis",
+    "after": "WELLO, Wellness Officer: Tu, with both sets of duties",
+    "seats": [
+     "wello"
+    ]
+   }
+  ]
+ }
+}
