@@ -109,9 +109,13 @@
       </div>
       <div class="row measure-row">
         <div class="field">
-          <label for="height">Height (inches)</label>
-          <input type="number" id="height" inputmode="decimal" min="36" max="90" step="0.5"
-                 placeholder="height in" enterkeyhint="next">
+          <label for="height">Height<span class="label-unit"> (inches)</span></label>
+          <div class="fine-group fine-box">
+            <button type="button" class="fine-step" data-fine="-1" data-for="height"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <input type="number" id="height" inputmode="decimal" min="36" max="90" step="0.5"
+                   placeholder="in" enterkeyhint="next">
+            <button type="button" class="fine-step" data-fine="1" data-for="height"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
           <!-- 58 to 78 is the height axis of the waist-to-height grid on page 9
                of the scoring charts. The field itself is left wider: the ratio
                is arithmetic, not a lookup, so a height off the printed grid
@@ -126,8 +130,12 @@
         </div>
         <div class="field">
           <label for="waist">Waist</label>
-          <input type="number" id="waist" inputmode="decimal" min="16" max="70" step="0.5"
-                 placeholder="waist in" enterkeyhint="next">
+          <div class="fine-group fine-box">
+            <button type="button" class="fine-step" data-fine="-1" data-for="waist"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <input type="number" id="waist" inputmode="decimal" min="16" max="70" step="0.5"
+                   placeholder="in" enterkeyhint="next">
+            <button type="button" class="fine-step" data-fine="1" data-for="waist"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
           <div class="slider-row" id="slider-body_composition" hidden>
             <span class="slider-end low" id="slider-low-body_composition"></span>
             <input type="range" class="slider" id="slide-body_composition"
@@ -191,13 +199,11 @@
             <option value="pushup">Push-ups</option>
         </select>
       </div>
-      <div class="stepper">
-        <button type="button" class="step" data-step="-1" data-target="hrpu"
-                aria-label="One fewer push-up">&minus;</button>
+      <div class="stepper fine-group">
+        <button type="button" class="fine-step" data-fine="-1" data-for="hrpu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <input type="number" id="hrpu" inputmode="numeric" min="0" max="200" step="1"
                placeholder="reps" aria-label="Hand release push-up reps" enterkeyhint="next">
-        <button type="button" class="step" data-step="1" data-target="hrpu"
-                aria-label="One more push-up">+</button>
+        <button type="button" class="fine-step" data-fine="1" data-for="hrpu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="slider-row" id="slider-muscular_strength" hidden>
         <span class="slider-end low" id="slider-low-muscular_strength"></span>
@@ -253,20 +259,20 @@
             <option value="forearm_plank">Forearm plank</option>
         </select>
       </div>
-      <div class="stepper" id="core-reps">
-        <button type="button" class="step" data-step="-1" data-target="situp"
-                aria-label="One fewer rep">&minus;</button>
+      <div class="stepper fine-group" id="core-reps">
+        <button type="button" class="fine-step" data-fine="-1" data-for="situp"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <input type="number" id="situp" inputmode="numeric" min="0" max="200" step="1"
                placeholder="reps" aria-label="Core endurance reps" enterkeyhint="next">
-        <button type="button" class="step" data-step="1" data-target="situp"
-                aria-label="One more rep">+</button>
+        <button type="button" class="fine-step" data-fine="1" data-for="situp"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div class="time-inputs" id="core-hold" hidden>
+      <div class="time-inputs fine-group" id="core-hold" hidden>
+        <button type="button" class="fine-step" data-fine="-1" data-for="plank-min"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <input type="number" id="plank-min" inputmode="numeric" min="0" max="59" step="1"
                placeholder="mm" aria-label="Plank minutes" enterkeyhint="next">
         <span class="time-colon" aria-hidden="true">:</span>
         <input type="number" id="plank-sec" inputmode="numeric" min="0" max="59" step="1"
                placeholder="ss" aria-label="Plank seconds" enterkeyhint="next">
+        <button type="button" class="fine-step" data-fine="1" data-for="plank-min"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="slider-row" id="slider-core_endurance" hidden>
         <span class="slider-end low" id="slider-low-core_endurance"></span>
@@ -346,20 +352,20 @@
             <option value="walk_2km">2 kilometer walk</option>
         </select>
       </div>
-      <div class="time-inputs" id="cardio-time">
+      <div class="time-inputs fine-group" id="cardio-time">
+        <button type="button" class="fine-step" data-fine="-1" data-for="run-min"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <input type="number" id="run-min" inputmode="numeric" min="0" max="59" step="1"
                placeholder="mm" aria-label="Run minutes" enterkeyhint="next">
         <span class="time-colon" aria-hidden="true">:</span>
         <input type="number" id="run-sec" inputmode="numeric" min="0" max="59" step="1"
                placeholder="ss" aria-label="Run seconds" enterkeyhint="next">
+        <button type="button" class="fine-step" data-fine="1" data-for="run-min"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div class="stepper" id="cardio-shuttles" hidden>
-        <button type="button" class="step" data-step="-1" data-target="hamr"
-                aria-label="One fewer shuttle">&minus;</button>
+      <div class="stepper fine-group" id="cardio-shuttles" hidden>
+        <button type="button" class="fine-step" data-fine="-1" data-for="hamr"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <input type="number" id="hamr" inputmode="numeric" min="0" max="300" step="1"
                placeholder="shuttles" aria-label="HAMR shuttles" enterkeyhint="next">
-        <button type="button" class="step" data-step="1" data-target="hamr"
-                aria-label="One more shuttle">+</button>
+        <button type="button" class="fine-step" data-fine="1" data-for="hamr"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <!-- The count is what the chart scores; the level is what the tally sheet
            records and what the beep track calls out. -->
@@ -539,8 +545,12 @@
         <div class="row measure-row bfa-fields" id="bfa-fields-scale" hidden>
           <div class="field">
             <label for="bfa-percent">Body Fat (percent)</label>
-            <input type="number" id="bfa-percent" inputmode="decimal" min="0" max="75"
-                   step="0.1" placeholder="%">
+            <div class="fine-group fine-box">
+              <button type="button" class="fine-step" data-fine="-1" data-for="bfa-percent"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <input type="number" id="bfa-percent" inputmode="decimal" min="0" max="75"
+                     step="0.1" placeholder="%">
+              <button type="button" class="fine-step" data-fine="1" data-for="bfa-percent"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
             <!-- The field runs 0 to 75 because a scale will report whatever it
                  reports; the track is narrowed to the range a reading actually
                  falls in, the same way the height track is narrowed to the
@@ -559,8 +569,12 @@
         <div class="row measure-row bfa-fields" id="bfa-fields-tape">
           <div class="field">
             <label for="bfa-neck">Neck</label>
-            <input type="number" id="bfa-neck" inputmode="decimal" min="8" max="30"
-                   step="0.25" placeholder="in">
+            <div class="fine-group fine-box">
+              <button type="button" class="fine-step" data-fine="-1" data-for="bfa-neck"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <input type="number" id="bfa-neck" inputmode="decimal" min="8" max="30"
+                     step="0.25" placeholder="in">
+              <button type="button" class="fine-step" data-fine="1" data-for="bfa-neck"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
             <div class="slider-row">
               <span class="slider-end low">11</span>
               <input type="range" class="slider" id="slide-bfa-neck"
@@ -572,8 +586,12 @@
           </div>
           <div class="field" id="bfa-field-abdomen">
             <label for="bfa-abdomen">Abdomen</label>
-            <input type="number" id="bfa-abdomen" inputmode="decimal" min="16" max="80"
-                   step="0.25" placeholder="in">
+            <div class="fine-group fine-box">
+              <button type="button" class="fine-step" data-fine="-1" data-for="bfa-abdomen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <input type="number" id="bfa-abdomen" inputmode="decimal" min="16" max="80"
+                     step="0.25" placeholder="in">
+              <button type="button" class="fine-step" data-fine="1" data-for="bfa-abdomen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
             <div class="slider-row">
               <span class="slider-end low">26</span>
               <input type="range" class="slider" id="slide-bfa-abdomen"
@@ -585,8 +603,12 @@
           </div>
           <div class="field" id="bfa-field-waist" hidden>
             <label for="bfa-waist">Natural Waist</label>
-            <input type="number" id="bfa-waist" inputmode="decimal" min="16" max="80"
-                   step="0.25" placeholder="in">
+            <div class="fine-group fine-box">
+              <button type="button" class="fine-step" data-fine="-1" data-for="bfa-waist"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <input type="number" id="bfa-waist" inputmode="decimal" min="16" max="80"
+                     step="0.25" placeholder="in">
+              <button type="button" class="fine-step" data-fine="1" data-for="bfa-waist"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
             <div class="slider-row">
               <span class="slider-end low">22</span>
               <input type="range" class="slider" id="slide-bfa-waist"
@@ -598,8 +620,12 @@
           </div>
           <div class="field" id="bfa-field-buttocks" hidden>
             <label for="bfa-buttocks">Buttocks</label>
-            <input type="number" id="bfa-buttocks" inputmode="decimal" min="20" max="90"
-                   step="0.25" placeholder="in">
+            <div class="fine-group fine-box">
+              <button type="button" class="fine-step" data-fine="-1" data-for="bfa-buttocks"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <input type="number" id="bfa-buttocks" inputmode="decimal" min="20" max="90"
+                     step="0.25" placeholder="in">
+              <button type="button" class="fine-step" data-fine="1" data-for="bfa-buttocks"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
             <div class="slider-row">
               <span class="slider-end low">30</span>
               <input type="range" class="slider" id="slide-bfa-buttocks"

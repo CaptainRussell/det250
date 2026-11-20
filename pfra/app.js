@@ -154,10 +154,6 @@ async function boot() {
     markAge();
     update();
   });
-  for (const button of document.querySelectorAll('.step')) {
-    holdToRepeat(button, () => nudge(button.dataset.target,
-      Number(button.dataset.step)));
-  }
   // [data-component] only: the BFA tracks are .slider for the look of them but
   // they measure a member rather than score one, so wireBfa drives those.
   for (const slider of document.querySelectorAll('.slider[data-component]')) {
@@ -700,43 +696,12 @@ function selectSex(value) {
   update();
 }
 
-function nudge(id, delta) {
-  // A component carrying a status has no count to step. Its fields are
-  // disabled and so are these buttons, so this is the belt to that braces:
-  // reached any other way, a nudge must not quietly revoke the status.
-  //
-  // It used to, and on the wrong component. The target was mapped with
-  // `id === 'hrpu' ? 'hrpu' : 'situp'`, which sent the HAMR buttons at core
-  // endurance, and the clear went through setStatus(), which owns none of the
-  // things setExempt() puts on screen. Pressing + on the HAMR dropped an
-  // exemption from the sit-ups while the Exempt button stayed lit, and
-  // pressing + on an exempt component took its composite from 91.8 to 78.0.
-  if (statuses[componentOf(id)]) return;
-
-  const input = $(id);
-  const current = input.value.trim() === '' ? 0 : Number(input.value);
-  const next = Math.max(0, Math.round(current) + delta);
-  input.value = String(next);
-  update();
-}
-
 const componentOf = (field) => ({
   hrpu: 'muscular_strength',
   situp: 'core_endurance',
   hamr: 'cardiorespiratory',
   run: 'cardiorespiratory'
 }[field]);
-
-/**
- * The step buttons that write into a component's fields.
- *
- * They are disabled alongside those fields. Leaving them live on a component
- * whose inputs are greyed out is the inconsistency the nudge bugs grew in.
- */
-function stepsOf(component) {
-  return [...document.querySelectorAll('.step')]
-    .filter((button) => componentOf(button.dataset.target) === component);
-}
 
 /** Cycle nothing -> did not start -> did not finish -> nothing. */
 /**
@@ -781,7 +746,6 @@ function setStatus(field, value) {
     button.classList.remove('on');
     for (const id of inputs) $(id).disabled = false;
   }
-  for (const step of stepsOf(component)) step.disabled = Boolean(value);
 }
 
 function onAnyInput() {
@@ -845,7 +809,6 @@ function resetAll() {
     $(id).value = '';
     $(id).disabled = false;
   }
-  for (const button of document.querySelectorAll('.step')) button.disabled = false;
 
   resetBfa();
   resetTrack();
@@ -1054,6 +1017,12 @@ const el = (tag, className, text) => {
 };
 
 function update() {
+  render();
+  // The arrows' ends and greyed states follow whatever was just scored.
+  syncFine();
+}
+
+function render() {
   showHeightInFeet();
   renderSliders(ageBand); // same bounds, same reason to run here
   renderHeightSlider();   // fixed bounds, so it needs no band at all
@@ -1776,7 +1745,6 @@ function setExempt(component, on) {
     if (on) $(id).value = '';
     $(id).disabled = on;
   }
-  for (const button of stepsOf(component)) button.disabled = on;
 }
 
 /** Every input a component collects, whichever event it is set to. */
@@ -1887,7 +1855,7 @@ function showBfa(result, complete) {
     showBfaWho();
     setBfaChip('Not needed', '');
     for (const button of document.querySelectorAll('.bfa-method')) button.hidden = true;
-    $('bfa-body').hidden = true;
+    bfaIdle(true);
     $('bfa-optional').hidden = true;
     // workBfa owns these three and is not reached on this branch, so closing
     // the panel would otherwise leave a verdict and an "Undo" behind it. They
@@ -1948,8 +1916,8 @@ function showBfa(result, complete) {
   // button inside.
   //
   const open = required || bfa.applied || bfa.opened;
-  $('bfa-body').hidden = !open;
   panel.classList.toggle('idle', !open);
+  bfaIdle(!open);
   for (const button of document.querySelectorAll('.bfa-method')) button.hidden = !open;
   setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not needed' : 'Possible',
     bfa.applied ? 'filled' : required && !bfaCadet() ? 'chip-fail' : '');
@@ -2027,6 +1995,17 @@ function showBfaFields(sexCode) {
  * a neck is not better for being bigger, and the pass or fail comes out of the
  * lookup below rather than off any one of these.
  */
+/*
+ * Not needed yet: the condensed card keeps its measurement boxes on screen,
+ * greyed out, so the card is the same height whether or not the waist calls
+ * for a body fat assessment (Captain Russell, Nov 2026: adjusting a number
+ * never resizes the page). The open card shows the reason line instead.
+ */
+function bfaIdle(idle) {
+  $('bfa-body').hidden = false;
+  for (const input of $('bfa-body').querySelectorAll('input')) input.disabled = idle;
+}
+
 const BFA_SLIDERS = Object.freeze({
   'bfa-percent': { step: 0.1, format: (v) => `${v.toFixed(1)} percent` },
   'bfa-neck': { step: 0.25, format: (v) => `${trimQuarter(v)} inches` },
@@ -2282,7 +2261,7 @@ function resetBfa() {
   // waiting to be read wrong. Put the markup back with the object.
   showBfaFields(sex);
   renderBfaSliders();
-  $('bfa-body').hidden = true;
+  bfaIdle(true);
   $('bfa-optional').hidden = true;
   $('bfa-result').hidden = true;
   $('bfa-note').hidden = true;
@@ -3201,146 +3180,54 @@ function fineWrite(target, value) {
   $(first).dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+/*
+ * Fine tune arrows (Captain Russell, Nov 2026): a left and a right arrow beside
+ * every number box, always there, so nothing pops in or out as a different
+ * slider is touched and the card never changes size. They move the same way as
+ * the slider (right is toward full marks, so on a run, walk or waist right
+ * makes the number smaller), one rep, shuttle, second or half inch at a time
+ * (a quarter inch or 0.1 % on the body fat assessment), and repeat while held.
+ */
+function fineStep(id, side) {
+  const t = fineTarget(id);
+  if (!t || t.fields.some((f) => $(f).disabled)) return;
+  if (t.component && statuses[t.component]) return;
+  const dir = t.descending ? -side : side;
+  const now = fineValue(t);
+  // Off the step grid (a typed 34.3) lands on the nearest step first.
+  const snapped = Math.round(now / t.step) * t.step;
+  let next = snapped !== now && Math.sign(snapped - now) === dir ? snapped : snapped + dir * t.step;
+  next = Math.round(Math.min(t.max, Math.max(t.min, next)) * 100) / 100;
+  fineWrite(t, next);
+}
+
+/** Disable an arrow at the end of its range or on a greyed-out box, and name it. */
+function syncFine() {
+  for (const button of document.querySelectorAll('.fine-step')) {
+    const t = fineTarget(button.dataset.for);
+    if (!t) { button.disabled = true; continue; }
+    const side = Number(button.dataset.fine);
+    const off = t.fields.some((f) => $(f).disabled)
+      || Boolean(t.component && statuses[t.component]);
+    const value = fineValue(t);
+    const up = t.descending ? side < 0 : side > 0;
+    button.disabled = off || (up ? value >= t.max : value <= t.min);
+    const unit = t.kind === 'time' ? 'second' : t.unit === 'reps' ? 'rep'
+      : t.unit === 'shuttles' ? 'shuttle' : 'step';
+    const label = $(t.fields[0]).getAttribute('aria-label')
+      || document.querySelector(`label[for="${t.fields[0]}"]`)?.textContent || 'value';
+    button.setAttribute('aria-label', `${label}: ${up ? 'up' : 'down'} one ${unit}`);
+  }
+}
+
 function wireFineTune() {
-  const panel = document.createElement('div');
-  panel.className = 'fine-tune';
-  panel.id = 'fine-tune';
-  panel.setAttribute('role', 'group');
-  panel.hidden = true;
-  panel.innerHTML = `
-    <button type="button" class="fine-step" data-fine="-1"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <output class="fine-value" aria-live="polite"><b></b><span></span></output>
-    <button type="button" class="fine-step" data-fine="1"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
-  document.body.append(panel);
-  const valueEl = panel.querySelector('.fine-value b');
-  const unitEl = panel.querySelector('.fine-value span');
-  const [minus, plus] = panel.querySelectorAll('.fine-step');
-
-  let open = null; // { target, anchor, key }
-
-  const show = () => {
-    if (!open) return;
-    const value = fineValue(open.target);
-    valueEl.textContent = fineFormat(open.target, value);
-    unitEl.textContent = open.target.unit;
-    const atMin = value <= open.target.min;
-    const atMax = value >= open.target.max;
-    minus.disabled = open.target.descending ? atMax : atMin;
-    plus.disabled = open.target.descending ? atMin : atMax;
-  };
-
-  // In the page, under the slider (or the box when there is no slider), so it
-  // never covers the next field. Scrolled into view above the running total.
-  const reveal = () => {
-    const tally = document.querySelector('.tally');
-    // The running total is position: fixed, so it has no offsetParent to test.
-    const bar = tally && !tally.hidden ? tally.getBoundingClientRect() : null;
-    const floor = (bar && bar.height ? bar.top : window.innerHeight) - 8;
-    const r = panel.getBoundingClientRect();
-    if (r.bottom > floor) window.scrollBy(0, r.bottom - floor);
-  };
-
-  const openFor = (id, anchor) => {
-    const target = fineTarget(id);
-    if (!target || target.fields.some((f) => $(f).disabled)) { close(); return; }
-    // An open card already has its own minus and plus beside a rep or shuttle
-    // count (they repeat when held too), so a second pair would be a repeat.
-    const stepper = $(target.fields[0]).closest('.stepper');
-    if (target.kind === 'count' && stepper?.closest('.event.open')
-      && stepper.querySelector('.step')?.offsetParent !== null) { close(); return; }
-    const label = $(target.fields[0]).getAttribute('aria-label')
-      || document.querySelector(`label[for="${target.fields[0]}"]`)?.textContent || 'value';
-    panel.setAttribute('aria-label', `Fine tune ${label}`);
-    // The arrows move the way the slider does (Captain Russell, Nov 2026): right
-    // is toward full marks, so on a run or a waist right makes the number smaller.
-    const unit = target.kind === 'time' ? 'second' : 'step';
-    minus.setAttribute('aria-label', `${target.descending ? 'Up' : 'Down'} one ${unit}`);
-    plus.setAttribute('aria-label', `${target.descending ? 'Down' : 'Up'} one ${unit}`);
-    const row = target.slider?.closest('.slider-row');
-    const after = row && row.offsetParent !== null ? row : anchor;
-    if (after.nextElementSibling !== panel) after.after(panel);
-    open = { target, anchor, card: panel.closest('.event, .bfa, .field') || after.parentElement };
-    panel.hidden = false;
-    show();
-    reveal();
-  };
-
-  function close() {
-    open = null;
-    panel.hidden = true;
+  for (const button of document.querySelectorAll('.fine-step')) {
+    holdToRepeat(button, () => fineStep(button.dataset.for, Number(button.dataset.fine)));
   }
-
-  const step = (side) => {
-    if (!open) return;
-    const t = open.target;
-    const dir = t.descending ? -side : side;
-    const now = fineValue(t);
-    // Off the step grid (a typed 34.3) lands on the nearest step first.
-    const snapped = Math.round(now / t.step) * t.step;
-    let next = snapped !== now && Math.sign(snapped - now) === dir ? snapped : snapped + dir * t.step;
-    next = Math.round(Math.min(t.max, Math.max(t.min, next)) * 100) / 100;
-    fineWrite(t, next);
-    show();
-  };
-  holdToRepeat(minus, () => step(-1));
-  holdToRepeat(plus, () => step(1));
-
-  // A tap on a number box, or tabbing into one.
-  const boxes = ['hrpu', 'situp', 'plank-min', 'plank-sec', 'hamr', 'run-min', 'run-sec',
-    'height', 'waist', ...Object.keys(BFA_SLIDERS)];
-  for (const id of boxes) {
-    // A tap or click, not focus: tabbing or pressing Enter through the boxes
-    // to type a whole assessment should not open and close a panel each time.
-    $(id).addEventListener('click', () => {
-      const box = $(id);
-      openFor(id, box.closest('.time-inputs') || box);
-    });
-    $(id).addEventListener('input', show);
-  }
-
-  // Letting go of a slider: drag to get close, then fine tune.
-  let held = null;
-  for (const slider of document.querySelectorAll('.slider[data-component], .slider[data-bfa-slider]')) {
-    slider.addEventListener('pointerdown', () => { held = slider; });
-    slider.addEventListener('input', () => { if (open) show(); });
-  }
-  window.addEventListener('pointerup', () => {
-    if (!held) return;
-    const slider = held;
-    held = null;
-    // After the window's own pointerup has re-scored and re-seated things.
-    requestAnimationFrame(() => openFor(slider.id, slider));
-  });
-  window.addEventListener('pointercancel', () => { held = null; });
-
-  // A press anywhere else puts it away. Not on another slider or box, which
-  // moves the panel there once the finger is up, so nothing shifts under a
-  // finger that is starting a drag.
-  const owns = (el) => panel.contains(el) || open.card.contains(el)
-    || el.matches?.('input[type="range"], input[type="number"]');
-  // A box being pressed keeps the panel where it is until the click lands, so
-  // the box does not jump out from under the pointer; the click then moves it.
-  let pressing = false;
-  document.addEventListener('pointerdown', (e) => {
-    pressing = !!e.target.matches?.('input[type="number"]');
-    if (open && !owns(e.target)) close();
-  }, true);
-  document.addEventListener('pointerup', () => { setTimeout(() => { pressing = false; }); }, true);
-  document.addEventListener('focusin', (e) => {
-    if (!open || panel.contains(e.target)) return;
-    // Enter or Tab on to another box: this panel is for the one it left.
-    if (e.target.matches?.('input[type="number"]') && !open.target.fields.includes(e.target.id)) {
-      if (!pressing) close();
-    }
-    else if (!owns(e.target)) close();
-  });
-  // A new exercise is a new number to tune.
-  document.addEventListener('change', (e) => {
-    if (open && e.target.matches?.('select')) close();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && open) close();
-  });
+  // Every typed number, slider move and exercise change can move a bound.
+  document.addEventListener('input', syncFine);
+  document.addEventListener('change', syncFine);
+  syncFine();
 }
 
 // The Minimum / Full marks strip under each component was removed (Captain
@@ -3379,12 +3266,16 @@ function resetChip(component) {
   const chip = $(`chip-${component}`);
   chip.textContent = `– / ${MAX_POINTS[component]}`;
   chip.className = 'chip';
+  chip.title = '';
+  chip.removeAttribute('aria-description');
   $(`row-${component}`).hidden = true;
   setMeter(`meter-${component}`, 0, MAX_POINTS[component], 'is-empty', null);
 }
 
 function fillChip(component, scored) {
   const chip = $(`chip-${component}`);
+  chip.title = '';
+  chip.removeAttribute('aria-description');
 
   // The 2 kilometer walk has no points to show, so a "0.0 / 50" chip beside it
   // would read as a catastrophe rather than as a pass. It says what it is.
@@ -3433,6 +3324,12 @@ function fillChip(component, scored) {
     ? 'Below the chart minimum: scores 0 and fails this component.'
     : '';
   row.hidden = !failsMinimum;
+  // The note is on the open card only, so a condensed card never grows when a
+  // number crosses the minimum (Captain Russell, Nov 2026). The red chip says
+  // it there, and says why on hover and to a screen reader.
+  chip.title = failsMinimum ? row.textContent : '';
+  if (failsMinimum) chip.setAttribute('aria-description', row.textContent);
+  else chip.removeAttribute('aria-description');
 }
 
 /** The running total pinned to the bottom of the screen. */
