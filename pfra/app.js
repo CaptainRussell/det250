@@ -326,6 +326,9 @@ function setCardOpen(component, open) {
     chartOpen.add(component);
     if (scorer) renderCharts(ageBand);
   }
+  // Lap Pace sits above the run's scoring chart and starts closed each time
+  // the card opens (Captain Russell, 20 Nov 2026).
+  if (opening && component === 'cardiorespiratory' && course.pace) closeTrackPanel();
   button.setAttribute('aria-label',
     `${open ? 'Hide' : 'Show'} details for ${card.querySelector('h2').textContent}`);
 }
@@ -4769,6 +4772,7 @@ function openPaceFor(seconds) {
   const index = TRACK_DISTANCES.findIndex((d) => d.id === 'mile2');
   if (index >= 0) track.distanceIndex = index;
   paceGoal = seconds;
+  setCardOpen('cardiorespiratory', true);
   course.pace = true;
   renderTrack();
   $('pace-toggle').scrollIntoView({ behavior: motion(), block: 'start' });
