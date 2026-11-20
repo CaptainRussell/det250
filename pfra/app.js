@@ -1021,6 +1021,71 @@ function update() {
   // The arrows' ends and greyed states follow whatever was just scored.
   syncFine();
   showSums();
+  paintTracks();
+}
+
+/*
+ * Red where the answer would fail, green where it would pass (Captain Russell,
+ * 20 Nov 2026), like the failing tip the scored sliders already show:
+ * the height and waist tracks go red where the ratio would be 0.55 or higher
+ * (a body fat assessment is needed), and each body fat track goes red where
+ * that site, with the others as entered, would fail the standard. A track
+ * with nothing to compare against stays as it was.
+ */
+function paintTrack(input, fails) {
+  const min = Number(input.min);
+  const max = Number(input.max);
+  if (!fails || !(max > min)) { input.style.removeProperty('--track-paint'); return; }
+  const n = 80;
+  const stops = [];
+  let prev = null;
+  let start = 0;
+  for (let i = 0; i <= n; i++) {
+    const bad = i < n ? fails(min + (max - min) * (i + 0.5) / n) : null;
+    if (bad !== prev) {
+      if (prev !== null) {
+        const color = prev ? 'var(--track-fail)' : 'var(--track-pass)';
+        stops.push(`${color} ${(start / n * 100).toFixed(2)}% ${(i / n * 100).toFixed(2)}%`);
+      }
+      prev = bad;
+      start = i;
+    }
+  }
+  input.style.setProperty('--track-paint', `linear-gradient(to right, ${stops.join(', ')})`);
+}
+
+const halfDown = (v) => Math.floor(v * 2) / 2;
+const halfNear = (v) => Math.round(v * 2) / 2;
+const ratioOf = (waist, height) => Math.floor(halfDown(waist) / halfNear(height) * 100) / 100;
+
+function paintTracks() {
+  const height = decimal('height');
+  const waist = decimal('waist');
+  paintTrack($('slide-height'), waist ? (h) => ratioOf(waist, h) >= BFA_RATIO : null);
+  const bounds = sliderBounds.body_composition;
+  paintTrack($('slide-body_composition'), height && bounds
+    ? (p) => ratioOf(toRaw(bounds, p), height) >= BFA_RATIO : null);
+
+  const sexCode = sex;
+  const idle = $('bfa').classList.contains('idle');
+  for (const id of Object.keys(BFA_SLIDERS)) {
+    const input = $(`slide-${id}`);
+    if (idle || !sexCode) { paintTrack(input, null); continue; }
+    const key = { 'bfa-percent': 'percent', 'bfa-neck': 'neckInches', 'bfa-abdomen': 'abdomenInches',
+      'bfa-waist': 'waistInches', 'bfa-buttocks': 'buttocksInches' }[id];
+    // The others as entered; this site filled with a stand-in so the set is
+    // complete, then swapped for each point along the track.
+    const saved = $(id).value;
+    $(id).value = saved || input.min;
+    const base = bfaMeasurements(sexCode);
+    $(id).value = saved;
+    if (!base || !(key in base)) { paintTrack(input, null); continue; }
+    paintTrack(input, (v) => {
+      try {
+        return !scorer.bodyFatAssessment({ ...base, [key]: v, heightInches: height }).pass;
+      } catch { return false; }
+    });
+  }
 }
 
 /*
@@ -3251,8 +3316,8 @@ function wireFineTune() {
   document.addEventListener('input', syncFine);
   document.addEventListener('change', syncFine);
   // The body fat card works itself out without going through update().
-  document.addEventListener('input', () => queueMicrotask(showSums));
-  document.addEventListener('click', () => queueMicrotask(showSums));
+  document.addEventListener('input', () => queueMicrotask(() => { showSums(); paintTracks(); }));
+  document.addEventListener('click', () => queueMicrotask(() => { showSums(); paintTracks(); }));
   syncFine();
 }
 
