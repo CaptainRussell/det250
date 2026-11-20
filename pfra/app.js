@@ -1020,6 +1020,29 @@ function update() {
   render();
   // The arrows' ends and greyed states follow whatever was just scored.
   syncFine();
+  showSums();
+}
+
+/*
+ * The waist to height ratio and the body fat percent, large, in the room
+ * beside the measurement rows of the condensed cards (Captain Russell, Nov
+ * 2026). Read from what the open cards already show, so they never disagree.
+ */
+function showSums() {
+  const whtr = $('sum-whtr');
+  const ratio = $('ratio-readout').hidden ? '' : $('ratio-value').textContent;
+  whtr.querySelector('b').textContent = ratio || '\u2013';
+  whtr.classList.toggle('empty', !ratio);
+  whtr.classList.toggle('over', Boolean(ratio) && Number(ratio) >= 0.55);
+
+  const sum = $('sum-bfa');
+  const verdict = $('bfa-verdict');
+  const shown = !$('bfa-result').hidden && !$('bfa').classList.contains('idle');
+  const match = shown ? /^([\d.]+)%/.exec(verdict.textContent) : null;
+  sum.querySelector('b').textContent = match ? `${match[1]}%` : '\u2013';
+  sum.classList.toggle('empty', !match);
+  sum.classList.toggle('pass', Boolean(match) && verdict.classList.contains('pass'));
+  sum.classList.toggle('fail', Boolean(match) && verdict.classList.contains('fail'));
 }
 
 function render() {
@@ -3227,6 +3250,9 @@ function wireFineTune() {
   // Every typed number, slider move and exercise change can move a bound.
   document.addEventListener('input', syncFine);
   document.addEventListener('change', syncFine);
+  // The body fat card works itself out without going through update().
+  document.addEventListener('input', () => queueMicrotask(showSums));
+  document.addEventListener('click', () => queueMicrotask(showSums));
   syncFine();
 }
 
