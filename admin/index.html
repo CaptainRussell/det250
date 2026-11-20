@@ -599,11 +599,19 @@ function renderChart(){
 }
 /* ---------- Org Chart semesters (data/charts.js): the cards on the Org Chart home page ---------- */
 const CHART_KIND = {poc:"POC Chart", flip:"Flip Week", proposal:"Proposed package"};
-let PROPOSALS = null;   // [{id, name}] read from org-chart/proposals.js
+let PROPOSALS = null;   // [{id, name}] read from the cadre-locked semesters, org-chart/locked/<id>.json
+const orgLockPath = t => `org-chart/locked/${t.id}.json`;
 async function loadProposals(){
   if (PROPOSALS) return PROPOSALS;
-  try{ const t = await (await fetch("../org-chart/proposals.js", {cache:"no-store"})).text(); PROPOSALS = [...t.matchAll(/\{id:'([^']+)',\s*name:'([^']+)'/g)].map(m => ({id:m[1], name:m[2]})); }
-  catch(_){ PROPOSALS = []; }
+  PROPOSALS = [];
+  for (const t of C().semesters.filter(t => t.lock)){
+    try{
+      const v = await (await fetch("../" + orgLockPath(t), {cache:"no-store"})).json();
+      let data = null;
+      for (const pw of [CFG.locks.cadre, ADMIN_PW].filter(Boolean)){ try{ data = JSON.parse(dec.decode(await openRaw(pw, v))); break; }catch(_){} }
+      (data && data.proposals || []).forEach(p => PROPOSALS.push({id:p.id, name:p.name}));
+    }catch(_){}
+  }
   return PROPOSALS;
 }
 const usesRoster = t => !t.frozen && (t.charts || []).some(c => c.kind !== "proposal");
@@ -1578,7 +1586,7 @@ function vaultDialog(newKey){
 const LOCKS = {
   docs:  {label:"Documents and Policy (cadet password)", what:"Opens the OPLAN, Policy Packet, cadre duties roster, weekly OPORDs and the ODT Tool."},
   fse:   {label:"Flight Staff Evaluation", what:"Opens the Flight Staff Evaluation page."},
-  cadre: {label:"Cadre Dashboard", what:"Opens the Peer Feedback and Flight Staff Evaluation results."},
+  cadre: {label:"Cadre Dashboard", what:"Opens the Peer Feedback and Flight Staff Evaluation results, and the cadre-only Org Chart semesters."},
 };
 const enc = new TextEncoder(), dec = new TextDecoder();
 const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -1599,7 +1607,13 @@ const REKEY = {
     const f = await gh.readText("cadre/vault.json");
     let plain; try{ plain = await openRaw(oldPw, JSON.parse(f.text)); }catch(_){ throw new Error(WRONG); }
     if (newPw == null) return [];
-    return [{path:"cadre/vault.json", text:JSON.stringify(await sealRaw(newPw, plain), null, 1) + "\n"}];
+    const out = [{path:"cadre/vault.json", text:JSON.stringify(await sealRaw(newPw, plain), null, 1) + "\n"}];
+    for (const t of C().semesters.filter(t => t.lock)){        // cadre-only Org Chart semesters use the same password
+      const o = await gh.readText(orgLockPath(t)); if (!o) continue;
+      let p; try{ p = await openRaw(oldPw, JSON.parse(o.text)); }catch(_){ throw new Error(`The ${t.name} org chart doesn't open with the current cadre password. Ask a technical person to check ${orgLockPath(t)}.`); }
+      out.push({path:orgLockPath(t), text:JSON.stringify(await sealRaw(newPw, p), null, 1) + "\n"});
+    }
+    return out;
   },
   async fse(oldPw, newPw){
     const f = await GH.readText("flight-staff-eval/index.html");
