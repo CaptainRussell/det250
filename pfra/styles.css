@@ -1407,18 +1407,18 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 .slider::-webkit-slider-runnable-track {
   height: var(--track-height);
   border-radius: 999px;
-  background:
+  background: var(--track-paint,
     linear-gradient(to right,
       var(--track-fail) 0 var(--below-minimum, 0%),
-      var(--track-pass) var(--below-minimum, 0%) 100%);
+      var(--track-pass) var(--below-minimum, 0%) 100%));
 }
 .slider::-moz-range-track {
   height: var(--track-height);
   border-radius: 999px;
-  background:
+  background: var(--track-paint,
     linear-gradient(to right,
       var(--track-fail) 0 var(--below-minimum, 0%),
-      var(--track-pass) var(--below-minimum, 0%) 100%);
+      var(--track-pass) var(--below-minimum, 0%) 100%));
 }
 
 .slider::-webkit-slider-thumb {
@@ -2384,7 +2384,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:not(.open) .bfa-title { font-size: .95rem; }
 .bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
 /* The Cadet / Active Duty pair stays, since it changes what the chip means. */
-.bfa:not(.open) .event-tools > :not(.bfa-who-set),
+.bfa:not(.open) .event-tools > *,
 .bfa:not(.open) .bfa-trigger,
 .bfa:not(.open) #bfa-method-hint,
 .bfa:not(.open) .bfa-fields .hint,
@@ -3356,4 +3356,17 @@ form#assessment { container: form / inline-size; }
     .event:not(.open) .measure-row .field,
     .bfa:not(.open) .bfa-fields .field { grid-template-columns: 7.5rem minmax(0, 1fr) auto; }
   }
+}
+
+/* Age, Sex and Scored as on one line (Captain Russell, 20 Nov 2026). */
+form#assessment > .row.about-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto; }
+.about-row .segment { white-space: nowrap; }
+#field-who .segment { padding-left: 10px; padding-right: 10px; }
+@media (max-width: 560px) {
+  form#assessment > .row.about-row { grid-template-columns: 1.3fr 1fr; }
+  #field-who { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); }
+}
+@container form (max-width: 719.98px) {
+  form#assessment > .row.about-row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  #field-who { grid-column: 1 / -1; justify-self: start; }
 }

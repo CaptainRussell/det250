@@ -292,6 +292,21 @@ export function analyzeGap(data, result) {
   const wouldPass = remainingGapPoints === 0
     && mandatory.every((m) => m.requirement !== null);
 
+  // The shared route, raised in proportion across the trainable components,
+  // is the one the summary recommends first (Captain Russell, 20 Nov 2026).
+  let shared = null;
+  if (remainingGapPoints > 0) {
+    const ladders = {};
+    for (const c of assessed) ladders[c] = ladderFor(data, result, c);
+    const open = paths.map((p) => p.component);
+    const trainable = TRAINABLE_SOON.filter((c) => open.includes(c));
+    const toComposite = (points) => roundTo(points * scale, 1);
+    shared = proportionalPlan(result, ladders, projectedPoints, remainingGapPoints, trainable,
+      assessed, toComposite)
+      ?? proportionalPlan(result, ladders, projectedPoints, remainingGapPoints, open,
+        assessed, toComposite);
+  }
+
   return Object.freeze({
     passing: result.pass,
     passingComposite,
@@ -308,9 +323,12 @@ export function analyzeGap(data, result) {
       'Paths that can close the gap alone first, trainable components before body ' +
       'composition, then by steps in each component’s own unit. Reps, seconds and ' +
       'ratio hundredths are not interchangeable; show the unit with every number.',
-    summary: summarize(result, mandatory, remainingGap, paths, projectedComposite, scale)
+    summary: summarize(result, mandatory, remainingGap, paths, projectedComposite, scale, shared)
   });
 }
+
+const listNames = (mandatory) => mandatory
+  .map((m) => EVENT_PHRASES[m.event] ?? m.eventLabel).join(' and ');
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -332,7 +350,7 @@ function describeDistance(rung) {
   return `${plural(Math.round(rung.distance.ratio * 100), 'hundredth')} off the ratio`;
 }
 
-function summarize(result, mandatory, remainingGap, paths, projectedComposite, scale) {
+function summarize(result, mandatory, remainingGap, paths, projectedComposite, scale, shared) {
   if (result.pass) {
     return `Passing at ${result.composite.toFixed(1)}. Every component meets its minimum.`;
   }
@@ -349,24 +367,32 @@ function summarize(result, mandatory, remainingGap, paths, projectedComposite, s
 
   if (remainingGap === 0) {
     if (mandatory.length > 0) {
-      parts.push(`Clearing that alone reaches ${projectedComposite.toFixed(1)}, which passes.`);
+      parts.push(`Raising those to the minimum, with everything else as entered, reaches ` +
+        `${projectedComposite.toFixed(1)}, which passes.`);
     }
     return parts.join(' ');
   }
 
   const cheapest = paths.find((p) => p.closesGap);
   parts.push(mandatory.length > 0
-    ? `Reaching the minimum brings the composite to ${projectedComposite.toFixed(1)}, ` +
+    ? `Raising those to the minimum, with everything else as entered, brings the composite ` +
+      `to ${projectedComposite.toFixed(1)}, ` +
       `still ${remainingGap.toFixed(1)} short of ${result.passingComposite.toFixed(1)}.`
     : `Every component meets its minimum, but the composite is ${remainingGap.toFixed(1)} ` +
       `short of ${result.passingComposite.toFixed(1)}.`);
+  if (shared) {
+    parts.push('Easiest is to share it out: ' +
+      shared.steps.map((st) => `${st.eventLabel.toLowerCase()} ${st.distance}`).join(', ') +
+      ` reaches ${shared.total.toFixed(1)}.`);
+  }
   if (cheapest) {
     // The gain is in chart points; the gap a cadet was just quoted is in
     // composite points. They are the same number unless a component is exempt,
     // and telling someone a 15 point gap closes with 7.5 points is no help.
     const gain = roundTo(cheapest.closesGap.gain * scale, 1);
     parts.push(
-      `The cheapest single route is ${EVENT_PHRASES[cheapest.event]}: ` +
+      `${shared ? 'Or, on one component alone, the cheapest' : 'The cheapest single route'} ` +
+      `is ${EVENT_PHRASES[cheapest.event]}: ` +
       `${describeDistance(cheapest.closesGap)} is worth ${gain.toFixed(1)} points.`);
   } else {
     parts.push('No single component can close it; improvement has to come from more than one.');
@@ -449,9 +475,29 @@ export function planForTarget(data, result, target) {
       kind: 'already_there',
       total: asComposite(base),
       steps: Object.freeze([]),
-      label: 'Clearing the component minimums alone reaches ' +
-        `${asComposite(base).toFixed(1)}.`
+      // Said plainly (Captain Russell, 20 Nov 2026): "clearing the component
+      // minimums alone reaches 94.0" read as if the minimums were worth 94.
+      // The total is the score as entered, with only a failed component
+      // raised to its minimum.
+      label: gap.mandatory.length === 0
+        ? `Your score of ${asComposite(base).toFixed(1)} already reaches ${target.toFixed(1)}.`
+        : `Raising ${listNames(gap.mandatory)} to the minimum, with everything else as ` +
+          `entered, reaches ${asComposite(base).toFixed(1)}.`
     }));
+  }
+
+  // Shared first (Captain Russell, 20 Nov 2026): someone barely passing the
+  // run and the push-ups finds it easier to raise both a good way than to max
+  // out one, so the default recommendation raises every trainable component
+  // by the same share of its remaining room. Body composition joins only if
+  // the trainable components cannot get there on their own.
+  if (needed > 0) {
+    const trainable = TRAINABLE_SOON.filter((c) => assessed.includes(c));
+    const spread = proportionalPlan(result, ladders, floorPoints, needed, trainable, assessed, asComposite)
+      ?? proportionalPlan(result, ladders, floorPoints, needed, assessed, assessed, asComposite)
+      ?? spreadPlan(result, ladders, floorPoints, needed, trainable, assessed, asComposite)
+      ?? spreadPlan(result, ladders, floorPoints, needed, assessed, assessed, asComposite);
+    if (spread) plans.push(spread);
   }
 
   // One component does all the work.
@@ -478,17 +524,6 @@ export function planForTarget(data, result, target) {
     }));
   }
 
-  // Share the work out across the components that can still improve. Try the
-  // trainable components on their own first: reps and pace are what a cadet
-  // can move before a retest, so a plan that reaches the target without
-  // touching body composition is the more useful one.
-  if (needed > 0) {
-    const trainable = TRAINABLE_SOON.filter((c) => assessed.includes(c));
-    const spread = spreadPlan(result, ladders, floorPoints, needed, trainable, assessed, asComposite)
-      ?? spreadPlan(result, ladders, floorPoints, needed, assessed, assessed, asComposite);
-    if (spread) plans.push(spread);
-  }
-
   return Object.freeze({
     target,
     reachable: plans.length > 0,
@@ -499,6 +534,71 @@ export function planForTarget(data, result, target) {
     note: plans.length === 0
       ? `${target.toFixed(1)} is out of reach from this assessment even at chart maximums.`
       : null
+  });
+}
+
+/**
+ * Raise every component in `usable` by the same share of its remaining room.
+ *
+ * Finds the smallest share f (0 to 1) where each component, lifted to the
+ * cheapest rung at or above floor + f x (its best rung - floor), reaches the
+ * target together. A cadet with 10 points of room on the run and 4 on
+ * push-ups is asked for about 2.5 run points for every push-up point, so
+ * nothing is maxed out while another component sits untouched.
+ *
+ * Returns null if `usable` cannot reach the target or only one component
+ * moves (a single component plan already covers that).
+ */
+function proportionalPlan(result, ladders, floorPoints, needed, usable, assessed, asComposite) {
+  const room = {};
+  for (const c of usable) {
+    const top = ladders[c].reduce((m, r) => Math.max(m, r.points), floorPoints[c]);
+    room[c] = roundTo(top - floorPoints[c], 1);
+  }
+  const movable = usable.filter((c) => room[c] > 0);
+  if (movable.length < 2) return null;
+
+  const pick = (f) => {
+    const taken = {};
+    let gained = 0;
+    for (const c of movable) {
+      const want = roundTo(floorPoints[c] + f * room[c], 1);
+      const rung = rungForPoints(ladders[c], want, floorPoints[c]);
+      if (rung) {
+        taken[c] = rung;
+        gained = roundTo(gained + rung.points - floorPoints[c], 1);
+      }
+    }
+    return { taken, gained };
+  };
+
+  if (pick(1).gained < needed) return null;
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 40; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (pick(mid).gained >= needed) hi = mid; else lo = mid;
+  }
+  const { taken } = pick(hi);
+
+  const steps = assessed
+    .filter((c) => taken[c])
+    .map((c) => Object.freeze({
+      component: c,
+      eventLabel: result.components[c].eventLabel,
+      rung: taken[c],
+      distance: describeDistance(taken[c])
+    }));
+  if (steps.length <= 1) return null;
+
+  const total = asComposite(sumPoints(assessed.map((c) => taken[c]?.points ?? floorPoints[c])));
+  return Object.freeze({
+    kind: 'spread',
+    total,
+    steps: Object.freeze(steps),
+    label: `Shared across ${steps.length} components: ` +
+      steps.map((s) => `${s.eventLabel.toLowerCase()} ${s.distance}`).join(', ') +
+      ` reaches ${total.toFixed(1)}.`
   });
 }
 
