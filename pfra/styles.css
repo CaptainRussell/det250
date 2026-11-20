@@ -3269,3 +3269,28 @@ form#assessment > .about-row { gap: 10px; }
   .event:not(.open):not([data-component="body_composition"]) h2 { width: 8rem; line-height: 1.15; }
 }
 .fine-group input[type="number"] { text-align: center; }
+
+/* --- one measurement per row (Captain Russell, 20 Nov 2026) ---------------
+ * Waist to height (height, waist) and the body fat card (two or three tape
+ * sites, or the scale) put each measurement on its own row on desktop, laid
+ * out on the same columns as the one-line cards above them: the label where
+ * the name sits, the slider where their sliders sit, the arrows and box
+ * where theirs are. Three sliders side by side were too short to drag. */
+@media (min-width: 561px) {
+  .event[data-component="body_composition"]:not(.open) > .measure-row,
+  .bfa:not(.open) .bfa-fields {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .event:not(.open) .measure-row .field,
+  .bfa:not(.open) .bfa-fields .field {
+    grid-template-columns: calc(34px + 8rem) minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .event:not(.open) .label-unit { display: inline; }
+}
+/* Wide enough: end the rows' boxes under the boxes of the cards above. */
+@media (min-width: 900px) {
+  .event[data-component="body_composition"]:not(.open) > .measure-row,
+  .bfa:not(.open) .bfa-fields { padding-right: 180px; }
+}
