@@ -453,7 +453,7 @@ section.band{margin-top:26px}
   var r = document.documentElement, first = t && (t.charts || [])[0];
   window.D250_TERM = t || null;
   r.classList.add('js'); r.dataset.page = t ? (t.lock ? 'locked' : 'chart') : 'home';
-  if(t && (t.charts || []).length && (t.charts || []).every(function(c){ return c.kind === 'proposal'; })) r.classList.add('compact');   // one-screen layout (Nov 2026)
+  if(t) r.classList.add('compact');   // one-screen layout on every semester's charts (Captain Russell, 20 Nov 2026)
   r.dataset.mode = t && ((v === 'flip' && has(t, 'flip')) || (!v && first && first.kind === 'flip')) ? 'flip' : 'poc';
   if(t && !q.has('term')){ var u = new URL(location.href); u.searchParams.set('term', t.id); history.replaceState(null, '', u); }   // old link: name the semester
   if(t){
