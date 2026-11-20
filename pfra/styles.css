@@ -2378,11 +2378,11 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 
 /* Condensed like the component cards: picture, name, the measurement boxes,
  * the outcome chip and the arrow. Everything else waits for the arrow. */
-.bfa:not(.open) { padding: 8px 12px; gap: 6px; }
-.bfa:not(.open) .event-icon { width: 34px; height: 34px; grid-row: 1; }
-.bfa:not(.open) .event-icon svg { width: 22px; height: 22px; }
-.bfa:not(.open) .bfa-title { font-size: .95rem; }
-.bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
+.bfa:is(.open, :not(.open)) { padding: 8px 12px; gap: 6px; }
+.bfa:is(.open, :not(.open)) .event-icon { width: 34px; height: 34px; grid-row: 1; }
+.bfa:is(.open, :not(.open)) .event-icon svg { width: 22px; height: 22px; }
+.bfa:is(.open, :not(.open)) .bfa-title { font-size: .95rem; }
+.bfa:is(.open, :not(.open)) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
 /* The Cadet / Active Duty pair stays, since it changes what the chip means. */
 .bfa:not(.open) .event-tools > *,
 .bfa:not(.open) .bfa-trigger,
@@ -2390,17 +2390,36 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:not(.open) .bfa-fields .hint,
 .bfa:not(.open) .bfa-result,
 .bfa:not(.open) .bfa-note { display: none; }
-.bfa:not(.open) .bfa-body { gap: 6px; }
+
+/* Open, the card keeps its condensed lines exactly where they were (Captain
+ * Russell, 20 Nov 2026): the head and body unwrap into one grid, the
+ * measurement rows stay on the second line, and everything the arrow adds
+ * (Tape / InBody, the reason line, the hint, the result) goes underneath. */
+.bfa.open {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  column-gap: 12px;
+  align-items: center;
+}
+.bfa.open > .event-head,
+.bfa.open > .bfa-body { display: contents; }
+/* The 6px is the empty tools line the condensed head keeps under its name. */
+.bfa.open .bfa-fields { grid-row: 2; grid-column: 1 / -1; margin-top: 6px; }
+.bfa.open .bfa-fields .hint { display: none; }
+.bfa.open > .event-head > .event-tools { grid-row: 3; }
+.bfa.open > .event-head > .event-tools,
+.bfa.open > .bfa-trigger,
+.bfa.open > .bfa-body > :not(.bfa-fields) { grid-column: 1 / -1; }
+.bfa.open > .event-head > .event-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.bfa:is(.open, :not(.open)) .bfa-body { gap: 6px; }
 /* Not needed: the boxes stay, greyed out, so the card is the same height
  * either way; the open card says why instead. */
-.bfa.idle:not(.open) .bfa-fields { opacity: .45; }
-.bfa.idle.open .bfa-body { display: none; }
-.bfa:not(.open) .bfa-fields {
+.bfa.idle .bfa-fields { opacity: .45; }
+.bfa:is(.open, :not(.open)) .bfa-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 8px 20px;
 }
-.bfa:not(.open) .bfa-fields .field {
+.bfa:is(.open, :not(.open)) .bfa-fields .field {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas: "label slider input";
@@ -2408,16 +2427,16 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   gap: 8px;
   min-width: 0;
 }
-.bfa:not(.open) .bfa-fields .field[hidden] { display: none; }
-.bfa:not(.open) .bfa-fields label {
+.bfa:is(.open, :not(.open)) .bfa-fields .field[hidden] { display: none; }
+.bfa:is(.open, :not(.open)) .bfa-fields label {
   grid-area: label;
   margin: 0;
   font-size: .8rem;
   font-weight: 600;
   color: var(--ink-soft);
 }
-.bfa:not(.open) .bfa-fields .fine-box { grid-area: input; }
-.bfa:not(.open) .bfa-fields input[type="number"] {
+.bfa:is(.open, :not(.open)) .bfa-fields .fine-box { grid-area: input; }
+.bfa:is(.open, :not(.open)) .bfa-fields input[type="number"] {
   width: 64px;
   min-height: 0;
   height: 36px;
@@ -2425,11 +2444,11 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   font-size: .95rem;
   text-align: center;
 }
-.bfa:not(.open) .bfa-fields .slider-row { grid-area: slider; gap: 6px; margin: 0; }
-.bfa:not(.open) .slider { --thumb-size: 26px; --track-height: 9px; }
-.bfa:not(.open) .slider-end { font-size: .68rem; }
+.bfa:is(.open, :not(.open)) .bfa-fields .slider-row { grid-area: slider; gap: 6px; margin: 0; }
+.bfa:is(.open, :not(.open)) .slider { --thumb-size: 26px; --track-height: 9px; }
+.bfa:is(.open, :not(.open)) .slider-end { font-size: .68rem; }
 @media (max-width: 560px) {
-  .bfa:not(.open) .bfa-fields .field {
+  .bfa:is(.open, :not(.open)) .bfa-fields .field {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas: "label input" "slider slider";
     gap: 4px 8px;
@@ -2957,8 +2976,8 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 .event-head .more-toggle { grid-area: 1 / 4; }
 .event.open .event-head { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 
-.event:not(.open) {
-  grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
+.event:is(.open, :not(.open)) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto 32px auto auto;
   grid-template-areas:
     "icon name slider input listen chip more"
     "bar  bar  bar    bar   bar    bar  bar";
@@ -2967,16 +2986,16 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   padding: 8px 12px;
 }
 .event:not(.open) + .event { margin-top: -2px; }
-.event:not(.open) > .event-head,
+.event:is(.open, :not(.open)) > .event-head,
 .event:not(.open) .event-tools { display: contents; }
-.event:not(.open) .event-icon { grid-area: icon; width: 34px; height: 34px; }
-.event:not(.open) .event-icon svg { width: 22px; height: 22px; }
-.event:not(.open) h2 { grid-area: name; font-size: .95rem; min-width: 0; }
-.event:not(.open) .chip { grid-area: chip; padding: 3px 10px; font-size: .85rem;
+.event:is(.open, :not(.open)) .event-icon { grid-area: icon; width: 34px; height: 34px; }
+.event:is(.open, :not(.open)) .event-icon svg { width: 22px; height: 22px; }
+.event:is(.open, :not(.open)) h2 { grid-area: name; font-size: .95rem; min-width: 0; }
+.event:is(.open, :not(.open)) .chip { grid-area: chip; padding: 3px 10px; font-size: .85rem;
   /* A fixed width, so a score changing as a slider moves cannot resize the
    * slider beside it and slide the handle out from under the pointer. */
   min-width: 92px; text-align: center; }
-.event:not(.open) .more-toggle { grid-area: more; }
+.event:is(.open, :not(.open)) .more-toggle { grid-area: more; }
 .event:not(.open) .listen-pill {
   grid-area: listen;
   width: 32px;
@@ -2987,10 +3006,10 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 }
 .event:not(.open) .listen-pill span { display: none; }
 .event:not(.open) .event-tools > :not(.listen-pill) { display: none; }
-.event:not(.open) .meter { grid-area: bar; height: 3px; margin: 0; }
-.event:not(.open) > .stepper,
-.event:not(.open) > .time-inputs,
-.event:not(.open) > .measure-row { grid-area: input; justify-self: end; }
+.event:is(.open, :not(.open)) .meter { grid-area: bar; height: 3px; margin: 0; }
+.event:is(.open, :not(.open)) > .stepper,
+.event:is(.open, :not(.open)) > .time-inputs,
+.event:is(.open, :not(.open)) > .measure-row { grid-area: input; justify-self: end; }
 /* Everything else on the card waits for the arrow. */
 /* The exempt / did not finish note and the altitude strip come and go with
  * the numbers (a body fat pass exempts waist to height), so they are on the
@@ -3000,12 +3019,35 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   .time-inputs, .measure-row, .slider-row) {
   display: none;
 }
-.event:not(.open) > .alt-note,
-.event:not(.open) > .event-picker { grid-column: 1 / -1; }
+.event:is(.open, :not(.open)) > .alt-note,
+.event:is(.open, :not(.open)) > .event-picker { grid-column: 1 / -1; }
+
+/* Opening a card keeps the one-line row exactly where it was: icon, name,
+ * slider, number box, score and arrow do not move (Captain Russell, 20 Nov
+ * 2026). `.event:is(.open, :not(.open))` above is every card at the weight
+ * the condensed rules always had, so the old full-card rules still lose to
+ * them. The tools (How It's Graded, Scoring Chart, Exempt, Did Not Finish,
+ * Altitude), the exercise picker, notes, chart and Lap Pace go underneath,
+ * full width, in page order; the listen circle's place in the row is kept
+ * empty while its labelled pill sits in the tools row. */
+.event.open > .event-head > .event-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1 / -1;
+  /* Straight under the meter, the last line of every layout's row. */
+  grid-row: bar-end / span 1;
+  margin: 4px 0 0;
+}
+.event.open > :not(.event-head, .meter, .stepper, .time-inputs, .measure-row, .slider-row, .sum-readout) {
+  grid-column: 1 / -1;
+}
+.event.open .measure-row .field > :not(label, .fine-box, .slider-row) { display: none; }
 
 /* The number boxes, small. Typing is the fast way in; the steppers, sliders
  * and labels are on the open card. */
-.event:not(.open) input[type="number"] {
+.event:is(.open, :not(.open)) input[type="number"] {
   width: 64px;
   min-height: 0;
   height: 36px;
@@ -3013,21 +3055,21 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   font-size: .95rem;
   text-align: center;
 }
-.event:not(.open) .time-inputs {
+.event:is(.open, :not(.open)) .time-inputs {
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.event:not(.open) .time-inputs input { width: 42px; }
-.event:not(.open) .measure-row {
+.event:is(.open, :not(.open)) .time-inputs input { width: 42px; }
+.event:is(.open, :not(.open)) .measure-row {
   display: flex;
   gap: 8px;
 }
-.event:not(.open) .measure-row input[type="number"] { width: 64px; }
+.event:is(.open, :not(.open)) .measure-row input[type="number"] { width: 64px; }
 
 /* The slider sits between the name and the number box, smaller than on the
  * open card so the line stays one line. */
-.event:not(.open) > .slider-row {
+.event:is(.open, :not(.open)) > .slider-row {
   grid-area: slider;
   gap: 6px;
   min-width: 0;
@@ -3035,26 +3077,26 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 }
 /* Big enough to grab on one line (Captain Russell, Nov 2026); the fine tune
  * panel does the last few reps or seconds. */
-.event:not(.open) .slider { --thumb-size: 26px; --track-height: 9px; }
-.event:not(.open) .slider-end { font-size: .68rem; }
+.event:is(.open, :not(.open)) .slider { --thumb-size: 26px; --track-height: 9px; }
+.event:is(.open, :not(.open)) .slider-end { font-size: .68rem; }
 
 /* Waist to height has two sliders, so its measurements take a second line:
  * height on the left, waist on the right, each as label, slider, box. */
-.event[data-component="body_composition"]:not(.open) {
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+.event[data-component="body_composition"]:is(.open, :not(.open)) {
+  grid-template-columns: auto minmax(0, 1fr) 32px auto auto;
   grid-template-areas:
     "icon name  listen chip more"
     "row  row   row    row  row"
     "bar  bar   bar    bar  bar";
 }
-.event[data-component="body_composition"]:not(.open) > .measure-row {
+.event[data-component="body_composition"]:is(.open, :not(.open)) > .measure-row {
   grid-area: row;
   justify-self: stretch;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px 20px;
 }
-.event:not(.open) .measure-row .field {
+.event:is(.open, :not(.open)) .measure-row .field {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas: "label slider input";
@@ -3062,19 +3104,19 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   gap: 8px;
   min-width: 0;
 }
-.event:not(.open) .measure-row .field > label {
+.event:is(.open, :not(.open)) .measure-row .field > label {
   grid-area: label;
   margin: 0;
   font-size: .8rem;
   font-weight: 600;
   color: var(--ink-soft);
 }
-.event:not(.open) .measure-row .field > .fine-box { grid-area: input; }
-.event:not(.open) .measure-row .field > .slider-row { grid-area: slider; margin: 0; gap: 6px; }
+.event:is(.open, :not(.open)) .measure-row .field > .fine-box { grid-area: input; }
+.event:is(.open, :not(.open)) .measure-row .field > .slider-row { grid-area: slider; margin: 0; gap: 6px; }
 .event:not(.open) .measure-row .field > :not(label, .fine-box, .slider-row) { display: none; }
 
 @media (max-width: 560px) {
-  .event:not(.open) {
+  .event:is(.open, :not(.open)) {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       "icon   name   chip   more"
@@ -3082,27 +3124,27 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
       "slider slider slider slider"
       "bar    bar    bar    bar";
   }
-  .event[data-component="body_composition"]:not(.open) {
+  .event[data-component="body_composition"]:is(.open, :not(.open)) {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       "icon name   chip   more"
       "row  row    row    listen"
       "bar  bar    bar    bar";
   }
-  .event[data-component="body_composition"]:not(.open) > .measure-row {
+  .event[data-component="body_composition"]:is(.open, :not(.open)) > .measure-row {
     grid-template-columns: 1fr;
   }
-  .event:not(.open) .measure-row .field {
+  .event:is(.open, :not(.open)) .measure-row .field {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas: "label input" "slider slider";
     gap: 4px 8px;
   }
   .event[data-component="body_composition"]:not(.open) .listen-pill { align-self: start; }
-  .event:not(.open) .event-icon { align-self: start; }
+  .event:is(.open, :not(.open)) .event-icon { align-self: start; }
   .event:not(.open) .listen-pill { justify-self: end; }
-  .event:not(.open) > .stepper,
-  .event:not(.open) > .time-inputs,
-  .event:not(.open) > .measure-row { justify-self: start; }
+  .event:is(.open, :not(.open)) > .stepper,
+  .event:is(.open, :not(.open)) > .time-inputs,
+  .event:is(.open, :not(.open)) > .measure-row { justify-self: start; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3192,8 +3234,8 @@ form#assessment > .about-row { gap: 10px; }
  * included, which is too small for a thumb. On a touch screen the handle and
  * track stay large, and the grab area runs well above and below the track. */
 @media (pointer: coarse) {
-  .event:not(.open) .slider,
-  .bfa:not(.open) .slider { --thumb-size: 34px; --track-height: 12px; }
+  .event:is(.open, :not(.open)) .slider,
+  .bfa:is(.open, :not(.open)) .slider { --thumb-size: 34px; --track-height: 12px; }
   .slider { height: calc(var(--thumb-size) + 18px); }
 }
 
@@ -3233,40 +3275,40 @@ form#assessment > .about-row { gap: 10px; }
 .fine-step:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .fine-step:disabled { opacity: .3; cursor: default; }
 /* Condensed: the arrows hug the box, the height of the box. */
-.event:not(.open) .fine-group,
-.bfa:not(.open) .fine-group {
+.event:is(.open, :not(.open)) .fine-group,
+.bfa:is(.open, :not(.open)) .fine-group {
   display: grid;
   grid-template-columns: 28px auto 28px;
   gap: 3px;
 }
-.event:not(.open) .time-inputs.fine-group { grid-template-columns: 28px auto auto auto 28px; }
-.event:not(.open) input[type="number"] { padding: 4px 2px; }
-.event:not(.open) .fine-step,
-.bfa:not(.open) .fine-step { height: 36px; }
-.event:not(.open) .fine-step svg,
-.bfa:not(.open) .fine-step svg { width: 18px; height: 18px; }
+.event:is(.open, :not(.open)) .time-inputs.fine-group { grid-template-columns: 28px auto auto auto 28px; }
+.event:is(.open, :not(.open)) input[type="number"] { padding: 4px 2px; }
+.event:is(.open, :not(.open)) .fine-step,
+.bfa:is(.open, :not(.open)) .fine-step { height: 36px; }
+.event:is(.open, :not(.open)) .fine-step svg,
+.bfa:is(.open, :not(.open)) .fine-step svg { width: 18px; height: 18px; }
 @media (pointer: coarse) {
-  .event:not(.open) .fine-group,
-  .bfa:not(.open) .fine-group { grid-template-columns: 42px auto 42px; }
-  .event:not(.open) .time-inputs.fine-group { grid-template-columns: 42px auto auto auto 42px; }
-  .event:not(.open) .fine-step,
-  .bfa:not(.open) .fine-step { height: 42px; }
-  .event:not(.open) .fine-group input[type="number"],
-  .bfa:not(.open) .fine-group input[type="number"] { height: 42px; }
+  .event:is(.open, :not(.open)) .fine-group,
+  .bfa:is(.open, :not(.open)) .fine-group { grid-template-columns: 42px auto 42px; }
+  .event:is(.open, :not(.open)) .time-inputs.fine-group { grid-template-columns: 42px auto auto auto 42px; }
+  .event:is(.open, :not(.open)) .fine-step,
+  .bfa:is(.open, :not(.open)) .fine-step { height: 42px; }
+  .event:is(.open, :not(.open)) .fine-group input[type="number"],
+  .bfa:is(.open, :not(.open)) .fine-group input[type="number"] { height: 42px; }
 }
 @media print { .fine-step { display: none !important; } }
 
 /* The waist slider waits for a height (its ends depend on it). Its room is
  * kept on the condensed card, so typing the height does not grow the card
  * (Captain Russell, Nov 2026). */
-.event:not(.open) .measure-row .field > .slider-row[hidden] { display: grid !important; visibility: hidden; }
+.event:is(.open, :not(.open)) .measure-row .field > .slider-row[hidden] { display: grid !important; visibility: hidden; }
 /* "Height" is enough on the one-line card; the slider ends say inches. */
-@media (min-width: 561px) { .event:not(.open) .label-unit { display: none; } }
+@media (min-width: 561px) { .event:is(.open, :not(.open)) .label-unit { display: none; } }
 /* One name width on every one-line card, so the sliders line up and a long
  * name ("Hand Release Push-Ups") takes two short lines instead of the
  * slider's room. */
 @media (min-width: 561px) {
-  .event:not(.open):not([data-component="body_composition"]) h2 { width: 8rem; line-height: 1.15; }
+  .event:is(.open, :not(.open)):not([data-component="body_composition"]) h2 { width: 8rem; line-height: 1.15; }
 }
 .fine-group input[type="number"] { text-align: center; }
 
@@ -3277,22 +3319,22 @@ form#assessment > .about-row { gap: 10px; }
  * the name sits, the slider where their sliders sit, the arrows and box
  * where theirs are. Three sliders side by side were too short to drag. */
 @media (min-width: 561px) {
-  .event[data-component="body_composition"]:not(.open) > .measure-row,
-  .bfa:not(.open) .bfa-fields {
+  .event[data-component="body_composition"]:is(.open, :not(.open)) > .measure-row,
+  .bfa:is(.open, :not(.open)) .bfa-fields {
     grid-template-columns: 1fr;
     gap: 6px;
   }
-  .event:not(.open) .measure-row .field,
-  .bfa:not(.open) .bfa-fields .field {
+  .event:is(.open, :not(.open)) .measure-row .field,
+  .bfa:is(.open, :not(.open)) .bfa-fields .field {
     grid-template-columns: calc(34px + 8rem) minmax(0, 1fr) auto;
     gap: 8px;
   }
-  .event:not(.open) .label-unit { display: inline; }
+  .event:is(.open, :not(.open)) .label-unit { display: inline; }
 }
 /* Wide enough: end the rows' boxes under the boxes of the cards above. */
 @container form (min-width: 720px) {
-  .event[data-component="body_composition"]:not(.open) > .measure-row,
-  .bfa:not(.open) .bfa-fields { padding-right: 180px; }
+  .event[data-component="body_composition"]:is(.open, :not(.open)) > .measure-row,
+  .bfa:is(.open, :not(.open)) .bfa-fields { padding-right: 180px; }
 }
 
 /* The ratio and the body fat percent, large, in the room to the right of the
@@ -3303,8 +3345,8 @@ form#assessment > .about-row { gap: 10px; }
 @container form (min-width: 720px) {
   .event[data-component="body_composition"],
   .bfa { position: relative; }
-  .event[data-component="body_composition"]:not(.open) > .sum-readout,
-  .bfa:not(.open) > .sum-readout {
+  .event[data-component="body_composition"]:is(.open, :not(.open)) > .sum-readout,
+  .bfa:is(.open, :not(.open)) > .sum-readout {
     position: absolute;
     right: 12px;
     width: 168px;
@@ -3316,8 +3358,9 @@ form#assessment > .about-row { gap: 10px; }
     font-variant-numeric: tabular-nums;
     pointer-events: none;
   }
-  .event[data-component="body_composition"]:not(.open) > .sum-readout { bottom: 17px; height: 78px; }
-  .bfa:not(.open) > .sum-readout { bottom: 8px; height: 78px; }
+  .event[data-component="body_composition"]:is(.open, :not(.open)) > .sum-readout { top: 53px; height: 78px; }
+  /* Absolute inside its grid area: the measurement rows, open or not. */
+  .bfa:is(.open, :not(.open)) > .sum-readout { grid-row: 2 / 3; grid-column: 1 / -1; bottom: 0; height: 78px; }
   .sum-readout b { font-size: 2.1rem; font-weight: 800; color: var(--ink); }
   .sum-readout span {
     margin-top: 4px;
@@ -3331,7 +3374,7 @@ form#assessment > .about-row { gap: 10px; }
   .sum-readout.over b,
   .sum-readout.fail b { color: var(--fail); }
   .sum-readout.pass b { color: var(--pass, #4caf6e); }
-  .bfa.idle:not(.open) > .sum-readout { opacity: .45; }
+  .bfa.idle > .sum-readout { opacity: .45; }
 }
 @media print { .sum-readout { display: none !important; } }
 
@@ -3344,17 +3387,17 @@ form#assessment > .about-row { gap: 10px; }
 form#assessment { container: form / inline-size; }
 @media (min-width: 561px) {
   @container form (max-width: 719.98px) {
-    .event:not(.open):not([data-component="body_composition"]) {
-      grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+    .event:is(.open, :not(.open)):not([data-component="body_composition"]) {
+      grid-template-columns: auto minmax(0, 1fr) auto 32px auto auto;
       grid-template-areas:
         "icon   name   input  listen chip   more"
         "slider slider slider slider slider slider"
         "bar    bar    bar    bar    bar    bar";
     }
-    .event:not(.open):not([data-component="body_composition"]) h2 { width: auto; }
-    .event:not(.open) > .slider-row { padding: 0 2px; }
-    .event:not(.open) .measure-row .field,
-    .bfa:not(.open) .bfa-fields .field { grid-template-columns: 7.5rem minmax(0, 1fr) auto; }
+    .event:is(.open, :not(.open)):not([data-component="body_composition"]) h2 { width: auto; }
+    .event:is(.open, :not(.open)) > .slider-row { padding: 0 2px; }
+    .event:is(.open, :not(.open)) .measure-row .field,
+    .bfa:is(.open, :not(.open)) .bfa-fields .field { grid-template-columns: 7.5rem minmax(0, 1fr) auto; }
   }
 }
 
