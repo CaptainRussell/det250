@@ -590,7 +590,16 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 .chart-pic-col,
 .chart-pic-row,
 .chart-pic-cell,
+.chart-pic-head,
 .chart-pic-pts { position: absolute; pointer-events: none; }
+/* The age band and M / F headers over the member's column, and the row:
+ * the same light tint, with a firmer edge (Captain Russell, 20 Nov 2026). */
+.chart-pic-head {
+  background: rgba(241, 190, 72, .22);
+  outline: 2px solid rgba(200, 16, 46, .75);
+  outline-offset: -1px;
+  border-radius: 2px;
+}
 .chart-pic-pts {
   outline: 3px solid #c8102e;
   outline-offset: 1px;
@@ -598,8 +607,11 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
   background: rgba(241, 190, 72, .28);
   box-shadow: 0 0 0 6px rgba(200, 16, 46, .18);
 }
-.chart-pic-col,
-.chart-pic-row { background: rgba(200, 16, 46, .08); }
+.chart-pic-col { background: rgba(200, 16, 46, .08); }
+.chart-pic-row {
+  background: rgba(200, 16, 46, .12);
+  box-shadow: inset 0 2px 0 rgba(200, 16, 46, .6), inset 0 -2px 0 rgba(200, 16, 46, .6);
+}
 .chart-pic-cell {
   background: rgba(241, 190, 72, .38);
   outline: 3px solid #c8102e;
