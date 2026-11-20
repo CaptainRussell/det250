@@ -19,7 +19,7 @@ import {
   createScorer, COMPONENTS, COMPONENT_LABELS, EVENT_LABELS, EVENT_PHRASES,
   DET250_EVENTS, formatTime
 } from './src/engine.js?v=c1401fb0cb';
-import { createAnalyzer, describeSeconds } from './src/analysis.js?v=c1401fb0cb';
+import { createAnalyzer, describeSeconds } from './src/analysis.js?v=steady7';
 import { VERBIAGE, VERBIAGE_SOURCE, verbiageFor } from './src/verbiage.js?v=c1401fb0cb';
 import { eventIcon } from './src/icons.js?v=bfa1';
 import {
@@ -570,7 +570,11 @@ const listOf = (items) => items.length < 2 ? items.join('')
   : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 function showCadetFlag() {
-  const { alternates, exempt, any } = cadetProblems();
+  const problems = cadetProblems();
+  const { alternates, exempt } = problems;
+  // Scored as Active Duty: alternates and exemptions are allowed, so there is
+  // nothing to flag (Captain Russell, 20 Nov 2026).
+  const any = problems.any && bfa.who !== 'ad';
   const parts = [];
   if (alternates.length) parts.push(`This uses ${listOf(alternates)}, which cadets are not tested on.`);
   if (exempt.length) {
@@ -1661,7 +1665,9 @@ function showAward(result) {
   // exemption, including one from the Exempt button, is not allowed.
   // An assessment a cadet could not have taken is flagged by showCadetFlag()
   // at the top of the score, which already says it earns no award.
-  if (!result || cadetProblems().any) {
+  // A cadet award only: an assessment scored as Active Duty never shows it
+  // (Captain Russell, 20 Nov 2026).
+  if (!result || bfa.who === 'ad' || cadetProblems().any) {
     line.hidden = true;
     return;
   }
@@ -1911,6 +1917,14 @@ function bfaMeasurements(sexCode) {
  */
 function showBfa(result, complete) {
   const panel = $('bfa');
+  // The sites follow the Sex switch at once, even while the card is greyed
+  // out (Captain Russell, 20 Nov 2026): neck and abdomen for men, neck, waist
+  // and hips for women.
+  if (bfa.shownSex !== sex) {
+    bfa.shownSex = sex;
+    showBfaFields(sex);
+    renderBfaSliders();
+  }
   const scored = result && result.components
     ? result.components.body_composition
     : null;
@@ -2267,7 +2281,7 @@ function bfaExemptionNote(on) {
 
 /** Light the Cadet / Active Duty pair to match `bfa.who`. */
 function showBfaWho() {
-  for (const button of document.querySelectorAll('.bfa-who')) {
+  for (const button of document.querySelectorAll('[data-bfa-who]')) {
     const on = button.dataset.bfaWho === bfa.who;
     button.classList.toggle('on', on);
     button.setAttribute('aria-pressed', String(on));
@@ -2275,7 +2289,7 @@ function showBfaWho() {
 }
 
 function wireBfa() {
-  for (const button of document.querySelectorAll('.bfa-who')) {
+  for (const button of document.querySelectorAll('[data-bfa-who]')) {
     button.addEventListener('click', () => {
       if (bfa.who === button.dataset.bfaWho) return;
       bfa.who = button.dataset.bfaWho;
@@ -4702,8 +4716,8 @@ function onPlan() {
     const box = el('div', 'plan');
     box.append(el('div', 'plan-kind', {
       already_there: 'Already there',
-      single_component: 'One component does it',
-      spread: 'Shared across components'
+      single_component: 'Or one component on its own',
+      spread: 'Recommended: share it out'
     }[entry.kind] ?? entry.kind));
 
     if (entry.steps.length === 0) {
