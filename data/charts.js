@@ -8,15 +8,17 @@
      blurb     optional line under the title (otherwise the chart names are listed)
      frozen    true once the semester is over: its charts read data/org-archive/<id>.js,
                a copy of the roster saved by the admin page's Freeze button
+     lock      "cadre": the semester opens only with the cadre password; its packages are in
+               org-chart/locked/<id>.json (tools/org-lock.mjs), not in the public repo
      charts    the buttons on that semester's chart bar, in order
        kind    "poc" (POC chart) or "flip" (Flip Week), both from the roster
                (or the frozen copy), or "proposal" (a proposed package in org-chart/proposals.js)
-       proposal  for kind "proposal": the package id in proposals.js
+       proposal  for kind "proposal": the package id (in org-chart/locked/<semester id>.json)
        name    button text */
 window.D250_CHARTS = {
 "current": "fall-2026",
 "semesters": [
   {"id":"fall-2026","name":"Fall 2026","blurb":"The 250th Cadet Wing POC chart and the Flip Week chart.","charts":[{"kind":"poc","name":"POC Chart"},{"kind":"flip","name":"Flip Week"}]},
-  {"id":"spring-2027","name":"Spring 2027","blurb":"The three proposed wing command packages.","charts":[{"kind":"proposal","proposal":"kingery-helle","name":"Kingery/Helle"},{"kind":"proposal","proposal":"alt-bourek","name":"Alt/Bourek"},{"kind":"proposal","proposal":"salas-bienfang","name":"Salas/Bienfang"}]}
+  {"id":"spring-2027","name":"Spring 2027","blurb":"The Spring 2027 250th Cadet Wing.","lock":"cadre","charts":[{"kind":"proposal","proposal":"kingery-helle","name":"Spring 2027"}]}
 ]
 };

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Det 250 Org Chart · Storm HQ</title>
 <link rel="icon" type="image/png" href="assets/det250-patch-icon.png">
-<meta name="description" content="250th Cadet Wing, Det 250 Iowa State University: Fall 2026 organization chart with a Flip Week view.">
+<meta name="description" content="250th Cadet Wing, Det 250 Iowa State University: the wing organization chart for each semester.">
 <style>
 :root{
   --bg:#f4f4f6; --surface:#ffffff; --surface-2:#eeeef1; --border:#d9d9de; --border-strong:#c2c2c9;
@@ -433,6 +433,7 @@ section.band{margin-top:26px}
 </style>
 <link rel="stylesheet" href="../shared/det250.css">
 <link rel="stylesheet" href="proposals.css">
+<link rel="stylesheet" href="compact.css">
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/org-chart.webp" alt="" width="24" height="24"><span>Det 250 Org Chart</span></span></a>
@@ -451,7 +452,8 @@ section.band{margin-top:26px}
   }
   var r = document.documentElement, first = t && (t.charts || [])[0];
   window.D250_TERM = t || null;
-  r.classList.add('js'); r.dataset.page = t ? 'chart' : 'home';
+  r.classList.add('js'); r.dataset.page = t ? (t.lock ? 'locked' : 'chart') : 'home';
+  if(t && (t.charts || []).length && (t.charts || []).every(function(c){ return c.kind === 'proposal'; })) r.classList.add('compact');   // one-screen layout (Nov 2026)
   r.dataset.mode = t && ((v === 'flip' && has(t, 'flip')) || (!v && first && first.kind === 'flip')) ? 'flip' : 'poc';
   if(t && !q.has('term')){ var u = new URL(location.href); u.searchParams.set('term', t.id); history.replaceState(null, '', u); }   // old link: name the semester
   if(t){
@@ -467,7 +469,7 @@ section.band{margin-top:26px}
       <div class="d250-head-text">
         <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
         <h1>Det 250 Org Chart</h1>
-        <p class="d250-head-sub">Fall 2026 wing organization and Flip Week, plus Spring 2027 proposed charts.</p>
+        <p class="d250-head-sub">The 250th Cadet Wing organization by semester.</p>
       </div>
   </div>
 </header>
@@ -475,11 +477,17 @@ section.band{margin-top:26px}
   <div class="chartbar-in">
     <span class="termname" id="term-name"></span>
     <div class="seg" id="chart-seg" role="group" aria-label="Which chart to show"></div>
+    <span class="lockpill" id="lock-pill" hidden><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Cadre only</span>
+    <span class="cb-tools" id="cb-tools">
+      <button type="button" class="sumbtn" id="sum-btn" aria-haspopup="dialog" hidden>Summary of Changes <span class="n"></span></button>
+      <button type="button" class="cadrebtn" id="cadre-btn" aria-expanded="false" aria-controls="cadre"><span class="stack" id="cadre-faces2" aria-hidden="true"></span>Cadre<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    </span>
     <script>
     (function(){   // one button per chart of this semester (data/charts.js)
       var t = window.D250_TERM; if(!t) return;
       var e = function(x){ return String(x == null ? '' : x).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
       document.getElementById('term-name').textContent = t.name;
+      document.getElementById('lock-pill').hidden = !t.lock;
       document.getElementById('chart-seg').innerHTML = (t.charts || []).map(function(c){
         return c.kind === 'proposal' ? '<button type="button" data-proposal="' + e(c.proposal) + '" aria-pressed="false">' + e(c.name) + '</button>'
           : '<button type="button" data-set-mode="' + (c.kind === 'flip' ? 'flip' : 'poc') + '" aria-pressed="false">' + e(c.name) + '</button>';
@@ -500,9 +508,9 @@ section.band{margin-top:26px}
     var C = window.D250_CHARTS || {semesters:[]}, e = function(x){ return String(x == null ? '' : x).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
     var list = (C.semesters || []).slice().reverse();   // newest first
     document.getElementById('terms').innerHTML = list.map(function(t, i){
-      var names = (t.charts || []).map(function(c){ return c.name; }).join(' \u00b7 ');
+      var names = (t.charts || []).map(function(c){ return c.name; }).filter(function(n){ return n !== t.name; }).join(' \u00b7 ');
       return '<a class="term" href="?term=' + encodeURIComponent(t.id) + '" style="--i:' + i + '"><span class="ticon" aria-hidden="true"><img src="../shared/card-art/org-chart.webp" alt="" width="56" height="56"></span>'
-        + '<span class="tbody"><span class="tname">' + e(t.name) + (t.id === C.current ? ' <span class="tnow">Current</span>' : '') + '</span>'
+        + '<span class="tbody"><span class="tname">' + e(t.name) + (t.id === C.current ? ' <span class="tnow">Current</span>' : '') + (t.lock ? ' <span class="tlock">Cadre only</span>' : '') + '</span>'
         + '<span class="tblurb">' + e(t.blurb || names) + '</span>' + (t.blurb && names ? '<span class="tcharts">' + e(names) + '</span>' : '') + '</span></a>';
     }).join('') || '<p class="proposal-note">No semesters yet. Add one on the admin Org chart tab.</p>';
   })();
@@ -539,6 +547,13 @@ section.band{margin-top:26px}
   <section class="band" id="group" aria-labelledby="h-group">
     <div class="bandhead"><h2 id="h-group">Group Staff</h2><span class="rt">GP/CC reports to the WG/CC · GMC are assigned under each FLT/CC</span></div>
     <div class="panel"><div class="tree" id="tree-group"></div></div>
+  </section>
+  <section id="lockbox" aria-labelledby="lk-h">
+    <img src="assets/det250-patch.png" alt="" width="72" height="75">
+    <h2 id="lk-h">Cadre only</h2>
+    <p>Sign in as cadre on the Storm HQ home page, or enter the cadre password.</p>
+    <form autocomplete="off"><label class="sr" for="lk-pw">Cadre password</label><input id="lk-pw" type="password" placeholder="Cadre password" autocomplete="current-password"><button type="submit">Unlock</button></form>
+    <p class="lk-err" role="alert"></p>
   </section>
   <section id="spring-proposals" aria-label="Spring 2027 proposed organizational charts"></section>
 </main>
@@ -635,7 +650,7 @@ function face(seat, mode){
 }
 function card(seat, kind, i, o){
   const still = seat.cadre;
-  return `<button type="button" class="card ${kind}${still ? " static" : ""}" data-seat="${seat.id}" style="--i:${i};--o:${o}">
+  return `<button type="button" class="card ${kind}${still ? " static" : ""}${seat.changed ? " chg" : ""}" data-seat="${seat.id}" style="--i:${i};--o:${o}">
     <span class="flip">${face(seat, "poc")}${still ? "" : face(seat, "flip")}</span></button>`;
 }
 const po = s => s.pocVacant ? "fo" : (s.flip || s.cadre) ? "" : "po";   // fo: Flip Week only
@@ -892,16 +907,20 @@ function setCadre(open){
   if((body.dataset.open === "true") === open) return;
   body.dataset.open = open; btn.setAttribute("aria-expanded", open);
   btn.querySelector(".cb-label").textContent = open ? "Hide cadre" : "Show cadre";
+  $("#cadre-btn").setAttribute("aria-expanded", open);
+  if(open) document.documentElement.style.setProperty("--cadre-top", Math.round($(".chartbar").getBoundingClientRect().bottom + 8) + "px");
   if(open){ const band = $("#cadre"); band.classList.remove("in"); void band.offsetWidth; band.classList.add("in"); }
 }
 function initCadreBar(){
   const cadre = SEATS.filter(s => s.cadre);
   $("#cadre-faces").innerHTML = cadre.map(s => img(s.poc[0])).join("");
+  $("#cadre-faces2").innerHTML = cadre.slice(0, 4).map(s => img(s.poc[0])).join("");
   $("#cadre-names").textContent = cadre.map(s => fullName(holder(s, "poc")).replace(/ [A-Z][a-z]+ (?=\S+$)/, " ")).join(" · ");
   $("#cadre-toggle").querySelector("b").textContent = `${cadre.length} cadre`;
 }
 document.addEventListener("click", e => {
-  if(e.target.closest("#cadre-toggle")){ setCadre($("#cadre-body").dataset.open !== "true"); return; }
+  if(e.target.closest("#cadre-toggle, #cadre-btn")){ setCadre($("#cadre-body").dataset.open !== "true"); return; }
+  if(document.documentElement.classList.contains("compact") && $("#cadre-body").dataset.open === "true" && !e.target.closest("#cadre") && !e.target.closest(".drawer, .scrim")) setCadre(false);
   if(e.target.closest('a[href="#cadre"]')) setCadre(true);
 });
 
@@ -1089,14 +1108,15 @@ res.addEventListener("click", e => { const b = e.target.closest("[data-hit]"); i
 document.addEventListener("pointerdown", e => { if(!e.target.closest(".search")) hideResults(); });
 
 /* ---------- start ---------- */
+if(document.documentElement.classList.contains("compact")) $("#cb-tools").append($(".toolbar .search"));   // one-screen layout: search sits in the chart bar
 build();
 initCadreBar();
 refreshMode();
 const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } }), {threshold:.08}) : null;
 document.querySelectorAll(".band").forEach(b => io ? io.observe(b) : b.classList.add("in"));
-if(location.hash && byId[location.hash.slice(1)]) setTimeout(() => openSeat(location.hash.slice(1)), 400);
+if(!(window.D250_TERM && D250_TERM.lock) && location.hash && byId[location.hash.slice(1)]) setTimeout(() => openSeat(location.hash.slice(1)), 400);
 </script>
-<script src="proposal-duties.js"></script>
+<script src="../shared/signin.js"></script>
 <script src="proposals.js"></script>
 </body>
 </html>
