@@ -1019,14 +1019,22 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
  * than the card around it. The padding is cancelled by an equal negative
  * margin, as it is on the fields, so a cue arriving does not shift the page. */
 .slider-row.cue {
-  padding: 6px 8px;
-  margin: -6px -8px;
-  border-radius: 10px;
+  position: relative;
+  animation: none;
 }
-
-/* Height and waist sliders sit inside a .field, which already gives them a
- * 2px top margin; -6 would move them 8px, so this puts it back. */
-.field > .slider-row.cue { margin-top: -4px; }
+/* The ring is its own layer, a little outside the track, so a cue arriving or
+ * leaving never moves or resizes anything (Captain Russell, Nov 2026). */
+.slider-row.cue::before {
+  content: "";
+  position: absolute;
+  inset: -4px -6px;
+  border-radius: 10px;
+  pointer-events: none;
+  animation: cue-glow 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slider-row.cue::before { animation: none; box-shadow: 0 0 0 3px rgba(241, 190, 72, .45); }
+}
 
 /* Only reached when a component has no slider to point at: the walk, or one
  * marked exempt or did-not-finish. */
@@ -1324,18 +1332,6 @@ form.card { display: grid; gap: 14px; padding-bottom: 20px; }
 }
 .stepper input { text-align: center; font-size: 1.15rem; font-weight: 700; }
 
-.step {
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--ink);
-  border-radius: 9px;
-  font-size: 1.3rem;
-  min-height: 46px;
-  padding: 0;
-  line-height: 1;
-}
-.step:hover { border-color: var(--cardinal); color: var(--cardinal); }
-.step:active { background: var(--page); }
 
 .time-inputs {
   display: grid;
@@ -2389,12 +2385,16 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:not(.open) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
 /* The Cadet / Active Duty pair stays, since it changes what the chip means. */
 .bfa:not(.open) .event-tools > :not(.bfa-who-set),
-.bfa:not(.open):not(.idle) .bfa-trigger,
+.bfa:not(.open) .bfa-trigger,
 .bfa:not(.open) #bfa-method-hint,
 .bfa:not(.open) .bfa-fields .hint,
 .bfa:not(.open) .bfa-result,
 .bfa:not(.open) .bfa-note { display: none; }
 .bfa:not(.open) .bfa-body { gap: 6px; }
+/* Not needed: the boxes stay, greyed out, so the card is the same height
+ * either way; the open card says why instead. */
+.bfa.idle:not(.open) .bfa-fields { opacity: .45; }
+.bfa.idle.open .bfa-body { display: none; }
 .bfa:not(.open) .bfa-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -2416,9 +2416,9 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
   font-weight: 600;
   color: var(--ink-soft);
 }
+.bfa:not(.open) .bfa-fields .fine-box { grid-area: input; }
 .bfa:not(.open) .bfa-fields input[type="number"] {
-  grid-area: input;
-  width: 84px;
+  width: 64px;
   min-height: 0;
   height: 36px;
   padding: 4px 8px;
@@ -2856,7 +2856,9 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 @media screen and (min-width: 1180px) {
   main {
     max-width: 76rem;
-    grid-template-columns: minmax(0, var(--measure)) minmax(340px, 1fr);
+    /* The form a little wider than the reading measure, so the one-line
+     * cards have room for slider, arrows and box side by side. */
+    grid-template-columns: minmax(0, calc(var(--measure) + 5rem)) minmax(340px, 1fr);
     align-items: start;
   }
   main > * { grid-column: 1; }
@@ -2961,7 +2963,7 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
     "icon name slider input listen chip more"
     "bar  bar  bar    bar   bar    bar  bar";
   align-items: center;
-  gap: 6px 10px;
+  gap: 6px 8px;
   padding: 8px 12px;
 }
 .event:not(.open) + .event { margin-top: -2px; }
@@ -2991,22 +2993,18 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 .event:not(.open) > .measure-row { grid-area: input; justify-self: end; }
 /* Everything else on the card waits for the arrow. */
 .event:not(.open) > :not(.event-head, .meter, .alt-note, .event-picker, .stepper,
-  .time-inputs, .measure-row, .slider-row, .status-note, .below-minimum-note, .altitude-applied,
-  .fine-tune) {
+  .time-inputs, .measure-row, .slider-row, .status-note, .altitude-applied) {
   display: none;
 }
 .event:not(.open) > .alt-note,
 .event:not(.open) > .event-picker,
 .event:not(.open) > .status-note,
-.event:not(.open) > .below-minimum-note,
 .event:not(.open) > .altitude-applied { grid-column: 1 / -1; }
 
 /* The number boxes, small. Typing is the fast way in; the steppers, sliders
  * and labels are on the open card. */
-.event:not(.open) .step { display: none; }
-.event:not(.open) .stepper { display: block; }
 .event:not(.open) input[type="number"] {
-  width: 84px;
+  width: 64px;
   min-height: 0;
   height: 36px;
   padding: 4px 8px;
@@ -3018,12 +3016,12 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   align-items: center;
   gap: 4px;
 }
-.event:not(.open) .time-inputs input { width: 56px; }
+.event:not(.open) .time-inputs input { width: 42px; }
 .event:not(.open) .measure-row {
   display: flex;
   gap: 8px;
 }
-.event:not(.open) .measure-row input[type="number"] { width: 92px; }
+.event:not(.open) .measure-row input[type="number"] { width: 64px; }
 
 /* The slider sits between the name and the number box, smaller than on the
  * open card so the line stays one line. */
@@ -3069,9 +3067,9 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
   font-weight: 600;
   color: var(--ink-soft);
 }
-.event:not(.open) .measure-row .field > input { grid-area: input; }
+.event:not(.open) .measure-row .field > .fine-box { grid-area: input; }
 .event:not(.open) .measure-row .field > .slider-row { grid-area: slider; margin: 0; gap: 6px; }
-.event:not(.open) .measure-row .field > :not(label, input, .slider-row, .fine-tune) { display: none; }
+.event:not(.open) .measure-row .field > :not(label, .fine-box, .slider-row) { display: none; }
 
 @media (max-width: 560px) {
   .event:not(.open) {
@@ -3198,31 +3196,28 @@ form#assessment > .about-row { gap: 10px; }
 }
 
 /* --- fine tune (Captain Russell, Nov 2026) ---------------------------------
- * Opens when a slider is let go or a number box is tapped: a big minus and
- * plus that move one rep, shuttle, second or half inch, and repeat when held.
- * Built in app.js (wireFineTune) and placed under the slider or box. */
-.fine-tune {
-  grid-column: 1 / -1;
-  justify-self: center;
+ * A left and a right arrow beside every number box, always on screen, so
+ * nothing pops in or out and no card changes size as numbers are adjusted.
+ * They move one rep, shuttle, second or half inch and repeat when held
+ * (fineStep and syncFine in app.js). */
+.fine-group {
   display: grid;
-  grid-template-columns: 52px minmax(104px, auto) 52px;
-  align-items: center;
-  gap: 8px;
-  margin: 2px auto 0;
-  animation: fine-in .14s ease-out;
+  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  align-items: stretch;
+  gap: 6px;
 }
-.fine-tune[hidden] { display: none; }
+.time-inputs.fine-group { grid-template-columns: 46px minmax(0, 1fr) auto minmax(0, 1fr) 46px; }
+.time-inputs.fine-group .time-colon { align-self: center; }
 .fine-step {
-  width: 52px;
-  height: 52px;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--page);
   color: var(--ink);
   font: inherit;
-  font-size: 1.7rem;
-  font-weight: 700;
-  line-height: 1;
   padding: 0;
   cursor: pointer;
   touch-action: manipulation;
@@ -3234,25 +3229,41 @@ form#assessment > .about-row { gap: 10px; }
 .fine-step:hover:not(:disabled) { border-color: var(--cardinal); color: var(--cardinal); }
 .fine-step:active:not(:disabled) { background: var(--surface); }
 .fine-step:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-.fine-step:disabled { opacity: .35; cursor: default; }
-.fine-value {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.fine-step:disabled { opacity: .3; cursor: default; }
+/* Condensed: the arrows hug the box, the height of the box. */
+.event:not(.open) .fine-group,
+.bfa:not(.open) .fine-group {
+  display: grid;
+  grid-template-columns: 28px auto 28px;
+  gap: 3px;
 }
-.fine-value b { font-size: 1.4rem; font-weight: 800; color: var(--ink); }
-.fine-value span { font-size: .78rem; font-weight: 600; color: var(--ink-faint); }
-.step { touch-action: manipulation; user-select: none; -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent; }
+.event:not(.open) .time-inputs.fine-group { grid-template-columns: 28px auto auto auto 28px; }
+.event:not(.open) input[type="number"] { padding: 4px 2px; }
+.event:not(.open) .fine-step,
+.bfa:not(.open) .fine-step { height: 36px; }
+.event:not(.open) .fine-step svg,
+.bfa:not(.open) .fine-step svg { width: 18px; height: 18px; }
 @media (pointer: coarse) {
-  .fine-tune { grid-template-columns: 60px minmax(112px, auto) 60px; }
-  .fine-step { width: 60px; height: 60px; }
+  .event:not(.open) .fine-group,
+  .bfa:not(.open) .fine-group { grid-template-columns: 42px auto 42px; }
+  .event:not(.open) .time-inputs.fine-group { grid-template-columns: 42px auto auto auto 42px; }
+  .event:not(.open) .fine-step,
+  .bfa:not(.open) .fine-step { height: 42px; }
+  .event:not(.open) .fine-group input[type="number"],
+  .bfa:not(.open) .fine-group input[type="number"] { height: 42px; }
 }
-@keyframes fine-in { from { opacity: 0; transform: translateY(-4px); } }
-@media (prefers-reduced-motion: reduce) {
-  .fine-tune { animation: none; }
+@media print { .fine-step { display: none !important; } }
+
+/* The waist slider waits for a height (its ends depend on it). Its room is
+ * kept on the condensed card, so typing the height does not grow the card
+ * (Captain Russell, Nov 2026). */
+.event:not(.open) .measure-row .field > .slider-row[hidden] { display: grid !important; visibility: hidden; }
+/* "Height" is enough on the one-line card; the slider ends say inches. */
+@media (min-width: 561px) { .event:not(.open) .label-unit { display: none; } }
+/* One name width on every one-line card, so the sliders line up and a long
+ * name ("Hand Release Push-Ups") takes two short lines instead of the
+ * slider's room. */
+@media (min-width: 561px) {
+  .event:not(.open):not([data-component="body_composition"]) h2 { width: 8rem; line-height: 1.15; }
 }
-@media print { .fine-tune { display: none !important; } }
+.fine-group input[type="number"] { text-align: center; }
