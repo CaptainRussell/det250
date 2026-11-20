@@ -1398,7 +1398,7 @@ function renderCharts(band) {
       if (wasHidden || chartMarked.get(component) !== key) {
         chartMarked.set(component, key);
         requestAnimationFrame(() => {
-          for (const fig of host.querySelectorAll('.chart-pic')) centreChartPicture(fig);
+          for (const fig of host.querySelectorAll('.chart-pic')) centreChartPicture(fig, !wasHidden);
         });
       }
       continue;
@@ -1607,7 +1607,7 @@ function markChartPicture(fig, pic) {
 }
 
 /** Put the outlined box (or the column) in the middle of the chart's window. */
-function centreChartPicture(fig) {
+function centreChartPicture(fig, smooth = false) {
   const scroll = fig.querySelector('.chart-pic-scroll');
   const target = ['.chart-pic-cell', '.chart-pic-row', '.chart-pic-col']
     .map((q) => fig.querySelector(q)).find((n) => n && !n.hidden);
@@ -1627,20 +1627,19 @@ function centreChartPicture(fig) {
     const r = Math.max(right, pts.right);
     if (r - l <= scroll.clientWidth - 8) { left = l; right = r; }
   }
-  scroll.scrollLeft += (left - host.left) - (scroll.clientWidth - (right - left)) / 2;
+  // Always centred on the row, so the chart glides with the reps or time as
+  // they change rather than snapping up to the headers (Captain Russell,
+  // 20 Nov 2026).
+  let x = scroll.scrollLeft + (left - host.left) - (scroll.clientWidth - (right - left)) / 2;
+  let y = scroll.scrollTop;
   if (target.classList.contains('chart-pic-cell') || target.classList.contains('chart-pic-row')) {
-    // Likewise keep the age band and M / F headers in view when they fit.
-    let top = box.top;
-    const head = fig.querySelector('.chart-pic-head:not([hidden])');
-    if (head) {
-      const h = head.getBoundingClientRect();
-      if (box.bottom - h.top <= scroll.clientHeight - 8) top = h.top;
-    }
-    scroll.scrollTop += (top - host.top) - (scroll.clientHeight - (box.bottom - top)) / 2;
+    y += (box.top - host.top) - (scroll.clientHeight - box.height) / 2;
   }
   // Below the chart: the asterisked minimum at the foot of the column is the
   // row that was missed, so that is what is shown.
-  else if (fig.classList.contains('below')) scroll.scrollTop = scroll.scrollHeight;
+  else if (fig.classList.contains('below')) y = scroll.scrollHeight;
+  // Glides when the score moves; lands at once when the chart first opens.
+  scroll.scrollTo({ left: x, top: y, behavior: smooth ? motion() : 'instant' });
 }
 
 /**
