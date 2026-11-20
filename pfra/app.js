@@ -1959,7 +1959,12 @@ function showBfa(result, complete) {
       : `Not needed: a ratio of ${bfa.ratio.toFixed(2)} is under 0.55 ${cite}.`;
     showBfaWho();
     setBfaChip('Not needed', '');
-    for (const button of document.querySelectorAll('.bfa-method')) button.hidden = true;
+    // Tape / InBody stay on the card, greyed out, so it never changes size
+    // (Captain Russell, 20 Nov 2026: shown on the condensed card too).
+    for (const button of document.querySelectorAll('.bfa-method')) {
+      button.hidden = false;
+      button.disabled = true;
+    }
     bfaIdle(true);
     $('bfa-optional').hidden = true;
     // workBfa owns these three and is not reached on this branch, so closing
@@ -2023,7 +2028,10 @@ function showBfa(result, complete) {
   const open = required || bfa.applied || bfa.opened;
   panel.classList.toggle('idle', !open);
   bfaIdle(!open);
-  for (const button of document.querySelectorAll('.bfa-method')) button.hidden = !open;
+  for (const button of document.querySelectorAll('.bfa-method')) {
+    button.hidden = false;
+    button.disabled = !open;
+  }
   setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not needed' : 'Possible',
     bfa.applied ? 'filled' : required && !bfaCadet() ? 'chip-fail' : '');
 

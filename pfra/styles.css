@@ -2384,7 +2384,7 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 .bfa:is(.open, :not(.open)) .bfa-title { font-size: .95rem; }
 .bfa:is(.open, :not(.open)) .chip { padding: 3px 10px; font-size: .85rem; min-width: 108px; text-align: center; }
 /* The Cadet / Active Duty pair stays, since it changes what the chip means. */
-.bfa:not(.open) .event-tools > *,
+.bfa:not(.open) .event-tools > :not(.bfa-method),
 .bfa:not(.open) .bfa-trigger,
 .bfa:not(.open) #bfa-method-hint,
 .bfa:not(.open) .bfa-fields .hint,
@@ -2402,11 +2402,13 @@ a.secondary.small:hover { border-color: var(--cardinal); color: var(--cardinal);
 }
 .bfa.open > .event-head,
 .bfa.open > .bfa-body { display: contents; }
-/* The 6px is the empty tools line the condensed head keeps under its name. */
-.bfa.open .bfa-fields { grid-row: 2; grid-column: 1 / -1; margin-top: 6px; }
+/* Tape / InBody sit on the second line, under the name, open or not. */
+.bfa.open { row-gap: 6px; }
+.bfa.open .bfa-fields { grid-row: 3; grid-column: 1 / -1; }
 .bfa.open .bfa-fields .hint { display: none; }
-.bfa.open > .event-head > .event-tools { grid-row: 3; }
-.bfa.open > .event-head > .event-tools,
+.bfa.open > .event-head > .event-tools { grid-row: 2; }
+.bfa:is(.open, :not(.open)) .bfa-method { padding: 3px 10px; font-size: .75rem; }
+.bfa-method:disabled { opacity: .45; cursor: default; }
 .bfa.open > .bfa-trigger,
 .bfa.open > .bfa-body > :not(.bfa-fields) { grid-column: 1 / -1; }
 .bfa.open > .event-head > .event-tools { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -3360,7 +3362,9 @@ form#assessment > .about-row { gap: 10px; }
   }
   .event[data-component="body_composition"]:is(.open, :not(.open)) > .sum-readout { top: 53px; height: 78px; }
   /* Absolute inside its grid area: the measurement rows, open or not. */
-  .bfa:is(.open, :not(.open)) > .sum-readout { grid-row: 2 / 3; grid-column: 1 / -1; bottom: 0; height: 78px; }
+  .bfa.open > .sum-readout { grid-row: 3 / 4; }
+  .bfa:not(.open) > .sum-readout { grid-row: 2 / 3; }
+  .bfa:is(.open, :not(.open)) > .sum-readout { grid-column: 1 / -1; bottom: 0; height: 78px; }
   .sum-readout b { font-size: 2.1rem; font-weight: 800; color: var(--ink); }
   .sum-readout span {
     margin-top: 4px;
