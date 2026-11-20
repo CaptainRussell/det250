@@ -5,6 +5,7 @@
 /* ---------- chart bar ---------- */
 .lockpill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--d250-gold) 55%,transparent);color:var(--d250-gold);background:var(--d250-gold-bg)}
 .cb-tools{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+.cb-left{display:contents}
 .sumbtn,.cadrebtn{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:5px 12px;border-radius:9px;font-weight:700;font-size:13.5px;white-space:nowrap;transition:background .2s,border-color .2s,color .2s}
 .sumbtn{border:1px solid var(--d250-gold);background:var(--d250-gold-bg);color:var(--d250-gold)}
 .sumbtn:hover{background:color-mix(in srgb,var(--d250-gold) 22%,var(--surface))}
@@ -67,7 +68,7 @@
   .compact .toolbar{display:none}
   .compact #chart-panels{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
   .compact section.band{margin-top:0}
-  .compact .bandhead{margin-bottom:5px;gap:2px 10px}
+  .compact .bandhead{display:none}
   .compact .bandhead h2{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
   .compact .bandhead .rt{font-size:12px}
   .compact #command .bandhead{justify-content:center}
@@ -76,10 +77,10 @@
   /* every card is a short row card: photo, tags, name, title */
   .compact .tree{--gap:14px}
   .compact .tree .tcard{display:none}
-  .compact .tree .rcard{display:block;width:224px}
+  .compact .tree .rcard{display:block;width:244px}
   .compact .rcard .face{gap:10px;padding:4px 10px;border-radius:11px}
-  .compact .rcard .av{width:40px;height:40px}
-  .compact .rcard.lead .av{width:42px;height:42px}
+  .compact .rcard .av{width:60px;height:60px}
+  .compact .rcard.lead .av{width:62px;height:62px}
   .compact .rcard .txt{min-width:0;gap:1px}
   .compact .rcard .nm{font-size:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .compact .rcard.lead .nm{font-size:14px}
@@ -88,22 +89,22 @@
   .compact .rcard .tags{max-width:100%;overflow:hidden}
 
   /* A-Staff: every directorate in one row */
-  .compact #staff{padding:8px 12px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px}
-  .compact .dirs{grid-template-columns:repeat(auto-fit,minmax(176px,252px));justify-content:center;gap:8px}
+  .compact #staff{padding:0}
+  .compact .dirs{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,262px);justify-content:center;gap:10px}
   .compact .dir{padding:8px;gap:6px;border-radius:12px;box-shadow:none}
   .compact .dirhead .cnt{display:none}
   .compact .dirhead .dname{font-size:14px}
-  .compact .dir>.rcard .av{width:40px;height:40px}
+  .compact .dir>.rcard .av{width:60px;height:60px}
   .compact .olist{padding:0 0 0 6px}
   .compact .olist li{padding:5px 0 0 10px}
-  .compact .olist li.lv::before{height:27px}
-  .compact .olist li::after{top:27px;width:8px}
+  .compact .olist li.lv::before{height:36px}
+  .compact .olist li::after{top:36px;width:8px}
   .compact .olist .rcard .face{gap:8px;padding:4px 8px}
-  .compact .olist .rcard .av{width:34px;height:34px}
+  .compact .olist .rcard .av{width:54px;height:54px}
   .compact .olist .rcard .nm{font-size:13px}
 
   /* Squadrons: a top-down tree, each SQ/CC over its FLT/CCs, each FLT/CC over its FTO */
-  .compact #group .panel{padding:10px 12px;background:var(--surface-2);box-shadow:none;border-radius:14px}
+  .compact #group .panel{padding:0;background:none;border:0;box-shadow:none;border-radius:0}
   .compact #group .tree>ul>li{padding:0 18px}
   .compact #group .tree{--gap:11px}
 
@@ -112,4 +113,16 @@
   .compact #cadre .bandhead,.compact #cadre .cadrebar{display:none}
   .compact #cadre .collapser[data-open="true"]{pointer-events:auto}
   .compact #cadre .panel{box-shadow:var(--shadow-lg);border-color:var(--border-strong)}
+}
+
+/* very wide screens: the Wing Command Team moves up into the chart bar (Captain Russell, 20 Nov 2026) */
+@media(min-width:1600px){
+  .compact.cmdtop .chartbar{position:relative;top:auto}
+  .compact.cmdtop .chartbar-in{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;padding:8px 24px 10px}
+  .compact.cmdtop .cb-left{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+  .compact.cmdtop .cb-tools{flex-wrap:wrap;justify-content:flex-end;align-self:center}
+  .compact.cmdtop .cb-tools .search{flex:0 1 370px;width:370px}
+  .compact.cmdtop #command{margin:0}
+  .compact.cmdtop #command .panel{overflow:visible}
+  .compact.cmdtop main.wrap{padding-top:12px}
 }

@@ -1108,7 +1108,20 @@ res.addEventListener("click", e => { const b = e.target.closest("[data-hit]"); i
 document.addEventListener("pointerdown", e => { if(!e.target.closest(".search")) hideResults(); });
 
 /* ---------- start ---------- */
-if(document.documentElement.classList.contains("compact")) $("#cb-tools").append($(".toolbar .search"));   // one-screen layout: search sits in the chart bar
+if(document.documentElement.classList.contains("compact")){   // one-screen layout: search sits in the chart bar
+  $("#cb-tools").append($(".toolbar .search"));
+  /* on a wide screen the Wing Command Team sits in the chart bar, between the chart buttons and the tools */
+  const left = document.createElement("div"); left.className = "cb-left";
+  $(".chartbar-in").prepend(left); left.append($("#term-name"), $("#chart-seg"), $("#lock-pill"));
+  const topQ = matchMedia("(min-width:1600px)");
+  const placeCommand = () => {
+    const cmd = $("#command"), bar = $(".chartbar-in");
+    if(topQ.matches){ if(cmd.parentElement !== bar) bar.insertBefore(cmd, $("#cb-tools")); }
+    else if(cmd.parentElement === bar && $("#staff")) $("#staff").before(cmd);
+    document.documentElement.classList.toggle("cmdtop", topQ.matches);
+  };
+  document.addEventListener("chartready", placeCommand); topQ.addEventListener("change", placeCommand);
+}
 build();
 initCadreBar();
 refreshMode();
