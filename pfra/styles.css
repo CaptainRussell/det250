@@ -2992,14 +2992,16 @@ button.event-icon.can-swap:focus-visible { outline: 3px solid var(--gold); outli
 .event:not(.open) > .time-inputs,
 .event:not(.open) > .measure-row { grid-area: input; justify-self: end; }
 /* Everything else on the card waits for the arrow. */
+/* The exempt / did not finish note and the altitude strip come and go with
+ * the numbers (a body fat pass exempts waist to height), so they are on the
+ * open card only; the chip says Exempt or shows the adjusted score (Captain
+ * Russell, Nov 2026: adjusting a value never resizes the condensed card). */
 .event:not(.open) > :not(.event-head, .meter, .alt-note, .event-picker, .stepper,
-  .time-inputs, .measure-row, .slider-row, .status-note, .altitude-applied) {
+  .time-inputs, .measure-row, .slider-row) {
   display: none;
 }
 .event:not(.open) > .alt-note,
-.event:not(.open) > .event-picker,
-.event:not(.open) > .status-note,
-.event:not(.open) > .altitude-applied { grid-column: 1 / -1; }
+.event:not(.open) > .event-picker { grid-column: 1 / -1; }
 
 /* The number boxes, small. Typing is the fast way in; the steppers, sliders
  * and labels are on the open card. */
