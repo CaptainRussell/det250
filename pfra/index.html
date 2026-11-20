@@ -148,6 +148,9 @@
       </div>
       <!-- The ratio is what the chart is read on, so it gets said out loud
            rather than left in the lookup line underneath. -->
+      <!-- The ratio, large, in the room beside the rows of the condensed card
+           (Captain Russell, Nov 2026). -->
+      <output class="sum-readout" id="sum-whtr" aria-hidden="true"><b>&ndash;</b><span>ratio</span></output>
       <div class="ratio-readout" id="ratio-readout" aria-live="polite" hidden>
         <p class="ratio-label">Waist to height ratio</p>
         <p class="ratio-value" id="ratio-value"></p>
@@ -535,6 +538,7 @@
         </button>
       </div>
       <p class="alt-note bfa-trigger" id="bfa-trigger"></p>
+      <output class="sum-readout" id="sum-bfa" aria-hidden="true"><b>&ndash;</b><span>body fat</span></output>
       <div class="bfa-body" id="bfa-body" hidden>
         <!-- Tape first and tape by default: para 3.15.4.7 prefers the InBody
              where one is available, but a detachment assessment is run with a

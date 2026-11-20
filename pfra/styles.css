@@ -3294,3 +3294,43 @@ form#assessment > .about-row { gap: 10px; }
   .event[data-component="body_composition"]:not(.open) > .measure-row,
   .bfa:not(.open) .bfa-fields { padding-right: 180px; }
 }
+
+/* The ratio and the body fat percent, large, in the room to the right of the
+ * measurement rows (Captain Russell, Nov 2026). A fixed box, so a number
+ * arriving never moves anything. Desktop only: phones have no room beside
+ * the rows, and the open card says both in full. */
+.sum-readout { display: none; }
+@media (min-width: 900px) {
+  .event[data-component="body_composition"],
+  .bfa { position: relative; }
+  .event[data-component="body_composition"]:not(.open) > .sum-readout,
+  .bfa:not(.open) > .sum-readout {
+    position: absolute;
+    right: 12px;
+    width: 168px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 0;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+  .event[data-component="body_composition"]:not(.open) > .sum-readout { bottom: 17px; height: 78px; }
+  .bfa:not(.open) > .sum-readout { bottom: 8px; height: 78px; }
+  .sum-readout b { font-size: 2.1rem; font-weight: 800; color: var(--ink); }
+  .sum-readout span {
+    margin-top: 4px;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .sum-readout.empty b { color: var(--ink-faint); }
+  .sum-readout.over b,
+  .sum-readout.fail b { color: var(--fail); }
+  .sum-readout.pass b { color: var(--pass, #4caf6e); }
+  .bfa.idle:not(.open) > .sum-readout { opacity: .45; }
+}
+@media print { .sum-readout { display: none !important; } }
