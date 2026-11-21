@@ -263,6 +263,9 @@ const face = (name, sz) => window.D250Face ? D250Face.html(name, sz) : '';
 const fmtDue = d => new Date(d).toLocaleString('en-US', {timeZone:'America/Chicago', weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) + ' CT';
 const fmtWhen = d => new Date(d).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
 const isClosed = () => Date.now() > new Date(DUE).getTime();
+// After the suspense cadets can still submit with the same code; cadre see it marked Late (Capt Russell, 20 Nov 2026).
+const lateOk = () => !ME || ME.acceptLate !== false;   // an older script says nothing and refuses late submits itself
+const isLate = at => !!at && new Date(at).getTime() > new Date(DUE).getTime();
 
 let ME = null;      // {me:{key,name,cls}, peers:[...], group, groupLabel, submittedAt}
 let S = null;       // {key, ratings:{peerKey:{lead:..}}, comments:{peerKey:text}, cur, submittedAt, sig}
@@ -277,7 +280,7 @@ function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add(
 /* ---------- suspense ---------- */
 function renderDue(){
   const el = $('#due');
-  el.textContent = (isClosed() ? 'Closed ' : 'Due ') + fmtDue(DUE);
+  el.textContent = (isClosed() ? 'Was due ' : 'Due ') + fmtDue(DUE);
   el.classList.toggle('late', isClosed());
 }
 
@@ -327,6 +330,7 @@ async function signIn(code){
   Object.keys(S.ratings).forEach(k => { if(!keys.has(k)) delete S.ratings[k]; });
   Object.keys(S.comments).forEach(k => { if(!keys.has(k)) delete S.comments[k]; });
   S.submittedAt = out.submittedAt || null;   // the server decides whether this cadet already submitted
+  S.late = !!out.late || isLate(S.submittedAt);
   S.cur = Math.min(S.cur || 0, ME.peers.length - 1);
   save();
   $('#vSignin').hidden = true; $('#vWork').hidden = false;
@@ -485,10 +489,11 @@ $('#rev').addEventListener('click', e => { const b = e.target.closest('[data-edi
 
 function renderStatus(){
   const left = ME.peers.length - doneCount(), el = $('#status'), btn = $('#submit');
-  btn.disabled = left > 0 || isClosed();
+  btn.disabled = left > 0 || isClosed() && !lateOk();
   el.className = 'status';
-  if(isClosed()){ el.classList.add('bad'); el.textContent = `Peer Feedback closed at ${fmtDue(DUE)}.` + (S.submittedAt ? ` Cadre have your ratings from ${fmtWhen(S.submittedAt)}.` : ''); return; }
+  if(isClosed() && !lateOk()){ el.classList.add('bad'); el.textContent = `Peer Feedback closed at ${fmtDue(DUE)}.` + (S.submittedAt ? ` Cadre have your ratings from ${fmtWhen(S.submittedAt)}.` : ''); return; }
   if(left){ el.classList.add('warn'); el.textContent = `${left} cadet${left === 1 ? '' : 's'} still need ratings. Every cadet needs all four areas.`; return; }
+  if(isClosed()){ el.classList.add('bad'); el.textContent = `Past the ${fmtDue(DUE)} suspense. You can still submit once; cadre will see it marked late.`; btn.textContent = 'Submit late'; return; }
   el.textContent = 'All set. You can submit only once, so check your ratings before you send them.'; btn.textContent = 'Submit to cadre';
 }
 $('#submit').addEventListener('click', async () => {
@@ -503,7 +508,7 @@ $('#submit').addEventListener('click', async () => {
     catch(_){ throw new Error("couldn't reach the server"); }
     const out = await res.json().catch(() => ({ok:false, error:'unexpected reply from the server'}));
     if(!out.ok) throw new Error(out.error || 'not saved');
-    S.submittedAt = out.received || new Date().toISOString(); S.sig = sig(); save();
+    S.submittedAt = out.received || new Date().toISOString(); S.late = !!out.late || isLate(S.submittedAt); S.sig = sig(); save();
     toast('Submitted. Thank you!');
     showDone();
   }catch(ex){
@@ -517,13 +522,13 @@ function showDone(){
   ['#vRate', '#vReview', '.tabs', '#resetAll'].forEach(q => $(q).hidden = true);
   $('#vDone').hidden = false;
   $('#pfill').style.width = '100%'; $('#ptxt').textContent = 'Submitted';
-  $('#doneTxt').textContent = `Cadre received your ratings for all ${ME.peers.length} cadets on ${fmtWhen(S.submittedAt)}. Thank you. Peer Feedback takes one submission per cadet, so there is nothing more to do. If something needs to change, see Capt Russell.`;
+  $('#doneTxt').textContent = `Cadre received your ratings for all ${ME.peers.length} cadets on ${fmtWhen(S.submittedAt)}${S.late ? ', after the suspense, so it is marked late' : ''}. Thank you. Peer Feedback takes one submission per cadet, so there is nothing more to do. If something needs to change, see Capt Russell.`;
 }
 
 /* ---------- start ---------- */
 renderDue();
 setInterval(() => { renderDue(); if(ME && !$('#vReview').hidden) renderStatus(); }, 60000);
-if(isClosed()) $('#codeForm .muted').textContent = 'Peer Feedback is closed. You can still sign in to see whether your ratings were submitted.';
+if(isClosed()) $('#codeForm .muted').textContent = 'The suspense has passed. You can still sign in with your code and submit; cadre will see it marked late.';
 (async () => {
   // Personal QR links end in #code=XXXX-XXXX: fill it in, sign in, and wipe it from the address bar.
   const linked = (location.hash.match(/(?:^#|&)code=([A-Za-z0-9-]+)/) || [])[1];

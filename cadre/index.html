@@ -57,6 +57,9 @@ section.blk{margin-bottom:20px}
 .who li{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
 .who li .t{margin-left:auto;font-size:12px;color:var(--d250-soft);font-weight:600;white-space:nowrap}
 .who li.done{color:var(--d250-soft)}
+.late{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap;background:color-mix(in srgb,var(--d250-cardinal) 18%,transparent);color:var(--d250-cardinal)}
+.who li .late{margin-left:auto}.who li .late + .t{margin-left:0}
+@media (max-width:560px){.who li.lt{flex-wrap:wrap;row-gap:0}.who li.lt .t{flex-basis:100%;text-align:right}}
 .cc-tools{display:flex;gap:8px;flex-wrap:wrap}
 
 /* rankings */
@@ -316,7 +319,11 @@ function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else ren
    group's mean and spread for that area. Raw = plain average.
    ===================================================================== */
 function model(d){
-  const people = {}; d.roster.forEach(r => people[r.key] = Object.assign({}, r, {got:[], given:[]}));
+  // Only cadets still on the Det 250 roster (data/roster.js): anyone who left the program drops out of the counts,
+  // rankings and ratings even if the script was built before they left (Capt Russell, 20 Nov 2026).
+  const onRoster = k => !window.D250_ROSTER || !D250_ROSTER.people || k in D250_ROSTER.people;
+  const lateAt = at => !!at && new Date(at).getTime() > new Date(d.due).getTime();
+  const people = {}; d.roster.filter(r => onRoster(r.key)).forEach(r => people[r.key] = Object.assign({}, r, {late:r.late != null ? !!r.late && !!r.submittedAt : lateAt(r.submittedAt), got:[], given:[]}));
   // r = [rater, peer, lead, prof, team, comm, comment]; cadets marked rated:false (taken off the form) are left out
   const rows = d.ratings.filter(r => people[r[0]] && people[r[1]] && r[0] !== r[1] && people[r[1]].rated !== false);
   rows.forEach(r => { people[r[0]].given.push(r); people[r[1]].got.push(r); });
@@ -361,11 +368,11 @@ function renderPeer(){
   if(PEER_ERR && !PEER){ el.innerHTML = `<div class="note ${PEER_ERR === 'not connected' ? '' : 'bad'}">${PEER_ERR === 'not connected' ? 'Peer Feedback is not connected yet. Deploy the Peer Feedback Apps Script, then rebuild the cadre settings.' : `Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.`}</div>`; return; }
   if(!PEER){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
   const P = Object.values(PEER.people), closed = Date.now() > new Date(PEER.due).getTime();
-  const subN = P.filter(p => p.submittedAt).length;
+  const subN = P.filter(p => p.submittedAt).length, lateN = P.filter(p => p.late).length;
   el.innerHTML = `
     ${PEER_ERR ? `<div class="note bad">Couldn't refresh (${esc(PEER_ERR)}). Showing the last data loaded.</div>` : ''}
     <section class="blk">
-      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${subN} of ${P.length} cadets &middot; ${closed ? 'Closed' : 'Due'} ${esc(fmtDue(PEER.due))}</span></div>
+      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${subN} of ${P.length} cadets${lateN ? ` (${lateN} late)` : ''} &middot; ${closed ? 'Was due' : 'Due'} ${esc(fmtDue(PEER.due))}</span></div>
       <div class="comp">${PEER_GROUPS.map((G, gi) => {
         const ps = P.filter(p => p.group === G.g).sort((a, b) => a.name.localeCompare(b.name));
         const done = ps.filter(p => p.submittedAt), left = ps.filter(p => !p.submittedAt), show = UI.showDone[G.g];
@@ -373,7 +380,7 @@ function renderPeer(){
           <div class="cc-top"><b>${esc(G.label)}</b><span class="cc-n">${done.length}<small> / ${ps.length}</small></span></div>
           <div class="bar"><i style="width:${ps.length ? done.length / ps.length * 100 : 0}%"></i></div>
           <span class="label">${show ? 'Submitted' : left.length ? `Still to submit (${left.length})` : 'Everyone has submitted'}</span>
-          <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
+          <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}${p.late ? ' lt' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.late ? '<span class="late">Late</span>' : ''}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
           <div class="cc-tools">
             <button class="btn small" type="button" data-copy="${G.g}" ${left.length ? '' : 'disabled'}>Copy names still to submit</button>
             <button class="btn small quiet" type="button" data-showdone="${G.g}">${show ? 'Show still to submit' : 'Show submitted'}</button>
@@ -447,7 +454,7 @@ function raterCheck(){
   const flagged = list.filter(x => x.flags.length).length;
   return `<details class="panel chk"><summary><span>Rater check: ${esc(PEER_GROUPS.find(G => G.g === UI.group).label)}</span><span class="${flagged ? 'flag' : 'muted'}">${flagged ? `${flagged} to look at` : 'Nothing unusual'}</span></summary>
     <div class="tblwrap">${list.length ? `<table class="rk"><thead><tr><th class="l">Rater</th><th>Average given</th><th>Spread (SD)</th><th class="l">Note</th></tr></thead><tbody>${
-      list.map(x => `<tr><td class="l"><span class="nm">${face(x.p.name, 26)}${esc(x.p.name)}</span></td><td>${f2(x.s.mu)}</td><td>${f2(x.s.sd)}</td><td class="l">${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join(' ') || '<span class="muted-n">–</span>'}</td></tr>`).join('')
+      list.map(x => `<tr><td class="l"><span class="nm">${face(x.p.name, 26)}${esc(x.p.name)}${x.p.late ? ' <span class="late">Late</span>' : ''}</span></td><td>${f2(x.s.mu)}</td><td>${f2(x.s.sd)}</td><td class="l">${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join(' ') || '<span class="muted-n">–</span>'}</td></tr>`).join('')
     }</tbody></table>` : '<div class="empty-n">No submissions yet.</div>'}
     <p class="hint" style="margin:10px 16px 14px">A rater who gives everyone the same score has no effect on the adjusted ranking (it counts as neutral), but still moves the raw average.</p></div></details>`;
 }
@@ -474,8 +481,8 @@ async function copyLeft(g){
 }
 function csv(){
   const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own', 'Comments']);
-  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.submittedAt ? 'Yes' : 'No', p.notes.map(n => n.text).join(' | ')]).map(q).join(','));
+  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own', 'Submitted at', 'Comments']);
+  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.late ? 'Late' : p.submittedAt ? 'Yes' : 'No', p.submittedAt ? fmtWhen(p.submittedAt) : '', p.notes.map(n => n.text).join(' | ')]).map(q).join(','));
   const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}${fyOn() ? '_' + UI.fy : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
@@ -501,9 +508,9 @@ function detail(key){
         <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
         <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>
       <div><span class="label">Comments (${p.notes.length})</span>${p.notes.length
-        ? `<ul class="notes">${p.notes.map(n => `<li><p>${esc(n.text)}</p><small>${face(n.by.name, 20)}${esc(n.by.name)} &middot; ${esc(CLS_LABEL(n.by.cls))}</small></li>`).join('')}</ul>`
+        ? `<ul class="notes">${p.notes.map(n => `<li><p>${esc(n.text)}</p><small>${face(n.by.name, 20)}${esc(n.by.name)} &middot; ${esc(CLS_LABEL(n.by.cls))}${n.by.late ? ' <span class="late">Late</span>' : ''}</small></li>`).join('')}</ul>`
         : '<p class="muted" style="margin-top:6px;font-size:13px">No comments yet. Comments are optional.</p>'}</div>
-      <p class="hint" style="margin:0">Raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ${p.submittedAt ? `Submitted their own ratings ${esc(fmtWhen(p.submittedAt))}.` : 'Has not submitted their own ratings yet.'}</p>`
+      <p class="hint" style="margin:0">Raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ${p.submittedAt ? `Submitted their own ratings ${esc(fmtWhen(p.submittedAt))}${p.late ? ' <span class="late">Late</span>' : ''}.` : 'Has not submitted their own ratings yet.'}</p>`
       : `<p class="muted">No one has rated ${esc(p.name)} yet.</p>`}
     </div>`;
   dlg.showModal();
