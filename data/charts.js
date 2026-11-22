@@ -6,6 +6,8 @@
      id        short id used in links (org-chart/?term=<id>)
      name      card title ("Fall 2026")
      blurb     optional line under the title (otherwise the chart names are listed)
+     faces     optional photo keys [WG/CC, WG/CD] shown as the card icon (org-chart/photos/<key>.jpg);
+               without it the card shows the Org Chart icon
      frozen    true once the semester is over: its charts read data/org-archive/<id>.js,
                a copy of the roster saved by the admin page's Freeze button
      lock      "cadre": the semester opens only with the cadre password; its packages are in
@@ -19,7 +21,7 @@
 window.D250_CHARTS = {
 "current": "fall-2026",
 "semesters": [
-  {"id":"fall-2026","name":"Fall 2026","blurb":"The 250th Cadet Wing POC chart and the Flip Week chart.","charts":[{"kind":"poc","name":"POC Chart"},{"kind":"flip","name":"Flip Week"}]},
-  {"id":"spring-2027","name":"Spring 2027","blurb":"The Spring 2027 250th Cadet Wing.","charts":[{"kind":"proposal","proposal":"kingery-helle","name":"Spring 2027"}]}
+  {"id":"fall-2026","name":"Fall 2026","faces":["CerfogliCeliaA","LuhringBlayneD"],"blurb":"The 250th Cadet Wing POC chart and the Flip Week chart.","charts":[{"kind":"poc","name":"POC Chart"},{"kind":"flip","name":"Flip Week"}]},
+  {"id":"spring-2027","name":"Spring 2027","faces":["KingeryAlexL","HelleNicolasD"],"blurb":"The Spring 2027 250th Cadet Wing.","charts":[{"kind":"proposal","proposal":"kingery-helle","name":"Spring 2027"}]}
 ]
 };
