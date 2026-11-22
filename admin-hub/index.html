@@ -56,7 +56,7 @@ section.grp{margin-top:26px}
 .pill{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
 .pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 
-/* guide (Captain Russell, 22 Nov 2026: changes go through Claude, so Admin is a how-to) */
+/* guide (Captain Russell, 22 Nov 2026: changes go through an AI assistant, so Admin is a how-to) */
 .lead{margin:14px 0 0;font-size:15.5px;line-height:1.55;color:var(--d250-ink);max-width:880px}
 .lead b{color:var(--d250-gold)}
 .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;counter-reset:st}
@@ -111,7 +111,7 @@ details.job[open] .caret{transform:rotate(180deg)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
       <h1>Admin</h1>
-      <p class="d250-head-sub">How to change Storm HQ by asking Claude.</p>
+      <p class="d250-head-sub">How to change Storm HQ by asking an AI assistant.</p>
     </div>
   </div>
 </header>
@@ -178,9 +178,9 @@ const ICONS = {
 };
 // One list of cards. art = shared/card-art/<name>.webp (the tool's own picture, same as its hub card).
 const BACKEND = [
-  {href:"https://claude.ai/code", ext:true, icon:"spark", tone:"#c15f3c", name:"Open Claude", blurb:"Claude Code on the web. Start a new session on the Storm HQ repository and say what you need."},
-  {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Pull requests are where Claude's changes wait for you.`},
-  {href:`${GH}/pulls`, ext:true, icon:"pr", tone:"#4338ca", name:"Pull requests", blurb:"Changes Claude has made that are waiting to be merged."},
+  {href:"https://claude.ai/code", ext:true, icon:"spark", tone:"#c15f3c", name:"Open an AI assistant", blurb:"For example Claude Code on the web. Start a new session on the Storm HQ repository and say what you need."},
+  {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Pull requests are where the assistant's changes wait for you.`},
+  {href:`${GH}/pulls`, ext:true, icon:"pr", tone:"#4338ca", name:"Pull requests", blurb:"Changes the assistant has made that are waiting to be merged."},
   {href:"https://script.google.com/home", ext:true, icon:"sheet", tone:"#1b7a44", name:"Apps Scripts and Sheets", blurb:"Peer Feedback and Flight Staff Evaluation back ends. Sign in with the Google account that owns them."},
   {href:`${GH}/blob/main/ADMIN-GUIDE.md`, ext:true, icon:"book", tone:"#0369a1", name:"Admin guide (text)", blurb:"This guide as a document, for printing or handing over."}
 ];
@@ -188,15 +188,15 @@ const BACKEND = [
 // How-to: setup once, then each job. [Brackets] are the parts to fill in.
 const SETUP = [
   {h:"Get set up once", li:[
-    "A Claude plan that includes Claude Code (Pro or higher).",
+    "An AI coding assistant that can work in a GitHub repository. Claude Code (a Claude Pro plan or higher) is used in these examples; ChatGPT Codex, GitHub Copilot or Cursor work the same way.",
     `A GitHub account that can edit <a href="${GH}" target="_blank" rel="noopener">${OWNER}/${REPO}</a>. The current owner adds you under Settings, Collaborators (or hands over the detachment account).`,
-    `Open <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a>, connect GitHub, allow the Claude app on the repository, and pick it. No access key to copy: signing in to GitHub is the key.`]},
+    `Connect the assistant to GitHub and allow it on the repository (with Claude: open <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a>, connect GitHub and pick the repository). No access key to copy: signing in to GitHub is the key.`]},
   {h:"Ask in plain words", li:[
     "Start a new session for each job and say what you want, like you would to a sharp cadet. The prompts below are a good start.",
     "Attach what it needs: rosters, photos (a zip, named Last, First M.jpg), PDFs.",
-    "Claude reads CLAUDE.md in the repository first, which holds every rule and past decision for the site."]},
+    "The assistant reads CLAUDE.md in the repository first (AGENTS.md points other tools to it), which holds every rule and past decision for the site."]},
   {h:"Review, then merge", li:[
-    "Claude makes the change on a branch and opens a pull request with a short summary. It also checks the pages on a desktop and a phone.",
+    "The assistant makes the change on a branch and opens a pull request with a short summary. It also checks the pages on a desktop and a phone.",
     "Read the summary, ask for changes, and say \"merge\" when it looks right.",
     "The live site updates a minute or two after the merge. Check it."]},
   {h:"Undo anything", li:[
@@ -216,7 +216,7 @@ const JOBS = [
   {art:"odt", tone:"#155e75", name:"ODT Tool", freq:"Each ODT", what:"Rooms, vans, itinerary and documents for each ODT, locked with the cadet password.", prompts:[
     P("Add a new ODT: [Base Visit to Offutt AFB], [place], [dates]. The roster is attached (or: same cadets as [earlier ODT]). Pair rooms by our rules, set up [number] vans with [drivers], and add the attached itinerary and excusal letter. The cadet password is [password]; don't save it anywhere."),
     P("Move [cadet] to room [number] and van [number] on the [ODT name] ODT.")]},
-  {art:"evaluation", tone:"#5d3f8c", name:"Evaluation Tools", freq:"Each semester", what:"Peer Feedback, Flight Staff Evaluation and the Cadre Dashboard. The back ends are Google Apps Scripts, so Claude tells you what to paste there.", prompts:[
+  {art:"evaluation", tone:"#5d3f8c", name:"Evaluation Tools", freq:"Each semester", what:"Peer Feedback, Flight Staff Evaluation and the Cadre Dashboard. The back ends are Google Apps Scripts, so the assistant tells you what to paste there.", prompts:[
     P("Open Peer Feedback for [Spring 2027], due [Fri 23 Apr 2027 1700 Central]. I've downloaded last semester's CSV. Rebuild the cadet codes and code slips, and walk me through pasting and deploying the Apps Script."),
     P("Update the Flight Staff Evaluation for [Spring 2027]: the cadets and evaluators are on the current org chart. The Flight Staff password is [password]."),
     P("Update the POC fiscal years on the Cadre Dashboard: [list or attached file].")]},
@@ -235,17 +235,16 @@ const JOBS = [
 ];
 const TIPS = [
   "<b>One job per session.</b> Short, focused sessions give cleaner pull requests that are easy to check.",
-  "<b>Passwords stay out of the files.</b> Give a password in the chat only when the job needs it (locked documents, the ODT Tool). Claude uses it and never writes it into the repository.",
-  "<b>Teach it once.</b> When you decide a new rule (\"ranks stay with the position\"), tell Claude to add it to CLAUDE.md so every later session follows it.",
-  "<b>Big ideas are fine.</b> A new tool or a redesign starts the same way: describe it, answer Claude's questions, review the pull request.",
-  "<b>Other AI tools work too.</b> Any coding assistant that can edit a GitHub repository (GitHub Copilot, ChatGPT Codex, Cursor) can follow the same steps; AGENTS.md points it to CLAUDE.md.",
-  "<b>Outside GitHub.</b> Google Apps Scripts and Sheets, the Google account that owns them, and who knows the passwords are handed over in person. Claude walks you through the Apps Script steps."
+  "<b>Passwords stay out of the files.</b> Give a password in the chat only when the job needs it (locked documents, the ODT Tool). The assistant uses it and never writes it into the repository.",
+  "<b>Teach it once.</b> When you decide a new rule (\"ranks stay with the position\"), tell the assistant to add it to CLAUDE.md so every later session follows it.",
+  "<b>Big ideas are fine.</b> A new tool or a redesign starts the same way: describe it, answer the assistant's questions, review the pull request.",
+  "<b>Outside GitHub.</b> Google Apps Scripts and Sheets, the Google account that owns them, and who knows the passwords are handed over in person. The assistant walks you through the Apps Script steps."
 ];
 const HANDOFF = [
-  "Move the repository to a detachment GitHub account (or add the new point of contact as an owner), and give the Claude app access to it there.",
+  "Move the repository to a detachment GitHub account (or add the new point of contact as an owner), and give the AI assistant access to it there.",
   "Transfer the Google Apps Scripts and Sheets (Peer Feedback, Flight Staff Evaluation) to a detachment Google account.",
   "Change the cadet, Flight Staff and cadre passwords, and tell the new cadre in person.",
-  "Have the new point of contact run one small job with Claude (for example, hide and show a card) while you watch."
+  "Have the new point of contact run one small job with the AI assistant (for example, hide and show a card) while you watch."
 ];
 
 function card(c, i){
@@ -263,7 +262,7 @@ function show(){
   $("#lockwrap").hidden = true; $("#app").hidden = false;
   let i = 0;
   $("#cards").innerHTML =
-    sec("gHow", "Change Storm HQ with Claude", `<p class="lead" style="margin:0 2px 14px">Storm HQ is changed by <b>asking Claude</b> to edit its GitHub repository, the same way it was built. You describe the change, Claude makes it and shows you, and you say merge.</p>
+    sec("gHow", "Change Storm HQ with an AI assistant", `<p class="lead" style="margin:0 2px 14px">Storm HQ is changed by <b>asking an AI coding assistant</b> (Claude in these examples) to edit its GitHub repository, the same way it was built. You describe the change, the assistant makes it and shows you, and you say merge.</p>
       <div class="steps">${SETUP.map(st => `<div class="step"><h3>${st.h}</h3><ul>${st.li.map(l => `<li>${l}</li>`).join("")}</ul></div>`).join("")}</div>`) +
     sec("gJobs", "What changes, and what to ask", `<div class="jobs">${JOBS.map(j => `<details class="job"><summary>${pic(j, 44)}<span class="jn"><b>${esc(j.name)} <span class="freq${j.static ? " static" : ""}">${esc(j.freq)}</span></b><small>${esc(j.what)}</small></span><span class="caret" aria-hidden="true">▾</span></summary>
       <div class="job-bd">${j.prompts.map(promptHtml).join("")}</div></details>`).join("")}</div>`) +

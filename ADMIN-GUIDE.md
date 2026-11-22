@@ -1,6 +1,6 @@
 # Storm HQ admin guide
 
-This guide is for the cadre member who keeps Storm HQ up to date after Captain Russell. You don't need to know how to code. **Storm HQ is changed by asking Claude** (or another AI coding assistant) to edit its GitHub repository, the same way it was built: you describe the change, Claude makes it and shows you, and you say merge.
+This guide is for the cadre member who keeps Storm HQ up to date after Captain Russell. You don't need to know how to code. **Storm HQ is changed by asking an AI coding assistant** to edit its GitHub repository, the same way it was built: you describe the change, the assistant makes it and shows you, and you say merge.
 
 - Live site: https://captainrussell.github.io/det250/
 - Admin page: https://captainrussell.github.io/det250/admin-hub/ (the **Admin** card on the home page after you sign in with the cadre password). It has this guide with ready-to-copy prompts and the links below. Results are on the Evaluation Tools card.
@@ -8,24 +8,23 @@ This guide is for the cadre member who keeps Storm HQ up to date after Captain R
 
 ## Get set up once
 
-1. A Claude plan that includes Claude Code (Pro or higher).
+1. An AI coding assistant that can work in a GitHub repository. The examples use Claude Code (a Claude Pro plan or higher); ChatGPT Codex, GitHub Copilot or Cursor work the same way.
 2. A GitHub account that can edit the repository. The current owner adds you under the repository's Settings, Collaborators (or hands over the detachment account; see the handoff below).
-3. Open https://claude.ai/code, connect GitHub, allow the Claude GitHub app on the repository, and pick it. There is no access key to copy: signing in to GitHub is the key.
+3. Connect the assistant to GitHub and allow it on the repository (with Claude: open https://claude.ai/code, connect GitHub and pick the repository). There is no access key to copy: signing in to GitHub is the key.
 
 ## How a change works
 
 1. **Start a new session for each job** and say what you want in plain words, like you would to a sharp cadet. Attach what it needs: rosters, photos (a zip, files named `Last, First M.jpg`), PDFs.
-2. Claude reads `CLAUDE.md` in the repository first. It holds every rule and past decision for the site, so you don't have to explain the background.
-3. Claude makes the change on a branch, checks the pages on a desktop and a phone, and opens a **pull request** with a short summary.
+2. The assistant reads `CLAUDE.md` in the repository first (`AGENTS.md` points other tools to it). It holds every rule and past decision for the site, so you don't have to explain the background.
+3. The assistant makes the change on a branch, checks the pages on a desktop and a phone, and opens a **pull request** with a short summary.
 4. Read the summary, ask for changes, and say **merge** when it looks right. The live site updates a minute or two later. Check it.
 5. **Undo:** every change is kept in GitHub's history. Say "undo the change from pull request [number]".
 
 Tips:
 
 - One job per session gives clean pull requests that are easy to check.
-- Give a password in the chat only when the job needs it (locked documents, the ODT Tool, Flight Staff Evaluation). Claude uses it and never writes it into the repository.
-- When you decide a new rule ("ranks stay with the position"), tell Claude to add it to `CLAUDE.md` so every later session follows it.
-- Other AI coding assistants that can edit a GitHub repository (GitHub Copilot, ChatGPT Codex, Cursor) can do the same jobs. `AGENTS.md` points them to `CLAUDE.md`.
+- Give a password in the chat only when the job needs it (locked documents, the ODT Tool, Flight Staff Evaluation). The assistant uses it and never writes it into the repository.
+- When you decide a new rule ("ranks stay with the position"), tell the assistant to add it to `CLAUDE.md` so every later session follows it.
 
 ## What changes, and what to ask
 
@@ -64,22 +63,22 @@ When someone opens Storm HQ, the home page asks for a password once per browser 
 
 ## Outside GitHub
 
-Claude can't reach these directly, so they are handed over in person:
+The assistant can't reach these directly, so they are handed over in person:
 
-- **Google Apps Scripts and Sheets** for Peer Feedback and Flight Staff Evaluation (https://script.google.com). Claude writes the script and tells you what to paste and how to deploy it.
+- **Google Apps Scripts and Sheets** for Peer Feedback and Flight Staff Evaluation (https://script.google.com). The assistant writes the script and tells you what to paste and how to deploy it.
 - **The Google account** that owns those scripts and sheets.
 - **The passwords** (cadet, Flight Staff, cadre). Tell new cadre in person.
 
 ## Before the handoff
 
-1. Move the repository to a detachment GitHub account (or add the new point of contact as an owner), and allow the Claude app there. The site address changes with the owner, so update links and QR codes.
+1. Move the repository to a detachment GitHub account (or add the new point of contact as an owner), and allow the AI assistant there. The site address changes with the owner, so update links and QR codes.
 2. Transfer the Google Apps Scripts and Sheets to a detachment Google account.
 3. Change the cadet, Flight Staff and cadre passwords, and tell the new cadre in person.
-4. Have the new point of contact run one small job with Claude while you watch.
+4. Have the new point of contact run one small job with the AI assistant while you watch.
 
 ## Backup: the Cadre Admin editor
 
-The old point-and-click editor (https://captainrussell.github.io/det250/admin/, linked at the bottom of the Admin page) still works for quick roster, card, document, ODT and password edits. It saves straight to GitHub with a stored access key. Claude is the main way to change Storm HQ; use the editor only if it is quicker for a small edit.
+The old point-and-click editor (https://captainrussell.github.io/det250/admin/, linked at the bottom of the Admin page) still works for quick roster, card, document, ODT and password edits. It saves straight to GitHub with a stored access key. The AI assistant is the main way to change Storm HQ; use the editor only if it is quicker for a small edit.
 
 ### Editor jobs
 
@@ -227,7 +226,7 @@ When the repository moves to a new owner (for example a detachment GitHub organi
 
 ## Where things live
 
-Claude knows all of this from `CLAUDE.md`; it is here for reference.
+The assistant knows all of this from `CLAUDE.md`; it is here for reference.
 
 | File | What it holds |
 | --- | --- |
@@ -240,4 +239,4 @@ Claude knows all of this from `CLAUDE.md`; it is here for reference.
 | `org-chart/packages/`, `org-chart/locked/` | Proposed wing packages (public, or locked with the cadre password) |
 | `org-chart/photos/`, `whos-that-cadet/photos/` | Photos, named by each person's key |
 | `admin/vault.json` | The backup editor's GitHub key and the saved site passwords, locked with the admin password |
-| `CLAUDE.md` | Full technical notes for the whole site, and the rules Claude follows |
+| `CLAUDE.md` | Full technical notes for the whole site, and the rules the AI assistant follows |
