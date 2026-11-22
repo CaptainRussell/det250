@@ -11,7 +11,7 @@
 <style>
 .wrap,.d250-head{--d250-measure:1100px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-input[type="password"],input[type="url"],input[type="search"],input[type="text"]{background:var(--d250-page);color:var(--d250-ink);border:1px solid var(--d250-line-strong);border-radius:9px;padding:8px 10px;min-height:40px;width:100%}
+input[type="password"],input.d250-pw,input[type="url"],input[type="search"],input[type="text"]{background:var(--d250-page);color:var(--d250-ink);border:1px solid var(--d250-line-strong);border-radius:9px;padding:8px 10px;min-height:40px;width:100%}
 select{min-height:40px;width:100%}
 textarea.short{min-height:84px}
 .field{display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -111,6 +111,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script src="../shared/pw.js" defer></script>
 </head>
 <body>
 <a class="d250-bar" href="../admin-hub/" aria-label="Back to Admin"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Admin</span><span class="d250-tool"><img src="../shared/det250-patch-icon.png" alt="" width="24" height="24"><span>Cadre Admin</span></span></a>
@@ -141,7 +142,7 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
         <li>Generate the token, copy it and paste it below.</li>
       </ol>
       <form id="setupForm" autocomplete="off">
-        <div class="field"><label class="label" for="sToken">GitHub access key</label><input id="sToken" type="password" required autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label class="label" for="sToken">GitHub access key</label><input id="sToken" type="password" data-pw-keep required autocomplete="off" spellcheck="false"></div>
         <div class="grid3">
           <div class="field"><label class="label" for="sOwner">Owner</label><input id="sOwner" type="text" required value="CaptainRussell" spellcheck="false"></div>
           <div class="field"><label class="label" for="sRepo">Repository</label><input id="sRepo" type="text" required value="det250" spellcheck="false"></div>

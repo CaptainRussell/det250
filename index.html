@@ -96,8 +96,8 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
 .signin p{margin:0;color:var(--soft);font-size:14px}
 .signin form{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
 .signin label.l{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
-.signin input[type=password]{font:inherit;font-size:16px;min-height:46px;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--page);color:var(--ink)}
-.signin input[type=password]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)}
+.signin input[type=password],.signin input.d250-pw{font:inherit;font-size:16px;min-height:46px;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--page);color:var(--ink)}
+.signin input[type=password]:focus,.signin input.d250-pw:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)}
 .signin .keep{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--soft);cursor:pointer}
 .signin .keep input{width:18px;height:18px;accent-color:var(--cardinal)}
 .signin .err{min-height:20px;color:var(--cardinal);font-size:13px;font-weight:600}
@@ -125,6 +125,7 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
 }
 </style>
+<script src="shared/pw.js" defer></script>
 </head>
 <body>
 <a class="d250-bar d250-bar-hub" href="https://captainrussell.github.io/Portfolio/" aria-label="Back to Scott D. Russell's portfolio"><span class="d250-portfolio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Portfolio</span><span class="d250-home"><img src="shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span></span></a>
