@@ -68,7 +68,7 @@ section{margin-top:18px}
 .blurb{margin:3px 0 0;color:var(--soft);font-size:13.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .tool{--tone-ink:var(--tone)}
-.lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
+.lock{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:#c8102e;color:#fff;display:inline-flex;align-items:center;gap:5px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
 :root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
 
@@ -104,9 +104,7 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
 .signin .roles b{display:block;color:var(--ink);font-size:13px}
 .shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-.lock.open{background:color-mix(in srgb,#3fb871 18%,transparent);color:#2f9a5c}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lock.open{color:#6fd39a}}
-:root[data-theme="dark"] .lock.open{color:#6fd39a}
+.lock.open{background:#2f9e44;color:#fff}
 
 @media (max-width:640px){
   .hero{padding:14px 16px 0;gap:10px}
@@ -194,7 +192,8 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 // Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
 const ART = new Set(["admin-hub","pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt","evaluation"]);
 const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
-const LOCK_SVG = open => `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V7a4 4 0 0 1 7.5-2" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
+// Closed padlock on red, open padlock (shackle swung up) on green (Captain Russell, 22 Nov 2026).
+const LOCK_SVG = open => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V5.5a4 4 0 0 1 8 0V7" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
 function pill(t){
   const k = OPENS[t.href], open = k && SI.has(k);
   if (open) return `<span class="meta"><span class="lock open">${LOCK_SVG(true)}Unlocked</span></span>`;

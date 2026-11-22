@@ -37,8 +37,7 @@ input,button{font:inherit;color:inherit}
 
 /* unlock box (documents/vault.js) */
 .vault{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,#c8102e 14%,var(--surface)),var(--surface) 65%);border:1px solid color-mix(in srgb,#c8102e 35%,var(--line));box-shadow:var(--shadow);scroll-margin-top:60px;transition:border-color .3s,background .3s}
-.vault .vi{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--gold);background:var(--d250-gold-bg)}
-.vault .vi .shackle{transition:transform .45s var(--ease)}
+.vault .vi{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#fff;background:#c8102e;box-shadow:0 3px 8px rgba(200,16,46,.35)}
 .vault .vt{font-weight:800;font-size:14.5px}
 .vault form{display:flex;gap:8px;align-items:center;margin-left:auto}
 .vault input{width:180px;min-width:0;padding:8px 11px;min-height:40px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
@@ -51,8 +50,7 @@ input,button{font:inherit;color:inherit}
 :root[data-theme="light"] .vault .err{color:#c62828}
 .vault .err:empty{display:none}
 .vault.open{border-color:color-mix(in srgb,#2f9e44 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,#2f9e44 14%,var(--surface)),var(--surface) 65%)}
-.vault.open .vi{color:var(--ok);background:var(--ok-bg)}
-.vault.open .vi .shackle{transform:translate(5px,-3px) rotate(18deg)}
+.vault.open .vi{background:#2f9e44;box-shadow:0 3px 8px rgba(47,158,68,.35)}
 .vault.open form{display:none}
 .vault.open .relock{display:inline-block}
 .vault.glow{border-color:var(--gold);animation:glow 1.4s var(--ease) 2}
@@ -60,11 +58,14 @@ input,button{font:inherit;color:inherit}
 .vault.shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 
-/* lock chip on a protected row or tile: opens one after another on unlock */
-.lk{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:var(--d250-gold-bg);color:var(--gold);transition:background .35s,color .35s}
-.lk .shackle{transition:transform .4s var(--ease)}
-.is-open .lk{background:var(--ok-bg);color:var(--ok);transition-delay:var(--d,0s)}
-.is-open .lk .shackle{transform:translate(4px,-2px) rotate(16deg);transition-delay:var(--d,0s)}
+/* lock chip on a protected row or tile (Captain Russell, 22 Nov 2026: locked and
+   unlocked must look clearly different): red chip with a closed padlock, then a
+   green chip with the shackle swung open. They change one after another on unlock. */
+.i-un{display:none}
+.is-open .i-lk,.vault.open .i-lk{display:none}
+.is-open .i-un,.vault.open .i-un{display:block}
+.lk{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:999px;background:#c8102e;color:#fff;box-shadow:0 2px 6px rgba(200,16,46,.35);transition:background .35s,box-shadow .35s}
+.is-open .lk{background:#2f9e44;box-shadow:0 2px 6px rgba(47,158,68,.35);transition-delay:var(--d,0s)}
 .pop{animation:pop .55s var(--ease) var(--d,0s) both}
 @keyframes pop{40%{transform:translateY(-3px) scale(1.02);border-color:#2f9e44}}
 

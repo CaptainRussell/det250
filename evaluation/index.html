@@ -32,8 +32,8 @@
 .name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
 .name .ext{color:var(--d250-faint)}
 .blurb{margin:4px 0 0;color:var(--d250-soft);font-size:14px}
-.pill{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
-.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:#c8102e;color:#fff}
+.pill.ok{background:#2f9e44;color:#fff}
 
 @media (max-width:640px){
   .grid{grid-template-columns:1fr}
@@ -82,7 +82,9 @@ const CARDS = [
   {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Results for both: who has submitted, rankings by AS level, and each cadet's breakdown and comments.", key:"cadre", lock:"Cadre password"}
 ];
 document.getElementById("cards").innerHTML = CARDS.map((c, i) => {
-  const pill = c.key ? (SI.has(c.key) ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">${esc(c.lock)}</span>`) : "";
+  // Closed padlock on red, open padlock on green (Captain Russell, 22 Nov 2026).
+  const lk = open => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V5.5a4 4 0 0 1 8 0V7" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
+  const pill = c.key ? (SI.has(c.key) ? `<span class="pill ok">${lk(true)}Unlocked</span>` : `<span class="pill">${lk(false)}${esc(c.lock)}</span>`) : "";
   return `<a class="tool" href="${esc(c.href)}" style="--tone:${c.tone};--i:${i}"><span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>
     <span class="body"><span class="name">${esc(c.name)}</span><p class="blurb">${esc(c.blurb)}</p>${pill}</span></a>`;
 }).join("");
