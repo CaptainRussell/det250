@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Evaluation Tools · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+:root{--ok:#1b7a44}
+:root[data-theme="dark"]{--ok:#6fd39a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#6fd39a}}
+
+/* hub-style cards (same as the Storm HQ home page) */
+#cards{margin-top:22px}
+.sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:16px;box-shadow:var(--d250-shadow);text-decoration:none;color:var(--d250-ink);overflow:hidden;
+  transition:transform .28s var(--d250-ease),box-shadow .28s var(--d250-ease),border-color .2s;animation:rise .55s var(--d250-ease) both;animation-delay:calc(var(--i,0) * 50ms + .1s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--d250-ease);pointer-events:none}
+.tool:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(0,0,0,.35);border-color:var(--tone)}
+.tool:hover::after{transform:translateX(100%)}
+.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--d250-ease)}
+.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.icon.art{background:none;overflow:hidden}
+.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
+.body{min-width:0;flex:1}
+.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
+.name .ext{color:var(--d250-faint)}
+.blurb{margin:4px 0 0;color:var(--d250-soft);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .tool{padding:16px 14px 14px;gap:14px}
+  .icon{width:48px;height:48px;border-radius:12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/evaluation.webp" alt="" width="24" height="24"><span>Evaluation Tools</span></span></a>
+<header class="d250-head inbar" style="--tone:#5d3f8c">
+  <div class="d250-head-in">
+    <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/evaluation.webp" alt="" width="56" height="56"></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Cadet tool</p>
+      <h1>Evaluation Tools</h1>
+      <p class="d250-head-sub">Peer Feedback, the Flight Staff Evaluation and the Cadre Dashboard.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="grid" id="cards"></div>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Cadet and evaluator tools. Ratings and comments go to private cadre spreadsheets, not to this site; only cadre see the results.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../shared/signin.js"></script>
+<script>
+/* Evaluation Tools (Captain Russell, 22 Nov 2026): one hub card under Cadet tools that holds
+   the three evaluation pages, in place of the old Evaluator tools section. */
+const SI = window.D250SignIn; SI.root = "../";
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// key = the sign-in key that opens the page (shared/signin.js), so its pill can say Unlocked.
+const CARDS = [
+  {href:"../peer-feedback/", art:"peer-feedback", tone:"#be185d", name:"Peer Feedback", blurb:"Rate every cadet in your peer group 1 to 5 in Leadership, Professionalism, Teamwork and Communication. Sign in with your personal code."},
+  {href:"../flight-staff-eval/", art:"flight-staff-eval", tone:"#a06f00", name:"Flight Staff Evaluation", blurb:"Sq/CCs and Flt/CCs rate and stratify GMC cadets by flight. Results go straight to cadre.", key:"fse", lock:"Flight Staff password"},
+  {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Results for both: who has submitted, rankings by AS level, and each cadet's breakdown and comments.", key:"cadre", lock:"Cadre password"}
+];
+document.getElementById("cards").innerHTML = CARDS.map((c, i) => {
+  const pill = c.key ? (SI.has(c.key) ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">${esc(c.lock)}</span>`) : "";
+  return `<a class="tool" href="${esc(c.href)}" style="--tone:${c.tone};--i:${i}"><span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>
+    <span class="body"><span class="name">${esc(c.name)}</span><p class="blurb">${esc(c.blurb)}</p>${pill}</span></a>`;
+}).join("");
+</script>
+</body>
+</html>

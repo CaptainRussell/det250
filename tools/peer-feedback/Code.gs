@@ -28,7 +28,7 @@ var GROUP_LABELS = { poc: 'POC', gmc: 'AS 200 / 250 / 500', as100: 'AS 100' };
 // Cadets nobody rates (they still sign in and rate their own group). Capt Russell, 12 Nov 2026.
 var NOT_RATED = [];
 var NOTE_MAX = 600;   // characters kept per optional comment
-var ACCEPT_LATE = true;   // take submissions after DUE and mark them Late (Capt Russell, 20 Nov 2026)
+var ACCEPT_LATE = false;   // true takes submissions after DUE and marks them Late (on 20 Nov 2026, off again 21 Nov, Capt Russell)
 
 function norm_(code) { return String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
 function byCode_(code) {

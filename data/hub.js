@@ -3,7 +3,7 @@
 
    href     tool folder ("pfra/") or an outside https link
    name     card title          blurb   one or two sentences under the title
-   section  "cadets", "evaluators", "instructors" or "admin" (Cadre only)
+   section  "cadets", "instructors" or "admin" (Cadre only)
    tone     card color (hex)    icon    fallback icon key (ICONS in index.html)
    locked   optional pill text, for example "Cadre password" (true shows "Password")
    ext      true for an outside link (opens in a new tab); art names its card picture
@@ -18,8 +18,7 @@ window.D250_HUB = {
   {"href":"documents/","name":"Documents and Policy","tone":"#0369a1","icon":"book","section":"cadets","blurb":"The Storm Standard plus every AFI, DAFI, AFROTCI, notice and form the detachment uses, and the locked Fall 2026 plans and OPORDs."},
   {"href":"https://iowastate.sharepoint.com/:u:/r/sites/ISUAFROTC/SitePages/HomePage.aspx?d=web46a0478697483ba07db070fdb6b592&csf=1&web=2&share=IQBHoEbrl4Y7SKB9sHD9trWSAWYRIl7_IfMf5TGoI0MbHjk&e=qoKj8p","ext":true,"art":"sharepoint","name":"Cadet SharePoint","tone":"#036c70","icon":"book","section":"cadets","blurb":"Cadet access and forms: Wing Feedback, Warrior and Honor Points, Supply Room, Morale Shop, and the GMC and POC files."},
   {"href":"odt/","name":"ODT Tool","tone":"#155e75","icon":"faces","section":"cadets","locked":"Cadet password","blurb":"Find your room and van for each ODT, plus the itinerary and documents."},
-  {"href":"flight-staff-eval/","name":"Flight Staff Evaluation","tone":"#a06f00","icon":"chart","section":"evaluators","locked":"Flight Staff password","blurb":"Rate and stratify GMC cadets by flight. Results go straight to cadre."},
-  {"href":"peer-feedback/","name":"Peer Feedback","tone":"#be185d","icon":"peers","section":"evaluators","blurb":"Rate every cadet in your peer group 1 to 5 in Leadership, Professionalism, Teamwork and Communication. Due Fri 20 Nov, 1700. Only cadre see the results."},
+  {"href":"evaluation/","name":"Evaluation Tools","tone":"#5d3f8c","icon":"chart","section":"cadets","blurb":"Peer Feedback, the Flight Staff Evaluation and the Cadre Dashboard with their results."},
   {"href":"spin-the-wheel/","name":"Spin the Wheel","tone":"#b45309","icon":"wheel","section":"instructors","blurb":"Seating chart and name wheel. Add your class, set up the room, and spin to call on a student."},
   {"href":"make-the-call/","name":"Make the Call","tone":"#0f766e","icon":"scale","section":"instructors","blurb":"Agree, Neutral or Disagree: teams argue leadership statements to a board and split the prize pool."},
   {"href":"battle-buddy-recon/","name":"Battle Buddy Recon","tone":"#4a5a36","icon":"binoculars","section":"instructors","blurb":"OPSEC practical exercise: pair cadets on a wheel, run the open-source recon clock, then brief out."},
