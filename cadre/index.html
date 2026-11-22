@@ -176,6 +176,7 @@ try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.cla
   <div id="app" hidden>
     <div class="topbar">
       <div class="seg" role="group" aria-label="Evaluation">
+        <button type="button" data-tab="master" aria-pressed="false">Master</button>
         <button type="button" data-tab="peer" aria-pressed="true">Peer Feedback</button>
         <button type="button" data-tab="fse" aria-pressed="false">Flight Staff Evaluation</button>
       </div>
@@ -183,6 +184,7 @@ try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.cla
     </div>
     <div id="tPeer"></div>
     <div id="tFse" hidden></div>
+    <div id="tMaster" hidden></div>
   </div>
 </main>
 
@@ -255,7 +257,7 @@ function heat(v){ // score 1..5 -> cell colors (red low, gray middle, green high
 }
 
 let CFG = null;
-let UI = {tab:'peer', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, subOpen:{}, pMeasure:'avg', fMeasure:'pct', fseGroup:'AS200+', fseView:'consolidated', fseFlight:'Alpha'};
+let UI = {tab:'master', mGroup:'gmc', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, subOpen:{}, pMeasure:'avg', fMeasure:'pct', fseGroup:'AS200+', fseView:'consolidated', fseFlight:'Alpha'};
 try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || '{}')); }catch(_){}
 UI.subOpen = UI.subOpen || {};
 // The slim summary row of a "Who has submitted" group: name, bar, count, who is left. Click to expand.
@@ -264,7 +266,7 @@ function subSummary(label, done, total, leftNames){
   return `<summary><span class="sr-l">${esc(label)}</span><span class="bar"><i style="width:${total ? done / total * 100 : 0}%"></i></span><span class="sr-n">${done}<small> / ${total}</small></span><span class="sr-left">${left}</span><span class="sr-c" aria-hidden="true">▾</span></summary>`;
 }
 // Remember which rows are open, so a refresh or a filter change keeps them as they were.
-['tPeer', 'tFse'].forEach(id => document.getElementById(id).addEventListener('toggle', e => {
+['tPeer', 'tFse', 'tMaster'].forEach(id => document.getElementById(id).addEventListener('toggle', e => {
   const d = e.target; if(!d.matches || !d.matches('details.sub')) return;
   UI.subOpen[d.dataset.sub] = d.open; saveUI();
 }, true));
@@ -321,11 +323,11 @@ $('#refresh').addEventListener('click', refresh);
 function setTab(t){
   UI.tab = t; saveUI();
   document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
-  $('#tPeer').hidden = t !== 'peer'; $('#tFse').hidden = t !== 'fse';
+  $('#tPeer').hidden = t !== 'peer'; $('#tFse').hidden = t !== 'fse'; $('#tMaster').hidden = t !== 'master';
   render();
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
-function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else renderFse(); }
+function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else if(UI.tab === 'master') renderMaster(); else renderFse(); }
 
 /* =====================================================================
    PEER FEEDBACK
@@ -603,12 +605,12 @@ function fseByRole(){ const m = {}; FSE.forEach(e => { const r = e.state && e.st
 const fseEvaluator = r => { const e = FSE && fseByRole()[r.id]; return (e && e.state.evaluator) || r.evaluator; };
 const fseRole = id => FSE_ROLES.find(r => r.id === id);
 // Every cadet in the chosen AS group, as seen by each tracked evaluator, sorted by consolidated percentile.
-function fseList(){
+function fseList(g = UI.fseGroup, all = false){
   const byRole = fseByRole(), cad = {};
   FSE_ROLES.forEach(r => { const e = byRole[r.id]; if(!e) return;
-    Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== UI.fseGroup) return; (cad[k] = cad[k] || {key:k, c:x.c, by:{}}).by[r.id] = x; }); });
+    Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== g) return; (cad[k] = cad[k] || {key:k, c:x.c, by:{}}).by[r.id] = x; }); });
   let list = Object.values(cad);
-  if(UI.fseView === 'flight') list = list.filter(x => x.c.flight === UI.fseFlight);
+  if(!all && UI.fseView === 'flight') list = list.filter(x => x.c.flight === UI.fseFlight);
   list.forEach(x => {
     const pct = Object.values(x.by).filter(v => v.rank).map(v => v.n > 1 ? (v.n - v.rank) / (v.n - 1) : 1);
     x.pct = pct.length ? mean(pct) : null;
@@ -684,6 +686,90 @@ $('#tFse').addEventListener('click', e => {
   saveUI(); renderFse();
 });
 $('#tFse').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-fkey]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); fseDetail(tr.dataset.fkey); } });
+
+/* =====================================================================
+   MASTER (Capt Russell, 22 Nov 2026): one ranking per group that blends the
+   Peer Feedback percentile and the Flight Staff Evaluation percentile 50/50.
+   POC has no Flight Staff Evaluation, so POC ranks on peer feedback alone;
+   a GMC cadet missing one source ranks on the other and is marked.
+   ===================================================================== */
+const M_GROUPS = [{g:'gmc', fse:'AS200+', label:'AS 200 / 250 / 500'}, {g:'as100', fse:'AS100', label:'AS 100'}, {g:'poc', fse:null, label:'POC'}];
+const keyOfName = n => ((window.D250Cadets || {})[plain(n).toLowerCase()] || [])[0];
+function masterList(){
+  const G = M_GROUPS.find(G => G.g === UI.mGroup) || M_GROUPS[0];
+  const fse = {}; if(G.fse && FSE) fseList(G.fse, true).list.forEach(x => { const k = keyOfName(x.c.name); if(k) fse[k] = x; });
+  const list = Object.values(PEER ? PEER.people : {}).filter(p => p.group === G.g).map(p => {
+    const pp = p.got.length ? pPct(p) : null, f = fse[p.key], fp = f && f.pct != null ? f.pct * 100 : null;
+    const parts = [pp, fp].filter(v => v != null);
+    return {p, f, pp, fp, m:parts.length ? mean(parts) : null, only:parts.length === 1 && G.fse ? (pp != null ? 'Peer only' : 'Flight Staff only') : ''};
+  });
+  list.sort((a, b) => (b.m ?? -1) - (a.m ?? -1) || a.p.name.localeCompare(b.p.name));
+  const n = list.filter(x => x.m != null).length;
+  list.forEach((x, i) => x.r = x.m != null ? i + 1 : null);
+  return {G, list, n};
+}
+const mNotes = x => x.p.notes.map(n => ({text:n.text, who:n.by.name, what:'Peer, ' + CLS_LABEL(n.by.cls)}))
+  .concat(x.f ? x.f.notes.map(m => ({text:m.text, who:fseEvaluator(m.role), what:m.role.label})) : []);
+const pctCell = v => v == null ? '<span class="muted-n">–</span>' : Math.round(v);
+function renderMaster(){
+  const el = $('#tMaster');
+  if(!PEER){ el.innerHTML = PEER_ERR ? `<div class="note bad">Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.</div>` : '<div class="empty-n">Loading…</div>'; return; }
+  const {G, list, n} = masterList();
+  el.innerHTML = `
+    ${FSE_ERR && G.fse ? `<div class="note bad">Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}), so this list uses peer feedback only. Try Refresh.</div>` : ''}
+    <section class="blk">
+      <div class="blk-hd"><h2>Master ranking</h2><span class="muted">Click a cadet for their breakdown and every comment.</span></div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Group">${M_GROUPS.map(g => `<button type="button" data-mgroup="${g.g}" aria-pressed="${G.g === g.g}">${esc(g.label)}</button>`).join('')}</div>
+        <button class="btn small" type="button" id="mcsv">Download CSV</button>
+      </div>
+      <div class="panel"><div class="tblwrap">${list.length ? `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th><th class="l">Master</th><th>Peer</th>${G.fse ? '<th>Flight Staff</th>' : ''}<th>Comments</th></tr></thead><tbody>${
+        list.map(x => `<tr class="${x.r ? tierOf(x.r, n) : ''}" data-mkey="${esc(x.p.key)}" tabindex="0">
+          <td class="rank${x.r ? '' : ' muted-n'}">${x.r || '–'}</td>
+          <td class="l"><span class="nm">${face(x.p.name, 30)}<span>${esc(x.p.name)}<small>${esc(clsLine(x.p))}</small></span></span></td>
+          <td class="l">${x.m == null ? '<span class="muted-n">No ratings yet</span>' : ovCell(x.m, 100, Math.round(x.m)) + (x.only ? ` <span class="flag">${x.only}</span>` : '')}</td>
+          <td>${pctCell(x.pp)}</td>${G.fse ? `<td>${pctCell(x.fp)}</td>` : ''}
+          <td>${mNotes(x).length || '<span class="muted-n">–</span>'}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-n">No cadets in this group.</div>'}</div></div>
+      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${G.fse ? 'Master = average of the Peer Feedback percentile and the Flight Staff Evaluation percentile (50/50).' : 'POC has no Flight Staff Evaluation, so Master = the Peer Feedback percentile.'} Peer percentile follows the ${UI.mode === 'adj' ? 'adjusted' : 'raw'} score set on the Peer Feedback tab.</span></div>
+    </section>`;
+}
+function masterDetail(key){
+  const {G, list, n} = masterList(), x = list.find(y => y.p.key === key); if(!x) return;
+  const notes = mNotes(x), dlg = $('#dlg');
+  dlg.innerHTML = `<div class="dl-hd">${face(x.p.name, 60)}<div><h3 id="dlgTitle">${esc(x.p.name)}</h3>${clsChip(x.p.cls)} <span class="muted" style="font-size:13px">${esc([ORG.flight[x.p.key] && ORG.flight[x.p.key] + ' Flight', (ORG.pos[x.p.key] || []).join(', ')].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
+    <div class="dl-bd">
+      <div class="stats">
+        <div class="stat"><div class="k">Master rank</div><div class="v">${x.r || '–'}${x.r ? `<small class="muted" style="font-size:13px"> / ${n}</small>` : ''}</div></div>
+        <div class="stat"><div class="k">Master</div><div class="v">${x.m == null ? '–' : Math.round(x.m)}</div></div>
+        <div class="stat"><div class="k">Peer</div><div class="v">${x.pp == null ? '–' : Math.round(x.pp)}</div></div>
+        <div class="stat"><div class="k">Flight Staff</div><div class="v">${!G.fse ? 'n/a' : x.fp == null ? '–' : Math.round(x.fp)}</div></div>
+      </div>
+      <div><span class="label">Peer Feedback by area (${UI.mode === 'adj' ? 'adjusted' : 'raw'})</span>
+        <div class="catbars" style="margin-top:10px">${PF.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(pv(x.p, i)) ? 0 : Math.max(0, Math.min(100, (pv(x.p, i) - 1) / 4 * 100))}%"></i></span><b>${f2(pv(x.p, i))}</b></div>`).join('')}</div></div>
+      ${x.f ? `<div><span class="label">Flight Staff Evaluation by area</span>
+        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(x.f.avg[i]) ? 0 : Math.max(0, Math.min(100, (x.f.avg[i] - 1) / 4 * 100))}%"></i></span><b>${fVal(x.f.avg[i])}</b></div>`).join('')}</div></div>` : ''}
+      <div><span class="label">Comments (${notes.length})</span>${notes.length
+        ? `<ul class="notes">${notes.map(m => `<li><p>${esc(m.text)}</p><small>${face(m.who, 20)}${esc(m.who)} &middot; ${esc(m.what)}</small></li>`).join('')}</ul>`
+        : '<p class="muted" style="margin-top:6px;font-size:13px">No comments.</p>'}</div>
+    </div>`;
+  dlg.showModal();
+}
+function masterCsv(){
+  const {G, list} = masterList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v, rd = v => v == null ? '' : Math.round(v);
+  const head = ['Rank', 'Cadet', 'Class', 'Flight', 'Position', 'Master', 'Peer percentile', 'Flight Staff percentile', 'Note', 'Comments'];
+  const lines = list.map(x => [x.r || '', x.p.name, x.p.cls, ORG.flight[x.p.key] || '', (ORG.pos[x.p.key] || []).join(', '), rd(x.m), rd(x.pp), rd(x.fp), x.only, mNotes(x).map(m => m.who + ' (' + m.what + '): ' + m.text).join(' | ')].map(q).join(','));
+  const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `Master_Ranking_${G.g}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('#tMaster').addEventListener('click', e => {
+  const t = e.target.closest('button,tr[data-mkey]'); if(!t) return;
+  if(t.dataset.mgroup){ UI.mGroup = t.dataset.mgroup; saveUI(); renderMaster(); }
+  else if(t.id === 'mcsv') masterCsv();
+  else if(t.dataset.mkey) masterDetail(t.dataset.mkey);
+});
+$('#tMaster').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-mkey]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); masterDetail(tr.dataset.mkey); } });
 
 /* ---------- start ---------- */
 (async () => {
