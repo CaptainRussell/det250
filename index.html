@@ -196,8 +196,8 @@ const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(
 const LOCK_SVG = open => `<svg style="overflow:visible" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V3.8a4 4 0 0 1 8 0v1.4" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
 function pill(t){
   const k = OPENS[t.href], open = k && SI.has(k);
-  // Unlocked shows only the green open padlock, no text (Captain Russell, 22 Nov 2026).
-  if (open) return `<span class="meta"><span class="lock open" title="Unlocked" role="img" aria-label="Unlocked">${LOCK_SVG(true)}</span></span>`;
+  // Once unlocked by the hub sign-in, the card shows nothing at all (Captain Russell, 22 Nov 2026).
+  if (open) return "";
   return t.locked ? `<span class="meta"><span class="lock">${LOCK_SVG(false)}${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : "";
 }
 function render(){
