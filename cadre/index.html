@@ -45,12 +45,6 @@ section.blk{margin-bottom:20px}
 .blk-hd h2{font-size:19px;font-weight:800}
 
 /* completion */
-.comp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.compcard .panel-bd{display:flex;flex-direction:column;gap:10px}
-.cc-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.cc-top b{font-size:15px}
-.cc-n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.cc-n small{font-size:14px;color:var(--d250-soft);font-weight:700}
 .bar{height:8px;border-radius:99px;background:var(--d250-surface-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .5s var(--d250-ease)}
 .who{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:260px;overflow:auto}
@@ -61,6 +55,21 @@ section.blk{margin-bottom:20px}
 .who li .late{margin-left:auto}.who li .late + .t{margin-left:0}
 @media (max-width:560px){.who li.lt{flex-wrap:wrap;row-gap:0}.who li.lt .t{flex-basis:100%;text-align:right}}
 .cc-tools{display:flex;gap:8px;flex-wrap:wrap}
+/* who has submitted: one slim row per group, click to expand (Capt Russell, 22 Nov 2026) */
+.subs{display:flex;flex-direction:column;gap:8px}
+details.sub>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(120px,190px) minmax(80px,1fr) 70px minmax(0,1.3fr) 14px;align-items:center;gap:14px;padding:10px 16px;font-size:13.5px}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary:focus-visible{outline:2px solid var(--d250-gold);outline-offset:-2px;border-radius:inherit}
+.sr-l{font-weight:800;font-size:14.5px}
+.sr-n{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;text-align:right}
+.sr-n small{font-size:12.5px;color:var(--d250-soft);font-weight:700}
+.sr-left{color:var(--d250-soft);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-left b{color:var(--ok);font-weight:700}
+.sr-c{color:var(--d250-soft);transition:transform .2s var(--d250-ease)}
+details.sub[open] .sr-c{transform:rotate(180deg)}
+details.sub[open]>summary{border-bottom:1px solid var(--d250-line)}
+.sub-bd{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:640px){details.sub>summary{grid-template-columns:minmax(0,1fr) auto 14px;row-gap:8px}.sub .bar{grid-column:1/-1;grid-row:2}.sr-left{display:none}}
 
 /* rankings */
 .filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:12px}
@@ -120,10 +129,6 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 :root{--s1:#c8372d;--s2:#d9822b;--s3:#8a8b92;--s4:#3a8f5c;--s5:#1f7a8c}
 
 /* FSE */
-.roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.role{display:flex;align-items:center;gap:12px;padding:14px}
-.role .rt{font-weight:800}
-.role .rs{font-size:12.5px;color:var(--d250-soft)}
 .pill{margin-left:auto;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
 .pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .pill.no{background:var(--d250-gold-bg);color:var(--d250-gold)}
@@ -131,7 +136,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .cm b{color:var(--d250-ink)}
 .empty-n{padding:24px;text-align:center;color:var(--d250-soft)}
 
-@media (max-width:900px){.comp,.roles{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.cb{grid-template-columns:96px minmax(0,1fr) 36px}.topbar{flex-direction:column;align-items:stretch}.seg{justify-content:stretch}.seg button{flex:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{.d250-bar,.topbar,.filters,.cc-tools,.chk{display:none!important}}
@@ -141,7 +146,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.classList.add("d250-auto"); }catch(_){}</script>
 </head>
 <body>
-<a class="d250-bar" href="../admin-hub/" aria-label="Back to Admin"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Admin</span><span class="d250-tool"><img src="../shared/card-art/cadre.webp" alt="" width="24" height="24"><span>Cadre Dashboard</span></span></a>
+<a class="d250-bar" href="../evaluation/" aria-label="Back to Evaluation Tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Evaluation Tools</span><span class="d250-tool"><img src="../shared/card-art/cadre.webp" alt="" width="24" height="24"><span>Cadre Dashboard</span></span></a>
 <header class="d250-head inbar" style="--tone:#475569">
   <div class="d250-head-in">
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/cadre.webp" alt="" width="56" height="56"></span>
@@ -250,8 +255,19 @@ function heat(v){ // score 1..5 -> cell colors (red low, gray middle, green high
 }
 
 let CFG = null;
-let UI = {tab:'peer', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, fseView:'consolidated', fseFlight:'Alpha'};
+let UI = {tab:'peer', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, subOpen:{}, fseGroup:'AS200+', fseView:'consolidated', fseFlight:'Alpha'};
 try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || '{}')); }catch(_){}
+UI.subOpen = UI.subOpen || {};
+// The slim summary row of a "Who has submitted" group: name, bar, count, who is left. Click to expand.
+function subSummary(label, done, total, leftNames){
+  const left = leftNames.length ? leftNames.map(n => esc(n)).join('; ') : '<b>Everyone is in</b>';
+  return `<summary><span class="sr-l">${esc(label)}</span><span class="bar"><i style="width:${total ? done / total * 100 : 0}%"></i></span><span class="sr-n">${done}<small> / ${total}</small></span><span class="sr-left">${left}</span><span class="sr-c" aria-hidden="true">▾</span></summary>`;
+}
+// Remember which rows are open, so a refresh or a filter change keeps them as they were.
+['tPeer', 'tFse'].forEach(id => document.getElementById(id).addEventListener('toggle', e => {
+  const d = e.target; if(!d.matches || !d.matches('details.sub')) return;
+  UI.subOpen[d.dataset.sub] = d.open; saveUI();
+}, true));
 const saveUI = () => { try{ localStorage.setItem(UI_KEY, JSON.stringify(UI)); }catch(_){} };
 let PEER = null, PEER_ERR = '', FSE = null, FSE_ERR = '';
 
@@ -373,19 +389,17 @@ function renderPeer(){
     ${PEER_ERR ? `<div class="note bad">Couldn't refresh (${esc(PEER_ERR)}). Showing the last data loaded.</div>` : ''}
     <section class="blk">
       <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${subN} of ${P.length} cadets${lateN ? ` (${lateN} late)` : ''} &middot; ${closed ? 'Was due' : 'Due'} ${esc(fmtDue(PEER.due))}</span></div>
-      <div class="comp">${PEER_GROUPS.map((G, gi) => {
+      <div class="subs">${PEER_GROUPS.map((G, gi) => {
         const ps = P.filter(p => p.group === G.g).sort((a, b) => a.name.localeCompare(b.name));
         const done = ps.filter(p => p.submittedAt), left = ps.filter(p => !p.submittedAt), show = UI.showDone[G.g];
-        return `<div class="panel compcard" style="--i:${gi}"><div class="panel-bd">
-          <div class="cc-top"><b>${esc(G.label)}</b><span class="cc-n">${done.length}<small> / ${ps.length}</small></span></div>
-          <div class="bar"><i style="width:${ps.length ? done.length / ps.length * 100 : 0}%"></i></div>
+        return `<details class="panel sub" data-sub="${G.g}" style="--i:${gi}"${UI.subOpen[G.g] ? ' open' : ''}>${subSummary(G.label, done.length, ps.length, left.map(p => p.name))}<div class="sub-bd">
           <span class="label">${show ? 'Submitted' : left.length ? `Still to submit (${left.length})` : 'Everyone has submitted'}</span>
           <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}${p.late ? ' lt' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.late ? '<span class="late">Late</span>' : ''}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
           <div class="cc-tools">
             <button class="btn small" type="button" data-copy="${G.g}" ${left.length ? '' : 'disabled'}>Copy names still to submit</button>
             <button class="btn small quiet" type="button" data-showdone="${G.g}">${show ? 'Show still to submit' : 'Show submitted'}</button>
           </div>
-        </div></div>`; }).join('')}
+        </div></details>`; }).join('')}
       </div>
     </section>
 
@@ -543,61 +557,110 @@ function renderFse(){
   const el = $('#tFse');
   if(FSE_ERR && !FSE){ el.innerHTML = `<div class="note ${FSE_ERR === 'not connected' ? '' : 'bad'}">${FSE_ERR === 'not connected' ? 'The Flight Staff Evaluation sheet is not connected yet. Add its admin key to the cadre settings.' : `Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}). Try Refresh.`}</div>`; return; }
   if(!FSE){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
-  const byRole = {}; FSE.forEach(e => { const r = e.state && e.state.role; if(r) byRole[r] = e; });
-  const done = FSE_ROLES.filter(r => byRole[r.id]).length;
+  const byRole = fseByRole();
+  const done = FSE_ROLES.filter(r => byRole[r.id]), left = FSE_ROLES.filter(r => !byRole[r.id]);
+  if(!FSE_GROUPS.some(G => G.g === UI.fseGroup)) UI.fseGroup = FSE_GROUPS[0].g;
   el.innerHTML = `
     ${FSE_ERR ? `<div class="note bad">Couldn't refresh (${esc(FSE_ERR)}). Showing the last data loaded.</div>` : ''}
     <section class="blk">
-      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${done} of ${FSE_ROLES.length} evaluators</span></div>
-      <div class="roles">${FSE_ROLES.map((r, i) => { const e = byRole[r.id];
-        return `<div class="panel role" style="--i:${i}">${face(r.evaluator, 44)}<div><div class="rt">${esc(r.label)}</div><div class="rs">${esc((e && e.state.evaluator) || r.evaluator)}${e ? ` &middot; ${Object.keys(fseLists(e)).length} cadets` : ''}</div></div>
-          <span class="pill ${e ? 'ok' : 'no'}">${e ? 'Submitted ' + esc(fmtWhen(e.at)) : 'Not yet'}</span></div>`; }).join('')}</div>
+      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${done.length} of ${FSE_ROLES.length} evaluators</span></div>
+      <div class="subs"><details class="panel sub" data-sub="fse"${UI.subOpen.fse ? ' open' : ''}>${subSummary('Sq/CC and Flt/CC', done.length, FSE_ROLES.length, left.map(r => r.label))}<div class="sub-bd">
+        <ul class="who">${FSE_ROLES.map(r => { const e = byRole[r.id];
+          return `<li class="${e ? 'done' : ''}">${face(fseEvaluator(r), 26)}${esc(fseEvaluator(r))} <span class="muted-n">${esc(r.label)}</span>${e ? `<span class="t">${esc(fmtWhen(e.at))} &middot; ${Object.keys(fseLists(e)).length} cadets</span>` : '<span class="t">Not yet</span>'}</li>`; }).join('')}</ul>
+      </div></details></div>
     </section>
     <section class="blk">
-      <div class="blk-hd"><h2>Results</h2><span class="muted">Newest submission from each evaluator.</span></div>
+      <div class="blk-hd"><h2>Results</h2><span class="muted">Click a cadet for their breakdown and comments.</span></div>
       <div class="filters">
-        <div class="seg" role="group" aria-label="View">${[['consolidated', 'Consolidated'], ['flight', 'By flight']].map(([v, l]) => `<button type="button" data-fview="${v}" aria-pressed="${UI.fseView === v}">${l}</button>`).join('')}</div>
+        <div class="seg" role="group" aria-label="AS level">${FSE_GROUPS.map(G => `<button type="button" data-fgroup="${G.g}" aria-pressed="${UI.fseGroup === G.g}">${esc(G.label)}</button>`).join('')}</div>
+        <div class="seg small" role="group" aria-label="View">${[['consolidated', 'Consolidated'], ['flight', 'By flight']].map(([v, l]) => `<button type="button" data-fview="${v}" aria-pressed="${UI.fseView === v}">${l}</button>`).join('')}</div>
         ${UI.fseView === 'flight' ? `<div class="seg small" role="group" aria-label="Flight">${['Alpha', 'Bravo', 'Charlie', 'Delta'].map(f => `<button type="button" data-flight="${f}" aria-pressed="${UI.fseFlight === f}">${f}</button>`).join('')}</div>` : ''}
+        <button class="btn small" type="button" id="fcsv">Download CSV</button>
       </div>
-      ${FSE_GROUPS.map(G => `<h3 class="label" style="margin:14px 0 8px">${esc(G.label)}</h3><div class="panel"><div class="tblwrap">${fseTable(byRole, G.g)}</div></div>`).join('')}
-      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>Consolidated = average of each evaluator's percentile in their own list (Flt/CC and Sq/CC count the same).</span></div>
+      <div class="panel"><div class="tblwrap">${fseTable()}</div></div>
+      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>Percentile = average of each evaluator's percentile in their own list (Flt/CC and Sq/CC count the same).</span></div>
     </section>`;
 }
-function fseTable(byRole, g){
-  // gather every cadet seen by the tracked roles
-  const cad = {};
+function fseByRole(){ const m = {}; FSE.forEach(e => { const r = e.state && e.state.role; if(r) m[r] = e; }); return m; }
+const fseEvaluator = r => { const e = FSE && fseByRole()[r.id]; return (e && e.state.evaluator) || r.evaluator; };
+const fseRole = id => FSE_ROLES.find(r => r.id === id);
+// Every cadet in the chosen AS group, as seen by each tracked evaluator, sorted by consolidated percentile.
+function fseList(){
+  const byRole = fseByRole(), cad = {};
   FSE_ROLES.forEach(r => { const e = byRole[r.id]; if(!e) return;
-    Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== g) return; (cad[k] = cad[k] || {c:x.c, by:{}}).by[r.id] = x; }); });
+    Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== UI.fseGroup) return; (cad[k] = cad[k] || {key:k, c:x.c, by:{}}).by[r.id] = x; }); });
   let list = Object.values(cad);
   if(UI.fseView === 'flight') list = list.filter(x => x.c.flight === UI.fseFlight);
-  if(!list.length) return '<div class="empty-n">No results yet.</div>';
   list.forEach(x => {
     const pct = Object.values(x.by).filter(v => v.rank).map(v => v.n > 1 ? (v.n - v.rank) / (v.n - 1) : 1);
     x.pct = pct.length ? mean(pct) : null;
     x.avg = FACTORS.map(f => mean(Object.values(x.by).map(v => v.c[f.k]).filter(Boolean)));
+    const ent = Object.entries(x.by);
+    x.flt = (ent.find(([id]) => !fseRole(id).sq) || [])[1]; x.sq = (ent.find(([id]) => fseRole(id).sq) || [])[1];
+    x.notes = ent.filter(([, v]) => (v.c.just || '').trim()).map(([id, v]) => ({role:fseRole(id), text:v.c.just.trim()}));
   });
   list.sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1) || a.c.name.localeCompare(b.c.name));
-  const ranked = list.filter(x => x.pct != null).length;
-  return `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th>${UI.fseView === 'consolidated' ? '<th>Flight</th>' : ''}<th>Percentile</th><th>Flt/CC rank</th><th>Sq/CC rank</th>${FACTORS.map(f => `<th>${f.short}</th>`).join('')}<th class="l">Comments</th></tr></thead><tbody>${
-    list.map((x, i) => {
-      const r = x.pct != null ? i + 1 : null;
-      const flt = Object.entries(x.by).find(([id]) => !FSE_ROLES.find(r => r.id === id).sq), sq = Object.entries(x.by).find(([id]) => FSE_ROLES.find(r => r.id === id).sq);
-      const rk = v => v ? (v.nb ? '<span class="muted-n">Not ranked</span>' : `${v.rank}<span class="muted-n">/${v.n}</span>`) : '<span class="muted-n">–</span>';
-      const comments = Object.entries(x.by).filter(([, v]) => (v.c.just || '').trim()).map(([id, v]) => `<div><b>${esc(FSE_ROLES.find(r => r.id === id).label)}:</b> ${esc(v.c.just)}</div>`).join('');
-      return `<tr class="${r ? tierOf(r, ranked) : ''}" style="cursor:default"><td class="rank">${r || '–'}</td>
-        <td class="l"><span class="nm">${face(x.c.name, 30)}<span>${esc(x.c.name)}<small>${esc(CLS_LABEL(x.c.cls))}${x.c.role ? ' &middot; ' + esc(x.c.role) : ''}</small></span></span></td>
-        ${UI.fseView === 'consolidated' ? `<td>${esc(x.c.flight)}</td>` : ''}
-        <td>${x.pct == null ? '–' : Math.round(x.pct * 100)}</td>
-        <td>${rk(flt && flt[1])}</td><td>${rk(sq && sq[1])}</td>
-        ${x.avg.map(v => `<td><span class="cell" style="${heat(v)}">${isNaN(v) ? '–' : (Number.isInteger(v) ? v : v.toFixed(1))}</span></td>`).join('')}
-        <td class="l"><div class="cm">${comments || '<span class="muted-n">–</span>'}</div></td></tr>`;
-    }).join('')}</tbody></table>`;
+  const n = list.filter(x => x.pct != null).length;
+  list.forEach((x, i) => x.r = x.pct != null ? i + 1 : null);
+  return {list, n};
+}
+const fRank = v => v ? (v.nb ? 'Not ranked' : `${v.rank} / ${v.n}`) : '–';
+const fVal = v => isNaN(v) ? '–' : (Number.isInteger(v) ? String(v) : v.toFixed(1));
+function fseTable(){
+  const {list, n} = fseList();
+  if(!list.length) return '<div class="empty-n">No results yet.</div>';
+  const cons = UI.fseView === 'consolidated';
+  return `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th><th class="l">Percentile</th>${FACTORS.map(f => `<th title="${esc(f.label)}">${f.short}</th>`).join('')}<th>Flt/CC</th><th>Sq/CC</th><th>Comments</th></tr></thead><tbody>${
+    list.map(x => `<tr class="${x.r ? tierOf(x.r, n) : ''}" data-fkey="${esc(x.key)}" tabindex="0">
+      <td class="rank${x.r ? '' : ' muted-n'}">${x.r || '–'}</td>
+      <td class="l"><span class="nm">${face(x.c.name, 30)}<span>${esc(x.c.name)}<small>${esc(CLS_LABEL(x.c.cls))}${cons && x.c.flight ? ' &middot; ' + esc(x.c.flight) : ''}${x.c.role ? ' &middot; ' + esc(x.c.role) : ''}</small></span></span></td>
+      <td class="l">${x.pct == null ? '<span class="muted-n">Not ranked</span>' : `<span class="ov"><b>${Math.round(x.pct * 100)}</b><span class="bar"><i style="width:${x.pct * 100}%"></i></span></span>`}</td>
+      ${x.avg.map(v => `<td><span class="cell" style="${heat(v)}">${fVal(v)}</span></td>`).join('')}
+      <td>${x.flt ? (x.flt.nb ? '<span class="muted-n">–</span>' : `${x.flt.rank}<span class="muted-n">/${x.flt.n}</span>`) : '<span class="muted-n">–</span>'}</td>
+      <td>${x.sq ? (x.sq.nb ? '<span class="muted-n">–</span>' : `${x.sq.rank}<span class="muted-n">/${x.sq.n}</span>`) : '<span class="muted-n">–</span>'}</td>
+      <td>${x.notes.length || '<span class="muted-n">–</span>'}</td></tr>`).join('')}</tbody></table>`;
+}
+function fseDetail(key){
+  const {list, n} = fseList(), x = list.find(y => y.key === key); if(!x) return;
+  const G = FSE_GROUPS.find(G => G.g === UI.fseGroup);
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<div class="dl-hd">${face(x.c.name, 60)}<div><h3 id="dlgTitle">${esc(x.c.name)}</h3>${clsChip(x.c.cls)} <span class="muted" style="font-size:13px">${esc([x.c.flight && x.c.flight + ' Flight', x.c.role].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
+    <div class="dl-bd">
+      <div class="stats">
+        <div class="stat"><div class="k">${UI.fseView === 'flight' ? esc(UI.fseFlight) + ' rank' : 'Rank'}</div><div class="v">${x.r || '–'}${x.r ? `<small class="muted" style="font-size:13px"> / ${n}</small>` : ''}</div></div>
+        <div class="stat"><div class="k">Percentile</div><div class="v">${x.pct == null ? '–' : Math.round(x.pct * 100)}</div></div>
+        <div class="stat"><div class="k">Flt/CC rank</div><div class="v" style="font-size:18px">${esc(fRank(x.flt))}</div></div>
+        <div class="stat"><div class="k">Sq/CC rank</div><div class="v" style="font-size:18px">${esc(fRank(x.sq))}</div></div>
+      </div>
+      <div><span class="label">By area (average of the evaluators, 1 to 5)</span>
+        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(x.avg[i]) ? 0 : Math.max(0, Math.min(100, (x.avg[i] - 1) / 4 * 100))}%"></i></span><b>${fVal(x.avg[i])}</b></div>`).join('')}</div></div>
+      <div><span class="label">Comments (${x.notes.length})</span>${x.notes.length
+        ? `<ul class="notes">${x.notes.map(m => `<li><p>${esc(m.text)}</p><small>${face(fseEvaluator(m.role), 20)}${esc(fseEvaluator(m.role))} &middot; ${esc(m.role.label)}</small></li>`).join('')}</ul>`
+        : '<p class="muted" style="margin-top:6px;font-size:13px">No comments.</p>'}</div>
+    </div>`;
+  dlg.showModal();
+}
+function fseCsv(){
+  const {list} = fseList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
+  const head = ['Rank', 'Cadet', 'Class', 'Flight', 'Position', 'Percentile'].concat(FACTORS.map(f => f.label)).concat(['Flt/CC rank', 'Sq/CC rank', 'Comments']);
+  const lines = list.map(x => [x.r || '', x.c.name, x.c.cls, x.c.flight || '', x.c.role || '', x.pct == null ? '' : Math.round(x.pct * 100)].concat(x.avg.map(fVal)).concat([fRank(x.flt), fRank(x.sq), x.notes.map(m => fseEvaluator(m.role) + ' (' + m.role.label + '): ' + m.text).join(' | ')]).map(q).join(','));
+  const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `Flight_Staff_Evaluation_${UI.fseGroup.replace('+', 'plus')}${UI.fseView === 'flight' ? '_' + UI.fseFlight : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 $('#tFse').addEventListener('click', e => {
-  const b = e.target.closest('button'); if(!b) return;
-  if(b.dataset.fview) UI.fseView = b.dataset.fview; else if(b.dataset.flight) UI.fseFlight = b.dataset.flight; else return;
+  const t = e.target.closest('button,tr[data-fkey]'); if(!t) return;
+  const d = t.dataset;
+  if(d.fgroup) UI.fseGroup = d.fgroup;
+  else if(d.fview) UI.fseView = d.fview;
+  else if(d.flight) UI.fseFlight = d.flight;
+  else if(t.id === 'fcsv'){ fseCsv(); return; }
+  else if(d.fkey){ fseDetail(d.fkey); return; }
+  else return;
   saveUI(); renderFse();
 });
+$('#tFse').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-fkey]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); fseDetail(tr.dataset.fkey); } });
 
 /* ---------- start ---------- */
 (async () => {

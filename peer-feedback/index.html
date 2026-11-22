@@ -134,7 +134,7 @@ table.rev tr:hover td{background:var(--d250-surface-2)}
 </style>
 </head>
 <body>
-<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/peer-feedback.webp" alt="" width="24" height="24"><span>Peer Feedback</span></span></a>
+<a class="d250-bar" href="../evaluation/" aria-label="Back to Evaluation Tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Evaluation Tools</span><span class="d250-tool"><img src="../shared/card-art/peer-feedback.webp" alt="" width="24" height="24"><span>Peer Feedback</span></span></a>
 <header class="d250-head inbar-ctl" style="--tone:#be185d">
   <div class="d250-head-in">
     <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/peer-feedback.webp" alt="" width="56" height="56"></span>
@@ -264,7 +264,9 @@ const fmtDue = d => new Date(d).toLocaleString('en-US', {timeZone:'America/Chica
 const fmtWhen = d => new Date(d).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
 const isClosed = () => Date.now() > new Date(DUE).getTime();
 // After the suspense cadets can still submit with the same code; cadre see it marked Late (Capt Russell, 20 Nov 2026).
-const lateOk = () => !ME || ME.acceptLate !== false;   // an older script says nothing and refuses late submits itself
+// Closed again on 21 Nov 2026 (Capt Russell: feedback after the suspense is not wanted). Set true to reopen late submits.
+const ACCEPT_LATE = false;
+const lateOk = () => ACCEPT_LATE && (!ME || ME.acceptLate !== false);
 const isLate = at => !!at && new Date(at).getTime() > new Date(DUE).getTime();
 
 let ME = null;      // {me:{key,name,cls}, peers:[...], group, groupLabel, submittedAt}
@@ -528,7 +530,7 @@ function showDone(){
 /* ---------- start ---------- */
 renderDue();
 setInterval(() => { renderDue(); if(ME && !$('#vReview').hidden) renderStatus(); }, 60000);
-if(isClosed()) $('#codeForm .muted').textContent = 'The suspense has passed. You can still sign in with your code and submit; cadre will see it marked late.';
+if(isClosed()) $('#codeForm .muted').textContent = ACCEPT_LATE ? 'The suspense has passed. You can still sign in with your code and submit; cadre will see it marked late.' : 'Peer Feedback is closed. You can still sign in to see whether your ratings were submitted.';
 (async () => {
   // Personal QR links end in #code=XXXX-XXXX: fill it in, sign in, and wipe it from the address bar.
   const linked = (location.hash.match(/(?:^#|&)code=([A-Za-z0-9-]+)/) || [])[1];
