@@ -72,7 +72,7 @@
   .compact .bandhead h2{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
   .compact .bandhead .rt{font-size:12px}
   .compact #command .bandhead{justify-content:center}
-  .compact #command .panel{background:none;border:0;box-shadow:none;padding:0}
+  .compact #command .panel{background:none;border:0;box-shadow:none;padding:10px 0 0;margin-top:-10px}
 
   /* every card is a short row card: photo, tags, name, title */
   .compact .tree{--gap:14px}
@@ -104,7 +104,7 @@
   .compact .olist .rcard .nm{font-size:13px}
 
   /* Squadrons: a top-down tree, each SQ/CC over its FLT/CCs, each FLT/CC over its FTO */
-  .compact #group .panel{padding:0;background:none;border:0;box-shadow:none;border-radius:0}
+  .compact #group .panel{padding:0;background:none;border:0;box-shadow:none;border-radius:0;padding-top:10px;margin-top:-10px}
   .compact #group .tree>ul>li{padding:0 18px}
   .compact #group .tree{--gap:11px}
 
