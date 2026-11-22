@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Weekly OPORDs · Storm HQ</title>
+<link rel="icon" type="image/png" href="../../shared/det250-patch-icon.png">
+<meta name="description" content="The signed weekly LLAB operations orders for the semester, behind the cadet password.">
+<link rel="stylesheet" href="../../shared/det250.css">
+<link rel="stylesheet" href="../docs.css">
+<style>
+.top{grid-template-columns:auto minmax(0,1fr)}
+.head{display:flex;align-items:center;gap:12px;padding:4px 2px}
+.head .hi{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#4a5a36,#2a331f)}
+.head h1{margin:0;font-size:20px;line-height:1.15}
+.head p{margin:0;font-size:13px;color:var(--soft)}
+.weeks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.wk{--tone:#4a5a36;position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px 14px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);transition:transform .25s var(--ease),border-color .2s,box-shadow .25s var(--ease);animation:rise .5s var(--ease) both;animation-delay:calc(min(var(--i,0),14) * 30ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.wk:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--tone) 70%,#fff);box-shadow:var(--shadow-lg)}
+.wk .num{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em;color:color-mix(in srgb,var(--tone) 45%,#fff)}
+:root[data-theme="light"] .wk .num{color:var(--tone)}
+.wk .num small{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--soft);margin-right:4px}
+.wk .sz{font-size:12px;color:var(--soft)}
+.wk .lk{position:absolute;top:12px;right:12px}
+.wk.locked{cursor:pointer}
+.note{color:var(--soft)}
+@media (max-width:860px){.top{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.weeks{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.wk{padding:12px 10px 10px}.wk .num{font-size:24px}.wk .num small{display:block;margin:0 0 2px}}
+</style>
+<script src="../../shared/pw.js" defer></script>
+<script src="../vault.js"></script>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Back to Documents and Policy"><img src="../../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Documents &amp; Policy</span><span class="d250-tool"><img src="../../shared/card-art/documents.webp" alt="" width="24" height="24"><span>Weekly OPORDs</span></span></a>
+
+<main class="wrap" id="main">
+  <div class="top">
+    <div class="head">
+      <span class="hi" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/><path d="M8 13h8M8 16.5h5"/></svg></span>
+      <div><h1 id="title">Weekly OPORDs</h1><p>Signed LLAB operations orders, one per week</p></div>
+    </div>
+    <div id="vault"></div>
+  </div>
+  <ul class="weeks" id="weeks"><li class="note">Loading…</li></ul>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">OPORDs include locations, dates and names, so they are encrypted and only open with the cadet password. Do not repost them publicly.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script src="../../data/documents.js"></script>
+<script src="../library.js"></script>
+<script>
+/* The weekly OPORDs on their own page (Captain Russell, 22 Nov 2026), so the main
+   Documents and Policy page stays on one screen. The list comes from the
+   encrypted file list (restricted/vault.json, group "opords"); each tile opens
+   the viewer, whose back button returns here. */
+const VAULT = window.D250DocVault;
+const SEC = (window.D250_DOC_SECTIONS || []).find(s => s.id === "opords") || {title:"Weekly OPORDs"};
+document.getElementById("title").textContent = SEC.title;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LOCK = '<span class="lk" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>';
+const mb = n => n ? (n / 1048576).toFixed(1) + " MB" : "";
+function render(){
+  const V = VAULT.vault, el = document.getElementById("weeks");
+  if(!V){ el.innerHTML = `<li class="note">Couldn't load the OPORD list. Refresh to try again.</li>`; return; }
+  const files = V.files.filter(f => f.group === "opords");
+  el.innerHTML = files.map((f, i) => {
+    const wk = (f.title.match(/\d+/) || [""])[0];
+    return `<li><a class="wk${VAULT.unlocked ? " is-open" : " locked"}" href="../view/?id=${encodeURIComponent(f.id)}" style="--i:${i}" aria-label="${esc(f.title)}">
+      <span class="num"><small>WEEK</small>${esc(wk || f.title)}</span><span class="sz">${esc(mb(f.size))}</span>${LOCK}</a></li>`;
+  }).join("") || `<li class="note">No OPORDs posted yet.</li>`;
+}
+document.getElementById("weeks").addEventListener("click", e => {
+  if(e.target.closest(".wk.locked")){ e.preventDefault(); VAULT.nudge(); }
+});
+function onChange(on, animate){
+  const tiles = [...document.querySelectorAll(".wk")];
+  if(on && animate && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    tiles.forEach((t, i) => { t.style.setProperty("--d", (0.1 + i * 0.05) + "s"); t.classList.remove("locked"); t.classList.add("is-open", "pop"); });
+    setTimeout(() => tiles.forEach(t => { t.classList.remove("pop"); t.style.removeProperty("--d"); }), 1200 + tiles.length * 50);
+  } else tiles.forEach(t => { t.classList.toggle("is-open", on); t.classList.toggle("locked", !on); });
+}
+VAULT.mount(document.getElementById("vault"), {root:"../", what:"OPORDs", onChange}).then(render);
+</script>
+</body>
+</html>

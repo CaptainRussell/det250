@@ -4,6 +4,8 @@
 
    sections: categories in page order. locked:true sections are filled from the
              encrypted documents/restricted/vault.json, not from docs.
+             page: the section has its own page (the weekly OPORDs: documents/opords/);
+             the main page shows it as one row under the section before it.
    docs:     one card each.
      sec    section id        id     short key; other tools cite documents by it, keep it stable
      num    number line (e.g. "DAFI 36-2903")   title   card title   what   one-line description
@@ -15,10 +17,10 @@
 window.D250_DOCS_DATA = {
 "sections": [
   {"id":"plans","title":"Detachment plans","tone":"#c8102e","locked":true,"sub":"The semester OPLAN, the cadet Policy Packet and the cadre duties roster. These include locations, dates and names, so they open with the detachment password."},
-  {"id":"opords","title":"Weekly OPORDs, Fall 2026","tone":"#4a5a36","locked":true,"compact":true,"sub":"Signed LLAB operations orders, one per week. Same password."},
-  {"id":"afrotc","title":"AFROTC instructions and supplements","tone":"#1f4e9c","sub":"HQ AFROTC publications that govern cadet life. Where they are more specific than the Air Force publication, they win for cadets."},
+  {"id":"opords","title":"Weekly OPORDs, Fall 2026","tone":"#4a5a36","locked":true,"page":"opords/","sub":"Signed LLAB operations orders, one per week. Same password."},
+  {"id":"afrotc","title":"AFROTC publications","tone":"#1f4e9c","sub":"HQ AFROTC publications that govern cadet life. Where they are more specific than the Air Force publication, they win for cadets."},
   {"id":"fitness","title":"Fitness","tone":"#c2410c","sub":"Everything for the PFRA: the calculator, the forms, the scoring charts and the governing manual."},
-  {"id":"external","title":"External links (e-Publishing)","tone":"#0369a1","sub":"Official Department of the Air Force publications and forms. These open the e-Publishing site in a new tab, so you always get the current version."}
+  {"id":"external","title":"Air Force e-Publishing","tone":"#0369a1","sub":"Official Department of the Air Force publications and forms. These open the e-Publishing site in a new tab, so you always get the current version."}
 ],
 "docs": [
   {"sec":"afrotc","id":"afrotci-36-2011v1","icon":"people","num":"AFROTCI 36-2011, Vol 1","title":"Cadet's Guide to the LLAB Curriculum","what":"Leadership Laboratory training objectives and evaluation tools. The OPLAN builds every lab around it. Aug 2026.","src":"references/afrotci-36-2011v1.pdf"},

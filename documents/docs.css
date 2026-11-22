@@ -1,0 +1,76 @@
+/* Documents and Policy: shared look for the main page (documents/index.html)
+   and the Weekly OPORDs page (documents/opords/). Redesigned 22 Nov 2026
+   (Captain Russell): every category on one desktop screen, no scrolling to find
+   a document; OPORDs have their own page. */
+:root{
+  --bg:var(--d250-page); --surface:var(--d250-surface); --surface-2:var(--d250-surface-2);
+  --ink:var(--d250-ink); --soft:var(--d250-soft); --faint:var(--d250-faint);
+  --line:var(--d250-line); --line-strong:var(--d250-line-strong);
+  --gold:var(--d250-gold); --tone:#0369a1; --ease:var(--d250-ease);
+  --shadow:var(--d250-shadow); --shadow-lg:0 10px 28px rgba(16,24,40,.14);
+  --ok:#2b8a3e; --ok-bg:color-mix(in srgb,#2f9e44 16%,transparent);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45);--ok:#51cf66}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45);--ok:#51cf66}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--d250-font);-webkit-font-smoothing:antialiased}
+input,button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:1280px;margin:0 auto;padding:16px 16px 8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* top row: The Storm Standard (left) and the unlock box (right) */
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch;margin-bottom:14px}
+.ss{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--tone) 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--tone) 22%,var(--surface)),var(--surface) 70%);text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:transform .25s var(--ease),border-color .2s,box-shadow .25s var(--ease)}
+.ss:hover{transform:translateY(-2px);border-color:var(--tone);box-shadow:var(--shadow-lg)}
+.ss .cover{flex:none;width:40px;height:54px;border-radius:3px 6px 6px 3px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.35);transition:transform .3s var(--ease)}
+.ss:hover .cover{transform:rotate(-4deg) scale(1.05)}
+.ss .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.ss .t{flex:1;min-width:0}
+.ss b{display:block;font-size:17px;line-height:1.2}
+.ss small{display:block;color:var(--soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss .go{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 14px;border-radius:10px;background:var(--tone);color:#fff;font-weight:800;font-size:14px}
+.ss:hover .go{background:color-mix(in srgb,var(--tone) 82%,#fff)}
+
+/* unlock box (documents/vault.js) */
+.vault{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,#c8102e 14%,var(--surface)),var(--surface) 65%);border:1px solid color-mix(in srgb,#c8102e 35%,var(--line));box-shadow:var(--shadow);scroll-margin-top:60px;transition:border-color .3s,background .3s}
+.vault .vi{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--gold);background:var(--d250-gold-bg)}
+.vault .vi .shackle{transition:transform .45s var(--ease)}
+.vault .vt{font-weight:800;font-size:14.5px}
+.vault form{display:flex;gap:8px;align-items:center;margin-left:auto}
+.vault input{width:180px;min-width:0;padding:8px 11px;min-height:40px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
+.vault .go{min-height:40px;padding:0 16px;border:0;border-radius:10px;background:#c8102e;color:#fff;font-weight:800;cursor:pointer}
+.vault .go:hover{background:#a50d26}
+.vault .go:disabled{opacity:.65;cursor:progress}
+.vault .relock{display:none;margin-left:auto;font-size:12.5px;font-weight:700;color:var(--soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 13px;cursor:pointer}
+.vault .relock:hover{color:var(--ink)}
+.vault .err{flex-basis:100%;margin:0;font-size:13px;font-weight:700;color:#ff8a80}
+:root[data-theme="light"] .vault .err{color:#c62828}
+.vault .err:empty{display:none}
+.vault.open{border-color:color-mix(in srgb,#2f9e44 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,#2f9e44 14%,var(--surface)),var(--surface) 65%)}
+.vault.open .vi{color:var(--ok);background:var(--ok-bg)}
+.vault.open .vi .shackle{transform:translate(5px,-3px) rotate(18deg)}
+.vault.open form{display:none}
+.vault.open .relock{display:inline-block}
+.vault.glow{border-color:var(--gold);animation:glow 1.4s var(--ease) 2}
+@keyframes glow{40%{box-shadow:var(--shadow),0 0 0 5px color-mix(in srgb,var(--gold) 40%,transparent),0 0 30px color-mix(in srgb,var(--gold) 45%,transparent)}}
+.vault.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* lock chip on a protected row or tile: opens one after another on unlock */
+.lk{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:var(--d250-gold-bg);color:var(--gold);transition:background .35s,color .35s}
+.lk .shackle{transition:transform .4s var(--ease)}
+.is-open .lk{background:var(--ok-bg);color:var(--ok);transition-delay:var(--d,0s)}
+.is-open .lk .shackle{transform:translate(4px,-2px) rotate(16deg);transition-delay:var(--d,0s)}
+.pop{animation:pop .55s var(--ease) var(--d,0s) both}
+@keyframes pop{40%{transform:translateY(-3px) scale(1.02);border-color:#2f9e44}}
+
+@media (max-width:860px){
+  .top{grid-template-columns:minmax(0,1fr)}
+  .vault form{margin-left:0;flex:1 1 100%}
+  .vault input{flex:1;width:auto}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
