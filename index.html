@@ -252,7 +252,9 @@ document.getElementById("siSkip").addEventListener("click", () => { SI.skip(); d
 dlg.addEventListener("cancel", () => { if (!SI.role()) SI.skip(); render(); });   // Esc counts as Skip
 
 render();
-SI.resume().then(role => { if (role) render(); else openSignIn(); });
+// No password box on open (Captain Russell, 22 Nov 2026): ask only when it is needed. Locked tools ask
+// for their own password when opened; the Sign in link in the header opens this box for cadre.
+SI.resume().then(role => { if (role) render(); });
 </script>
 </body>
 </html>

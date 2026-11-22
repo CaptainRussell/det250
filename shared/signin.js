@@ -17,6 +17,9 @@
    this device" also keeps the password in localStorage d250-signin-v1, and the hub
    signs in from it when a new tab opens.
 
+   D250SignIn.docsPass(pw) turns the admin password into the cadet password, for the
+   pages that ask for the cadet password themselves.
+
    Usage: <script src="<root>shared/signin.js"></script>, then D250SignIn.root = "../"
    on pages below the root (the hub leaves it ""). */
 (function(){
@@ -73,6 +76,17 @@
       } else throw new Error("That password didn't work. Try again.");
       if (keep) ls.set(KEYS.keep, pw); else ls.del(KEYS.keep);
       return api.role();
+    },
+    // The cadet password a typed password stands for: itself when it opens the cadet vault,
+    // or, for the admin password, the Documents password saved in the admin vault
+    // (locks.docs). Resolves "" when neither works. Used by the Documents and Policy
+    // unlock box, the document viewer and the ODT Tool (Captain Russell, 22 Nov 2026:
+    // the admin password opens documents too).
+    async docsPass(pw){
+      pw = String(pw || ""); if (!pw) return "";
+      if (await asCadet(pw)) return pw;
+      const c = await asCadre(pw);
+      return c && c.docs ? c.docs : "";
     },
     skip(){ ss.set(KEYS.role, "skip"); },
     // Signs in from "Keep me signed in" when this tab has not chosen yet. Resolves to the role or "".

@@ -49,6 +49,8 @@
 }
 </style>
 <script src="../shared/pw.js" defer></script>
+<script src="../shared/signin.js"></script>
+<script>D250SignIn.root = "../";</script>
 <script src="vault.js"></script>
 </head>
 <body>
@@ -121,14 +123,17 @@ const PLAN_SUB = {
   "fall-2026-policy-packet":"Conduct, uniforms, PT",
   "cadre-additional-duties":"Cadre duties memo"
 };
+// Card pictures for the locked rows (tools/doc-card-art.py): the Det 250 patch with the plan's name.
+const PLAN_ART = new Set(["fall-2026-oplan", "fall-2026-policy-packet", "cadre-additional-duties"]);
+const artIcon = src => `<span class="di art" aria-hidden="true"><img src="${esc(src)}" alt="" width="36" height="36" loading="lazy"></span>`;
 function fileRow(f){
   return `<li><a class="doc rdoc${VAULT.unlocked ? " is-open" : " locked"}" href="view/?id=${encodeURIComponent(f.id)}">
-    <span class="di" aria-hidden="true">${SVG(P.plan)}</span><span class="dt"><b>${esc(f.title)}</b><small>${esc(PLAN_SUB[f.id] || "Restricted")}</small></span>${LOCK}</a></li>`;
+    ${PLAN_ART.has(f.id) ? artIcon("art/" + f.id + ".webp") : `<span class="di" aria-hidden="true">${SVG(P.plan)}</span>`}<span class="dt"><b>${esc(f.title)}</b><small>${esc(PLAN_SUB[f.id] || "Restricted")}</small></span>${LOCK}</a></li>`;
 }
 function pageRow(s, files){
   const n = files.length;
   return `<li><a class="doc more" href="${esc(s.page)}" style="--tone:${s.tone}">
-    <span class="di" aria-hidden="true">${SVG(P.folder)}</span><span class="dt"><b>${esc(s.title)}</b><small>${n ? n + " weeks" : "Open the list"}</small></span>${NEXT}</a></li>`;
+    ${s.id === "opords" ? artIcon("art/opords.webp") : `<span class="di" aria-hidden="true">${SVG(P.folder)}</span>`}<span class="dt"><b>${esc(s.title)}</b><small>${n ? n + " weeks" : "Open the list"}</small></span>${NEXT}</a></li>`;
 }
 
 const PHONE = matchMedia("(max-width:640px)");

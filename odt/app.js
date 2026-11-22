@@ -342,8 +342,9 @@ $("#unlock").addEventListener("submit", async ev => {
   ev.preventDefault();
   const go_ = $("#go"); $("#err").textContent = ""; go_.disabled = true; go_.textContent = "Checking…";
   try{
-    const data = await open($("#pw").value, V); PW = $("#pw").value;
-    try{ sessionStorage.setItem(PASS_KEY, $("#pw").value); }catch(_){}
+    const real = (window.D250SignIn && await window.D250SignIn.docsPass($("#pw").value)) || $("#pw").value;   // admin password works too
+    const data = await open(real, V); PW = real;
+    try{ sessionStorage.setItem(PASS_KEY, real); }catch(_){}
     show(data);
   }catch(_){
     $("#err").textContent = "That password didn't work. Try again.";
