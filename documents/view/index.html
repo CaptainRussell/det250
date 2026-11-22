@@ -138,7 +138,7 @@ button,input{font:inherit;color:inherit}
 
   function setNav(){
     const list = V.files.filter(x => x.group === F.group), i = list.indexOf(F);
-    backTo("../#" + F.group);
+    backTo(F.group === "opords" ? "../opords/" : "../#" + F.group);
     $("grp").textContent = GROUP[F.group] || "Restricted";
     $("title").textContent = F.title;
     document.title = F.title + " · Storm HQ";

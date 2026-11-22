@@ -8,135 +8,48 @@
 <link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
 <meta name="description" content="The Storm Standard, the password-protected Fall 2026 plans and OPORDs, and every AFROTC and Air Force publication and form Det 250 cadets work from.">
 <link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="docs.css">
 <style>
-:root{
-  --bg:var(--d250-page); --surface:var(--d250-surface); --surface-2:var(--d250-surface-2);
-  --ink:var(--d250-ink); --soft:var(--d250-soft); --faint:var(--d250-faint);
-  --line:var(--d250-line); --line-strong:var(--d250-line-strong);
-  --gold:var(--d250-gold); --tone:#0369a1; --ease:var(--d250-ease);
-  --shadow:var(--d250-shadow); --shadow-lg:0 10px 28px rgba(16,24,40,.14);
-  color-scheme:light;
-}
-:root[data-theme="dark"]{color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--shadow-lg:0 12px 30px rgba(0,0,0,.45)}}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--d250-font);-webkit-font-smoothing:antialiased}
-input{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-[hidden]{display:none!important}
-.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 0}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
-/* featured: The Storm Standard */
-.feature{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;padding:24px;border-radius:18px;border:1px solid color-mix(in srgb,var(--tone) 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--tone) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow);text-decoration:none;color:var(--ink);transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s}
-.feature:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
-.feature .cover{width:96px;height:128px;border-radius:6px 10px 10px 6px;display:grid;place-items:center;background:linear-gradient(160deg,#1c3f66,#0b1a2c);box-shadow:0 10px 24px rgba(0,0,0,.35),inset 6px 0 0 rgba(255,255,255,.08);position:relative;transition:transform .35s var(--ease)}
-.feature:hover .cover{transform:rotate(-4deg) scale(1.04)}
-.feature .cover img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-
-.feature .kick{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-.feature h2{margin:2px 0 6px;font-size:clamp(26px,4.4vw,36px);line-height:1.1;font-weight:800;letter-spacing:-.015em}
-.feature p.lede{margin:0 0 14px;color:var(--soft);max-width:60ch}
-.feature .go{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:11px;background:var(--tone);color:#fff;font-weight:800;font-size:15px}
-.feature:hover .go{background:color-mix(in srgb,var(--tone) 82%,#fff)}
-@media (max-width:560px){.feature{grid-template-columns:minmax(0,1fr);gap:14px;padding:18px}.feature .cover{width:72px;height:96px}}
-
-/* expand / collapse all */
-.bar2{display:flex;justify-content:flex-end;gap:8px;margin:22px 0 -6px}
-.tgl{font-size:12.5px;font-weight:700;color:var(--soft);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;transition:color .2s,border-color .2s}
-.tgl:hover{color:var(--ink);border-color:var(--line-strong)}
-
-/* sections and hub-style cards (same look as the Storm HQ hub tool cards) */
-.sec{margin-top:18px;scroll-margin-top:12px}
-.sechead{margin:0}
-.sechead h2{margin:0}
-.sbtn{width:100%;display:flex;align-items:center;gap:12px;padding:12px 4px 12px 2px;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;color:var(--soft);transition:color .2s,border-color .2s}
-.sbtn:hover{color:var(--ink);border-color:var(--line-strong)}
-.sbtn .st{flex:1;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-.sbtn .n{font-size:12px;font-weight:700;letter-spacing:0;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--soft)}
-.sbtn .chev{width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .35s var(--ease)}
-.sec.shut .sbtn .chev{transform:rotate(-45deg)}
-.sbody{display:grid;grid-template-rows:1fr;transition:grid-template-rows .45s var(--ease),opacity .35s}
-.sbody>div{overflow:hidden;min-height:0}
-.sec.shut .sbody{grid-template-rows:0fr;opacity:.2}
-.sdesc{margin:10px 2px 12px;font-size:13.5px;color:var(--soft);max-width:70ch}
-.sec .grid{padding:2px 2px 6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
-  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(min(var(--i,0), 14) * 35ms + .1s)}
-@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
-.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease);pointer-events:none}
-.tool:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--tone)}
-.tool:hover::after{transform:translateX(100%)}
-.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--ease);font-size:12px;font-weight:800;letter-spacing:.02em}
-.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
-.icon.art{background:none;overflow:hidden}
-.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
-.body{min-width:0;flex:1}
-.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
-.name svg{flex:none;color:var(--soft)}
-.sub{display:block;margin-top:2px;font-size:13.5px;font-weight:700;color:var(--tone-ink)}
-.blurb{margin:4px 0 0;color:var(--soft);font-size:14px}
-.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
-.lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
-.tool{--tone-ink:var(--tone)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}}
-:root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
-.tool.is-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--d250-gold) 16%,var(--surface)),var(--surface) 75%);border-color:color-mix(in srgb,var(--d250-gold) 50%,var(--line))}
-.tool.is-tool:hover{border-color:var(--d250-gold)}
-.toolpill{font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--d250-gold);color:#16161a}
-.grid.compact{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
-.grid.compact .tool{padding:14px 16px;gap:14px;align-items:center}
-.grid.compact .icon{width:46px;height:46px;border-radius:12px}
-
-/* restricted: one unlock box for every protected document */
-.vault{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;margin-top:26px;padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,#c8102e 14%,var(--surface)),var(--surface) 65%);border:1px solid color-mix(in srgb,#c8102e 35%,var(--line));box-shadow:var(--shadow);scroll-margin-top:20px;transition:border-color .3s,box-shadow .3s}
-.vault .vi{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;color:var(--gold);background:var(--d250-gold-bg)}
-.vault .vi svg .shackle{transition:transform .45s var(--ease)}
-.vault h2{margin:0;font-size:17px;font-weight:800}
-.vault p{margin:2px 0 0;font-size:13.5px;color:var(--soft)}
-.vault form{display:flex;gap:8px;align-items:center}
-.vault input{width:210px;min-width:0;padding:10px 12px;min-height:44px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2)}
-.vault .go{min-height:44px;padding:0 18px;border:0;border-radius:10px;background:#c8102e;color:#fff;font-weight:800;cursor:pointer;transition:background .2s}
-.vault .go:hover{background:#a50d26}
-.vault .go:disabled{opacity:.65;cursor:progress}
-.vault .err{grid-column:1/-1;margin:-4px 0 0;font-size:13px;font-weight:700;color:#ff8a80;min-height:0}
-:root[data-theme="light"] .vault .err{color:#c62828}
-.vault .err:empty{display:none}
-.vault .relock{display:none;font-size:12.5px;font-weight:700;color:var(--soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:7px 14px;cursor:pointer}
-.vault.glow{border-color:var(--gold);animation:glow 1.4s var(--ease) 2}
-@keyframes glow{0%,100%{box-shadow:var(--shadow),0 0 0 0 color-mix(in srgb,var(--gold) 0%,transparent)}40%{box-shadow:var(--shadow),0 0 0 6px color-mix(in srgb,var(--gold) 40%,transparent),0 0 34px color-mix(in srgb,var(--gold) 45%,transparent)}}
-.vault.shake{animation:shake .4s}
-@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-.unlocked .vault{border-color:color-mix(in srgb,#2f9e44 45%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,#2f9e44 14%,var(--surface)),var(--surface) 65%)}
-.unlocked .vault .vi{color:#51cf66;background:color-mix(in srgb,#2f9e44 20%,transparent)}
-.unlocked .vault .vi svg .shackle{transform:translate(5px,-3px) rotate(18deg)}
-.unlocked .vault form{display:none}
-.unlocked .vault .relock{display:inline-block}
-@media (max-width:720px){.vault{grid-template-columns:auto minmax(0,1fr)}.vault form,.vault .relock{grid-column:1/-1}.vault input{flex:1;width:auto}}
-
-/* lock pill on each protected card: animates open, one card after another */
-.lock{transition:background .35s,color .35s,opacity .35s,transform .35s var(--ease)}
-.lock .shackle{transition:transform .4s var(--ease)}
-.tool.open .lock{background:color-mix(in srgb,#2f9e44 18%,transparent);color:#51cf66;transition-delay:var(--d,0s)}
-:root[data-theme="light"] .tool.open .lock{color:#2b8a3e}
-.tool.open .lock .shackle{transform:translate(4px,-2px) rotate(16deg);transition-delay:var(--d,0s)}
-.tool.open .lock .lt::before{content:"Unlocked"}
-.lock .lt::before{content:"Cadet password"}
-.tool.pop{animation:pop .55s var(--ease) var(--d,0s) both}
-@keyframes pop{40%{transform:translateY(-3px) scale(1.02);border-color:#2f9e44}}
-.tool.locked{cursor:pointer}
-.empty{display:none;margin:24px 0 0;padding:24px;text-align:center;color:var(--soft);border:1px dashed var(--line-strong);border-radius:14px}
+/* every category side by side, one compact row per document */
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:60px;animation:rise .5s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.col.flash{animation:flash 1.4s var(--ease) 1}
+@keyframes flash{30%{border-color:var(--tone);box-shadow:0 0 0 4px color-mix(in srgb,var(--tone) 35%,transparent)}}
+.ch{margin:0}
+.cbtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px 10px;background:linear-gradient(180deg,color-mix(in srgb,var(--tone) 18%,transparent),transparent);border:0;border-top:3px solid var(--tone);text-align:left;color:var(--ink);cursor:default}
+.cbtn .st{flex:1;font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.cbtn .n{font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--surface-2);color:var(--soft)}
+.cbtn .chev{display:none;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .3s var(--ease);color:var(--soft)}
+.rows{list-style:none;margin:0;padding:4px 6px 8px}
+.doc{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;text-decoration:none;color:var(--ink);transition:background .15s}
+.doc:hover{background:var(--surface-2)}
+.doc:hover .di{transform:rotate(-6deg) scale(1.06)}
+.di{flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));transition:transform .3s var(--ease)}
+.di.art{background:none;overflow:hidden}
+.di.art img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover}
+.dt{flex:1;min-width:0;line-height:1.25}
+.dt b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;font-weight:800}
+.dt small{display:block;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tail{flex:none;color:var(--faint);display:inline-grid;place-items:center}
+.doc.is-tool{background:color-mix(in srgb,var(--d250-gold) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--d250-gold) 40%,transparent)}
+.doc.is-tool .tail{font-size:10.5px;font-weight:800;letter-spacing:.03em;padding:2px 7px;border-radius:999px;background:var(--d250-gold);color:#16161a}
+.doc.more{margin-top:4px;box-shadow:inset 0 0 0 1px var(--line-strong)}
+.doc.more:hover{box-shadow:inset 0 0 0 1px var(--tone)}
+.doc.more .tail{color:var(--soft)}
+.doc.locked{cursor:pointer}
+.note{margin:4px 8px 6px;font-size:12.5px;color:var(--soft)}
+@media (max-width:1100px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){
-  .grid{grid-template-columns:1fr}
-  .tool{padding:16px 14px 14px;gap:14px}
-  .icon{width:48px;height:48px;border-radius:12px}
+  .cols{grid-template-columns:minmax(0,1fr);gap:10px}
+  .cbtn{cursor:pointer}
+  .cbtn .chev{display:block}
+  .col.shut .cbtn .chev{transform:rotate(-45deg)}
+  .col.shut .rows{display:none}
 }
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
-@media print{.tools{display:none!important}}
 </style>
 <script src="../shared/pw.js" defer></script>
+<script src="vault.js"></script>
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/documents.webp" alt="" width="24" height="24"><span>Documents and Policy</span></span></a>
@@ -152,22 +65,15 @@ input{font:inherit;color:inherit}
 </header>
 
 <main class="wrap" id="main">
-  <a class="feature" href="storm-standard/" aria-labelledby="ss-h">
-    <span class="cover" aria-hidden="true"><img src="storm-standard/art/cover.webp" alt=""></span>
-    <span>
-      <p class="kick">Main document · First Edition, Sep 2026</p>
-      <h2 id="ss-h">The Storm Standard</h2>
-      <p class="lede">Detachment 250's own cadet reference: the Storm legacy, officership, Air and Space Force history, military strategy and resources. The online view highlights the key topics with their graphics; the full text is in the PDF.</p>
-      <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Read the Standard</span>
-    </span>
-  </a>
-
-  <div class="bar2">
-    <button type="button" class="tgl" id="expandAll">Expand all</button>
-    <button type="button" class="tgl" id="collapseAll">Collapse all</button>
+  <div class="top">
+    <a class="ss" href="storm-standard/">
+      <span class="cover" aria-hidden="true"><img src="storm-standard/art/cover.webp" alt="" width="40" height="54"></span>
+      <span class="t"><b>The Storm Standard</b><small>Det 250's own cadet reference · First Edition, Sep 2026</small></span>
+      <span class="go"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg>Read</span>
+    </a>
+    <div id="vault"></div>
   </div>
-
-  <div id="pub"></div>
+  <div class="cols" id="cols"></div>
 </main>
 
 <footer class="d250-foot">
@@ -182,147 +88,115 @@ input{font:inherit;color:inherit}
 <script src="../data/documents.js"></script>
 <script src="library.js"></script>
 <script>
-/* The public document list is in library.js (shared with view/). */
-const SECTIONS = window.D250_DOC_SECTIONS, DOCS = window.D250_DOCS;
-
-/* ===================== rendering ===================== */
+/* The sections and cards are in data/documents.js (via library.js, shared with view/).
+   Layout (Captain Russell, 22 Nov 2026): one column per category, one short row per
+   document (number and title; the description is the row's tooltip), so every
+   document is on one desktop screen. A section with "page" (the weekly OPORDs) gets
+   its own page and shows here as one row under the section before it. */
+const SECTIONS = window.D250_DOC_SECTIONS, DOCS = window.D250_DOCS, VAULT = window.D250DocVault;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const SVG = p => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const ICON = {
-  plans:SVG('<path d="M9 4h6v3H9z"/><path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H15"/><path d="M8.5 12h7M8.5 16h5"/>'),
-  afrotc:SVG('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M8.5 11.5l2.5 2.5 4.5-5"/>'),
-  daf:SVG('<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>'),
-  forms:SVG('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
-  fitness:SVG('<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>'),
-  tool:SVG('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/><path d="M16 15v3"/>'),
-  external:SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>')
+const SVG = (p, w) => `<svg width="${w || 20}" height="${w || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const P = {
+  plan:'<path d="M9 4h6v3H9z"/><path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H15"/><path d="M8.5 12h7M8.5 16h5"/>',
+  folder:'<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/><path d="M8 13h8M8 16.5h5"/>',
+  doc:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+  tool:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h2M12 18h2"/><path d="M16 15v3"/>'
 };
-const EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Opens in a new tab"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
-const LOCK = '<span class="meta"><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="lt"></span></span></span>';
-let n = 0;
-function card(d, s){
+const EXT = '<span class="tail" title="Opens in a new tab">' + SVG('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', 15) + '</span>';
+const DL = '<span class="tail" title="Download">' + SVG('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>', 15) + '</span>';
+const NEXT = '<span class="tail">' + SVG('<path d="M9 6l6 6-6 6"/>', 16) + '</span>';
+const LOCK = '<span class="lk" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>';
+
+function docRow(d, s){
   const href = d.src ? "view/?id=" + encodeURIComponent(d.id) : d.href;
   const ext = /^https?:/.test(href);
-  const paths = (window.D250_DOC_ICONS || {})[d.icon];
-  const icon = paths ? SVG(paths) : d.tool ? ICON.tool : ICON[s.id];
-  // a link to a Storm HQ tool looks different from a document
-  const kind = d.tool ? '<span class="meta"><span class="toolpill">Storm HQ tool <span aria-hidden="true">&rarr;</span></span></span>' : "";
-  return `<a class="tool${d.tool ? " is-tool" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : d.download ? " download" : ""} style="--tone:${d.tool ? "#a06f00" : s.tone};--i:${n++}">
-    <span class="icon${d.art ? " art" : ""}" aria-hidden="true">${d.art ? `<img src="${esc(d.art)}" alt="" width="56" height="56">` : icon}</span>
-    <span class="body"><span class="name">${esc(d.num)}${ext ? EXT : ""}</span><span class="sub">${esc(d.title)}</span><p class="blurb">${esc(d.what)}</p>${kind}</span></a>`;
+  const paths = (window.D250_DOC_ICONS || {})[d.icon] || (d.tool ? P.tool : P.doc);
+  const icon = d.art ? `<span class="di art" aria-hidden="true"><img src="${esc(d.art)}" alt="" width="36" height="36" loading="lazy"></span>` : `<span class="di" aria-hidden="true">${SVG(paths)}</span>`;
+  const tail = d.tool ? '<span class="tail">Tool</span>' : ext ? EXT : d.download ? DL : "";
+  return `<li><a class="doc${d.tool ? " is-tool" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : d.download ? " download" : ""} title="${esc(d.what || "")}" style="${d.tool ? "--tone:#a06f00" : ""}">
+    ${icon}<span class="dt"><b>${esc(d.num)}</b><small>${esc(d.title)}</small></span>${tail}</a></li>`;
 }
-const PLAN_BLURBS = {
-  "fall-2026-oplan":"Cadet wing organization, activities and the Leadership Laboratory plan for the semester.",
-  "fall-2026-policy-packet":"Detachment policies for cadets: conduct, attendance, uniforms, PT, communication and more.",
-  "cadre-additional-duties":"Signed 27 July 2026 memo: each cadre member's primary duties, additional duties and special projects."
+const PLAN_SUB = {
+  "fall-2026-oplan":"Wing structure, LLAB plan",
+  "fall-2026-policy-packet":"Conduct, uniforms, PT",
+  "cadre-additional-duties":"Cadre duties memo"
 };
-function rcard(f, s){
-  const wk = (f.title.match(/\d+/) || [""])[0];
-  const icon = s.id === "opords" ? `<span class="icon" aria-hidden="true">WK ${esc(wk)}</span>` : `<span class="icon" aria-hidden="true">${ICON.plans}</span>`;
-  const blurb = PLAN_BLURBS[f.id] ? `<p class="blurb">${esc(PLAN_BLURBS[f.id])}</p>` : "";
-  return `<a class="tool rtool${UNLOCKED ? " open" : " locked"}" href="view/?id=${encodeURIComponent(f.id)}" style="--tone:${s.tone};--i:${n++}">
-    ${icon}<span class="body"><span class="name">${esc(f.title)}</span>${blurb}${LOCK}</span></a>`;
+function fileRow(f){
+  return `<li><a class="doc rdoc${VAULT.unlocked ? " is-open" : " locked"}" href="view/?id=${encodeURIComponent(f.id)}">
+    <span class="di" aria-hidden="true">${SVG(P.plan)}</span><span class="dt"><b>${esc(f.title)}</b><small>${esc(PLAN_SUB[f.id] || "Restricted")}</small></span>${LOCK}</a></li>`;
 }
-const VAULT_BOX = `<div class="vault" id="vault">
-  <span class="vi" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-  <div><h2 id="vaultTitle">Enter cadet password to unlock</h2><p id="vaultSub">Plans and OPORDs include locations, dates and names. One password unlocks all of them for this browser tab.</p></div>
-  <form id="unlock" autocomplete="off"><label class="sr" for="pw">Password</label><input id="pw" type="password" placeholder="Cadet password" required autocomplete="current-password"><button class="go" id="go" type="submit">Unlock</button></form>
-  <button class="relock" id="relock" type="button">Lock again</button>
-  <p class="err" id="err" role="alert"></p>
-</div>`;
+function pageRow(s, files){
+  const n = files.length;
+  return `<li><a class="doc more" href="${esc(s.page)}" style="--tone:${s.tone}">
+    <span class="di" aria-hidden="true">${SVG(P.folder)}</span><span class="dt"><b>${esc(s.title)}</b><small>${n ? n + " weeks" : "Open the list"}</small></span>${NEXT}</a></li>`;
+}
+
+const PHONE = matchMedia("(max-width:640px)");
 let SHUT = {};
 try { SHUT = JSON.parse(localStorage.getItem("d250-docs-sections-v1")) || {}; } catch(_){}
 const saveShut = () => { try { localStorage.setItem("d250-docs-sections-v1", JSON.stringify(SHUT)); } catch(_){} };
-function render(vault){
-  n = 0;
-  document.getElementById("pub").innerHTML = SECTIONS.map(s => {
-    let items, count;
-    if(s.locked){
-      const files = vault ? vault.files.filter(f => f.group === s.id) : [];
-      count = files.length || "";
-      items = files.map(f => rcard(f, s)).join("") || `<p class="blurb">Loading…</p>`;
-    } else { const list = DOCS.filter(d => d.sec === s.id); count = list.length; items = list.map(d => card(d, s)).join(""); }
-    return `${s.id === "plans" ? VAULT_BOX : ""}<section class="sec${SHUT[s.id] ? " shut" : ""}" id="${s.id}" aria-labelledby="h-${s.id}">
-      <h2 class="sechead" id="h-${s.id}"><button type="button" class="sbtn" aria-expanded="${!SHUT[s.id]}" aria-controls="b-${s.id}" data-sec="${s.id}"><span class="st">${esc(s.title)}</span>${count !== "" ? `<span class="n">${count}</span>` : ""}<span class="chev" aria-hidden="true"></span></button></h2>
-      <div class="sbody" id="b-${s.id}"${SHUT[s.id] ? " inert" : ""}><div>${s.sub ? `<p class="sdesc">${esc(s.sub)}</p>` : ""}<div class="grid${s.compact ? " compact" : ""}">${items}</div></div></div>
-    </section>`;
-  }).join("");
-  wire();
-}
-function setShut(id, shut){
-  const sec = document.getElementById(id); if(!sec) return;
-  sec.classList.toggle("shut", shut);
-  sec.querySelector(".sbtn").setAttribute("aria-expanded", String(!shut));
-  sec.querySelector(".sbody").inert = shut;
-  SHUT[id] = shut; saveShut();
-}
-document.getElementById("pub").addEventListener("click", e => {
-  const b = e.target.closest(".sbtn"); if(b){ setShut(b.dataset.sec, !document.getElementById(b.dataset.sec).classList.contains("shut")); return; }
-  const t = e.target.closest(".rtool.locked");
-  if(t){ e.preventDefault(); nudge(); }
-});
-document.getElementById("expandAll").addEventListener("click", () => SECTIONS.forEach(s => setShut(s.id, false)));
-document.getElementById("collapseAll").addEventListener("click", () => SECTIONS.forEach(s => setShut(s.id, true)));
+// On a phone the categories start folded so they all fit on one screen; a tap opens one.
+const isShut = id => id in SHUT ? SHUT[id] : true;
 
-/* ===================== unlock ===================== */
-const PASS_KEY = "d250-docs-pass";
-let V = null, UNLOCKED = false;
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-async function check(pass){
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
-  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(V.salt), iterations:V.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
-  const c = b64(V.check);
-  await crypto.subtle.decrypt({name:"AES-GCM", iv:c.subarray(0, 12)}, key, c.subarray(12));
-}
-function nudge(){
-  const v = document.getElementById("vault"); if(!v) return;
-  v.scrollIntoView({block:"center", behavior: reduce ? "auto" : "smooth"});
-  v.classList.remove("glow"); void v.offsetWidth; v.classList.add("glow");
-  setTimeout(() => document.getElementById("pw").focus({preventScroll:true}), reduce ? 0 : 350);
-}
-function setUnlocked(on, animate){
-  UNLOCKED = on;
-  document.getElementById("main").classList.toggle("unlocked", on);
-  document.getElementById("vaultTitle").textContent = on ? "Unlocked" : "Enter cadet password to unlock";
-  document.getElementById("vaultSub").textContent = on ? "Every plan and OPORD is open for this browser tab. Do not repost these files publicly." : "Plans and OPORDs include locations, dates and names. One password unlocks all of them for this browser tab.";
-  const cards = [...document.querySelectorAll(".rtool")];
-  if(on && animate && !reduce){
-    ["plans", "opords"].forEach(id => setShut(id, false));
-    cards.forEach((c, i) => { c.style.setProperty("--d", (0.15 + i * 0.07) + "s"); c.classList.remove("locked"); c.classList.add("open", "pop"); });
-    setTimeout(() => cards.forEach(c => { c.classList.remove("pop"); c.style.removeProperty("--d"); }), 1400 + cards.length * 70);
-  } else cards.forEach(c => { c.classList.toggle("open", on); c.classList.toggle("locked", !on); });
-}
-function wire(){
-  const form = document.getElementById("unlock"); if(!form || form.dataset.w) return; form.dataset.w = 1;
-  const pw = document.getElementById("pw"), go = document.getElementById("go"), err = document.getElementById("err"), vault = document.getElementById("vault");
-  form.addEventListener("submit", async e => {
-    e.preventDefault(); if(!V) return;
-    err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
-    try {
-      await check(pw.value);
-      try { sessionStorage.setItem(PASS_KEY, pw.value); } catch(_){}
-      pw.value = ""; setUnlocked(true, true);
-    } catch(_){
-      err.textContent = "That password didn't work. Try again.";
-      vault.classList.remove("shake", "glow"); void vault.offsetWidth; vault.classList.add("shake"); pw.select();
-    } finally { go.disabled = false; go.textContent = "Unlock"; }
+function render(){
+  const V = VAULT.vault;
+  const cols = [];
+  SECTIONS.forEach(s => {
+    if(s.page){ const last = cols[cols.length - 1]; if(last){ last.extra.push(s); return; } }
+    cols.push({s, extra:[]});
   });
-  document.getElementById("relock").addEventListener("click", () => { try { sessionStorage.removeItem(PASS_KEY); } catch(_){} setUnlocked(false, false); });
-  if(UNLOCKED) setUnlocked(true, false);
+  document.getElementById("cols").innerHTML = cols.map(({s, extra}, i) => {
+    let rows, count;
+    if(s.locked){
+      const files = V ? V.files.filter(f => f.group === s.id) : [];
+      count = files.length;
+      rows = V ? files.map(fileRow).join("") : `<li class="note">${V === null && LOADED ? "Couldn't load the protected file list. Refresh to try again." : "Loading…"}</li>`;
+    } else {
+      const list = DOCS.filter(d => d.sec === s.id); count = list.length;
+      rows = list.map(d => docRow(d, s)).join("");
+    }
+    rows += extra.map(x => pageRow(x, V ? V.files.filter(f => f.group === x.id) : [])).join("");
+    const shut = isShut(s.id);
+    return `<section class="col${shut ? " shut" : ""}" id="${s.id}" style="--tone:${s.tone};--i:${i}" aria-labelledby="h-${s.id}">
+      <h2 class="ch" id="h-${s.id}"><button type="button" class="cbtn" data-sec="${s.id}" aria-expanded="${!(shut && PHONE.matches)}" title="${esc(s.sub || "")}"><span class="st">${esc(s.title)}</span>${count ? `<span class="n">${count}</span>` : ""}<span class="chev" aria-hidden="true"></span></button></h2>
+      <ul class="rows">${rows}</ul></section>`;
+  }).join("");
+}
+document.getElementById("cols").addEventListener("click", e => {
+  const b = e.target.closest(".cbtn");
+  if(b){
+    if(!PHONE.matches) return;
+    const sec = document.getElementById(b.dataset.sec), shut = !sec.classList.contains("shut");
+    sec.classList.toggle("shut", shut); b.setAttribute("aria-expanded", String(!shut));
+    SHUT[b.dataset.sec] = shut; saveShut(); return;
+  }
+  if(e.target.closest(".rdoc.locked")){ e.preventDefault(); VAULT.nudge(); }
+});
+PHONE.addEventListener("change", render);
+
+function onChange(on, animate){
+  const rows = [...document.querySelectorAll(".rdoc")];
+  if(on && animate && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    rows.forEach((r, i) => { r.style.setProperty("--d", (0.1 + i * 0.08) + "s"); r.classList.remove("locked"); r.classList.add("is-open", "pop"); });
+    setTimeout(() => rows.forEach(r => { r.classList.remove("pop"); r.style.removeProperty("--d"); }), 1200 + rows.length * 80);
+  } else rows.forEach(r => { r.classList.toggle("is-open", on); r.classList.toggle("locked", !on); });
+}
+function goHash(){
+  const id = location.hash.slice(1); if(!id) return;
+  const s = SECTIONS.find(x => x.id === id);
+  if(s && s.page){ location.replace(s.page); return; }   // old #opords links go to the OPORDs page
+  const el = document.getElementById(id); if(!el) return;
+  if(el.classList.contains("shut")){ el.classList.remove("shut"); el.querySelector(".cbtn").setAttribute("aria-expanded", "true"); }
+  el.scrollIntoView({block:"nearest"});
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
 }
 
 /* ===================== start ===================== */
-render(null);
-fetch("restricted/vault.json").then(r => r.json()).then(async v => {
-  V = v;
-  let saved = null; try { saved = sessionStorage.getItem(PASS_KEY); } catch(_){}
-  if(saved){ try { await check(saved); UNLOCKED = true; } catch(_){ try { sessionStorage.removeItem(PASS_KEY); } catch(__){} } }
-  render(v);
-  if(location.hash){ const el = document.querySelector(location.hash); if(el){ if(el.classList.contains("sec")) setShut(el.id, false); el.scrollIntoView(); } }
-}).catch(() => {
-  document.querySelectorAll("#plans .grid, #opords .grid").forEach(g => g.innerHTML = '<p class="blurb">Couldn\'t load the restricted file list. Refresh to try again.</p>');
-});
+let LOADED = false;
+{ const s = SECTIONS.find(x => x.page && "#" + x.id === location.hash); if(s) location.replace(s.page); }
+render();
+VAULT.mount(document.getElementById("vault"), {onChange}).then(() => { LOADED = true; render(); goHash(); });
+addEventListener("hashchange", goHash);
 </script>
 </body>
 </html>

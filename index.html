@@ -39,27 +39,21 @@ html,body{margin:0}
 body{background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
 
-/* ---------- hero ---------- */
-.hero{position:relative;text-align:center;padding:44px 0 26px;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:-40% -10% auto;height:420px;background:radial-gradient(closest-side,color-mix(in srgb,var(--cardinal) 22%,transparent),transparent 70%);opacity:.55;pointer-events:none}
-.hero>*{position:relative}
-.patch{width:132px;height:auto;filter:drop-shadow(0 8px 18px rgba(0,0,0,.25));animation:patchIn .8s var(--ease) both}
-@keyframes patchIn{from{opacity:0;transform:translateY(10px) scale(.92) rotate(-6deg)}}
-.eyebrow{margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-h1{margin:4px 0 6px;font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.01em}
-.lede{margin:0 auto;max-width:560px;color:var(--soft)}
-.hero .eyebrow,.hero h1,.hero .lede{animation:up .6s var(--ease) both}
-.hero h1{animation-delay:.06s} .hero .lede{animation-delay:.12s}
+/* ---------- header: one slim row, patch + "Storm HQ" (Captain Russell, 22 Nov 2026: every card on one desktop screen) ---------- */
+.hero{display:flex;align-items:center;gap:14px;padding:18px 16px 4px}
+.patch{width:52px;height:auto;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25));animation:patchIn .8s var(--ease) both}
+@keyframes patchIn{from{opacity:0;transform:translateY(6px) scale(.92) rotate(-6deg)}}
+h1{margin:0;font-size:28px;line-height:1.1;letter-spacing:-.01em;animation:up .6s var(--ease) both}
 @keyframes up{from{opacity:0;transform:translateY(10px)}}
 
 /* ---------- tools ---------- */
-section{margin-top:26px}
+section{margin-top:18px}
 .sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
 .sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.tool{position:relative;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);overflow:hidden;
   transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s;animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 70ms + .15s)}
 @keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
 .tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease);pointer-events:none}
@@ -71,7 +65,7 @@ section{margin-top:26px}
 .icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
 .body{min-width:0;flex:1}
 .name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
-.blurb{margin:4px 0 0;color:var(--soft);font-size:14px}
+.blurb{margin:3px 0 0;color:var(--soft);font-size:13.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .tool{--tone-ink:var(--tone)}
 .lock{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold-bg);color:var(--gold);display:inline-flex;align-items:center;gap:4px}
@@ -79,7 +73,7 @@ section{margin-top:26px}
 :root[data-theme="dark"] .tool{--tone-ink:color-mix(in srgb,var(--tone) 55%,#fff)}
 
 /* ---------- sign in (shared/signin.js) ---------- */
-.whoami{display:flex;justify-content:center;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--soft);animation:up .6s var(--ease) both;animation-delay:.18s}
+.whoami{display:flex;justify-content:flex-end;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto;font-size:13.5px;color:var(--soft);animation:up .6s var(--ease) both;animation-delay:.18s}
 .whoami .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
 .whoami[data-role="cadet"] .dot{background:#3fb871}
 .whoami[data-role="cadre"] .dot{background:var(--gold)}
@@ -115,8 +109,10 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
 :root[data-theme="dark"] .lock.open{color:#6fd39a}
 
 @media (max-width:640px){
-  .hero{padding:30px 0 18px}
-  .patch{width:104px}
+  .hero{padding:14px 16px 0;gap:10px}
+  .patch{width:40px}
+  h1{font-size:23px}
+  .whoami{font-size:12.5px;gap:4px}
   .grid{grid-template-columns:1fr}
   .tool{padding:16px 14px 14px;gap:14px}
   .icon{width:48px;height:48px;border-radius:12px}
@@ -131,10 +127,8 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
 <a class="d250-bar d250-bar-hub" href="https://captainrussell.github.io/Portfolio/" aria-label="Back to Scott D. Russell's portfolio"><span class="d250-portfolio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Portfolio</span><span class="d250-home"><img src="shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span></span></a>
 
 <header class="hero wrap">
-  <img class="patch" src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="132" height="137">
-  <div class="eyebrow">AFROTC Detachment 250 · Iowa State University</div>
+  <img class="patch" src="shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="52" height="54">
   <h1>Storm HQ</h1>
-  <p class="lede">Tools built by the Operations Flight Commander to support cadet operations, plus a few fun classroom activities. One link for all of Det 250.</p>
   <div class="whoami" id="whoami" aria-live="polite"></div>
 </header>
 
@@ -177,7 +171,8 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
    ===================================================================== */
 const SI = window.D250SignIn;
 // "admin" (Cadre only) comes first: only cadre ever see it, so it is the first thing they reach.
-const SECTIONS = {admin:"Cadre only", cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools"};
+// Cadre only sits last (Captain Russell, 22 Nov 2026).
+const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools", admin:"Cadre only"};
 // Which sign-in key opens each locked tool, so its pill can say "Unlocked" (shared/signin.js).
 const OPENS = {"documents/":"docs", "odt/":"docs", "flight-staff-eval/":"fse", "cadre/":"cadre", "admin-hub/":"cadre"};
 
