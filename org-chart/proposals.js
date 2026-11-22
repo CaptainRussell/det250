@@ -74,7 +74,7 @@
   };
   function resetInteractions(){
     clearTimeout(switching); document.querySelectorAll('.po.leaving').forEach(el => el.classList.remove('leaving'));
-    closeDrawer(); closeFlight(); hidePeek(); hideResults(); untrace();
+    closeDrawer(); closeFlight(); hideResults(); untrace();
   }
   function rebuild(){
     order = 0; build(); initCadreBar(); setCadre(false); refreshMode();

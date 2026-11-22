@@ -54,8 +54,7 @@
      "last": "Cerfogli",
      "rank": "C/Maj",
      "parent": "cd",
-     "changed": true,
-     "note": "Directed change: reports to the WG/CD instead of the WG/CC."
+     "changed": true
     },
     {
      "id": "BC",
@@ -64,8 +63,7 @@
      "last": "Alt",
      "rank": "C/Maj",
      "parent": "cd",
-     "changed": true,
-     "note": "Directed change: reports to the WG/CD instead of the WG/CC."
+     "changed": true
     },
     {
      "id": "A1",
@@ -147,8 +145,7 @@
      "last": "Tu",
      "rank": "C/Capt",
      "parent": "A1",
-     "changed": true,
-     "note": "Directed change: the Academic Officer and Wellness Officer are one position. It holds both sets of duties."
+     "changed": true
     },
     {
      "id": "devo",
@@ -247,8 +244,7 @@
      "last": "Curtis",
      "rank": "C/1st Lt",
      "parent": "bcl-e",
-     "changed": true,
-     "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."
+     "changed": true
     },
     {
      "id": "bcl-f",
@@ -265,8 +261,7 @@
      "last": "Davila",
      "rank": "C/1st Lt",
      "parent": "bcl-f",
-     "changed": true,
-     "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."
+     "changed": true
     }
    ]
   }

@@ -157,6 +157,12 @@ section.band{margin-top:26px}
 .tracing .card.lit{opacity:1}
 .tracing .card.lit .face{border-color:var(--lit)}
 .tracing .card.self .face{box-shadow:var(--shadow-lg)}
+/* direct supervisor and direct reports carry a small label on the card's top edge (drawn over the border, so nothing moves) */
+.tracing .card.up::after,.tracing .card.down::after{position:absolute;z-index:3;top:-9px;right:10px;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:16px;white-space:nowrap;pointer-events:none;box-shadow:0 0 0 2px var(--bg,var(--surface));animation:rise .22s var(--ease) both}
+.tracing .card.up::after{content:"Supervisor";background:var(--d250-gold,#f1be48);color:#1b1b1d}
+.tracing .card.down::after{content:"Direct report";background:var(--lit);color:#fff}
+.tracing .card.up .face{border-color:var(--d250-gold,#f1be48)}
+@media (prefers-reduced-motion:reduce){.tracing .card.up::after,.tracing .card.down::after{animation:none}}
 
 /* search pulse */
 .card.pulse .face{animation:pulse 1.4s var(--ease) 2}
@@ -266,32 +272,6 @@ section.band{margin-top:26px}
   .gcard .av{width:64px;height:64px}
 }
 
-/* hover peek: a card's supervisors and subordinates */
-.peek{position:fixed;z-index:40;top:0;left:0;width:max-content;min-width:220px;max-width:min(500px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--border-strong);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px 12px 12px;opacity:0;visibility:hidden;transform:translateY(8px) scale(.97);transform-origin:var(--ax,50%) top;transition:opacity .18s ease,transform .24s var(--ease),visibility 0s .24s;pointer-events:none}
-.peek.above{transform:translateY(-8px) scale(.97);transform-origin:var(--ax,50%) bottom}
-.peek.show{opacity:1;visibility:visible;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .24s var(--ease),visibility 0s}
-.peek::before{content:"";position:absolute;left:calc(var(--ax,50%) - 7px);top:-7px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:rotate(45deg)}
-.peek.above::before{top:auto;bottom:-7px;transform:rotate(225deg)}
-.peek-h{display:flex;align-items:baseline;gap:6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:8px 2px 6px}
-.peek-h b{color:var(--text);font-size:12px}
-.peek-h em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
-.peek-grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,152px));gap:6px}
-.pk{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:5px 8px;text-align:left;transition:border-color .15s,background .15s}
-.pk:hover{border-color:var(--accent);background:var(--accent-weak)}
-.pk img{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px var(--ring,var(--border-strong))}
-.pk span{display:flex;flex-direction:column;min-width:0}
-.pk b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pk small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* FLT/CC: the rest of the flight's GMC as one summary row */
-.pk-flight{display:flex;align-items:center;gap:10px;width:100%;margin-top:6px;border:1px dashed var(--border-strong);background:var(--surface-2);border-radius:10px;padding:6px 8px;text-align:left;transition:border-color .15s,background .15s}
-.pk-flight:hover,.pk-flight:focus-visible{border-style:solid;border-color:var(--accent);background:var(--accent-weak)}
-.pk-flight .stack img,.pk-flight .stack .more{width:26px;height:26px}
-.pk-flight .pf{display:flex;flex-direction:column;min-width:0}
-.pk-flight b{font-size:12.5px}
-.pk-flight small{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);font-weight:700;white-space:nowrap}
-.peek.show .pk,.peek.show .pk-flight{animation:rise .32s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms + 40ms)}
-@media (hover:none){.peek{display:none}}
-
 /* cadre: collapsed by default so cadet leadership leads the page */
 .cadrebar{display:flex;align-items:center;gap:14px;width:100%;border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);text-align:left;transition:border-color .2s,background .2s,border-radius .3s}
 .cadrebar:hover{border-color:var(--accent);background:var(--accent-weak)}
@@ -370,8 +350,9 @@ section.band{margin-top:26px}
 }
 
 /* ---------- entrance ---------- */
-.js .band .card,.js .band .dir{opacity:0}
-.js .band.in .card{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms)}
+/* cards use a backwards fill so the trace can still dim them once they are in */
+.js .band:not(.in) .card,.js .band .dir{opacity:0}
+.js .band.in .card{animation:rise .55s var(--ease) backwards;animation-delay:calc(var(--i,0) * 40ms)}
 .js .band.in .dir{animation:fade .45s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms)}
 .js .band .tree li::before,.js .band .tree li::after,.js .band .tree ul ul::before,.js .band .olist li::before,.js .band .olist li::after{opacity:0}
 .js .band.in .tree li::before,.js .band.in .tree li::after,.js .band.in .tree ul ul::before,.js .band.in .olist li::before,.js .band.in .olist li::after{animation:fade .5s ease both;animation-delay:calc(var(--i,0) * 40ms + 220ms)}
@@ -570,7 +551,6 @@ section.band{margin-top:26px}
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
-<div class="peek" id="peek" role="tooltip" aria-hidden="true"></div>
 <div class="fscrim" id="fscrim"></div>
 <div class="fmodal" id="fmodal" role="dialog" aria-modal="true" aria-labelledby="f-title">
   <div class="fpanel" id="fpanel">
@@ -680,14 +660,6 @@ const flightPOC = fl => [byId[fl].poc[0], ...(FLIGHTS_POC[fl] || [])];
 function primaryOf(key){
   return SEATS.find(x => !x.member && !x.cadre && !x.pocVacant && x.poc && x.poc[0] === key) || SEATS.find(x => x.member && x.poc[0] === key);
 }
-/* a FLT/CC leads every GMC in the flight; returns the ones not already named as a direct report */
-function flightLeads(seat, named){
-  if(MODE !== "poc" || !FLIGHTS[seat.id]) return [];
-  const have = new Set(named.map(s => holder(s).key));
-  return flightGMC(seat.id).filter(k => !have.has(k));
-}
-const EXPAND = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
-const faceStack = (keys, n) => `<span class="stack" aria-hidden="true">${keys.slice(0, n).map(k => img(k)).join("")}${keys.length > n ? `<span class="more">+${keys.length - n}</span>` : ""}</span>`;
 const membersOf = fl => kids(fl).filter(c => c.member);
 /* compact button under each FLT/CC; the full roster opens in a larger window */
 function roster(seat){
@@ -831,11 +803,16 @@ function setMode(m){
 /* ---------- chain-of-command trace ---------- */
 function chain(id){ const out = []; for(let s = byId[id]; s; s = byId[s.parent]) out.push(s.id); return out; }
 function trace(id){
-  const ids = new Set(chain(id)); kids(id, MODE).forEach(k => ids.add(k.id));
+  const seat = byId[id], ids = new Set(chain(id));
+  const ups = new Set(seat ? supervisorsOf(seat).map(x => x.id) : []), downs = new Set(kids(id, MODE).map(k => k.id));
+  ups.forEach(x => ids.add(x)); downs.forEach(x => ids.add(x));
   document.body.classList.add("tracing");
   document.querySelectorAll(".card").forEach(c => {
-    c.classList.toggle("lit", ids.has(c.dataset.seat));
-    c.classList.toggle("self", c.dataset.seat === id);
+    const sid = c.dataset.seat;
+    c.classList.toggle("lit", ids.has(sid));
+    c.classList.toggle("self", sid === id);
+    c.classList.toggle("up", ups.has(sid));
+    c.classList.toggle("down", downs.has(sid) && !c.closest(".fmodal"));
   });
   const fl = FLIGHTS[id] ? id : (byId[id] && FLIGHTS[byId[id].parent] && !byId[id].member ? byId[id].parent : null);
   document.querySelectorAll(".flightbtn:not(.wide)").forEach(b => b.classList.toggle("lit", b.dataset.flight === fl));
@@ -850,57 +827,6 @@ document.addEventListener("pointerover", e => {
 document.addEventListener("pointerout", e => { const f = e.target.closest(".flightbtn:not(.wide)"); if(f && !f.contains(e.relatedTarget)) untrace(); });
 document.addEventListener("pointerout", e => { const c = e.target.closest(".card"); if(c && !c.contains(e.relatedTarget)) untrace(); });
 document.addEventListener("focusin", e => { const c = e.target.closest(".card"); if(c && c.matches(":focus-visible")) trace(c.dataset.seat); else untrace(); });
-
-/* ---------- hover peek ---------- */
-const blockOf = el => el.closest(".dir, .tree");
-const shownCard = id => [...document.querySelectorAll(`.card[data-seat="${id}"]`)].find(c => c.offsetParent && !c.closest(".fmodal"));
-const sectionName = el => { const sec = el && el.closest("section"); return sec ? sec.querySelector("h2").textContent : ""; };
-let peekTimer = null, peekCard = null;
-function pkItem(seat, i){
-  const h = holder(seat);
-  return `<button type="button" class="pk ${h.ring}" data-go="${seat.id}" style="--i:${i}">${img(h.key)}<span><b>${esc(h.rank)} ${esc(h.last)}</b><small>${esc(h.des || h.title)}</small></span></button>`;
-}
-function showPeek(card){
-  const seat = byId[card.dataset.seat]; if(!seat) return;
-  const ups = supervisorsOf(seat);
-  const downs = kids(seat.id, MODE).filter(k => !k.member), gmc = flightLeads(seat, downs);
-  if(!ups.length && !downs.length && !gmc.length){ hidePeek(); return; }
-  let i = 0;
-  const part = (label, list, extra = 0, tail = "") => {
-    if(!list.length && !extra) return "";
-    const where = [...new Set(list.map(s => sectionName(shownCard(s.id))).filter(Boolean))].join(", ");
-    return `<div class="peek-h"><span>${label}</span><b>${list.length + extra}</b>${where && !extra ? `<em>in ${esc(where)}</em>` : ""}</div>${list.length ? `<div class="peek-grid" style="--cols:${Math.min(list.length, 3)}">${list.map(s => pkItem(s, i++)).join("")}</div>` : ""}${tail}`;
-  };
-  const fl = gmc.length ? `<button type="button" class="pk-flight" data-flight="${seat.id}" style="--i:${i + downs.length}" aria-label="View ${esc(flightName(seat.id))} Flight: ${gmc.length} ${downs.length ? "more " : ""}GMC cadets">${faceStack(gmc, 4)}<span class="pf"><b>${gmc.length} ${downs.length ? "more " : ""}GMC cadets</b><small>${esc(flightName(seat.id))} Flight ·${EXPAND}View flight</small></span></button>` : "";
-  const pk = $("#peek");
-  pk.innerHTML = part("Reports to", ups) + part("Leads", downs, gmc.length, fl);
-  pk.classList.remove("show", "above");
-  // place below the card, or above if there is no room
-  const r = card.getBoundingClientRect(), pw = pk.offsetWidth, ph = pk.offsetHeight;
-  let top = r.bottom + 12, above = false;
-  if(top + ph > innerHeight - 8 && r.top - ph - 12 > 150){ top = r.top - ph - 12; above = true; }
-  const left = Math.min(Math.max(8, r.left + r.width / 2 - pw / 2), innerWidth - pw - 8);
-  pk.style.top = top + "px"; pk.style.left = left + "px";
-  pk.style.setProperty("--ax", Math.min(Math.max(18, r.left + r.width / 2 - left), pw - 18) + "px");
-  pk.classList.toggle("above", above);
-  void pk.offsetWidth; pk.classList.add("show");
-  peekCard = card;
-}
-function hidePeek(){ clearTimeout(peekTimer); peekCard = null; $("#peek").classList.remove("show"); }
-document.addEventListener("pointerover", e => {
-  if(!canHover) return;
-  if(e.target.closest("#peek")){ clearTimeout(peekTimer); return; }
-  const c = e.target.closest(".card");
-  if(c && !c.closest(".fmodal") && c !== peekCard){ clearTimeout(peekTimer); peekTimer = setTimeout(() => showPeek(c), 280); }
-});
-document.addEventListener("pointerout", e => {
-  const from = e.target.closest(".card, #peek"), to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".card, #peek");
-  if(from && from !== to && !(to && to.id === "peek") && !(from.id === "peek" && to === peekCard)){ clearTimeout(peekTimer); peekTimer = setTimeout(hidePeek, 160); }
-});
-document.addEventListener("focusin", e => { const c = e.target.closest(".card"); if(c && c.matches(":focus-visible") && !c.closest(".fmodal")) showPeek(c); else if(!e.target.closest("#peek")) hidePeek(); });
-addEventListener("scroll", hidePeek, {passive:true});
-addEventListener("resize", hidePeek);
-document.addEventListener("click", hidePeek, true);
 
 /* ---------- cadre collapse ---------- */
 function setCadre(open){
