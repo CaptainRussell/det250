@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Events &amp; Activities · Storm HQ</title>
+<link rel="icon" type="image/png" href="../shared/det250-patch-icon.png">
+<link rel="stylesheet" href="../shared/det250.css">
+<link rel="stylesheet" href="../shared/instructor.css">
+<style>
+
+/* hub-style cards (same as the Storm HQ home page) */
+#cards{margin-top:22px}
+.sechead{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.sechead h2{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--d250-soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tool{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 18px 16px;background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:16px;box-shadow:var(--d250-shadow);text-decoration:none;color:var(--d250-ink);overflow:hidden;
+  transition:transform .28s var(--d250-ease),box-shadow .28s var(--d250-ease),border-color .2s;animation:rise .55s var(--d250-ease) both;animation-delay:calc(var(--i,0) * 50ms + .1s)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.tool::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,color-mix(in srgb,var(--tone) 12%,transparent) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--d250-ease);pointer-events:none}
+.tool:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(0,0,0,.35);border-color:var(--tone)}
+.tool:hover::after{transform:translateX(100%)}
+.icon{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--tone) 35%,transparent);transition:transform .35s var(--d250-ease)}
+.tool:hover .icon{transform:rotate(-6deg) scale(1.06)}
+.icon.art{background:none;overflow:hidden}
+.icon.art img{display:block;width:100%;height:100%;border-radius:inherit}
+.body{min-width:0;flex:1}
+.name{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;line-height:1.25}
+.name .ext{color:var(--d250-faint)}
+.blurb{margin:4px 0 0;color:var(--d250-soft);font-size:14px}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .tool{padding:16px 14px 14px;gap:14px}
+  .icon{width:48px;height:48px;border-radius:12px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/activities.webp" alt="" width="24" height="24"><span>Events &amp; Activities</span></span></a>
+<header class="d250-head inbar" style="--tone:#0e7490">
+  <div class="d250-head-in">
+    <span class="d250-head-icon art" aria-hidden="true"><img src="../shared/card-art/activities.webp" alt="" width="56" height="56"></span>
+    <div class="d250-head-text">
+      <p class="d250-eyebrow">Det 250 &middot; Instructor tool</p>
+      <h1>Events &amp; Activities</h1>
+      <p class="d250-head-sub">Classroom games and exercises: Make the Call, Battle Buddy Recon and Practicum Adventure.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="grid" id="cards"></div>
+</main>
+
+<footer class="d250-foot">
+  <img class="footer-patch" src="../shared/det250-patch.png" alt="AFROTC Detachment 250 patch" width="96" height="100" loading="lazy">
+  <p class="motto">Optimi In Medio Patrae</p>
+  <p class="tagline">We Are The Storm</p>
+  <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
+  <p class="source-line">Classroom activities for instructors. Each one runs in the browser; nothing is sent to a server.</p>
+  <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
+</footer>
+
+<script>
+/* Events & Activities (Captain Russell, 22 Nov 2026): one Instructor tools card on the hub
+   that holds the classroom games. Spin the Wheel keeps its own hub card. */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CARDS = [
+  {href:"../make-the-call/", art:"make-the-call", tone:"#0f766e", name:"Make the Call", blurb:"Agree, Neutral or Disagree: 2 to 4 teams debate leadership statements, with sealed scores and a podium reveal."},
+  {href:"../battle-buddy-recon/", art:"battle-buddy-recon", tone:"#4a5a36", name:"Battle Buddy Recon", blurb:"OPSEC exercise: brief, pair cadets on the wheel, run the recon clock, then brief out."},
+  {href:"../practicum-adventure/", art:"practicum-adventure", tone:"#6d28d9", name:"Practicum Adventure", blurb:"Leadership RPG on the projector, played by cadets on their phones."}
+];
+document.getElementById("cards").innerHTML = CARDS.map((c, i) => `<a class="tool" href="${esc(c.href)}" style="--tone:${c.tone};--i:${i}"><span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>
+    <span class="body"><span class="name">${esc(c.name)}</span><p class="blurb">${esc(c.blurb)}</p></span></a>`).join("");
+</script>
+</body>
+</html>

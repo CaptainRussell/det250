@@ -15,10 +15,11 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
   - **Cadre Dashboard** (`cadre/`, reached from Evaluation Tools and Admin): cadre password. Peer Feedback rankings (adjusted for easy and harsh raters, filter by AS level), rater check, cadet breakdowns, and Flight Staff Evaluation results, plus who still owes each evaluation.
 
 ## Instructor Tools
-- **Practicum Adventure** (`practicum-adventure/`): a video game style practicum cadets join and play from their phones. Tests objectives from the AFAS 3410 and 3420 series.
 - **Spin the Wheel** (`spin-the-wheel/`): seating chart and name wheel for cold calls, with a pop-out wheel.
-- **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
-- **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
+- **Events & Activities** (`activities/`): one card that opens the classroom games:
+  - **Practicum Adventure** (`practicum-adventure/`): a video game style practicum cadets join and play from their phones. Tests objectives from the AFAS 3410 and 3420 series.
+  - **Make the Call** (`make-the-call/`): team debate game where cadets agree, stay neutral or disagree with leadership statements.
+  - **Battle Buddy Recon** (`battle-buddy-recon/`): OPSEC exercise that pairs cadets, runs an open-source recon clock, then a brief-out.
 
 ## Cadre only
 - **Sign-in:** the home page asks for the cadet or cadre password once per tab (or Skip). Cadet opens the locked documents and ODT Tool; cadre also shows the Admin card.
