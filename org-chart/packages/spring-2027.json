@@ -245,7 +245,7 @@
      "des": "BCL FLT/FTO",
      "title": "BCL Flight Training Officer",
      "last": "Curtis",
-     "rank": "C/Lt",
+     "rank": "C/1st Lt",
      "parent": "bcl-e",
      "changed": true,
      "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."
@@ -263,7 +263,7 @@
      "des": "BCL FLT/FTO",
      "title": "BCL Flight Training Officer",
      "last": "Davila",
-     "rank": "C/Lt",
+     "rank": "C/1st Lt",
      "parent": "bcl-f",
      "changed": true,
      "note": "Directed change: renamed from BCL Deputy Flight Commander (FLT/CD) to Flight Training Officer (FLT/FTO). Same responsibilities."

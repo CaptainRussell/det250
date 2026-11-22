@@ -223,3 +223,14 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])
   .d250-foot, .d250-foot * { color: #000 !important; }
   .d250-foot .footer-patch { display: none !important; }
 }
+
+/* Password boxes (shared/pw.js): shown as typed, with a Hide button; strong contrast in both themes. */
+.d250-pw-wrap { position: relative; display: flex; flex: 1 1 auto; min-width: 0; }
+.d250-pw-wrap > input.d250-pw { flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box; padding-right: 64px;
+  background: var(--d250-page, #16161a); color: var(--d250-ink, #ececee); border: 1px solid var(--d250-line-strong, #46464f); }
+.d250-pw-wrap > input.d250-pw::placeholder { color: var(--d250-soft, #b2b3b8); opacity: 1; }
+.d250-pw-wrap > input.d250-pw:-webkit-autofill { -webkit-text-fill-color: var(--d250-ink, #ececee); box-shadow: 0 0 0 60px var(--d250-page, #16161a) inset; caret-color: var(--d250-ink, #ececee); }
+.d250-pw-wrap > input.d250-pw::-ms-reveal { display: none; }
+.d250-pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--d250-soft, #b2b3b8);
+  font: 700 12.5px/1 system-ui, sans-serif; padding: 8px 8px; border-radius: 7px; cursor: pointer; min-height: 0; width: auto; }
+.d250-pw-eye:hover, .d250-pw-eye:focus-visible { color: var(--d250-ink, #ececee); background: var(--d250-surface-2, #26262e); outline: none; }

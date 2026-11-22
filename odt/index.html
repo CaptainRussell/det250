@@ -96,7 +96,7 @@ button,input{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
 
 
-input[type="password"],input[type="search"]{font:inherit}
+input[type="password"],input.d250-pw,input[type="search"]{font:inherit}
 /* lock */
 .lockwrap{min-height:calc(100vh - 380px);display:grid;place-items:center;padding:28px 0}
 .lock{width:min(420px,100%);background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:18px;padding:28px 24px 24px;text-align:center;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:pop .45s var(--d250-ease) both}
@@ -204,6 +204,7 @@ input[type="password"],input[type="search"]{font:inherit}
   .d250-foot .footer-patch{width:36px;height:auto}
 }
 </style>
+<script src="../shared/pw.js" defer></script>
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span><span class="d250-tool"><img src="../shared/card-art/odt.webp" alt="" width="24" height="24"><span>ODT Tool</span></span></a>
