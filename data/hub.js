@@ -20,9 +20,10 @@ window.D250_HUB = {
   {"href":"whos-that-cadet/","hidden":true,"name":"Know Your Wing","tone":"#1f4e9c","icon":"faces","section":"cadets","blurb":"Learn every face in the wing. Opened from the Org Chart page, not the hub."},
   {"href":"evaluation/","name":"Evaluation Tools","tone":"#5d3f8c","icon":"chart","section":"cadets","blurb":"Peer Feedback, Flight Staff Eval, results."},
   {"href":"spin-the-wheel/","name":"Spin the Wheel","tone":"#b45309","icon":"wheel","section":"instructors","blurb":"Seating chart and a name wheel for class."},
-  {"href":"make-the-call/","name":"Make the Call","tone":"#0f766e","icon":"scale","section":"instructors","blurb":"Teams debate leadership statements."},
-  {"href":"battle-buddy-recon/","name":"Battle Buddy Recon","tone":"#4a5a36","icon":"binoculars","section":"instructors","blurb":"OPSEC recon exercise in pairs."},
-  {"href":"practicum-adventure/","name":"Practicum Adventure","tone":"#6d28d9","icon":"dice","section":"instructors","blurb":"Leadership RPG played on cadets' phones."},
+  {"href":"activities/","name":"Events & Activities","tone":"#0e7490","icon":"dice","section":"instructors","blurb":"Make the Call, Battle Buddy Recon, Practicum."},
+  {"href":"make-the-call/","hidden":true,"name":"Make the Call","tone":"#0f766e","icon":"scale","section":"instructors","blurb":"Teams debate leadership statements. Opened from Events & Activities, not the hub."},
+  {"href":"battle-buddy-recon/","hidden":true,"name":"Battle Buddy Recon","tone":"#4a5a36","icon":"binoculars","section":"instructors","blurb":"OPSEC recon exercise in pairs. Opened from Events & Activities, not the hub."},
+  {"href":"practicum-adventure/","hidden":true,"name":"Practicum Adventure","tone":"#6d28d9","icon":"dice","section":"instructors","blurb":"Leadership RPG played on cadets' phones. Opened from Events & Activities, not the hub."},
   {"href":"admin-hub/","name":"Admin","tone":"#475569","icon":"shield","section":"admin","role":"cadre","blurb":"How to change Storm HQ, step by step."}
 ]
 };

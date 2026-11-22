@@ -104,7 +104,7 @@ dialog.signin::backdrop{background:rgba(8,8,12,.62);backdrop-filter:blur(3px)}
 .signin .roles b{display:block;color:var(--ink);font-size:13px}
 .shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-.lock.open{background:#2f9e44;color:#fff}
+.lock.open{background:#2f9e44;color:#fff;padding:3px 7px}
 
 @media (max-width:640px){
   .hero{padding:14px 16px 0;gap:10px}
@@ -171,7 +171,7 @@ const SI = window.D250SignIn;
 // "admin" (Cadre only) comes first: only cadre ever see it, so it is the first thing they reach.
 // Cadre only sits last (Captain Russell, 22 Nov 2026).
 const SECTIONS = {cadets:"Cadet tools", evaluators:"Evaluator tools", instructors:"Instructor tools", admin:"Cadre only"};
-// Which sign-in key opens each locked tool, so its pill can say "Unlocked" (shared/signin.js).
+// Which sign-in key opens each locked tool, so its pill can turn into the green open padlock (shared/signin.js).
 const OPENS = {"documents/":"docs", "odt/":"docs", "flight-staff-eval/":"fse", "cadre/":"cadre", "admin-hub/":"cadre"};
 
 const ICONS = {
@@ -190,13 +190,14 @@ const ICONS = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Card picture: shared/card-art/<tool folder>.webp, drawn from the tool's own art (Captain Russell, Nov 2026). The SVG icon is the fallback.
-const ART = new Set(["admin-hub","pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt","evaluation"]);
+const ART = new Set(["admin-hub","pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt","evaluation","activities"]);
 const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
 // Closed padlock on red, open padlock (shackle swung up) on green (Captain Russell, 22 Nov 2026).
 const LOCK_SVG = open => `<svg style="overflow:visible" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V3.8a4 4 0 0 1 8 0v1.4" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
 function pill(t){
   const k = OPENS[t.href], open = k && SI.has(k);
-  if (open) return `<span class="meta"><span class="lock open">${LOCK_SVG(true)}Unlocked</span></span>`;
+  // Unlocked shows only the green open padlock, no text (Captain Russell, 22 Nov 2026).
+  if (open) return `<span class="meta"><span class="lock open" title="Unlocked" role="img" aria-label="Unlocked">${LOCK_SVG(true)}</span></span>`;
   return t.locked ? `<span class="meta"><span class="lock">${LOCK_SVG(false)}${esc(t.locked === true ? "Password" : t.locked)}</span></span>` : "";
 }
 function render(){
