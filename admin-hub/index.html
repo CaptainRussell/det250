@@ -56,6 +56,44 @@ section.grp{margin-top:26px}
 .pill{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
 .pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 
+/* guide (Captain Russell, 22 Nov 2026: changes go through Claude, so Admin is a how-to) */
+.lead{margin:14px 0 0;font-size:15.5px;line-height:1.55;color:var(--d250-ink);max-width:880px}
+.lead b{color:var(--d250-gold)}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;counter-reset:st}
+.step{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:16px;padding:16px 16px 14px;counter-increment:st;position:relative}
+.step::before{content:counter(st);position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--d250-gold-bg);color:var(--d250-gold)}
+.step h3{margin:0 36px 6px 0;font-size:16px}
+.step>p{padding-right:36px}
+.step p,.step li{margin:0;color:var(--d250-soft);font-size:14px;line-height:1.5}
+.step ol,.step ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+.step a,.lead a,.job a,.tip a{color:var(--d250-gold);font-weight:700}
+.step code,.job code,.tip code{font-size:12.5px;background:var(--d250-surface-2);padding:1px 5px;border-radius:5px}
+.jobs{display:grid;gap:10px}
+details.job{background:var(--d250-surface);border:1px solid var(--d250-line);border-radius:16px;overflow:hidden}
+details.job>summary{list-style:none;display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer}
+details.job>summary::-webkit-details-marker{display:none}
+details.job>summary:hover{background:var(--d250-surface-2)}
+details.job .icon{width:44px;height:44px;border-radius:12px}
+details.job .jn{flex:1;min-width:0}
+details.job .jn b{display:block;font-size:16px}
+details.job .jn small{display:block;color:var(--d250-soft);font-size:13.5px;margin-top:2px}
+.freq{display:inline-block;vertical-align:2px;margin-left:6px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--d250-gold-bg);color:var(--d250-gold)}
+.freq.static{background:var(--d250-surface-2);color:var(--d250-soft)}
+.caret{flex:none;color:var(--d250-soft);transition:transform .2s}
+details.job[open] .caret{transform:rotate(180deg)}
+.job-bd{padding:4px 16px 16px;display:grid;gap:10px;border-top:1px solid var(--d250-line)}
+.job-bd>p{margin:8px 0 0;color:var(--d250-soft);font-size:14px;line-height:1.5}
+.prompt{position:relative;background:var(--d250-page);border:1px solid var(--d250-line-strong);border-radius:12px;padding:12px 92px 12px 14px;font-size:14px;line-height:1.5;color:var(--d250-ink)}
+.prompt .ph{color:var(--d250-gold);font-weight:700}
+.prompt button{position:absolute;top:8px;right:8px;border:1px solid var(--d250-line-strong);background:var(--d250-surface);color:var(--d250-ink);border-radius:8px;padding:6px 10px;font:700 12.5px/1 system-ui,sans-serif;cursor:pointer}
+.prompt button:hover{border-color:var(--d250-gold);color:var(--d250-gold)}
+.tips{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.tip{background:var(--d250-surface);border:1px solid var(--d250-line);border-left:3px solid var(--d250-gold);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--d250-soft)}
+.tip b{color:var(--d250-ink)}
+.backup{margin-top:18px;font-size:13.5px;color:var(--d250-soft)}
+.backup a{color:var(--d250-soft);font-weight:700}
+@media (max-width:640px){.prompt{padding:12px 14px 46px}.prompt button{top:auto;bottom:8px}details.job>summary{gap:10px;padding:12px}details.job .icon{width:38px;height:38px}}
+
 @media (max-width:640px){
   .grid{grid-template-columns:1fr}
   .tool{padding:16px 14px 14px;gap:14px}
@@ -73,7 +111,7 @@ section.grp{margin-top:26px}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
       <h1>Admin</h1>
-      <p class="d250-head-sub">Everything behind the scenes of Storm HQ in one place: results, editing the site, passwords and the back end.</p>
+      <p class="d250-head-sub">Results, and how to change Storm HQ by asking Claude.</p>
     </div>
   </div>
 </header>
@@ -108,7 +146,7 @@ section.grp{margin-top:26px}
   <p class="motto">Optimi In Medio Patrae</p>
   <p class="tagline">We Are The Storm</p>
   <p class="footer-note">Storm HQ &middot; AFROTC Detachment 250 &middot; Iowa State University</p>
-  <p class="source-line">Cadre tool. Each page here still checks the cadre password on its own; signing in on the Storm HQ home page opens them all for this browser tab.</p>
+  <p class="source-line">Cadre tool. Storm HQ is changed by asking Claude (or another AI coding assistant) to edit its GitHub repository. Full technical notes are in CLAUDE.md in the repository.</p>
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
@@ -134,30 +172,87 @@ const ICONS = {
   book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/><path d="M8 7h8M8 11h6"/>',
   code:'<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>',
   rocket:'<path d="M12 15l-3-3c1.5-4.5 4.5-8 10-9-.9 5.5-4.4 8.5-9 10z"/><path d="M9 12H5l2.5-3.5H11M12 15v4l3.5-2.5V13"/><path d="M6.5 16.5C5 17 4.5 19.5 4.5 19.5S7 19 7.5 17.5"/>',
+  spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
+  pr:'<circle cx="6" cy="5" r="2.2"/><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="19" r="2.2"/><path d="M6 7.2v9.6M18 16.8V9a3 3 0 0 0-3-3h-4"/><path d="M13 3.5 10.5 6 13 8.5"/>',
   sheet:'<rect x="3.5" y="2.5" width="17" height="19" rx="2"/><path d="M3.5 8.5h17M3.5 14.5h17M10 8.5v13"/>'
 };
 // One list of cards. art = shared/card-art/<name>.webp (the tool's own picture, same as its hub card).
 const GROUPS = [
   {title:"Results", cards:[
-    {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Peer Feedback and Flight Staff Evaluation results: rankings by AS level, comments, charts and who still owes theirs."},
-    {href:"../peer-feedback/", art:"peer-feedback", tone:"#be185d", name:"Peer Feedback form", blurb:"The form cadets fill in with their personal code. Results show only on the Cadre Dashboard."},
-    {href:"../flight-staff-eval/", art:"flight-staff-eval", tone:"#a06f00", name:"Flight Staff Evaluation", blurb:"The Sq/CC and Flt/CC rating form. Results show on the Cadre Dashboard.", key:"fse"}
-  ]},
-  {title:"Edit Storm HQ", cards:[
-    {href:"../admin/#people", art:"whos-that-cadet", tone:"#1f4e9c", name:"People and photos", blurb:"The one detachment roster, photos, flights and the semester. Every tool reads it."},
-    {href:"../admin/#chart", art:"org-chart", tone:"#2f7d32", name:"Org chart", blurb:"Who holds each seat, ranks, Flip Week holders and who reports to whom."},
-    {href:"../admin/#hub", icon:"hub", tone:"#c8102e", name:"Hub cards", blurb:"Edit, hide or reorder the cards on the Storm HQ home page."},
-    {href:"../admin/#docs", art:"documents", tone:"#0369a1", name:"Documents and Policy", blurb:"Add, edit or reorder documents: outside links or uploaded PDFs."},
-    {href:"../admin/#rooms", art:"odt", tone:"#155e75", name:"ODT Tool", blurb:"Each ODT's details, itinerary, roster, rooms and supporting documents."},
-    {href:"../admin/#history", icon:"history", tone:"#475569", name:"History and undo", blurb:"Recent changes with Undo, the admin password and the GitHub key."},
-    {href:"../admin/#history", icon:"key", tone:"#a06f00", name:"Site passwords", blurb:"Show or change the cadet, Flight Staff Evaluation and cadre passwords."}
-  ]},
-  {title:"Back end", cards:[
-    {href:`${GH}/blob/main/ADMIN-GUIDE.md`, ext:true, icon:"book", tone:"#0369a1", name:"Admin guide", blurb:"Plain-language steps for every admin job, the semester rollover and the handoff."},
-    {href:"https://script.google.com/home", ext:true, icon:"sheet", tone:"#1b7a44", name:"Apps Scripts and Sheets", blurb:"The Peer Feedback and Flight Staff Evaluation scripts and their private Sheets. Sign in with the Google account that owns them."},
-    {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Each admin publish is one change here.`},
-    {href:`${GH}/actions`, ext:true, icon:"rocket", tone:"#4338ca", name:"Site updates", blurb:"Watch a publish go live. Changes usually show on the site in a minute or two."}
+    {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Peer Feedback and Flight Staff Evaluation results, comments and who still owes theirs."},
+    {href:"../peer-feedback/", art:"peer-feedback", tone:"#be185d", name:"Peer Feedback form", blurb:"The form cadets fill in with their personal code."},
+    {href:"../flight-staff-eval/", art:"flight-staff-eval", tone:"#a06f00", name:"Flight Staff Evaluation", blurb:"The Sq/CC and Flt/CC rating form.", key:"fse"}
   ]}
+];
+const BACKEND = [
+  {href:"https://claude.ai/code", ext:true, icon:"spark", tone:"#c15f3c", name:"Open Claude", blurb:"Claude Code on the web. Start a new session on the Storm HQ repository and say what you need."},
+  {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Pull requests are where Claude's changes wait for you.`},
+  {href:`${GH}/pulls`, ext:true, icon:"pr", tone:"#4338ca", name:"Pull requests", blurb:"Changes Claude has made that are waiting to be merged."},
+  {href:"https://script.google.com/home", ext:true, icon:"sheet", tone:"#1b7a44", name:"Apps Scripts and Sheets", blurb:"Peer Feedback and Flight Staff Evaluation back ends. Sign in with the Google account that owns them."},
+  {href:`${GH}/blob/main/ADMIN-GUIDE.md`, ext:true, icon:"book", tone:"#0369a1", name:"Admin guide (text)", blurb:"This guide as a document, for printing or handing over."}
+];
+
+// How-to: setup once, then each job. [Brackets] are the parts to fill in.
+const SETUP = [
+  {h:"Get set up once", li:[
+    "A Claude plan that includes Claude Code (Pro or higher).",
+    `A GitHub account that can edit <a href="${GH}" target="_blank" rel="noopener">${OWNER}/${REPO}</a>. The current owner adds you under Settings, Collaborators (or hands over the detachment account).`,
+    `Open <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a>, connect GitHub, allow the Claude app on the repository, and pick it. No access key to copy: signing in to GitHub is the key.`]},
+  {h:"Ask in plain words", li:[
+    "Start a new session for each job and say what you want, like you would to a sharp cadet. The prompts below are a good start.",
+    "Attach what it needs: rosters, photos (a zip, named Last, First M.jpg), PDFs.",
+    "Claude reads CLAUDE.md in the repository first, which holds every rule and past decision for the site."]},
+  {h:"Review, then merge", li:[
+    "Claude makes the change on a branch and opens a pull request with a short summary. It also checks the pages on a desktop and a phone.",
+    "Read the summary, ask for changes, and say \"merge\" when it looks right.",
+    "The live site updates a minute or two after the merge. Check it."]},
+  {h:"Undo anything", li:[
+    "Every change is kept in GitHub's history, so nothing is permanent.",
+    "Say \"undo the change from pull request [number]\" or \"put the Org Chart back the way it was last week\"."]}
+];
+const P = t => t;   // prompt text; [like this] is highlighted as a blank to fill in
+const JOBS = [
+  {art:"whos-that-cadet", tone:"#1f4e9c", name:"People and photos", freq:"Each semester", what:"The one roster every tool reads: Org Chart, Know Your Wing, the instructor tools and Peer Feedback.", prompts:[
+    P("Start the [Spring 2027] roster. The new roster is attached: add the new cadets, remove anyone not on it, move everyone to their new AS class and flight, and set the semester to [Spring 2027]. Photos are in the attached zip."),
+    P("[Cadet name] left the program. Remove them from Storm HQ and tell me which positions they held."),
+    P("Here is a new photo of [Cadet name]. Crop it like the others and use it everywhere.")]},
+  {art:"org-chart", tone:"#2f7d32", name:"Det 250 Org Chart", freq:"Each semester", what:"One card per semester, with the POC chart, Flip Week and any proposed wing packages.", prompts:[
+    P("Freeze [Fall 2026] on the Org Chart and make [Spring 2027] the current semester with a POC Chart and a Flip Week chart. Positions and ranks are in the attached [OPLAN / slide]."),
+    P("Add the proposed wing command packages for [semester] from the attached slides. Keep them cadre only until we pick one."),
+    P("We picked the [name] package. Make it the [semester] chart and remove the others.")]},
+  {art:"odt", tone:"#155e75", name:"ODT Tool", freq:"Each ODT", what:"Rooms, vans, itinerary and documents for each ODT, locked with the cadet password.", prompts:[
+    P("Add a new ODT: [Base Visit to Offutt AFB], [place], [dates]. The roster is attached (or: same cadets as [earlier ODT]). Pair rooms by our rules, set up [number] vans with [drivers], and add the attached itinerary and excusal letter. The cadet password is [password]; don't save it anywhere."),
+    P("Move [cadet] to room [number] and van [number] on the [ODT name] ODT.")]},
+  {art:"evaluation", tone:"#5d3f8c", name:"Evaluation Tools", freq:"Each semester", what:"Peer Feedback, Flight Staff Evaluation and the Cadre Dashboard. The back ends are Google Apps Scripts, so Claude tells you what to paste there.", prompts:[
+    P("Open Peer Feedback for [Spring 2027], due [Fri 23 Apr 2027 1700 Central]. I've downloaded last semester's CSV. Rebuild the cadet codes and code slips, and walk me through pasting and deploying the Apps Script."),
+    P("Update the Flight Staff Evaluation for [Spring 2027]: the cadets and evaluators are on the current org chart. The Flight Staff password is [password]."),
+    P("Update the POC fiscal years on the Cadre Dashboard: [list or attached file].")]},
+  {art:"documents", tone:"#0369a1", name:"Documents and Policy", freq:"Each semester", what:"The OPLAN, Policy Packet, OPORDs and Cadre Additional Duties Roster (locked), plus regulations and forms.", prompts:[
+    P("Replace the OPLAN and Policy Packet with the attached [Spring 2027] versions, locked with the cadet password [password]."),
+    P("Add the attached OPORD Week [number] to Weekly OPORDs, locked like the others. The cadet password is [password]."),
+    P("[AFROTCI 36-2011 V1] has a new edition. Point Storm HQ at it and fix any page numbers our tools cite.")]},
+  {icon:"hub", tone:"#c8102e", name:"Hub cards and passwords", freq:"As needed", what:"The cards on the home page, and the cadet, Flight Staff and cadre passwords.", prompts:[
+    P("Hide the [tool name] card on the home page for now."),
+    P("Change the cadet password to [new password] everywhere it is used. The current one is [old password].")]},
+  {art:"pfra", tone:"#a51c30", name:"PFRA Calculator and Ribbon Rack Builder", freq:"Rarely", static:true, what:"Used across AFROTC. Change them only when the regulation changes.", prompts:[
+    P("DAFMAN 36-2905 (or its AFROTC supplement) has a new edition, attached. Update the PFRA Calculator scoring, charts and references."),
+    P("The AFROTC Ribbon Chart changed (attached). Update the Ribbon Rack Builder.")]},
+  {art:"spin-the-wheel", tone:"#7c3aed", name:"Instructor tools", freq:"Rarely", static:true, what:"Spin the Wheel, Make the Call, Battle Buddy Recon and Practicum Adventure. Rosters come from the shared roster.", prompts:[
+    P("In [Make the Call], [describe the change you want].")]}
+];
+const TIPS = [
+  "<b>One job per session.</b> Short, focused sessions give cleaner pull requests that are easy to check.",
+  "<b>Passwords stay out of the files.</b> Give a password in the chat only when the job needs it (locked documents, the ODT Tool). Claude uses it and never writes it into the repository.",
+  "<b>Teach it once.</b> When you decide a new rule (\"ranks stay with the position\"), tell Claude to add it to CLAUDE.md so every later session follows it.",
+  "<b>Big ideas are fine.</b> A new tool or a redesign starts the same way: describe it, answer Claude's questions, review the pull request.",
+  "<b>Other AI tools work too.</b> Any coding assistant that can edit a GitHub repository (GitHub Copilot, ChatGPT Codex, Cursor) can follow the same steps; AGENTS.md points it to CLAUDE.md.",
+  "<b>Outside GitHub.</b> Google Apps Scripts and Sheets, the Google account that owns them, and who knows the passwords are handed over in person. Claude walks you through the Apps Script steps."
+];
+const HANDOFF = [
+  "Move the repository to a detachment GitHub account (or add the new point of contact as an owner), and give the Claude app access to it there.",
+  "Transfer the Google Apps Scripts and Sheets (Peer Feedback, Flight Staff Evaluation) to a detachment Google account.",
+  "Change the cadet, Flight Staff and cadre passwords, and tell the new cadre in person.",
+  "Have the new point of contact run one small job with Claude (for example, hide and show a card) while you watch."
 ];
 
 function card(c, i){
@@ -167,13 +262,30 @@ function card(c, i){
   return `<a class="tool" href="${esc(c.href)}"${c.ext ? ' target="_blank" rel="noopener"' : ""} style="--tone:${c.tone};--i:${i}">${pic}
     <span class="body"><span class="name">${esc(c.name)}${c.ext ? '<span class="ext" aria-label="(opens in a new tab)">↗</span>' : ""}</span><p class="blurb">${esc(c.blurb)}</p>${pill}</span></a>`;
 }
+const pic = (c, sz) => c.art ? `<span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="${sz}" height="${sz}"></span>`
+  : `<span class="icon" style="--tone:${c.tone}" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[c.icon]}</svg></span>`;
+const promptHtml = t => `<div class="prompt"><span>${esc(t).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>')}</span><button type="button" data-copy="${esc(t)}">Copy</button></div>`;
+const sec = (id, title, body) => `<section class="grp" aria-labelledby="${id}"><div class="sechead"><h2 id="${id}">${title}</h2></div>${body}</section>`;
 function show(){
   $("#lockwrap").hidden = true; $("#app").hidden = false;
   let i = 0;
-  $("#cards").innerHTML = GROUPS.map((g, n) => `<section class="grp" aria-labelledby="g${n}"><div class="sechead"><h2 id="g${n}">${g.title}</h2></div><div class="grid">${g.cards.map(c => card(c, i++)).join("")}</div></section>`).join("");
-  const missing = [!SI.has("docs") && "Documents and Policy and the ODT Tool (cadet password)", !SI.has("fse") && "Flight Staff Evaluation"].filter(Boolean);
-  $("#notes").innerHTML = missing.length ? `<p class="note">Cadre sign-in doesn't open ${missing.join(" or ")} yet. Save ${missing.length > 1 ? "those passwords" : "that password"} once on <a href="../admin/#history">Site passwords</a> (press "Enter it once"), and it will from then on.</p>` : "";
+  $("#cards").innerHTML =
+    GROUPS.map((g, n) => sec("g" + n, g.title, `<div class="grid">${g.cards.map(c => card(c, i++)).join("")}</div>`)).join("") +
+    sec("gHow", "Change Storm HQ with Claude", `<p class="lead" style="margin:0 2px 14px">Storm HQ is changed by <b>asking Claude</b> to edit its GitHub repository, the same way it was built. You describe the change, Claude makes it and shows you, and you say merge.</p>
+      <div class="steps">${SETUP.map(st => `<div class="step"><h3>${st.h}</h3><ul>${st.li.map(l => `<li>${l}</li>`).join("")}</ul></div>`).join("")}</div>`) +
+    sec("gJobs", "What changes, and what to ask", `<div class="jobs">${JOBS.map(j => `<details class="job"><summary>${pic(j, 44)}<span class="jn"><b>${esc(j.name)} <span class="freq${j.static ? " static" : ""}">${esc(j.freq)}</span></b><small>${esc(j.what)}</small></span><span class="caret" aria-hidden="true">▾</span></summary>
+      <div class="job-bd">${j.prompts.map(promptHtml).join("")}</div></details>`).join("")}</div>`) +
+    sec("gTips", "Good to know", `<div class="tips">${TIPS.map(t => `<div class="tip">${t}</div>`).join("")}</div>`) +
+    sec("gHand", "Before the handoff", `<div class="steps">${HANDOFF.map(h => `<div class="step"><p>${h}</p></div>`).join("")}</div>`) +
+    sec("gBack", "Links", `<div class="grid">${BACKEND.map(c => card(c, i++)).join("")}</div>
+      <p class="backup">Backup: the old point-and-click <a href="../admin/">Cadre Admin editor</a> still works for quick roster, card and password edits.</p>`);
 }
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; }
+  catch (_) { b.textContent = "Select and copy"; }
+  setTimeout(() => b.textContent = "Copy", 1600);
+});
 $("#f").addEventListener("submit", async e => {
   e.preventDefault();
   const go = $("#go"), err = $("#err"); err.textContent = ""; go.disabled = true; go.textContent = "Checking…";

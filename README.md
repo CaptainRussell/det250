@@ -22,8 +22,8 @@ One site for AFROTC Detachment 250 tools, built by Captain Scott Russell (Operat
 
 ## Cadre only
 - **Sign-in:** the home page asks for the cadet or cadre password once per tab (or Skip). Cadet opens the locked documents and ODT Tool; cadre also shows the Admin card.
-- **Admin** (`admin-hub/`): one page with every cadre and back-end page: Cadre Dashboard, Cadre Admin tabs, Site passwords, the admin guide and GitHub.
-- **Cadre Admin** (`admin/`, admin password): update the roster and photos, org chart positions, hub cards and document links without code. Each Publish is one change on GitHub and can be undone. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
+- **Admin** (`admin-hub/`): the results pages and a how-to guide for changing Storm HQ by asking Claude, with ready prompts for each tool. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
+- **Cadre Admin** (`admin/`, admin password): the backup point-and-click editor for the roster, org chart, hub cards, documents, ODTs and passwords.
 
 ## Notes
 - Editable data lives in `data/`: `roster.js` (the one detachment roster used by the Org Chart, instructor tools and Peer Feedback) and `hub.js` (the hub cards). Change people and cards there, not in page code.
