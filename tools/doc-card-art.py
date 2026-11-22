@@ -22,6 +22,8 @@ Kinds:
         every DAF publication), full size on the tile.
   form  : a drawn form sheet, for forms we only link to on e-Publishing (the
         cloud session can't download them to crop).
+  full  (path): a drawn 224 px picture filling the tile (render the SVG in
+        tools/art-src/ to a PNG of the same name with a browser after editing it).
   image (path, scale): any picture, e.g. the AFGSC shield for the 90th Missile
         Wing video, or the Det 250 patch for the locked detachment plans.
 Each may add a label: the band text at the bottom.
@@ -67,7 +69,9 @@ ART = {
     'ext-dafi90-6001':   ('external', 'seal', 'secaf', '6001'),
     'ext-dafi51-508':    ('external', 'seal', 'secaf', '51-508'),
     'ext-dafi36-2614':   ('external', 'seal', 'secaf', '2614'),
-    'ext-afh33-337':     ('external', 'seal', 'secaf', 'T&Q'),
+    # The Tongue and Quill: a talking head and a feather quill (Captain Russell, 22 Nov 2026),
+    # drawn in tools/art-src/tongue-quill.svg and saved as the .png beside it.
+    'ext-afh33-337':     ('external', 'full', 'tools/art-src/tongue-quill.png', 'T&Q'),
     'ext-daf1206':       ('external', 'form', None, '1206'),
     'ext-af724':         ('external', 'form', None, '724'),
     'ext-daf174':        ('external', 'form', None, '174'),
@@ -144,6 +148,9 @@ def make(key, sec, kind, args, label, tmp, cache):
         else:
             seal = Image.open(OFF + 'coc-secaf.webp').convert('RGBA')
         paste_center(t, seal, (6, 4, S - 6, area[3] - 2))
+    elif kind == 'full':
+        # a drawn 224 px picture that fills the tile; keep its subject above the band
+        t = Image.open(args).convert('RGBA').resize((S, S), Image.LANCZOS)
     elif kind == 'image':
         path, scale = args
         t = tile_bg((24, 26, 34))
