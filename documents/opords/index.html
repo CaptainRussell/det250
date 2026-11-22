@@ -66,7 +66,7 @@ const VAULT = window.D250DocVault;
 const SEC = (window.D250_DOC_SECTIONS || []).find(s => s.id === "opords") || {title:"Weekly OPORDs"};
 document.getElementById("title").textContent = SEC.title;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LOCK = '<span class="lk" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>';
+const LOCK = '<span class="lk" aria-hidden="true"><svg class="i-lk" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><svg class="i-un" style="overflow:visible" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V3.8a4 4 0 0 1 8 0v1.4"/></svg></span>';
 const mb = n => n ? (n / 1048576).toFixed(1) + " MB" : "";
 function render(){
   const V = VAULT.vault, el = document.getElementById("weeks");
