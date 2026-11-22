@@ -21,7 +21,7 @@
     const c = b64(V.check);
     await crypto.subtle.decrypt({name:"AES-GCM", iv:c.subarray(0, 12)}, key, c.subarray(12));
   }
-  const LOCK = '<svg class="i-lk" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><svg class="i-un" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V5.5a4 4 0 0 1 8 0V7"/></svg>';
+  const LOCK = '<svg class="i-lk" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><svg class="i-un" style="overflow:visible" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V3.8a4 4 0 0 1 8 0v1.4"/></svg>';
 
   function set(on, animate){
     api.unlocked = on;

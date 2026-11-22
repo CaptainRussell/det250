@@ -83,7 +83,7 @@ const CARDS = [
 ];
 document.getElementById("cards").innerHTML = CARDS.map((c, i) => {
   // Closed padlock on red, open padlock on green (Captain Russell, 22 Nov 2026).
-  const lk = open => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V5.5a4 4 0 0 1 8 0V7" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
+  const lk = open => `<svg style="overflow:visible" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V3.8a4 4 0 0 1 8 0v1.4" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
   const pill = c.key ? (SI.has(c.key) ? `<span class="pill ok">${lk(true)}Unlocked</span>` : `<span class="pill">${lk(false)}${esc(c.lock)}</span>`) : "";
   return `<a class="tool" href="${esc(c.href)}" style="--tone:${c.tone};--i:${i}"><span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>
     <span class="body"><span class="name">${esc(c.name)}</span><p class="blurb">${esc(c.blurb)}</p>${pill}</span></a>`;

@@ -193,7 +193,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const ART = new Set(["admin-hub","pfra","whos-that-cadet","org-chart","ribbon-rack","documents","flight-staff-eval","peer-feedback","cadre","spin-the-wheel","make-the-call","battle-buddy-recon","practicum-adventure","sharepoint","odt","evaluation"]);
 const art = t => { const k = t.art || t.href.replace(/\/$/, ""); return ART.has(k) ? "shared/card-art/" + k + ".webp" : ""; };
 // Closed padlock on red, open padlock (shackle swung up) on green (Captain Russell, 22 Nov 2026).
-const LOCK_SVG = open => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V5.5a4 4 0 0 1 8 0V7" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
+const LOCK_SVG = open => `<svg style="overflow:visible" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="${open ? "M8 11V3.8a4 4 0 0 1 8 0v1.4" : "M8 11V7a4 4 0 0 1 8 0v4"}"/></svg>`;
 function pill(t){
   const k = OPENS[t.href], open = k && SI.has(k);
   if (open) return `<span class="meta"><span class="lock open">${LOCK_SVG(true)}Unlocked</span></span>`;
