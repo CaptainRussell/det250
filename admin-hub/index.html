@@ -111,7 +111,7 @@ details.job[open] .caret{transform:rotate(180deg)}
     <div class="d250-head-text">
       <p class="d250-eyebrow">Det 250 &middot; Cadre tool</p>
       <h1>Admin</h1>
-      <p class="d250-head-sub">Results, and how to change Storm HQ by asking Claude.</p>
+      <p class="d250-head-sub">How to change Storm HQ by asking Claude.</p>
     </div>
   </div>
 </header>
@@ -177,13 +177,6 @@ const ICONS = {
   sheet:'<rect x="3.5" y="2.5" width="17" height="19" rx="2"/><path d="M3.5 8.5h17M3.5 14.5h17M10 8.5v13"/>'
 };
 // One list of cards. art = shared/card-art/<name>.webp (the tool's own picture, same as its hub card).
-const GROUPS = [
-  {title:"Results", cards:[
-    {href:"../cadre/", art:"cadre", tone:"#475569", name:"Cadre Dashboard", blurb:"Peer Feedback and Flight Staff Evaluation results, comments and who still owes theirs."},
-    {href:"../peer-feedback/", art:"peer-feedback", tone:"#be185d", name:"Peer Feedback form", blurb:"The form cadets fill in with their personal code."},
-    {href:"../flight-staff-eval/", art:"flight-staff-eval", tone:"#a06f00", name:"Flight Staff Evaluation", blurb:"The Sq/CC and Flt/CC rating form.", key:"fse"}
-  ]}
-];
 const BACKEND = [
   {href:"https://claude.ai/code", ext:true, icon:"spark", tone:"#c15f3c", name:"Open Claude", blurb:"Claude Code on the web. Start a new session on the Storm HQ repository and say what you need."},
   {href:GH, ext:true, icon:"code", tone:"#334155", name:"Site source on GitHub", blurb:`Every page and data file (${OWNER}/${REPO}). Pull requests are where Claude's changes wait for you.`},
@@ -270,7 +263,6 @@ function show(){
   $("#lockwrap").hidden = true; $("#app").hidden = false;
   let i = 0;
   $("#cards").innerHTML =
-    GROUPS.map((g, n) => sec("g" + n, g.title, `<div class="grid">${g.cards.map(c => card(c, i++)).join("")}</div>`)).join("") +
     sec("gHow", "Change Storm HQ with Claude", `<p class="lead" style="margin:0 2px 14px">Storm HQ is changed by <b>asking Claude</b> to edit its GitHub repository, the same way it was built. You describe the change, Claude makes it and shows you, and you say merge.</p>
       <div class="steps">${SETUP.map(st => `<div class="step"><h3>${st.h}</h3><ul>${st.li.map(l => `<li>${l}</li>`).join("")}</ul></div>`).join("")}</div>`) +
     sec("gJobs", "What changes, and what to ask", `<div class="jobs">${JOBS.map(j => `<details class="job"><summary>${pic(j, 44)}<span class="jn"><b>${esc(j.name)} <span class="freq${j.static ? " static" : ""}">${esc(j.freq)}</span></b><small>${esc(j.what)}</small></span><span class="caret" aria-hidden="true">▾</span></summary>

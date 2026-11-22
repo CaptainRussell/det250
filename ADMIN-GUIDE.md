@@ -3,7 +3,7 @@
 This guide is for the cadre member who keeps Storm HQ up to date after Captain Russell. You don't need to know how to code. **Storm HQ is changed by asking Claude** (or another AI coding assistant) to edit its GitHub repository, the same way it was built: you describe the change, Claude makes it and shows you, and you say merge.
 
 - Live site: https://captainrussell.github.io/det250/
-- Admin page: https://captainrussell.github.io/det250/admin-hub/ (the **Admin** card on the home page after you sign in with the cadre password). It has the results, this guide with ready-to-copy prompts, and the links below.
+- Admin page: https://captainrussell.github.io/det250/admin-hub/ (the **Admin** card on the home page after you sign in with the cadre password). It has this guide with ready-to-copy prompts and the links below. Results are on the Evaluation Tools card.
 - Source: https://github.com/CaptainRussell/det250
 
 ## Get set up once
