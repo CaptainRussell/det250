@@ -268,8 +268,15 @@ const OLD_TABS = {overview:"vans", roster:"rooms"};   // links from the first la
 const DOC_TABS = {docs:1, itinerary:1};            // the old Itinerary & docs tab: the vans, with the itinerary popped out
 
 /* ---------- render ---------- */
+function barBack(toAll){                             // on an ODT the bar's back pill goes to All ODTs (Captain Russell, 22 Nov 2026)
+  const bar = $(".d250-bar"), pill = bar && bar.querySelector(".d250-all"); if (!pill) return;
+  bar.setAttribute("href", toAll ? "#all" : "../");
+  bar.setAttribute("aria-label", toAll ? "Back to All ODTs" : "Storm HQ, Det 250: all tools");
+  pill.lastChild.textContent = toAll ? "All ODTs" : "All tools";
+}
 function render(){
   const all = TAB === "all", e = EVENTS.find(x => x.id === EV);
+  barBack(!all && !!e);
   $("#modbar").hidden = all || !e;
   $("#tabs").innerHTML = TABS.map(([id, label]) => `<button type="button" role="tab" data-tab="${id}" aria-selected="${!all && TAB === id}" tabindex="${!all && TAB === id ? 0 : -1}">${label}</button>`).join("");
   if (all || !e){
@@ -278,7 +285,7 @@ function render(){
     $("#view").innerHTML = allList();
     document.title = `All ODTs · ${D.title && D.title !== "ODT Module" ? D.title : "ODT Tool"} · Storm HQ`;
   } else {
-    $("#ev").innerHTML = `<div class="evt"><button class="linkbtn back" type="button" data-all>‹ All ODTs</button><h2>${esc(e.name)}${pill(e)}</h2><div class="meta">${esc([dates(e), e.place, e.note].filter(Boolean).join(" · "))}</div></div>${docBar(e)}`;
+    $("#ev").innerHTML = `<div class="evt"><h2>${esc(e.name)}${pill(e)}</h2><div class="meta">${esc([dates(e), e.place, e.note].filter(Boolean).join(" · "))}</div></div>${docBar(e)}`;
     $("#me").innerHTML = meBox(e) + infoFold(e);
     $("#view").innerHTML = VIEWS[TAB](e);
     const tb = $("#view .toolbar"); $("#modtools").replaceChildren(...(tb ? [tb] : []));   // legend and Print sit beside the tabs
