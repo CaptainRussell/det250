@@ -2,7 +2,7 @@
 
 Captain Russell, 16 Nov 2026: each card shows the document itself, not a
 drawn icon. Redone 22 Nov 2026: the pictures must read at the small row size
-(36 px on the Documents page, 56 px in other tools), so every one is zoomed in
+(46 px on the Documents page since 22 Nov 2026, 56 px in other tools), so every one is zoomed in
 on one thing you can recognize, and most carry a short label band at the
 bottom (the form or publication number) in the section's color.
 

@@ -25,7 +25,7 @@
 .doc{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;text-decoration:none;color:var(--ink);transition:background .15s}
 .doc:hover{background:var(--surface-2)}
 .doc:hover .di{transform:rotate(-6deg) scale(1.06)}
-.di{flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));transition:transform .3s var(--ease)}
+.di{flex:none;width:46px;height:46px;border-radius:11px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tone),color-mix(in srgb,var(--tone) 60%,#000));transition:transform .3s var(--ease)}
 .di.art{background:none;overflow:hidden}
 .di.art img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover}
 .dt{flex:1;min-width:0;line-height:1.25}
@@ -113,7 +113,7 @@ function docRow(d, s){
   const href = d.src ? "view/?id=" + encodeURIComponent(d.id) : d.href;
   const ext = /^https?:/.test(href);
   const paths = (window.D250_DOC_ICONS || {})[d.icon] || (d.tool ? P.tool : P.doc);
-  const icon = d.art ? `<span class="di art" aria-hidden="true"><img src="${esc(d.art)}" alt="" width="36" height="36" loading="lazy"></span>` : `<span class="di" aria-hidden="true">${SVG(paths)}</span>`;
+  const icon = d.art ? `<span class="di art" aria-hidden="true"><img src="${esc(d.art)}" alt="" width="46" height="46" loading="lazy"></span>` : `<span class="di" aria-hidden="true">${SVG(paths)}</span>`;
   const tail = d.tool ? '<span class="tail">Tool</span>' : ext ? EXT : d.download ? DL : "";
   return `<li><a class="doc${d.tool ? " is-tool" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : d.download ? " download" : ""} title="${esc(d.what || "")}" style="${d.tool ? "--tone:#a06f00" : ""}">
     ${icon}<span class="dt"><b>${esc(d.num)}</b><small>${esc(d.title)}</small></span>${tail}</a></li>`;
@@ -125,7 +125,7 @@ const PLAN_SUB = {
 };
 // Card pictures for the locked rows (tools/doc-card-art.py): the Det 250 patch with the plan's name.
 const PLAN_ART = new Set(["fall-2026-oplan", "fall-2026-policy-packet", "cadre-additional-duties"]);
-const artIcon = src => `<span class="di art" aria-hidden="true"><img src="${esc(src)}" alt="" width="36" height="36" loading="lazy"></span>`;
+const artIcon = src => `<span class="di art" aria-hidden="true"><img src="${esc(src)}" alt="" width="46" height="46" loading="lazy"></span>`;
 function fileRow(f){
   return `<li><a class="doc rdoc${VAULT.unlocked ? " is-open" : " locked"}" href="view/?id=${encodeURIComponent(f.id)}">
     ${PLAN_ART.has(f.id) ? artIcon("art/" + f.id + ".webp") : `<span class="di" aria-hidden="true">${SVG(P.plan)}</span>`}<span class="dt"><b>${esc(f.title)}</b><small>${esc(PLAN_SUB[f.id] || "Restricted")}</small></span>${LOCK}</a></li>`;
@@ -160,7 +160,8 @@ function render(){
       const list = DOCS.filter(d => d.sec === s.id); count = list.length;
       rows = list.map(d => docRow(d, s)).join("");
     }
-    rows += extra.map(x => pageRow(x, V ? V.files.filter(f => f.group === x.id) : [])).join("");
+    // a section with its own page (the Weekly OPORDs) sits at the top of the column before it (Captain Russell, 22 Nov 2026)
+    rows = extra.map(x => pageRow(x, V ? V.files.filter(f => f.group === x.id) : [])).join("") + rows;
     const shut = isShut(s.id);
     return `<section class="col${shut ? " shut" : ""}" id="${s.id}" style="--tone:${s.tone};--i:${i}" aria-labelledby="h-${s.id}">
       <h2 class="ch" id="h-${s.id}"><button type="button" class="cbtn" data-sec="${s.id}" aria-expanded="${!(shut && PHONE.matches)}" title="${esc(s.sub || "")}"><span class="st">${esc(s.title)}</span>${count ? `<span class="n">${count}</span>` : ""}<span class="chev" aria-hidden="true"></span></button></h2>
