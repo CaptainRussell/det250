@@ -37,6 +37,10 @@
 .seg button[aria-pressed="true"]{background:var(--d250-cardinal);color:#fff}
 .seg.small button{padding:5px 11px;min-height:32px;font-size:13px}
 .seg.small button[aria-pressed="true"]{background:var(--d250-gold-bg);color:var(--d250-gold)}
+.seg-l{align-self:center;padding:0 6px 0 8px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--d250-soft)}
+.topbar{justify-content:flex-end}
+#tAll .blk + .blk{margin-top:22px}
+th button[aria-sort]{color:var(--d250-ink)}
 .upd{font-size:12.5px;color:var(--d250-soft);display:flex;gap:10px;align-items:center}
 .note{background:var(--d250-gold-bg);color:var(--d250-gold);border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;margin-bottom:14px}
 .note.bad{background:color-mix(in srgb,var(--d250-cardinal) 15%,transparent);color:var(--d250-cardinal)}
@@ -176,16 +180,9 @@ try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.cla
 
   <div id="app" hidden>
     <div class="topbar">
-      <div class="seg" role="group" aria-label="Evaluation">
-        <button type="button" data-tab="master" aria-pressed="false">Master</button>
-        <button type="button" data-tab="peer" aria-pressed="true">Peer Feedback</button>
-        <button type="button" data-tab="fse" aria-pressed="false">Flight Staff Evaluation</button>
-      </div>
       <div class="upd"><span id="upd"></span><button class="btn small" id="refresh" type="button">↻ Refresh</button><button class="linkbtn" id="lockBtn" type="button">Lock</button></div>
     </div>
-    <div id="tPeer"></div>
-    <div id="tFse" hidden></div>
-    <div id="tMaster" hidden></div>
+    <div id="tAll"></div>
   </div>
 </main>
 
@@ -258,7 +255,7 @@ function heat(v){ // score 1..5 -> cell colors (red low, gray middle, green high
 }
 
 let CFG = null;
-let UI = {tab:'master', mGroup:'gmc', group:'poc', cls:'all', fy:'all', mode:'adj', sort:'overall', showDone:{}, subOpen:{}, pMeasure:'avg', fMeasure:'pct', fseGroup:'AS200+', fseView:'consolidated', fseFlight:'Alpha'};
+let UI = {group:'gmc', cls:'all', fy:'all', mode:'adj', rankBy:'master', measure:'pct', showDone:{}, subOpen:{}};
 try{ Object.assign(UI, JSON.parse(localStorage.getItem(UI_KEY) || '{}')); }catch(_){}
 UI.subOpen = UI.subOpen || {};
 // The slim summary row of a "Who has submitted" group: name, bar, count, who is left. Click to expand.
@@ -267,7 +264,7 @@ function subSummary(label, done, total, leftNames){
   return `<summary><span class="sr-l">${esc(label)}</span><span class="bar"><i style="width:${total ? done / total * 100 : 0}%"></i></span><span class="sr-n">${done}<small> / ${total}</small></span><span class="sr-left">${left}</span><span class="sr-c" aria-hidden="true">▾</span></summary>`;
 }
 // Remember which rows are open, so a refresh or a filter change keeps them as they were.
-['tPeer', 'tFse', 'tMaster'].forEach(id => document.getElementById(id).addEventListener('toggle', e => {
+['tAll'].forEach(id => document.getElementById(id).addEventListener('toggle', e => {
   const d = e.target; if(!d.matches || !d.matches('details.sub')) return;
   UI.subOpen[d.dataset.sub] = d.open; saveUI();
 }, true));
@@ -296,7 +293,7 @@ async function unlock(pw){
   CFG = await openVault(pw);
   try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}
   $('#lockwrap').hidden = true; $('#app').hidden = false;
-  setTab(UI.tab); refresh();
+  refresh();
 }
 $('#lockBtn').addEventListener('click', () => { try{ sessionStorage.removeItem(PASS_KEY); }catch(_){} location.reload(); });
 
@@ -320,15 +317,7 @@ async function refresh(){
 }
 $('#refresh').addEventListener('click', refresh);
 
-/* ---------- tabs ---------- */
-function setTab(t){
-  UI.tab = t; saveUI();
-  document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
-  $('#tPeer').hidden = t !== 'peer'; $('#tFse').hidden = t !== 'fse'; $('#tMaster').hidden = t !== 'master';
-  render();
-}
-document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
-function render(){ if(!CFG) return; if(UI.tab === 'peer') renderPeer(); else if(UI.tab === 'master') renderMaster(); else renderFse(); }
+function render(){ if(CFG) renderAll(); }
 
 /* =====================================================================
    PEER FEEDBACK
@@ -387,50 +376,8 @@ const measureSeg = (key, attr) => `<div class="seg small" role="group" aria-labe
 const pGroupN = p => Object.values(PEER.people).filter(q => q.group === p.group && q.got.length).length;
 const pPct = p => { const n = pGroupN(p), r = pRank(p); return !r ? NaN : n > 1 ? (n - r) / (n - 1) * 100 : 100; };
 const ovCell = (v, max, txt) => `<span class="ov"><b>${txt}</b><span class="bar"><i style="width:${Math.max(0, Math.min(100, v / max * 100))}%"></i></span></span>`;
-const pMain = p => UI.pMeasure === 'pct' ? ovCell(pPct(p), 100, Math.round(pPct(p))) : ovCell(pO(p) - 1, 4, f2(pO(p)));
 function tierOf(rank, n){ if(!rank) return ''; const a = Math.ceil(n / 3), b = Math.ceil(2 * n / 3); return rank <= a ? 'top' : rank <= b ? 'mid' : 'bot'; }
 
-function renderPeer(){
-  const el = $('#tPeer');
-  if(PEER_ERR && !PEER){ el.innerHTML = `<div class="note ${PEER_ERR === 'not connected' ? '' : 'bad'}">${PEER_ERR === 'not connected' ? 'Peer Feedback is not connected yet. Deploy the Peer Feedback Apps Script, then rebuild the cadre settings.' : `Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.`}</div>`; return; }
-  if(!PEER){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
-  const P = Object.values(PEER.people), closed = Date.now() > new Date(PEER.due).getTime();
-  const subN = P.filter(p => p.submittedAt).length, lateN = P.filter(p => p.late).length;
-  el.innerHTML = `
-    ${PEER_ERR ? `<div class="note bad">Couldn't refresh (${esc(PEER_ERR)}). Showing the last data loaded.</div>` : ''}
-    <section class="blk">
-      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${subN} of ${P.length} cadets${lateN ? ` (${lateN} late)` : ''} &middot; ${closed ? 'Was due' : 'Due'} ${esc(fmtDue(PEER.due))}</span></div>
-      <div class="subs">${PEER_GROUPS.map((G, gi) => {
-        const ps = P.filter(p => p.group === G.g).sort((a, b) => a.name.localeCompare(b.name));
-        const done = ps.filter(p => p.submittedAt), left = ps.filter(p => !p.submittedAt), show = UI.showDone[G.g];
-        return `<details class="panel sub" data-sub="${G.g}" style="--i:${gi}"${UI.subOpen[G.g] ? ' open' : ''}>${subSummary(G.label, done.length, ps.length, left.map(p => p.name))}<div class="sub-bd">
-          <span class="label">${show ? 'Submitted' : left.length ? `Still to submit (${left.length})` : 'Everyone has submitted'}</span>
-          <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}${p.late ? ' lt' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.late ? '<span class="late">Late</span>' : ''}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
-          <div class="cc-tools">
-            <button class="btn small" type="button" data-copy="${G.g}" ${left.length ? '' : 'disabled'}>Copy names still to submit</button>
-            <button class="btn small quiet" type="button" data-showdone="${G.g}">${show ? 'Show still to submit' : 'Show submitted'}</button>
-          </div>
-        </div></details>`; }).join('')}
-      </div>
-    </section>
-
-    <section class="blk">
-      <div class="blk-hd"><h2>Results</h2><span class="muted">Click a cadet for their breakdown and comments.</span></div>
-      <div class="filters">
-        <div class="seg" role="group" aria-label="Peer group">${PEER_GROUPS.map(G => `<button type="button" data-group="${G.g}" aria-pressed="${UI.group === G.g}">${esc(G.label)}</button>`).join('')}</div>
-        <div class="seg small" role="group" aria-label="AS level">${['all'].concat(PEER_GROUPS.find(G => G.g === UI.group).classes).map(c => `<button type="button" data-cls="${c}" aria-pressed="${UI.cls === c}">${c === 'all' ? 'All' : esc(CLS_LABEL(c))}</button>`).join('')}</div>
-        ${UI.group === 'poc' && fyList().length ? `<div class="seg small" role="group" aria-label="Fiscal year">${['all'].concat(fyList()).map(y => `<button type="button" data-fy="${y}" aria-pressed="${(fyOn() ? UI.fy : 'all') === y}">${y === 'all' ? 'All FYs' : esc(y)}</button>`).join('')}</div>` : ''}
-        <div class="seg small" role="group" aria-label="Score">${[['adj', 'Adjusted for rater'], ['raw', 'Raw average']].map(([m, l]) => `<button type="button" data-mode="${m}" aria-pressed="${UI.mode === m}">${l}</button>`).join('')}</div>
-        ${measureSeg('pMeasure', 'data-pmeasure')}
-        <button class="btn small" type="button" id="csv">Download CSV</button>
-      </div>
-      <div class="panel"><div class="tblwrap" id="rkwrap">${rankTable()}</div></div>
-      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${UI.mode === 'adj' ? 'Adjusted: each rater is measured against their own average, so easy and harsh graders count the same.' : 'Raw: plain average of every rating received.'}</span></div>
-    </section>
-
-    <section class="blk">${raterCheck()}</section>`;
-}
-// Commissioning fiscal year for POC cadets (from the encrypted settings, CFG.fy: cadet key -> "FY27").
 const fyOf = key => (CFG && CFG.fy && CFG.fy[key]) || '';
 const fyList = () => [...new Set(Object.values((CFG && CFG.fy) || {}))].sort();
 const fyOn = () => UI.group === 'poc' && UI.fy !== 'all' && fyList().includes(UI.fy);
@@ -443,37 +390,6 @@ const ORG = (() => {
   return {flight, pos};
 })();
 const clsLine = p => [CLS_LABEL(p.cls), ORG.flight[p.key], (ORG.pos[p.key] || []).join(', '), fyOf(p.key)].filter(Boolean).join(' · ');
-function rankList(){
-  const G = PEER_GROUPS.find(G => G.g === UI.group);
-  let ps = Object.values(PEER.people).filter(p => p.group === G.g && p.rated !== false);
-  if(UI.cls !== 'all') ps = ps.filter(p => p.cls === UI.cls);
-  if(fyOn()) ps = ps.filter(p => fyOf(p.key) === UI.fy);
-  const rated = ps.filter(p => p.got.length).sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
-  const s = UI.sort;
-  if(s !== 'overall'){
-    const i = PF.findIndex(f => f.k === s);
-    if(i >= 0) rated.sort((a, b) => pv(b, i) - pv(a, i));
-    if(s === 'name') rated.sort((a, b) => a.name.localeCompare(b.name));
-    if(s === 'raters') rated.sort((a, b) => b.got.length - a.got.length);
-  }
-  const byOverall = rated.slice().sort((a, b) => pO(b) - pO(a) || a.name.localeCompare(b.name));
-  byOverall.forEach((p, i) => p._r = i + 1);
-  return {rated, unrated:ps.filter(p => !p.got.length).sort((a, b) => a.name.localeCompare(b.name)), n:rated.length};
-}
-function rankTable(){
-  const {rated, unrated, n} = rankList(), sub = !!subLabel();
-  const th = (k, l, cls = '') => `<th class="${cls}"><button type="button" data-sort="${k}" ${UI.sort === k ? 'aria-sort="descending"' : ''}>${l}</button></th>`;
-  if(!rated.length && !unrated.length) return '<div class="empty-n">No cadets in this group.</div>';
-  return `<table class="rk"><thead><tr>${th('overall', sub ? 'Rank in ' + esc(subLabel()) : 'Rank')}${sub ? '<th>Group rank</th>' : ''}${th('name', 'Cadet', 'l')}${th('overall', UI.pMeasure === 'pct' ? 'Percentile' : 'Overall', 'l')}${PF.map(f => th(f.k, f.short)).join('')}${th('raters', 'Raters')}<th>Comments</th></tr></thead><tbody>${
-    rated.map(p => `<tr class="${tierOf(p._r, n)}" data-key="${esc(p.key)}" tabindex="0">
-      <td class="rank">${p._r}</td>${sub ? `<td>${pRank(p)}</td>` : ''}
-      <td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(clsLine(p))}</small></span></span></td>
-      <td class="l">${pMain(p)}</td>
-      ${PF.map((f, i) => `<td><span class="cell" style="${heat(pv(p, i))}">${f2(pv(p, i))}</span></td>`).join('')}
-      <td><span class="${p.got.length < 3 ? 'muted-n' : ''}">${p.got.length}/${p.possible}</span></td><td>${p.notes.length || '<span class="muted-n">–</span>'}</td></tr>`).join('')}${
-    unrated.map(p => `<tr data-key="${esc(p.key)}" tabindex="0"><td class="rank muted-n">–</td>${sub ? '<td>–</td>' : ''}<td class="l"><span class="nm">${face(p.name, 30)}<span>${esc(p.name)}<small>${esc(clsLine(p))}</small></span></span></td><td class="l muted-n" colspan="${PF.length + 3}">No ratings yet</td></tr>`).join('')}
-  </tbody></table>`;
-}
 function raterCheck(){
   const R = PEER.raters, P = PEER.people;
   const list = Object.entries(R).filter(([k]) => P[k].group === UI.group).map(([k, s]) => {
@@ -491,63 +407,10 @@ function raterCheck(){
     }</tbody></table>` : '<div class="empty-n">No submissions yet.</div>'}
     <p class="hint" style="margin:10px 16px 14px">A rater who gives everyone the same score has no effect on the adjusted ranking (it counts as neutral), but still moves the raw average.</p></div></details>`;
 }
-$('#tPeer').addEventListener('click', e => {
-  const t = e.target.closest('button,tr[data-key]'); if(!t) return;
-  const d = t.dataset;
-  if(d.group){ UI.group = d.group; UI.cls = 'all'; UI.fy = 'all'; }
-  else if(d.fy) UI.fy = d.fy;
-  else if(d.cls) UI.cls = d.cls;
-  else if(d.mode) UI.mode = d.mode;
-  else if(d.pmeasure) UI.pMeasure = d.pmeasure;
-  else if(d.sort) UI.sort = d.sort;
-  else if(d.showdone) UI.showDone[d.showdone] = !UI.showDone[d.showdone];
-  else if(d.copy){ copyLeft(d.copy); return; }
-  else if(t.id === 'csv'){ csv(); return; }
-  else if(d.key){ detail(d.key); return; }
-  else return;
-  saveUI(); renderPeer();
-});
-$('#tPeer').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-key]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); detail(tr.dataset.key); } });
 async function copyLeft(g){
   const names = Object.values(PEER.people).filter(p => p.group === g && !p.submittedAt).map(p => p.name).sort();
   try{ await navigator.clipboard.writeText(names.join('\n')); toast(`Copied ${names.length} names`); }
   catch(_){ prompt('Copy these names:', names.join('; ')); }
-}
-function csv(){
-  const {rated, unrated} = rankList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Group rank (adjusted)', 'Group rank (raw)', 'Cadet', 'Class', 'FY', 'Percentile (' + (UI.mode === 'adj' ? 'adjusted' : 'raw') + ')', 'Overall (adjusted)', 'Overall (raw)'].concat(PF.flatMap(f => [f.label + ' (adjusted)', f.label + ' (raw)'])).concat(['Raters', 'Possible raters', 'Submitted own', 'Submitted at', 'Comments']);
-  const lines = rated.concat(unrated).map(p => [p.got.length ? p._r : '', p.adjRank || '', p.rawRank || '', p.name, p.cls, fyOf(p.key), p.got.length ? Math.round(pPct(p)) : '', f2(p.adjO), f2(p.rawO)].concat(PF.flatMap((f, i) => [f2(p.adj[i]), f2(p.raw[i])])).concat([p.got.length, p.possible, p.late ? 'Late' : p.submittedAt ? 'Yes' : 'No', p.submittedAt ? fmtWhen(p.submittedAt) : '', p.notes.map(n => n.text).join(' | ')]).map(q).join(','));
-  const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Peer_Feedback_${UI.group}${UI.cls === 'all' ? '' : '_' + UI.cls}${fyOn() ? '_' + UI.fy : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
-function detail(key){
-  const p = PEER.people[key], G = PEER_GROUPS.find(G => G.g === p.group), gs = PEER.gstat[p.group];
-  const classmates = Object.values(PEER.people).filter(q => q.cls === p.cls && q.got.length).sort((a, b) => pO(b) - pO(a));
-  const clsRank = classmates.indexOf(p) + 1, total = p.dist.slice(1).reduce((a, b) => a + b, 0);
-  const groupN = Object.values(PEER.people).filter(q => q.group === p.group && q.got.length).length;
-  const dlg = $('#dlg');
-  dlg.innerHTML = `<div class="dl-hd">${face(p.name, 60)}<div><h3 id="dlgTitle">${esc(p.name)}</h3>${clsChip(p.cls)} <span class="muted" style="font-size:13px">${esc([ORG.flight[p.key] && ORG.flight[p.key] + ' Flight', (ORG.pos[p.key] || []).join(', ')].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
-    <div class="dl-bd">${p.got.length ? `
-      <div class="stats">
-        <div class="stat"><div class="k">Group rank</div><div class="v">${pRank(p)}<small class="muted" style="font-size:13px"> / ${groupN}</small></div></div>
-        <div class="stat"><div class="k">${esc(CLS_LABEL(p.cls))} rank</div><div class="v">${clsRank}<small class="muted" style="font-size:13px"> / ${classmates.length}</small></div></div>
-        <div class="stat"><div class="k">${UI.pMeasure === 'pct' ? 'Percentile' : 'Overall'}</div><div class="v">${UI.pMeasure === 'pct' ? Math.round(pPct(p)) : f2(pO(p))}</div></div>
-        <div class="stat"><div class="k">Raters</div><div class="v">${p.got.length}<small class="muted" style="font-size:13px"> / ${p.possible}</small></div></div>
-      </div>
-      <div><span class="label">By area (${UI.mode === 'adj' ? 'adjusted' : 'raw'}), line = group average</span>
-        <div class="catbars" style="margin-top:10px">${PF.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${Math.max(0, Math.min(100, (pv(p, i) - 1) / 4 * 100))}%"></i><em style="left:${(gs[i].mu - 1) / 4 * 100}%"></em></span><b>${f2(pv(p, i))}</b></div>`).join('')}</div></div>
-      <div><span class="label">Every rating received (${total})</span>
-        <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
-        <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>
-      <div><span class="label">Comments (${p.notes.length})</span>${p.notes.length
-        ? `<ul class="notes">${p.notes.map(n => `<li><p>${esc(n.text)}</p><small>${face(n.by.name, 20)}${esc(n.by.name)} &middot; ${esc(CLS_LABEL(n.by.cls))}${n.by.late ? ' <span class="late">Late</span>' : ''}</small></li>`).join('')}</ul>`
-        : '<p class="muted" style="margin-top:6px;font-size:13px">No comments yet. Comments are optional.</p>'}</div>
-      <p class="hint" style="margin:0">Raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ${p.submittedAt ? `Submitted their own ratings ${esc(fmtWhen(p.submittedAt))}${p.late ? ' <span class="late">Late</span>' : ''}.` : 'Has not submitted their own ratings yet.'}</p>`
-      : `<p class="muted">No one has rated ${esc(p.name)} yet.</p>`}
-    </div>`;
-  dlg.showModal();
 }
 $('#dlg').addEventListener('click', e => { if(e.target.closest('[data-close]') || e.target === e.currentTarget) e.currentTarget.close(); });
 
@@ -573,45 +436,15 @@ function fseLists(entry){
   (st.order || []).filter(id => on(id) && cadets[id].nb).forEach(id => { const c = cadets[id]; out[c.name + '|' + c.flight] = {c, rank:null, nb:true, list:fseGroup(c.cls)}; });
   return out;
 }
-function renderFse(){
-  const el = $('#tFse');
-  if(FSE_ERR && !FSE){ el.innerHTML = `<div class="note ${FSE_ERR === 'not connected' ? '' : 'bad'}">${FSE_ERR === 'not connected' ? 'The Flight Staff Evaluation sheet is not connected yet. Add its admin key to the cadre settings.' : `Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}). Try Refresh.`}</div>`; return; }
-  if(!FSE){ el.innerHTML = '<div class="empty-n">Loading…</div>'; return; }
-  const byRole = fseByRole();
-  const done = FSE_ROLES.filter(r => byRole[r.id]), left = FSE_ROLES.filter(r => !byRole[r.id]);
-  if(!FSE_GROUPS.some(G => G.g === UI.fseGroup)) UI.fseGroup = FSE_GROUPS[0].g;
-  el.innerHTML = `
-    ${FSE_ERR ? `<div class="note bad">Couldn't refresh (${esc(FSE_ERR)}). Showing the last data loaded.</div>` : ''}
-    <section class="blk">
-      <div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${done.length} of ${FSE_ROLES.length} evaluators</span></div>
-      <div class="subs"><details class="panel sub" data-sub="fse"${UI.subOpen.fse ? ' open' : ''}>${subSummary('Sq/CC and Flt/CC', done.length, FSE_ROLES.length, left.map(r => r.label))}<div class="sub-bd">
-        <ul class="who">${FSE_ROLES.map(r => { const e = byRole[r.id];
-          return `<li class="${e ? 'done' : ''}">${face(fseEvaluator(r), 26)}${esc(fseEvaluator(r))} <span class="muted-n">${esc(r.label)}</span>${e ? `<span class="t">${esc(fmtWhen(e.at))} &middot; ${Object.keys(fseLists(e)).length} cadets</span>` : '<span class="t">Not yet</span>'}</li>`; }).join('')}</ul>
-      </div></details></div>
-    </section>
-    <section class="blk">
-      <div class="blk-hd"><h2>Results</h2><span class="muted">Click a cadet for their breakdown and comments.</span></div>
-      <div class="filters">
-        <div class="seg" role="group" aria-label="AS level">${FSE_GROUPS.map(G => `<button type="button" data-fgroup="${G.g}" aria-pressed="${UI.fseGroup === G.g}">${esc(G.label)}</button>`).join('')}</div>
-        ${measureSeg('fMeasure', 'data-fmeasure')}
-        <div class="seg small" role="group" aria-label="View">${[['consolidated', 'Consolidated'], ['flight', 'By flight']].map(([v, l]) => `<button type="button" data-fview="${v}" aria-pressed="${UI.fseView === v}">${l}</button>`).join('')}</div>
-        ${UI.fseView === 'flight' ? `<div class="seg small" role="group" aria-label="Flight">${['Alpha', 'Bravo', 'Charlie', 'Delta'].map(f => `<button type="button" data-flight="${f}" aria-pressed="${UI.fseFlight === f}">${f}</button>`).join('')}</div>` : ''}
-        <button class="btn small" type="button" id="fcsv">Download CSV</button>
-      </div>
-      <div class="panel"><div class="tblwrap">${fseTable()}</div></div>
-      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${UI.fMeasure === 'avg' ? 'Overall = average of the five areas across the evaluators (1 to 5).' : "Percentile = average of each evaluator's percentile in their own list (Flt/CC and Sq/CC count the same)."}</span></div>
-    </section>`;
-}
 function fseByRole(){ const m = {}; FSE.forEach(e => { const r = e.state && e.state.role; if(r) m[r] = e; }); return m; }
 const fseEvaluator = r => { const e = FSE && fseByRole()[r.id]; return (e && e.state.evaluator) || r.evaluator; };
 const fseRole = id => FSE_ROLES.find(r => r.id === id);
 // Every cadet in the chosen AS group, as seen by each tracked evaluator, sorted by consolidated percentile.
-function fseList(g = UI.fseGroup, all = false){
+function fseList(g){
   const byRole = fseByRole(), cad = {};
   FSE_ROLES.forEach(r => { const e = byRole[r.id]; if(!e) return;
     Object.entries(fseLists(e)).forEach(([k, x]) => { if(x.list !== g) return; (cad[k] = cad[k] || {key:k, c:x.c, by:{}}).by[r.id] = x; }); });
   let list = Object.values(cad);
-  if(!all && UI.fseView === 'flight') list = list.filter(x => x.c.flight === UI.fseFlight);
   list.forEach(x => {
     const pct = Object.values(x.by).filter(v => v.rank).map(v => v.n > 1 ? (v.n - v.rank) / (v.n - 1) : 1);
     x.pct = pct.length ? mean(pct) : null;
@@ -621,7 +454,7 @@ function fseList(g = UI.fseGroup, all = false){
     x.flt = (ent.find(([id]) => !fseRole(id).sq) || [])[1]; x.sq = (ent.find(([id]) => fseRole(id).sq) || [])[1];
     x.notes = ent.filter(([, v]) => (v.c.just || '').trim()).map(([id, v]) => ({role:fseRole(id), text:v.c.just.trim()}));
   });
-  const val = x => UI.fMeasure === 'avg' ? x.ovg : x.pct;   // the measure the table ranks by
+  const val = x => x.pct;
   list.sort((a, b) => (val(b) ?? -1) - (val(a) ?? -1) || a.c.name.localeCompare(b.c.name));
   const n = list.filter(x => val(x) != null).length;
   list.forEach((x, i) => x.r = val(x) != null ? i + 1 : null);
@@ -631,63 +464,6 @@ function fseList(g = UI.fseGroup, all = false){
 const fPos = c => { const k = ((window.D250Cadets || {})[plain(c.name).toLowerCase()] || [])[0]; return (k && ORG.pos[k] || []).join(', ') || c.role || ''; };
 const fRank = v => v ? (v.nb ? 'Not ranked' : `${v.rank} / ${v.n}`) : '–';
 const fVal = v => isNaN(v) ? '–' : (Number.isInteger(v) ? String(v) : v.toFixed(1));
-function fseTable(){
-  const {list, n} = fseList();
-  if(!list.length) return '<div class="empty-n">No results yet.</div>';
-  const cons = UI.fseView === 'consolidated';
-  return `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th><th class="l">${UI.fMeasure === 'avg' ? 'Overall' : 'Percentile'}</th>${FACTORS.map(f => `<th title="${esc(f.label)}">${f.short}</th>`).join('')}<th>Flt/CC</th><th>Sq/CC</th><th>Comments</th></tr></thead><tbody>${
-    list.map(x => `<tr class="${x.r ? tierOf(x.r, n) : ''}" data-fkey="${esc(x.key)}" tabindex="0">
-      <td class="rank${x.r ? '' : ' muted-n'}">${x.r || '–'}</td>
-      <td class="l"><span class="nm">${face(x.c.name, 30)}<span>${esc(x.c.name)}<small>${esc([CLS_LABEL(x.c.cls), cons && x.c.flight, fPos(x.c)].filter(Boolean).join(' · '))}</small></span></span></td>
-      <td class="l">${UI.fMeasure === 'avg' ? (x.ovg == null ? '<span class="muted-n">–</span>' : ovCell(x.ovg - 1, 4, x.ovg.toFixed(2))) : x.pct == null ? '<span class="muted-n">Not ranked</span>' : ovCell(x.pct * 100, 100, Math.round(x.pct * 100))}</td>
-      ${x.avg.map(v => `<td><span class="cell" style="${heat(v)}">${fVal(v)}</span></td>`).join('')}
-      <td>${x.flt ? (x.flt.nb ? '<span class="muted-n">–</span>' : `${x.flt.rank}<span class="muted-n">/${x.flt.n}</span>`) : '<span class="muted-n">–</span>'}</td>
-      <td>${x.sq ? (x.sq.nb ? '<span class="muted-n">–</span>' : `${x.sq.rank}<span class="muted-n">/${x.sq.n}</span>`) : '<span class="muted-n">–</span>'}</td>
-      <td>${x.notes.length || '<span class="muted-n">–</span>'}</td></tr>`).join('')}</tbody></table>`;
-}
-function fseDetail(key){
-  const {list, n} = fseList(), x = list.find(y => y.key === key); if(!x) return;
-  const G = FSE_GROUPS.find(G => G.g === UI.fseGroup);
-  const dlg = $('#dlg');
-  dlg.innerHTML = `<div class="dl-hd">${face(x.c.name, 60)}<div><h3 id="dlgTitle">${esc(x.c.name)}</h3>${clsChip(x.c.cls)} <span class="muted" style="font-size:13px">${esc([x.c.flight && x.c.flight + ' Flight', fPos(x.c)].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
-    <div class="dl-bd">
-      <div class="stats">
-        <div class="stat"><div class="k">${UI.fseView === 'flight' ? esc(UI.fseFlight) + ' rank' : 'Rank'}</div><div class="v">${x.r || '–'}${x.r ? `<small class="muted" style="font-size:13px"> / ${n}</small>` : ''}</div></div>
-        <div class="stat"><div class="k">${UI.fMeasure === 'avg' ? 'Overall' : 'Percentile'}</div><div class="v">${UI.fMeasure === 'avg' ? (x.ovg == null ? '–' : x.ovg.toFixed(2)) : x.pct == null ? '–' : Math.round(x.pct * 100)}</div></div>
-        <div class="stat"><div class="k">Flt/CC rank</div><div class="v" style="font-size:18px">${esc(fRank(x.flt))}</div></div>
-        <div class="stat"><div class="k">Sq/CC rank</div><div class="v" style="font-size:18px">${esc(fRank(x.sq))}</div></div>
-      </div>
-      <div><span class="label">By area (average of the evaluators, 1 to 5)</span>
-        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(x.avg[i]) ? 0 : Math.max(0, Math.min(100, (x.avg[i] - 1) / 4 * 100))}%"></i></span><b>${fVal(x.avg[i])}</b></div>`).join('')}</div></div>
-      <div><span class="label">Comments (${x.notes.length})</span>${x.notes.length
-        ? `<ul class="notes">${x.notes.map(m => `<li><p>${esc(m.text)}</p><small>${face(fseEvaluator(m.role), 20)}${esc(fseEvaluator(m.role))} &middot; ${esc(m.role.label)}</small></li>`).join('')}</ul>`
-        : '<p class="muted" style="margin-top:6px;font-size:13px">No comments.</p>'}</div>
-    </div>`;
-  dlg.showModal();
-}
-function fseCsv(){
-  const {list} = fseList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-  const head = ['Rank', 'Cadet', 'Class', 'Flight', 'Position', 'Percentile', 'Overall average'].concat(FACTORS.map(f => f.label)).concat(['Flt/CC rank', 'Sq/CC rank', 'Comments']);
-  const lines = list.map(x => [x.r || '', x.c.name, x.c.cls, x.c.flight || '', x.c.role || '', x.pct == null ? '' : Math.round(x.pct * 100), x.ovg == null ? '' : x.ovg.toFixed(2)].concat(x.avg.map(fVal)).concat([fRank(x.flt), fRank(x.sq), x.notes.map(m => fseEvaluator(m.role) + ' (' + m.role.label + '): ' + m.text).join(' | ')]).map(q).join(','));
-  const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Flight_Staff_Evaluation_${UI.fseGroup.replace('+', 'plus')}${UI.fseView === 'flight' ? '_' + UI.fseFlight : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
-$('#tFse').addEventListener('click', e => {
-  const t = e.target.closest('button,tr[data-fkey]'); if(!t) return;
-  const d = t.dataset;
-  if(d.fgroup) UI.fseGroup = d.fgroup;
-  else if(d.fview) UI.fseView = d.fview;
-  else if(d.fmeasure) UI.fMeasure = d.fmeasure;
-  else if(d.flight) UI.fseFlight = d.flight;
-  else if(t.id === 'fcsv'){ fseCsv(); return; }
-  else if(d.fkey){ fseDetail(d.fkey); return; }
-  else return;
-  saveUI(); renderFse();
-});
-$('#tFse').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-fkey]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); fseDetail(tr.dataset.fkey); } });
-
 /* =====================================================================
    MASTER (Capt Russell, 22 Nov 2026): one ranking per group that blends the
    Peer Feedback percentile and the Flight Staff Evaluation percentile 50/50.
@@ -696,81 +472,175 @@ $('#tFse').addEventListener('keydown', e => { const tr = e.target.closest('tr[da
    ===================================================================== */
 const M_GROUPS = [{g:'gmc', fse:'AS200+', label:'AS 200 / 250 / 500'}, {g:'as100', fse:'AS100', label:'AS 100'}, {g:'poc', fse:null, label:'POC'}];
 const keyOfName = n => ((window.D250Cadets || {})[plain(n).toLowerCase()] || [])[0];
+/* One page for everything (Capt Russell, 22 Nov 2026: one tab, results first, Who has submitted at the bottom).
+   Each row shows the Master blend plus the Peer Feedback and Flight Staff Evaluation numbers; Rank by picks which
+   one orders the list. Master = mean of the two (50/50); a cadet with one source uses it and is marked. */
+const RANK_BY = [['master', 'Master'], ['peer', 'Peer Feedback'], ['fse', 'Flight Staff']];
+const mGroupOf = () => M_GROUPS.find(G => G.g === UI.group) || M_GROUPS[0];
+const isNum = v => v != null && !isNaN(v);
 function masterList(){
-  const G = M_GROUPS.find(G => G.g === UI.mGroup) || M_GROUPS[0];
-  const fse = {}; if(G.fse && FSE) fseList(G.fse, true).list.forEach(x => { const k = keyOfName(x.c.name); if(k) fse[k] = x; });
-  const list = Object.values(PEER ? PEER.people : {}).filter(p => p.group === G.g).map(p => {
-    const pp = p.got.length ? pPct(p) : null, f = fse[p.key], fp = f && f.pct != null ? f.pct * 100 : null;
-    const parts = [pp, fp].filter(v => v != null);
-    return {p, f, pp, fp, m:parts.length ? mean(parts) : null, only:parts.length === 1 && G.fse ? (pp != null ? 'Peer only' : 'Flight Staff only') : ''};
+  const G = mGroupOf(), avg = UI.measure === 'avg';
+  if(!G.fse && UI.rankBy === 'fse') UI.rankBy = 'master';
+  const fse = {}; if(G.fse && FSE) fseList(G.fse).list.forEach(x => { const k = keyOfName(x.c.name); if(k) fse[k] = x; });
+  let list = Object.values(PEER ? PEER.people : {}).filter(p => p.group === G.g && p.rated !== false).map(p => {
+    const f = fse[p.key];
+    const pp = p.got.length ? (avg ? pO(p) : pPct(p)) : null;
+    const fp = f ? (avg ? f.ovg : f.pct != null ? f.pct * 100 : null) : null;
+    const parts = [pp, fp].filter(isNum);
+    return {p, f, pp, fp, m:parts.length ? mean(parts) : null, only:parts.length === 1 && G.fse ? (isNum(pp) ? 'Peer only' : 'Flight Staff only') : ''};
   });
-  list.sort((a, b) => (b.m ?? -1) - (a.m ?? -1) || a.p.name.localeCompare(b.p.name));
-  const n = list.filter(x => x.m != null).length;
-  list.forEach((x, i) => x.r = x.m != null ? i + 1 : null);
-  return {G, list, n};
+  const val = x => UI.rankBy === 'peer' ? x.pp : UI.rankBy === 'fse' ? x.fp : x.m;
+  const order = a => a.slice().sort((a, b) => (isNum(val(b)) ? val(b) : -1e9) - (isNum(val(a)) ? val(a) : -1e9) || a.p.name.localeCompare(b.p.name));
+  order(list).forEach((x, i) => x.gr = isNum(val(x)) ? i + 1 : null);
+  const gn = list.filter(x => isNum(val(x))).length;
+  if(UI.cls !== 'all') list = list.filter(x => x.p.cls === UI.cls);
+  if(fyOn()) list = list.filter(x => fyOf(x.p.key) === UI.fy);
+  list = order(list);
+  const n = list.filter(x => isNum(val(x))).length;
+  list.forEach((x, i) => x.r = isNum(val(x)) ? i + 1 : null);
+  return {G, list, n, gn};
 }
-const mNotes = x => x.p.notes.map(n => ({text:n.text, who:n.by.name, what:'Peer, ' + CLS_LABEL(n.by.cls)}))
+const mNotes = x => x.p.notes.map(n => ({text:n.text, who:n.by.name, what:'Peer, ' + CLS_LABEL(n.by.cls), late:n.by.late}))
   .concat(x.f ? x.f.notes.map(m => ({text:m.text, who:fseEvaluator(m.role), what:m.role.label})) : []);
-const pctCell = v => v == null ? '<span class="muted-n">–</span>' : Math.round(v);
-function renderMaster(){
-  const el = $('#tMaster');
-  if(!PEER){ el.innerHTML = PEER_ERR ? `<div class="note bad">Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.</div>` : '<div class="empty-n">Loading…</div>'; return; }
-  const {G, list, n} = masterList();
-  el.innerHTML = `
-    ${FSE_ERR && G.fse ? `<div class="note bad">Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}), so this list uses peer feedback only. Try Refresh.</div>` : ''}
-    <section class="blk">
-      <div class="blk-hd"><h2>Master ranking</h2><span class="muted">Click a cadet for their breakdown and every comment.</span></div>
-      <div class="filters">
-        <div class="seg" role="group" aria-label="Group">${M_GROUPS.map(g => `<button type="button" data-mgroup="${g.g}" aria-pressed="${G.g === g.g}">${esc(g.label)}</button>`).join('')}</div>
-        <button class="btn small" type="button" id="mcsv">Download CSV</button>
-      </div>
-      <div class="panel"><div class="tblwrap">${list.length ? `<table class="rk"><thead><tr><th>Rank</th><th class="l">Cadet</th><th class="l">Master</th><th>Peer</th>${G.fse ? '<th>Flight Staff</th>' : ''}<th>Comments</th></tr></thead><tbody>${
-        list.map(x => `<tr class="${x.r ? tierOf(x.r, n) : ''}" data-mkey="${esc(x.p.key)}" tabindex="0">
-          <td class="rank${x.r ? '' : ' muted-n'}">${x.r || '–'}</td>
-          <td class="l"><span class="nm">${face(x.p.name, 30)}<span>${esc(x.p.name)}<small>${esc(clsLine(x.p))}</small></span></span></td>
-          <td class="l">${x.m == null ? '<span class="muted-n">No ratings yet</span>' : ovCell(x.m, 100, Math.round(x.m)) + (x.only ? ` <span class="flag">${x.only}</span>` : '')}</td>
-          <td>${pctCell(x.pp)}</td>${G.fse ? `<td>${pctCell(x.fp)}</td>` : ''}
-          <td>${mNotes(x).length || '<span class="muted-n">–</span>'}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-n">No cadets in this group.</div>'}</div></div>
-      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${G.fse ? 'Master = average of the Peer Feedback percentile and the Flight Staff Evaluation percentile (50/50).' : 'POC has no Flight Staff Evaluation, so Master = the Peer Feedback percentile.'} Peer percentile follows the ${UI.mode === 'adj' ? 'adjusted' : 'raw'} score set on the Peer Feedback tab.</span></div>
-    </section>`;
+const dash = '<span class="muted-n">–</span>';
+const mNum = v => !isNum(v) ? '–' : UI.measure === 'avg' ? f2(v) : String(Math.round(v));
+const mBar = v => !isNum(v) ? dash : UI.measure === 'avg' ? ovCell(v - 1, 4, f2(v)) : ovCell(v, 100, Math.round(v));
+function resultsTable(){
+  const {G, list, n} = masterList(), sub = !!subLabel();
+  if(!list.length) return '<div class="empty-n">No cadets in this group.</div>';
+  const cols = RANK_BY.filter(([k]) => k !== 'fse' || G.fse);
+  const th = ([k, l]) => `<th class="${UI.rankBy === k ? 'l' : ''}"><button type="button" data-rankby="${k}" ${UI.rankBy === k ? 'aria-sort="descending"' : ''}>${l}</button></th>`;
+  const cell = (x, k) => { const v = k === 'peer' ? x.pp : k === 'fse' ? x.fp : x.m;
+    return UI.rankBy === k ? `<td class="l">${mBar(v)}${k === 'master' && x.only ? ` <span class="flag">${x.only}</span>` : ''}</td>` : `<td>${isNum(v) ? mNum(v) : dash}${k === 'master' && x.only && isNum(v) ? '<sup class="muted-n" title="' + x.only + '">*</sup>' : ''}</td>`; };
+  return `<table class="rk"><thead><tr><th>${sub ? 'Rank in ' + esc(subLabel()) : 'Rank'}</th>${sub ? '<th>Group rank</th>' : ''}<th class="l">Cadet</th>${cols.map(th).join('')}<th>Raters</th><th>Comments</th></tr></thead><tbody>${
+    list.map(x => `<tr class="${x.r ? tierOf(x.r, n) : ''}" data-key="${esc(x.p.key)}" tabindex="0">
+      <td class="rank${x.r ? '' : ' muted-n'}">${x.r || '–'}</td>${sub ? `<td>${x.gr || '–'}</td>` : ''}
+      <td class="l"><span class="nm">${face(x.p.name, 30)}<span>${esc(x.p.name)}<small>${esc(clsLine(x.p))}</small></span></span></td>
+      ${cols.map(([k]) => cell(x, k)).join('')}
+      <td><span class="${x.p.got.length < 3 ? 'muted-n' : ''}">${x.p.got.length}/${x.p.possible}</span></td>
+      <td>${mNotes(x).length || dash}</td></tr>`).join('')}</tbody></table>`;
 }
-function masterDetail(key){
+function whoSubmitted(){
+  const out = [], heads = [];
+  if(PEER){
+    const P = Object.values(PEER.people), closed = Date.now() > new Date(PEER.due).getTime();
+    const subN = P.filter(p => p.submittedAt).length, lateN = P.filter(p => p.late).length;
+    heads.push(`Peer Feedback ${subN} of ${P.length}${lateN ? ` (${lateN} late)` : ''}, ${closed ? 'was due' : 'due'} ${esc(fmtDue(PEER.due))}`);
+    PEER_GROUPS.forEach((G, gi) => {
+      const ps = P.filter(p => p.group === G.g).sort((a, b) => a.name.localeCompare(b.name));
+      const done = ps.filter(p => p.submittedAt), left = ps.filter(p => !p.submittedAt), show = UI.showDone[G.g];
+      out.push(`<details class="panel sub" data-sub="${G.g}" style="--i:${gi}"${UI.subOpen[G.g] ? ' open' : ''}>${subSummary('Peer: ' + G.label, done.length, ps.length, left.map(p => p.name))}<div class="sub-bd">
+        <span class="label">${show ? 'Submitted' : left.length ? `Still to submit (${left.length})` : 'Everyone has submitted'}</span>
+        <ul class="who">${(show ? done : left).map(p => `<li class="${p.submittedAt ? 'done' : ''}${p.late ? ' lt' : ''}">${face(p.name, 26)}${esc(p.name)} ${clsChip(p.cls)}${p.late ? '<span class="late">Late</span>' : ''}${p.submittedAt ? `<span class="t">${esc(fmtWhen(p.submittedAt))}${p.times > 1 ? ` (${p.times}x)` : ''}</span>` : ''}</li>`).join('')}</ul>
+        <div class="cc-tools">
+          <button class="btn small" type="button" data-copy="${G.g}" ${left.length ? '' : 'disabled'}>Copy names still to submit</button>
+          <button class="btn small quiet" type="button" data-showdone="${G.g}">${show ? 'Show still to submit' : 'Show submitted'}</button>
+        </div></div></details>`);
+    });
+  }
+  if(FSE){
+    const byRole = fseByRole(), done = FSE_ROLES.filter(r => byRole[r.id]), left = FSE_ROLES.filter(r => !byRole[r.id]);
+    heads.push(`Flight Staff Evaluation ${done.length} of ${FSE_ROLES.length}`);
+    out.push(`<details class="panel sub" data-sub="fse" style="--i:3"${UI.subOpen.fse ? ' open' : ''}>${subSummary('Flight Staff: Sq/CC and Flt/CC', done.length, FSE_ROLES.length, left.map(r => r.label))}<div class="sub-bd">
+      <ul class="who">${FSE_ROLES.map(r => { const e = byRole[r.id];
+        return `<li class="${e ? 'done' : ''}">${face(fseEvaluator(r), 26)}${esc(fseEvaluator(r))} <span class="muted-n">${esc(r.label)}</span>${e ? `<span class="t">${esc(fmtWhen(e.at))} &middot; ${Object.keys(fseLists(e)).length} cadets</span>` : '<span class="t">Not yet</span>'}</li>`; }).join('')}</ul>
+    </div></details>`);
+  }
+  return `<div class="blk-hd"><h2>Who has submitted</h2><span class="muted">${heads.join(' &middot; ')}</span></div><div class="subs">${out.join('')}</div>`;
+}
+function renderAll(){
+  const el = $('#tAll');
+  if(!PEER){ el.innerHTML = PEER_ERR ? `<div class="note ${PEER_ERR === 'not connected' ? '' : 'bad'}">${PEER_ERR === 'not connected' ? 'Peer Feedback is not connected yet. Deploy the Peer Feedback Apps Script, then rebuild the cadre settings.' : `Couldn't load Peer Feedback (${esc(PEER_ERR)}). Try Refresh.`}</div>` : '<div class="empty-n">Loading…</div>'; return; }
+  if(!PEER_GROUPS.some(G => G.g === UI.group)) UI.group = 'gmc';
+  const G = mGroupOf(), PG = PEER_GROUPS.find(g => g.g === UI.group);
+  if(UI.cls !== 'all' && !PG.classes.includes(UI.cls)) UI.cls = 'all';
+  const fseNote = G.fse && FSE_ERR ? `<div class="note ${FSE_ERR === 'not connected' ? '' : 'bad'}">${FSE_ERR === 'not connected' ? 'The Flight Staff Evaluation sheet is not connected yet, so Master uses peer feedback only.' : `Couldn't load the Flight Staff Evaluation (${esc(FSE_ERR)}), so Master uses peer feedback only. Try Refresh.`}</div>` : '';
+  const measureTxt = UI.measure === 'avg' ? 'Overall average (1 to 5)' : 'Rank percentile (top = 100)';
+  el.innerHTML = `
+    ${PEER_ERR ? `<div class="note bad">Couldn't refresh Peer Feedback (${esc(PEER_ERR)}). Showing the last data loaded.</div>` : ''}${fseNote}
+    <section class="blk">
+      <div class="blk-hd"><h2>Results</h2><span class="muted">Click a cadet for their breakdown and every comment.</span></div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Group">${M_GROUPS.map(g => `<button type="button" data-group="${g.g}" aria-pressed="${UI.group === g.g}">${esc(g.label)}</button>`).join('')}</div>
+        <div class="seg small" role="group" aria-label="AS level">${['all'].concat(PG.classes).map(c => `<button type="button" data-cls="${c}" aria-pressed="${UI.cls === c}">${c === 'all' ? 'All' : esc(CLS_LABEL(c))}</button>`).join('')}</div>
+        ${UI.group === 'poc' && fyList().length ? `<div class="seg small" role="group" aria-label="Fiscal year">${['all'].concat(fyList()).map(y => `<button type="button" data-fy="${y}" aria-pressed="${(fyOn() ? UI.fy : 'all') === y}">${y === 'all' ? 'All FYs' : esc(y)}</button>`).join('')}</div>` : ''}
+      </div>
+      <div class="filters">
+        <div class="seg small" role="group" aria-label="Rank by"><span class="seg-l">Rank by</span>${RANK_BY.filter(([k]) => k !== 'fse' || G.fse).map(([k, l]) => `<button type="button" data-rankby="${k}" aria-pressed="${UI.rankBy === k}">${l}</button>`).join('')}</div>
+        ${measureSeg('measure', 'data-measure')}
+        <div class="seg small" role="group" aria-label="Peer score">${[['adj', 'Adjusted for rater'], ['raw', 'Raw average']].map(([m, l]) => `<button type="button" data-mode="${m}" aria-pressed="${UI.mode === m}">${l}</button>`).join('')}</div>
+        <button class="btn small" type="button" id="csv">Download CSV</button>
+      </div>
+      <div class="panel"><div class="tblwrap" id="rkwrap">${resultsTable()}</div></div>
+      <div class="legend"><span><i style="--c:var(--t-top)"></i>Top third</span><span><i style="--c:var(--t-mid)"></i>Middle third</span><span><i style="--c:var(--t-bot)"></i>Bottom third</span><span>${measureTxt}. ${G.fse ? 'Master = Peer Feedback and Flight Staff Evaluation, 50/50; * = one source only.' : 'POC has no Flight Staff Evaluation, so Master = Peer Feedback.'} Peer scores are ${UI.mode === 'adj' ? 'adjusted: each rater is measured against their own average, so easy and harsh graders count the same' : 'the raw average of every rating received'}.</span></div>
+    </section>
+    <section class="blk">${raterCheck()}</section>
+    <section class="blk">${whoSubmitted()}</section>`;
+}
+function bars(items, vals, marks){
+  return `<div class="catbars" style="margin-top:10px">${items.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNum(vals[i]) ? Math.max(0, Math.min(100, (vals[i] - 1) / 4 * 100)) : 0}%"></i>${marks ? `<em style="left:${(marks[i].mu - 1) / 4 * 100}%"></em>` : ''}</span><b>${isNum(vals[i]) ? (items === PF ? f2(vals[i]) : fVal(vals[i])) : '–'}</b></div>`).join('')}</div>`;
+}
+function detail(key){
   const {G, list, n} = masterList(), x = list.find(y => y.p.key === key); if(!x) return;
-  const notes = mNotes(x), dlg = $('#dlg');
-  dlg.innerHTML = `<div class="dl-hd">${face(x.p.name, 60)}<div><h3 id="dlgTitle">${esc(x.p.name)}</h3>${clsChip(x.p.cls)} <span class="muted" style="font-size:13px">${esc([ORG.flight[x.p.key] && ORG.flight[x.p.key] + ' Flight', (ORG.pos[x.p.key] || []).join(', ')].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
+  const p = x.p, notes = mNotes(x), gs = PEER.gstat[p.group], total = p.dist.slice(1).reduce((a, b) => a + b, 0), dlg = $('#dlg');
+  const st = (k, v, of) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}${of ? `<small class="muted" style="font-size:13px"> / ${of}</small>` : ''}</div></div>`;
+  const rk = RANK_BY.find(([k]) => k === UI.rankBy)[1];
+  dlg.innerHTML = `<div class="dl-hd">${face(p.name, 60)}<div><h3 id="dlgTitle">${esc(p.name)}</h3>${clsChip(p.cls)} <span class="muted" style="font-size:13px">${esc([ORG.flight[p.key] && ORG.flight[p.key] + ' Flight', (ORG.pos[p.key] || []).join(', '), fyOf(p.key)].filter(Boolean).join(' · ') || G.label)}</span></div><button class="btn small x" type="button" data-close>Close</button></div>
     <div class="dl-bd">
       <div class="stats">
-        <div class="stat"><div class="k">Master rank</div><div class="v">${x.r || '–'}${x.r ? `<small class="muted" style="font-size:13px"> / ${n}</small>` : ''}</div></div>
-        <div class="stat"><div class="k">Master</div><div class="v">${x.m == null ? '–' : Math.round(x.m)}</div></div>
-        <div class="stat"><div class="k">Peer</div><div class="v">${x.pp == null ? '–' : Math.round(x.pp)}</div></div>
-        <div class="stat"><div class="k">Flight Staff</div><div class="v">${!G.fse ? 'n/a' : x.fp == null ? '–' : Math.round(x.fp)}</div></div>
+        ${st(esc(rk) + ' rank', x.r || '–', x.r && n)}
+        ${st('Master', mNum(x.m))}
+        ${st('Peer', mNum(x.pp))}
+        ${st('Flight Staff', G.fse ? mNum(x.fp) : 'n/a')}
       </div>
-      <div><span class="label">Peer Feedback by area (${UI.mode === 'adj' ? 'adjusted' : 'raw'})</span>
-        <div class="catbars" style="margin-top:10px">${PF.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(pv(x.p, i)) ? 0 : Math.max(0, Math.min(100, (pv(x.p, i) - 1) / 4 * 100))}%"></i></span><b>${f2(pv(x.p, i))}</b></div>`).join('')}</div></div>
-      ${x.f ? `<div><span class="label">Flight Staff Evaluation by area</span>
-        <div class="catbars" style="margin-top:10px">${FACTORS.map((f, i) => `<div class="cb"><span>${esc(f.label)}</span><span class="trk"><i style="width:${isNaN(x.f.avg[i]) ? 0 : Math.max(0, Math.min(100, (x.f.avg[i] - 1) / 4 * 100))}%"></i></span><b>${fVal(x.f.avg[i])}</b></div>`).join('')}</div></div>` : ''}
+      <div class="stats">
+        ${st('Peer group rank', p.got.length ? pRank(p) : '–', p.got.length && pGroupN(p))}
+        ${st('Raters', p.got.length, p.possible)}
+        ${G.fse ? st('Flt/CC rank', `<span style="font-size:18px">${esc(fRank(x.f && x.f.flt))}</span>`) + st('Sq/CC rank', `<span style="font-size:18px">${esc(fRank(x.f && x.f.sq))}</span>`) : ''}
+      </div>
+      ${p.got.length ? `<div><span class="label">Peer Feedback by area (${UI.mode === 'adj' ? 'adjusted' : 'raw'}), line = group average</span>${bars(PF, PF.map((f, i) => pv(p, i)), gs)}</div>
+      <div><span class="label">Every peer rating received (${total})</span>
+        <div class="stack" style="margin-top:8px">${[1,2,3,4,5].map(v => p.dist[v] ? `<i style="--sc:var(--s${v});width:${p.dist[v] / total * 100}%" title="${p.dist[v]} rating${p.dist[v] === 1 ? '' : 's'} of ${v}">${p.dist[v] / total >= .06 ? v : ''}</i>` : '').join('')}</div>
+        <div class="legend">${[1,2,3,4,5].map(v => `<span><i style="--c:var(--s${v})"></i>${v}: ${p.dist[v]}</span>`).join('')}</div></div>` : `<p class="muted" style="margin:0;font-size:13px">No peer ratings yet.</p>`}
+      ${x.f ? `<div><span class="label">Flight Staff Evaluation by area (average of the evaluators)</span>${bars(FACTORS, x.f.avg)}</div>` : ''}
       <div><span class="label">Comments (${notes.length})</span>${notes.length
-        ? `<ul class="notes">${notes.map(m => `<li><p>${esc(m.text)}</p><small>${face(m.who, 20)}${esc(m.who)} &middot; ${esc(m.what)}</small></li>`).join('')}</ul>`
+        ? `<ul class="notes">${notes.map(m => `<li><p>${esc(m.text)}</p><small>${face(m.who, 20)}${esc(m.who)} &middot; ${esc(m.what)}${m.late ? ' <span class="late">Late</span>' : ''}</small></li>`).join('')}</ul>`
         : '<p class="muted" style="margin-top:6px;font-size:13px">No comments.</p>'}</div>
+      <p class="hint" style="margin:0">${p.got.length ? `Peer raw overall ${f2(p.rawO)} (rank ${p.rawRank}), adjusted ${f2(p.adjO)} (rank ${p.adjRank}). ` : ''}${p.submittedAt ? `Submitted their own peer ratings ${esc(fmtWhen(p.submittedAt))}${p.late ? ' <span class="late">Late</span>' : ''}.` : 'Has not submitted their own peer ratings.'}</p>
     </div>`;
   dlg.showModal();
 }
-function masterCsv(){
-  const {G, list} = masterList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v, rd = v => v == null ? '' : Math.round(v);
-  const head = ['Rank', 'Cadet', 'Class', 'Flight', 'Position', 'Master', 'Peer percentile', 'Flight Staff percentile', 'Note', 'Comments'];
-  const lines = list.map(x => [x.r || '', x.p.name, x.p.cls, ORG.flight[x.p.key] || '', (ORG.pos[x.p.key] || []).join(', '), rd(x.m), rd(x.pp), rd(x.fp), x.only, mNotes(x).map(m => m.who + ' (' + m.what + '): ' + m.text).join(' | ')].map(q).join(','));
+function csv(){
+  const {G, list} = masterList(), q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v, rd = v => isNum(v) ? Math.round(v) : '', r2 = v => isNum(v) ? v.toFixed(2) : '';
+  const head = ['Rank (' + RANK_BY.find(([k]) => k === UI.rankBy)[1] + ')', 'Group rank', 'Cadet', 'Class', 'Flight', 'Position', 'FY', 'Master (' + (UI.measure === 'avg' ? 'average' : 'percentile') + ')', 'Peer percentile', 'Peer overall']
+    .concat(PF.map(f => 'Peer ' + f.label)).concat(G.fse ? ['Flight Staff percentile', 'Flight Staff overall'].concat(FACTORS.map(f => 'Flight Staff ' + f.label)).concat(['Flt/CC rank', 'Sq/CC rank']) : [])
+    .concat(['Peer score', 'Raters', 'Possible raters', 'Submitted own', 'Submitted at', 'Note', 'Comments']);
+  const lines = list.map(x => { const p = x.p, f = x.f;
+    return [x.r || '', x.gr || '', p.name, p.cls, ORG.flight[p.key] || '', (ORG.pos[p.key] || []).join(', '), fyOf(p.key), UI.measure === 'avg' ? r2(x.m) : rd(x.m), p.got.length ? rd(pPct(p)) : '', r2(pO(p))]
+      .concat(PF.map((_, i) => r2(pv(p, i)))).concat(G.fse ? [f && f.pct != null ? rd(f.pct * 100) : '', f ? r2(f.ovg) : ''].concat(FACTORS.map((_, i) => f ? fVal(f.avg[i]).replace('–', '') : '')).concat([f ? fRank(f.flt) : '', f ? fRank(f.sq) : '']) : [])
+      .concat([UI.mode === 'adj' ? 'Adjusted' : 'Raw', p.got.length, p.possible, p.late ? 'Late' : p.submittedAt ? 'Yes' : 'No', p.submittedAt ? fmtWhen(p.submittedAt) : '', x.only, mNotes(x).map(m => m.who + ' (' + m.what + '): ' + m.text).join(' | ')]).map(q).join(','); });
   const blob = new Blob([[head.map(q).join(',')].concat(lines).join('\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Master_Ranking_${G.g}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  a.download = `Cadet_Evaluations_${G.g}${UI.cls === 'all' ? '' : '_' + UI.cls}${fyOn() ? '_' + UI.fy : ''}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-$('#tMaster').addEventListener('click', e => {
-  const t = e.target.closest('button,tr[data-mkey]'); if(!t) return;
-  if(t.dataset.mgroup){ UI.mGroup = t.dataset.mgroup; saveUI(); renderMaster(); }
-  else if(t.id === 'mcsv') masterCsv();
-  else if(t.dataset.mkey) masterDetail(t.dataset.mkey);
+$('#tAll').addEventListener('click', e => {
+  const t = e.target.closest('button,tr[data-key]'); if(!t) return;
+  const d = t.dataset;
+  if(d.group){ UI.group = d.group; UI.cls = 'all'; UI.fy = 'all'; }
+  else if(d.fy) UI.fy = d.fy;
+  else if(d.cls) UI.cls = d.cls;
+  else if(d.mode) UI.mode = d.mode;
+  else if(d.measure) UI.measure = d.measure;
+  else if(d.rankby) UI.rankBy = d.rankby;
+  else if(d.showdone) UI.showDone[d.showdone] = !UI.showDone[d.showdone];
+  else if(d.copy){ copyLeft(d.copy); return; }
+  else if(t.id === 'csv'){ csv(); return; }
+  else if(d.key){ detail(d.key); return; }
+  else return;
+  saveUI(); renderAll();
 });
-$('#tMaster').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-mkey]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); masterDetail(tr.dataset.mkey); } });
+$('#tAll').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-key]'); if(tr && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); detail(tr.dataset.key); } });
 
 /* ---------- start ---------- */
 (async () => {
