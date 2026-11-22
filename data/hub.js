@@ -17,7 +17,7 @@ window.D250_HUB = {
   {"href":"documents/","name":"Documents and Policy","tone":"#0369a1","icon":"book","section":"cadets","blurb":"The Storm Standard, regs, forms and OPORDs."},
   {"href":"https://iowastate.sharepoint.com/:u:/r/sites/ISUAFROTC/SitePages/HomePage.aspx?d=web46a0478697483ba07db070fdb6b592&csf=1&web=2&share=IQBHoEbrl4Y7SKB9sHD9trWSAWYRIl7_IfMf5TGoI0MbHjk&e=qoKj8p","ext":true,"art":"sharepoint","name":"Cadet SharePoint","tone":"#036c70","icon":"book","section":"cadets","blurb":"Wing Feedback, points, supply and files."},
   {"href":"odt/","name":"ODT Tool","tone":"#155e75","icon":"faces","section":"cadets","locked":"Cadet password","blurb":"Your room, your van and the itinerary."},
-  {"href":"whos-that-cadet/","name":"Know Your Wing","tone":"#1f4e9c","icon":"faces","section":"cadets","blurb":"Learn every face in the wing."},
+  {"href":"whos-that-cadet/","hidden":true,"name":"Know Your Wing","tone":"#1f4e9c","icon":"faces","section":"cadets","blurb":"Learn every face in the wing. Opened from the Org Chart page, not the hub."},
   {"href":"evaluation/","name":"Evaluation Tools","tone":"#5d3f8c","icon":"chart","section":"cadets","blurb":"Peer Feedback, Flight Staff Eval, results."},
   {"href":"spin-the-wheel/","name":"Spin the Wheel","tone":"#b45309","icon":"wheel","section":"instructors","blurb":"Seating chart and a name wheel for class."},
   {"href":"make-the-call/","name":"Make the Call","tone":"#0f766e","icon":"scale","section":"instructors","blurb":"Teams debate leadership statements."},
