@@ -42,7 +42,7 @@
     box = el;
     box.classList.add("vault");
     box.innerHTML = `<span class="vi">${LOCK}</span><span class="vt">${what} are locked</span>
-      <form autocomplete="off"><label class="sr" for="vaultPw">Cadet password</label><input id="vaultPw" type="password" placeholder="Cadet password" required autocomplete="current-password"><button class="go" type="submit">Unlock</button></form>
+      <form autocomplete="off"><label class="sr" for="vaultPw">Cadet or admin password</label><input id="vaultPw" type="password" placeholder="Cadet or admin password" required autocomplete="current-password"><button class="go" type="submit">Unlock</button></form>
       <button class="relock" type="button">Lock again</button>
       <p class="err" role="alert"></p>`;
     const form = box.querySelector("form"), pw = box.querySelector("input"), go = box.querySelector(".go"), err = box.querySelector(".err");
@@ -50,8 +50,10 @@
       e.preventDefault(); if(!V) return;
       err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
       try {
-        await check(pw.value);
-        try { sessionStorage.setItem(KEY, pw.value); } catch(_){}
+        // the admin password works too: it stands for the cadet password saved in the admin vault
+        const real = (window.D250SignIn && await window.D250SignIn.docsPass(pw.value)) || pw.value;
+        await check(real);
+        try { sessionStorage.setItem(KEY, real); } catch(_){}
         pw.value = ""; set(true, true);
       } catch(_){
         err.textContent = "That password didn't work.";
