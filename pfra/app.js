@@ -3361,8 +3361,10 @@ function fineStep(id, side) {
   const dir = t.descending ? -side : side;
   const now = fineValue(t);
   // Off the step grid (a typed 34.3) lands on the nearest step first.
-  const snapped = Math.round(now / t.step) * t.step;
-  let next = snapped !== now && Math.sign(snapped - now) === dir ? snapped : snapped + dir * t.step;
+  // Rounded to the hundredth, or 156 x 0.1 comes out 15.600000000000001,
+  // looks off the grid, and the right arrow sticks on 15.6.
+  const snapped = Math.round(Math.round(now / t.step) * t.step * 100) / 100;
+  let next = Math.abs(snapped - now) > 1e-9 && Math.sign(snapped - now) === dir ? snapped : snapped + dir * t.step;
   next = Math.round(Math.min(t.max, Math.max(t.min, next)) * 100) / 100;
   fineWrite(t, next);
 }
