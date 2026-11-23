@@ -51,9 +51,11 @@
       err.textContent = ""; go.disabled = true; go.textContent = "Checking…";
       try {
         // the admin password works too: it stands for the cadet password saved in the admin vault
-        const real = (window.D250SignIn && await window.D250SignIn.docsPass(pw.value)) || pw.value;
+        const typed = pw.value;
+        const real = (window.D250SignIn && await window.D250SignIn.docsPass(typed)) || typed;
         await check(real);
         try { sessionStorage.setItem(KEY, real); } catch(_){}
+        if (window.D250SignIn) window.D250SignIn.adopt(typed).catch(() => {});   // signs the tab in as cadet or cadre
         pw.value = ""; set(true, true);
       } catch(_){
         err.textContent = "That password didn't work.";

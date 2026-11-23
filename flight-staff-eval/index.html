@@ -34,6 +34,8 @@ button:disabled{opacity:.6;cursor:progress}
 <script>/* Signed in this tab: keep the password screen hidden while the saved password is tried, so it does not flash. */
 try { if (sessionStorage.getItem("d250-gmc-pass")) document.documentElement.classList.add("d250-auto"); } catch(_){}</script>
 <script src="../shared/pw.js" defer></script>
+<script src="../shared/signin.js"></script>
+<script>D250SignIn.root = "../";</script>
 </head>
 <body>
 <a class="d250-bar" href="../" aria-label="Storm HQ, Det 250: all tools"><img src="../shared/det250-patch-icon.png" alt="" width="26" height="26"><span class="d250-name">Storm HQ</span><span class="d250-sub">Det 250</span><span class="d250-all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>All tools</span></a>
@@ -43,7 +45,7 @@ try { if (sessionStorage.getItem("d250-gmc-pass")) document.documentElement.clas
     <h1>Flight Staff Evaluation</h1>
     <p>Evaluator tool. Enter the password to continue.</p>
     <form id="f" autocomplete="off">
-      <label for="pw">Password</label>
+      <label for="pw">Flight Staff or cadre password</label>
       <input id="pw" type="password" required autofocus autocomplete="current-password">
       <div class="err" id="err" role="alert"></div>
       <button id="go" type="submit">Unlock</button>
@@ -74,13 +76,25 @@ function show(html){ document.open(); document.write(html); document.close(); }
 const f = document.getElementById("f"), pw = document.getElementById("pw"), err = document.getElementById("err"), go = document.getElementById("go"), lock = document.getElementById("lock");
 f.addEventListener("submit", async e => {
   e.preventDefault(); err.textContent = ""; go.disabled = true; go.textContent = "Unlocking…";
+  const S = window.D250SignIn, typed = pw.value;
   try {
-    const html = await unlock(pw.value);
-    try { sessionStorage.setItem(KEY, pw.value); } catch(_){}
+    let real = typed, html;
+    try { html = await unlock(typed); }
+    catch(_){
+      // The cadre password opens this page too (Captain Russell, 23 Nov 2026): it stands for the
+      // Flight Staff password saved in the admin vault (Cadre Admin, Site passwords).
+      real = S ? await S.fsePass(typed) : "";
+      if(!real) throw new Error(S && await S.isCadre(typed) ? "nofse" : "bad");
+      html = await unlock(real);
+    }
+    try { sessionStorage.setItem(KEY, real); } catch(_){}
+    if(S){ try { await S.adopt(typed); } catch(_){} }   // the cadre password also signs the tab in as cadre
     show(html);
-  } catch(_){
+  } catch(x){
     go.disabled = false; go.textContent = "Unlock";
-    err.textContent = "That password didn't work. Try again.";
+    err.textContent = x && x.message === "nofse"
+      ? "That's the cadre password, but the Flight Staff password isn't saved for it yet. Save it once on Cadre Admin (History and settings, Site passwords), or use the Flight Staff password."
+      : "That password didn't work. Try again.";
     lock.classList.remove("shake"); void lock.offsetWidth; lock.classList.add("shake");
     pw.select();
   }

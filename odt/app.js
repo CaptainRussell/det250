@@ -345,6 +345,7 @@ $("#unlock").addEventListener("submit", async ev => {
     const real = (window.D250SignIn && await window.D250SignIn.docsPass($("#pw").value)) || $("#pw").value;   // admin password works too
     const data = await open(real, V); PW = real;
     try{ sessionStorage.setItem(PASS_KEY, real); }catch(_){}
+    if (window.D250SignIn) window.D250SignIn.adopt($("#pw").value).catch(() => {});   // signs the tab in as cadet or cadre
     show(data);
   }catch(_){
     $("#err").textContent = "That password didn't work. Try again.";
