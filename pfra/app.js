@@ -1988,7 +1988,9 @@ function showBfa(result, complete) {
       : '(DAFMAN 36-2905 para 3.15.4.7)';
     $('bfa-trigger').textContent = bfa.ratio == null
       ? (bfaCadet()
-        ? `Only needed with a waist to height ratio of 0.55 or higher ${cite}.`
+        ? `Cadets: only with a ratio of 0.55 or higher, at a gate: within 30 days ` +
+          `before scholarship activation, contracting, the end of the spring term ` +
+          `before Field Training, or commissioning ${cite}.`
         : `Only needed with a waist to height ratio of 0.55 or higher and an ` +
           `unsatisfactory assessment ${cite}.`)
       : `Not needed: a ratio of ${bfa.ratio.toFixed(2)} is under 0.55 ${cite}.`;
@@ -2030,10 +2032,14 @@ function showBfa(result, complete) {
   const ratio = bfa.ratio.toFixed(2);
   showBfaWho();
   $('bfa-trigger').textContent = bfaCadet()
-    ? `A ratio of ${ratio} is 0.55 or higher, so a cadet needs a secondary body fat ` +
-      'assessment at contracting, scholarship activation, before Field Training and at ' +
-      'commissioning (AFROTC Guidance Memorandum 2026-01 para 3.4.5.4). It is pass or ' +
-      'fail and does not change the PFA score above (para 3.4.5.4.3).'
+    // Only at the four gates (Captain Russell, 23 Nov 2026): a cadet with a
+    // ratio of 0.55 or higher on an ordinary PFA owes no BFA, so the chip says
+    // "Gates only" rather than "Required".
+    ? `A ratio of ${ratio} is 0.55 or higher. A cadet needs this only at a gate: ` +
+      'within 30 days before scholarship activation, contracting, the end of the ' +
+      'spring term before Field Training, or commissioning (AFROTC Guidance ' +
+      'Memorandum 2026-01 para 3.4.5.4). Pass or fail; it never changes the PFA ' +
+      'score (para 3.4.5.4.3).'
     : bfa.applied
     // Said in the past tense on purpose. The composite passes *because* this
     // was applied, so describing the requirement as open would misread the
@@ -2067,7 +2073,8 @@ function showBfa(result, complete) {
     button.hidden = false;
     button.disabled = !open;
   }
-  setBfaChip(bfa.applied ? 'Applied' : required ? 'Required' : settled ? 'Not needed' : 'Possible',
+  setBfaChip(bfa.applied ? 'Applied' : bfaCadet() ? 'Gates only'
+    : required ? 'Required' : settled ? 'Not needed' : 'Possible',
     bfa.applied ? 'filled' : required && !bfaCadet() ? 'chip-fail' : '');
 
   const optional = $('bfa-optional');
@@ -2095,6 +2102,10 @@ function showBfa(result, complete) {
 function setBfaChip(text, tone) {
   const chip = $('chip-bfa');
   chip.textContent = text;
+  chip.title = text === 'Gates only'
+    ? 'Cadets: only within 30 days before scholarship activation, contracting, ' +
+      'the end of the spring term before Field Training, or commissioning'
+    : '';
   chip.className = `chip ${tone}`.trim();
 }
 
@@ -2116,12 +2127,19 @@ function showBfaFields(sexCode) {
   // Tape is the default, so its hint carries the line about the InBody that
   // the scale hint used to be the only place to read: a member who never taps
   // across still learns which method para 3.15.4.7 asks for first.
+  // GM 2026-01 para 3.4.5.4.2 names the InBody 770 and both tape attachments.
+  const prefer = bfaCadet()
+    ? 'Use an InBody 770 scale where one is available; Attachments 9 and 10 give ' +
+      'the percent (AFROTC Guidance Memorandum 2026-01 para 3.4.5.4.2).'
+    : 'Use an InBody scale instead where one is available (para 3.15.4.7).';
   $('bfa-method-hint').textContent = tape
     ? (sexCode === 'M'
       ? 'Attachment 8, two sites. The circumference value is the abdomen less the neck. '
       : 'Attachment 8, three sites. The circumference value is the waist plus the ' +
-        'buttocks, less the neck. ') +
-      'Use an InBody scale instead where one is available (para 3.15.4.7).'
+        'buttocks, less the neck. ') + prefer
+    : bfaCadet()
+    ? 'Cadets use an InBody 770 scale where one is available and tape (Attachment 8) ' +
+      'where one is not (AFROTC Guidance Memorandum 2026-01 para 3.4.5.4.2).'
     : 'Para 3.15.4.7 takes the BFA on an InBody bio-impedance scale where one is ' +
       'available and by tape where one is not. Either way a same sex administrator ' +
       'is required.';
