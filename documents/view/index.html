@@ -225,6 +225,7 @@ button,input{font:inherit;color:inherit}
       const real = (window.D250SignIn && await window.D250SignIn.docsPass($("pw").value)) || $("pw").value;   // admin password works too
       KEY = await tryPass(real);
       try { sessionStorage.setItem(PASS_KEY, real); } catch(_){}
+      if (window.D250SignIn) window.D250SignIn.adopt($("pw").value).catch(() => {});   // signs the tab in as cadet or cadre
       $("lock").hidden = true; await render();
     } catch(_){
       if(KEY){ status("Couldn't open this document. Check your connection and refresh."); return; }

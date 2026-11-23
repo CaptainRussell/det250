@@ -212,6 +212,8 @@ input[type="range"]{width:100%;accent-color:var(--d250-cardinal)}
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
+<script src="../shared/signin.js"></script>
+<script>D250SignIn.root = "../";</script>
 <script src="../data/documents.js"></script>
 <script src="../documents/library.js"></script>
 <script src="datafile.js"></script>
@@ -324,6 +326,7 @@ $("#setupForm").addEventListener("submit", async e => {
 let ADMIN_PW = "", CFG = null;   // the admin password and the decrypted settings (key, repo, saved lock passwords)
 async function signIn(pw){
   const cfg = await openVault(pw, VAULT);
+  if (window.D250SignIn) D250SignIn.adopt(pw).catch(() => {});   // the admin password signs the tab in as cadre
   GH = D250GitHub(cfg); ADMIN_PW = pw; CFG = cfg; CFG.locks = CFG.locks || {};
   await loadAll();
   try{ sessionStorage.setItem(PASS_KEY, pw); }catch(_){}

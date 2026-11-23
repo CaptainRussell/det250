@@ -198,6 +198,8 @@ try{ if (sessionStorage.getItem("d250-cadre-pass")) document.documentElement.cla
   <p class="created-by">Created by Captain Scott Russell, Operations Flight Commander, AFROTC Detachment 250</p>
 </footer>
 
+<script src="../shared/signin.js"></script>
+<script>D250SignIn.root = "../";</script>
 <script src="../data/roster.js"></script>
 <script src="../shared/cadet-groups.js"></script>
 <script src="../shared/instructor.js"></script>
@@ -283,7 +285,7 @@ $('#f').addEventListener('submit', async e => {
   e.preventDefault();
   const go = $('#go'), err = $('#err');
   err.textContent = ''; go.disabled = true; go.textContent = 'Unlocking…';
-  try{ await unlock($('#pw').value); }
+  try{ await unlock($('#pw').value); if(window.D250SignIn) D250SignIn.adopt($('#pw').value).catch(() => {}); }   // signs the tab in as cadre
   catch(_){
     err.textContent = "That password didn't work. Try again.";
     const l = $('#lock'); l.classList.remove('shake'); void l.offsetWidth; l.classList.add('shake');

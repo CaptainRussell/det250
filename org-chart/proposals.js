@@ -43,6 +43,7 @@
       try{
         const data = await open(input.value, vault);
         try{ sessionStorage.setItem('d250-cadre-pass', input.value); }catch(_){}
+        if(window.D250SignIn) D250SignIn.adopt(input.value).catch(() => {});   // signs the tab in as cadre
         start(data);
       }catch(_){ err.textContent = 'That password didn’t work.'; input.select(); }
       btn.disabled = false; btn.textContent = 'Unlock';

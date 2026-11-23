@@ -17,8 +17,17 @@
    this device" also keeps the password in localStorage d250-signin-v1, and the hub
    signs in from it when a new tab opens.
 
-   D250SignIn.docsPass(pw) turns the admin password into the cadet password, for the
-   pages that ask for the cadet password themselves.
+   D250SignIn.docsPass(pw) turns the admin password into the cadet password, and
+   D250SignIn.fsePass(pw) turns it into the Flight Staff password, for the pages that
+   ask for their own password.
+
+   D250SignIn.adopt(pw) (Captain Russell, 23 Nov 2026): every locked page calls it after
+   a password opens it, so a reader who skipped the hub sign-in is signed in at that
+   password's level from then on: the cadet password signs in as cadet, the cadre (=
+   admin) password as cadre. It only ever moves up (skip -> cadet -> cadre), never
+   down, and keeps the keys already in the tab. The Flight Staff password is its own
+   (evaluators only), so it opens that page but signs no one in. D250SignIn.sync() is
+   the hub's fallback for a tab that holds a tool's key without a role.
 
    Usage: <script src="<root>shared/signin.js"></script>, then D250SignIn.root = "../"
    on pages below the root (the hub leaves it ""). */
@@ -87,6 +96,43 @@
       if (await asCadet(pw)) return pw;
       const c = await asCadre(pw);
       return c && c.docs ? c.docs : "";
+    },
+    // The Flight Staff password the admin password stands for (locks.fse in the admin
+    // vault), or "" (Captain Russell, 23 Nov 2026: the cadre password opens everything).
+    async fsePass(pw){
+      pw = String(pw || ""); if (!pw) return "";
+      const c = await asCadre(pw);
+      return c && c.fse ? c.fse : "";
+    },
+    // Whether a password opens the admin vault (the cadre password).
+    async isCadre(pw){ return !!(await asCadre(String(pw || ""))); },
+    // Signs this tab in at the level of a password that just opened a locked page.
+    // Moves only up, never down; adds keys, never clears them. Resolves to the role.
+    async adopt(pw){
+      pw = String(pw || "");
+      const now = api.role();
+      if (!pw || now === "cadre") return now;
+      const cadre = await asCadre(pw);
+      if (cadre){
+        ss.set(KEYS.admin, pw); ss.set(KEYS.cadre, pw);
+        if (cadre.docs) ss.set(KEYS.docs, cadre.docs);
+        if (cadre.fse) ss.set(KEYS.fse, cadre.fse);
+        ss.set(KEYS.role, "cadre");
+        return "cadre";
+      }
+      if (now === "cadet") return now;
+      if (await asCadet(pw)){ ss.set(KEYS.docs, pw); ss.set(KEYS.role, "cadet"); return "cadet"; }
+      return now;
+    },
+    // Hub fallback: a tab holding a tool's key but no role (or "skip") is signed in at that
+    // key's level. The keys are only saved after they opened their page.
+    async sync(){
+      const now = api.role();
+      if (now === "cadre") return now;
+      const pw = ss.get(KEYS.admin) || ss.get(KEYS.cadre);
+      if (pw && await asCadre(pw)) return api.adopt(pw);
+      if (now !== "cadet" && ss.get(KEYS.docs)) return api.adopt(ss.get(KEYS.docs));
+      return now;
     },
     skip(){ ss.set(KEYS.role, "skip"); },
     // Signs in from "Keep me signed in" when this tab has not chosen yet. Resolves to the role or "".

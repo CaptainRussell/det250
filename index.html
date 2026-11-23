@@ -254,7 +254,11 @@ dlg.addEventListener("cancel", () => { if (!SI.role()) SI.skip(); render(); }); 
 render();
 // No password box on open (Captain Russell, 22 Nov 2026): ask only when it is needed. Locked tools ask
 // for their own password when opened; the Sign in link in the header opens this box for cadre.
-SI.resume().then(role => { if (role) render(); });
+// A password typed on a locked tool signs the tab in too (Captain Russell, 23 Nov 2026), so check
+// again whenever the hub is shown, including a Back that restores it from the cache.
+const refresh = () => SI.resume().then(() => SI.sync()).then(render, render);
+refresh();
+window.addEventListener("pageshow", e => { if (e.persisted) refresh(); });
 </script>
 </body>
 </html>
