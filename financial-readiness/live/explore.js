@@ -166,7 +166,7 @@
       ['card', 'Pay any credit card off <b>in full, every month</b>. Carrying a balance? That comes before more investing.'],
       ['ef', `Build an emergency fund of <b>${money(spend * 3)} to ${money(spend * 6)}</b>, 3 to 6 months of what you spend.`],
       ['auto', inv != null ? `Set an allotment so <b>${money(inv)} a month</b> gets invested before you can spend it.` : 'Set an allotment so your investing happens before you can spend it.'],
-      ['ira', 'Open a <b>Roth IRA</b> and work toward $7,500 a year.'],
+      ['ira', 'Open a <b>Roth IRA</b> (Fidelity, Vanguard or Schwab) and work up to <b>$625 a month</b>.'],
       ['raise', 'Every raise and promotion: <b>invest at least half of it.</b>'],
     ];
     const done = new Set(P.done || []);

@@ -72,7 +72,7 @@ const CARDS = [
   {href:"../make-the-call/", art:"make-the-call", tone:"#0f766e", name:"Make the Call", blurb:"Agree, Neutral or Disagree: 2 to 4 teams debate leadership statements, with sealed scores and a podium reveal."},
   {href:"../battle-buddy-recon/", art:"battle-buddy-recon", tone:"#4a5a36", name:"Battle Buddy Recon", blurb:"OPSEC exercise: brief, pair cadets on the wheel, run the recon clock, then brief out."},
   {href:"../practicum-adventure/", art:"practicum-adventure", tone:"#6d28d9", name:"Practicum Adventure", blurb:"Leadership RPG on the projector, played by cadets on their phones."},
-  {href:"../financial-readiness/slides/", art:"financial-readiness", tone:"#c9a24a", name:"Financial Readiness", blurb:"AFAS 3410 briefing on military pay, the BRS and money calls, with live phone questions and a scoreboard."}
+  {href:"../financial-readiness/slides/", art:"financial-readiness", tone:"#c9a24a", name:"Financial Readiness", blurb:"Military pay, the BRS, investing and money calls, with live phone questions and a scoreboard."}
 ];
 document.getElementById("cards").innerHTML = CARDS.map((c, i) => `<a class="tool" href="${esc(c.href)}" style="--tone:${c.tone};--i:${i}"><span class="icon art" aria-hidden="true"><img src="../shared/card-art/${c.art}.webp" alt="" width="56" height="56"></span>
     <span class="body"><span class="name">${esc(c.name)}</span><p class="blurb">${esc(c.blurb)}</p></span></a>`).join("");

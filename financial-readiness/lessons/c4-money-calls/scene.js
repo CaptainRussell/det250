@@ -181,7 +181,7 @@ function scene(st) {
       .beat(0.8, (s) => { s.rMe.o = 1; s.rMeT.o = 1; s.rMeX.o = 1; s.rMeX.content = lines(K.me); });
   });
 
-  S.step({ head: 'Your ten years, next to mine', body: 'Same Air Force, same pay tables. **The only difference is the calls you made.** And I started $24,920 in debt.', go: [px(FULL, 10), py(FULL, yEnd), 100, 100, 'One last thing', 'top'] })
+  S.step({ head: 'Your ten years, next to mine', body: 'Same Air Force, same pay tables. **The only difference is the calls you made.** And I started with $24,920 in student loans.', go: [px(FULL, 10), py(FULL, yEnd), 100, 100, 'One last thing', 'top'] })
     .beat(0.7, (s) => { off(s); s.fHead.o = 1; on(s, all.filter((i) => /^f(z|zl|top|topl|yr\d+)$/.test(i))); })
     .beat(1.8, (s) => { s.fMe.o = 1; s.fMe.draw = 1; s.fMeT.o = 1; })
     .beat(1.0, (s) => { s.fEasy.o = 1; s.fEasyT.o = 1; })

@@ -370,7 +370,7 @@ function scene(st) {
     .beat(1.2, (s) => { s.abW.o = 1; s.abW.w = 1280; s.abWv.o = 1; })
     .beat(0.8, (s) => { s.abBig.o = 1; s.abMe.o = 1; });
 
-  S.step({ head: 'The one rule', body: 'Put in at least 5% starting with your very first paycheck. Anything less and you\'re basically giving yourself a pay cut. **Up next, Chapter 4: money calls.**' })
+  S.step({ head: 'The one rule', body: 'Put in at least 5% starting with your very first paycheck. Anything less and you\'re basically giving yourself a pay cut. **Next up: where every extra dollar should go.**' })
     .beat(0.5, (s) => { off(s); })
     .beat(0.9, (s) => { s.rule.o = 1; s.rule.s = 1; })
     .beat(0.7, (s) => { s.ruleS.o = 1; s.ruleS2.o = 1; });

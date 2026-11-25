@@ -305,7 +305,7 @@ function scene(st) {
     .beat(1.0, (s) => { s.big.o = 1; s.big.s = 1; })
     .beat(0.7, (s) => { s.bigSub.o = 1; });
 
-  S.step({ head: 'What I put in', body: 'The TSP is the same thing as a 401(k) at any big employer, and **we get a match too**. Every time I promoted, more went in, and **since 2023 I\'ve hit the limit every year.**', go: [800, 500, 1300, 580, 'Earned vs kept'] })
+  S.step({ head: 'What I put in', body: 'The TSP is the same thing as a 401(k) at any big employer, and **we get a match too**. Every time I promoted, more went in, and **since 2023 I\'ve hit the elective deferral limit every year.**', go: [800, 500, 1300, 580, 'What I earned'] })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.tspHead.o = 1; s.tspSub.o = 1; })
     .beat(1.0, (s) => { TSP_IN.forEach((_, i) => { s['tspC' + i].o = 1; s['tspCv' + i].o = 1; s['tspY' + i].o = 1; }); })
     .beat(2.4, (s) => { TSP_IN.forEach(([, amt], i) => { const h = Math.max(4, s['tspB' + i].hTo); s['tspB' + i].o = 1; s['tspB' + i].h = h; s['tspB' + i].y = 680 - h; ['P', 'V', 'R'].forEach((k) => { s['tsp' + k + i].o = 1; }); }); },
@@ -356,7 +356,7 @@ function scene(st) {
     .beat(2.0, (s) => { [0, 1, 2].forEach((i) => { ['R', 'N', 'A', 'B'].forEach((k) => { s['m' + k + i].o = 1; }); }); },
       (id) => { const m = /^m[RNAB](\d)$/.exec(id); return m ? { w: [+m[1] / 3, (+m[1] + 1) / 3] } : null; });
 
-  S.step({ head: 'What I got right', body: 'We\'ve saved about **50%** of our income for years, and that\'s what gives us options. **Up next, Chapter 2: your first paycheck.**' })
+  S.step({ head: 'What I got right', body: 'We\'ve saved about **50%** of our income for years, and that\'s what gives us options. **Next up: your first LES.**' })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.wnHead.o = 1; })
     .beat(1.6, (s) => { [0, 1, 2].forEach((i) => { s['wnA' + i].o = 1; s['wnB' + i].o = 1; }); }, (id) => { const m = /^wn[AB](\d)$/.exec(id); return m ? { w: [+m[1] / 3, (+m[1] + 1) / 3] } : null; })
     .beat(0.9, (s) => { s.wnBig.o = 1; s.wnBig2.o = 1; })

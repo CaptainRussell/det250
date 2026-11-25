@@ -148,9 +148,9 @@
   // ---- title (Captain Russell, 25 Nov 2026: the briefing is about financial readiness, not me). My net worth line
   // draws itself on the right, with its range in the legend.
   LIVE.title = {
-    head: 'Financial Readiness', body: 'AFAS 3410 · Capt Scott D. Russell, Operations Flight Commander, Det 250',
+    head: 'Financial Readiness', body: 'Military pay, the BRS and your first money calls · Capt Scott D. Russell, Operations Flight Commander, Det 250',
     build(el) {
-      el.innerHTML = `<div class="abs in" style="left:110px;top:150px;--d:.1"><div class="k">AFAS 3410</div></div>
+      el.innerHTML = `<div class="abs in" style="left:110px;top:150px;--d:.1"><div class="k">Storm HQ · Det 250</div></div>
         <h1 class="abs in" style="left:110px;top:200px;font-size:112px;line-height:1.02;--d:.25">Financial<br>Readiness</h1>
         <div class="abs in lab" style="left:114px;top:460px;font-size:30px;width:600px;--d:.5">In a few years you'll make more than most Americans. The habits you start with that first paycheck decide where it takes you.</div>
         <div class="abs in" style="left:114px;top:690px;display:flex;align-items:center;gap:22px;--d:.8"><img src="${FRChars.BASE}scott-russell.jpg" alt="" width="110" height="110" style="border-radius:50%;border:4px solid var(--gold);object-fit:cover">
@@ -334,7 +334,7 @@
 
   // ---- the TSP: how much you put in, what the Air Force adds, what 20 years turns it into
   LIVE.tsp = {
-    explore: 'tsp', head: 'Drag it: your TSP contribution', body: 'The Air Force puts in **1%** no matter what. Once you hit 2 years, they **match you up to 4% more**, but only if you put in 5%.',
+    explore: 'tsp', head: '2. The TSP: drag your contribution', body: 'The Air Force puts in **1%** no matter what. Once you hit 2 years, they **match you up to 4% more**, but only if you put in 5%.',
     build(el) {
       const BASE = 4150.20, MAXP = 25;   // Captain Russell, 25 Nov 2026: up to 25%
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
@@ -478,6 +478,40 @@
     },
   };
 
+  // ---- step 5 up close: the Roth IRA (Captain Russell, 25 Nov 2026: what it is, $625 a month to max it,
+  // low cost index funds like the ones I use, and brokerages with no fees or commissions). One column per click.
+  // 2026 figures: $7,500 IRA limit; Roth income phase-out starts at $153,000 single, $242,000 married filing jointly.
+  const IRA_FUNDS = [
+    ['Fidelity', [['FZROX', 'Total Market Index', '0.00%'], ['FXAIX', 'S&P 500 Index', '0.015%']]],
+    ['Vanguard', [['VTI', 'Total Stock Market ETF', '0.03%'], ['VOO', 'S&P 500 ETF', '0.03%']]],
+    ['Charles Schwab', [['SWTSX', 'Total Stock Market Index', '0.03%'], ['SWPPX', 'S&P 500 Index', '0.02%']]],
+  ];
+  LIVE.ira = {
+    head: 'Step 5 up close: the Roth IRA', body: 'Your own retirement account, on top of the TSP. **$625 a month maxes it out**, and everything it grows into comes out tax free.',
+    build(el) {
+      const funds = IRA_FUNDS.map(([b, fs]) => `<div class="ib">${esc(b)}</div>` + fs.map(([t, n, e]) => `<div class="if"><b>${t}</b><span>${esc(n)}</span><i>${e}</i></div>`).join('')).join('');
+      el.innerHTML = `<div class="abs in" style="left:90px;top:56px;--d:.05"><div class="k">Order of operations, step 5</div></div>
+        <h1 class="abs in" style="left:90px;top:96px;font-size:58px;--d:.1">The Roth IRA</h1>
+        <div class="abs card iracol" style="left:90px;top:200px;width:440px"><div class="lab">What it is</div>
+          <p>An account <b>you</b> open, separate from the TSP. You put in money you've already paid tax on, and after 59½ every dollar comes out <b>tax free</b>.</p>
+          <div class="irabig"><span class="g">$7,500</span> a year in 2026<br><span class="g">= $625</span> a month</div>
+          <p class="s">What you put in (not the growth) can come back out any time. You can open one as long as you earn under about $153,000 single.</p></div>
+        <div class="abs card iracol" style="left:560px;top:200px;width:440px"><div class="lab">Where to open it</div>
+          <div class="irabk"><b>Fidelity</b><b>Vanguard</b><b>Charles Schwab</b></div>
+          <p>All three: <b>$0 to open</b>, no account fees and <b>no commissions</b> to buy their funds or ETFs.</p>
+          <p class="s">Ours are both at Fidelity, $625 each a month since November 2023, set up as allotments right off my LES.</p>
+          <div class="irabig" style="font-size:26px;margin:0">$625 a month from 22 to 60 at 7%:<br><span class="g">about $1.4 million</span>, tax free.<br><span class="s2">You put in $285,000.</span></div></div>
+        <div class="abs card iracol" style="left:1030px;top:200px;width:480px"><div class="lab">What to buy</div>
+          <p>One low cost <b>index fund</b>. It owns the whole market, so you never pick stocks.</p>
+          <div class="irafunds">${funds}</div>
+          <p class="s">Expense ratio: 0.03% is $3 a year on $10,000. A target date index fund works too.</p></div>`;
+      const cols = [...el.querySelectorAll('.iracol')];
+      let k = 0;
+      const show = () => cols.forEach((c, i) => c.classList.toggle('on', i <= k));
+      return { enter() { k = 0; show(); }, next() { if (k >= cols.length - 1) return false; k++; show(); return true; }, replay() { k = 0; show(); } };
+    },
+  };
+
   // ---- money calls: five choices, one line that moves as you change them
   LIVE.calls = {
     head: 'Money calls', body: 'Five decisions you\'re going to face in your first ten years. **Flip them and watch the line move.**',
@@ -494,7 +528,7 @@
       const you = sv('path', { fill: 'none', stroke: C.green, 'stroke-width': 8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
       const youDot = sv('circle', { r: 12, fill: C.green }, svg);
       const keyT = (y, col, t) => { sv('rect', { x: G.x0 + 10, y: y - 16, width: 28, height: 6, rx: 3, fill: col }, svg); sv('text', { x: G.x0 + 48, y: y - 6, fill: C.soft, 'font-size': 20, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = t; };
-      keyT(G.y1 + 10, C.green, 'You'); keyT(G.y1 + 40, C.amber, 'Me, for real (started $24,920 in debt)'); keyT(G.y1 + 70, C.red, 'The easy calls');
+      keyT(G.y1 + 10, C.green, 'You'); keyT(G.y1 + 40, C.amber, 'Me, for real (started with $24,920 in student loans)'); keyT(G.y1 + 70, C.red, 'The easy calls');
       const end = div(el, 'stat in', 'left:800px;top:622px;width:330px;--d:.4', '<div class="lab">You at year 10</div><div class="big g">$0</div>');
       const card = div(el, 'card in', 'left:1150px;top:622px;width:400px;--d:.5;padding:16px 20px', '<div class="lab v" id="cBook"></div><p id="cIdea" style="font-size:21px"></p><div class="lab a" style="margin:12px 0 4px">What I did</div><p id="cMe" style="font-size:19px;color:var(--soft)"></p>');
       const cEnd = counter($('.big', end), (v) => fmt(v, { k: true }));
@@ -550,7 +584,7 @@
         <div class="sob four">
           ${[['The BRS', 'A smaller pension, the TSP match and continuation pay. The match is free money, so take all of it.'],
              ['Three types of pay', 'Base pay (taxed), allowances like Basic Allowance for Housing and Basic Allowance for Subsistence (not taxed), and special and incentive pay.'],
-             ['Order of operations', 'Deductible cash, the match, high-interest debt, then 3 to 6 months saved. Then the rest.'],
+             ['Order of operations', 'Deductible cash, the match, high-interest debt, then 3 to 6 months saved, then a Roth IRA at $625 a month.'],
              ['Money calls', 'Cars, emergencies, a spouse, promotions. Keep the big things small and invest the raises.']].map(([t, p], i) => `
           <div class="card in" style="--d:${0.2 + i * 0.25}"><div class="n g" style="color:var(--green)">✓</div><p style="font-weight:850">${t}</p><p style="font-size:22px;color:var(--soft);font-weight:600">${p}</p></div>`).join('')}
         </div>
@@ -808,6 +842,8 @@
     order: { type: 'choice', prompt: 'You have **$1,000 in savings**, you put **5% in the TSP**, and you owe **$4,000 on a credit card at 24%**. Where does your next extra $500 go?',
       opts: ['More in the TSP', 'The credit card', 'Your emergency fund', 'A Roth IRA'], ans: 1,
       why: 'Paying off 24% interest is a guaranteed 24% return, and no investment beats that.' },
+    ira: { type: 'choice', prompt: 'You can put up to **$7,500 in a Roth IRA in 2026**. How much a month maxes it out by December?', opts: ['$300', '$500', '$625', '$750'], ans: 2,
+      why: '$625 a month. That\'s exactly what my wife and I each put in, as an allotment straight from my LES.' },
     efund: { type: 'choice', prompt: 'You live on that **$3,000 college budget**. How big should your **emergency fund** be?',
       opts: ['$1,000', '$9,000 to $18,000', '$50,000', 'Nothing, the military always pays you'], ans: 1,
       why: '3 to 6 months of what you spend. Your paycheck is steady, but a PCS or a dead car won\'t wait.' },
@@ -1077,18 +1113,6 @@
     },
   };
 
-  // ---- keep the big things small: the real house and cars
-  LIVE.big = {
-    head: 'Keep the big things small', body: 'The house, the car and debt decide most of it. **Get those right and the little things don\'t hurt.**',
-    build(el) {
-      const A = FRChars.BASE;
-      el.innerHTML = `<div class="abs in photo" style="left:80px;top:80px;width:760px;--d:.1"><img src="${A}house.jpg" alt="Our 2 bedroom, 1 bath house"><div class="cap"><b>Home</b>2 bed, 1 bath, Nevada, Iowa</div></div>
-        <div class="abs in photo" style="left:880px;top:80px;width:640px;--d:.35"><img src="${A}venue.jpg" alt="2021 Hyundai Venue"><div class="cap"><b>Car</b>2021 Hyundai Venue. Paid off in 6 months, 60,000 miles</div></div>
-        <div class="abs in photo" style="left:880px;top:500px;width:640px;--d:.6"><img src="${A}avalon.jpg" alt="2006 Toyota Avalon"><div class="cap"><b>Car</b>2006 Toyota Avalon from Grandma, 115,000 miles</div></div>`;
-      return {};
-    },
-  };
-
   // ---- the five books
   const BOOKS = [
     ['The Richest Man in Babylon', 'George S. Clason', '#6b3f1d', '#f0d9a6', 'Pay yourself first.'],
@@ -1117,12 +1141,12 @@
   live('q-pct', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'oe0', 'oe4'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
   scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('r-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
-  scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
+  scn('fr1', 2, 'What I got right', 'What I got right'); 
   live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
   scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension'); live('q-pworth', 4); live('pworth', 4);
   live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
-  live('foo', 6); live('q-order', 6); live('q-efund', 6);
+  live('foo', 6); live('q-order', 6); live('q-efund', 6); live('q-ira', 6); live('ira', 6);
   live('books', 7); live('q-calls', 7); live('calls', 7); live('board4', 7); scn('fr4', 7, 'My mantra', 'My mantra'); live('q-commit', 7);
   live('close', 7);
   SL.forEach((s, k) => { if (s.scene) { const m = SCENES[s.scene].sc.steps[s.i].meta; s.head = m.head; s.body = m.body; s.grp = m.grp; } else { const L = LIVE[s.live]; s.head = L.head; s.body = L.body; s.spin = L.spin; s.explore = L.explore; } });
