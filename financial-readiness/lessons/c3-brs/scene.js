@@ -136,7 +136,10 @@ function zoomChart(o) {
     chg: (n) => (Z[n].pts[Z[n].pts.length - 1][1] / Z[n].pts[0][1] - 1) * 100,
   };
 }
-const DCA_IN = 38000, DCA_NOW = 61534;   // $500 every month, June 2020 to Sep 2026, at the monthly average price, price only
+// $500 every month, June 2020 to Nov 2026 (78 buys) at the monthly average price (Shiller data through Sep, the Oct daily closes,
+// Nov at the 24 Nov 2026 close of 7,201.09), dividends reinvested each month (Shiller dividends to Jun 2023, then +5% a year),
+// valued at the 24 Nov 2026 close (Captain Russell, 25 Nov 2026: worth as of now, with dividends). Price only it is $58,742.
+const DCA_IN = 39000, DCA_NOW = 61643;
 
 function scene(st) {
   const S = new Scene('fr3');
@@ -282,11 +285,11 @@ function scene(st) {
   add('abIl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 286, content: 'What went in', fill: C.soft, o: 0 });
   add('abI', 'rect', {}, { x: 160, y: 306, w: 0, h: 90, rx: 8, fill: C.cyan, fo: 0.85, o: 0 });
   add('abIv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 * DCA_IN / DCA_NOW - 20, y: 364, content: fmt(DCA_IN), fill: '#06101c', o: 0 });
-  add('abWl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 466, content: 'What it is worth (Sep 2026, before dividends)', fill: C.soft, o: 0 });
+  add('abWl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 466, content: 'What it is worth today (24 Nov 2026, dividends reinvested)', fill: C.soft, o: 0 });
   add('abW', 'rect', {}, { x: 160, y: 486, w: 0, h: 90, rx: 8, fill: C.green, fo: 0.85, o: 0 });
   add('abWv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 - 20, y: 544, content: fmt(DCA_NOW), fill: '#06101c', o: 0 });
   add('abBig', 'text', { size: 50, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 690, content: 'Time in the market beats timing the market.', fill: C.green, o: 0 });
-  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $2.47 today, before dividends.', fill: C.amber, o: 0 });
+  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $2.54 today, with dividends reinvested.', fill: C.amber, o: 0 });
 
   const off = (s) => all.forEach((i) => { s[i].o = 0; });
   const on = (s, list) => list.forEach((i) => { s[i].o = 1; });
