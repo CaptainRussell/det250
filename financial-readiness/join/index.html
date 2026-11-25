@@ -122,6 +122,8 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
 <script src="../lessons/c3-brs/scene.js"></script>
 <script src="../live/explore.js"></script>
 <script>
+// the full slide needs the locked deck (slides/lock.js), so only a tab that has opened it gets the full-slide view
+const deckOpen = () => { try { return ['d250-fr-pass', 'd250-admin-pass', 'd250-cadre-pass'].some((k) => sessionStorage.getItem(k)); } catch (e) { return false; } };
 /* The phone side of the live lesson. The deck sends {t:'state', ...}; this page only shows what it is sent and
    sends back a character pick and answers. Code organized with help from Claude (Anthropic), Nov 2026. */
 (function () {
@@ -174,7 +176,7 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     const ex = !q && S.explore && window.FRExplore && FRExplore.has(S.explore) ? S.explore : null;
     if (ex) {
       // the Day 1 plan is the phone's own, so it never swaps for the slide
-      const own = ex === 'plan', full = own ? false : fullPick != null ? fullPick : wideScreen(), key = ex + (full ? ':full' : '');
+      const own = ex === 'plan' || !deckOpen(), full = own ? false : fullPick != null ? fullPick : wideScreen(), key = ex + (full ? ':full' : '');
       if (mountedEx !== key || !$('#exHost')) {
         app.innerHTML = '<div id="exHost"></div><button type="button" class="vt" id="vt"></button><div class="mebot" id="meBox"></div>';
         app.classList.toggle('wide', full);
