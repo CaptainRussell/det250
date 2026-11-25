@@ -345,3 +345,20 @@ html.solo #stage.go { cursor: default; }
 .foocard .w { font-size: 26px; margin-bottom: 22px; }
 .foocard .y { font-size: 26px; color: var(--soft); }
 .foocard.flash { animation: flash .5s; }
+.iracol { opacity: 0; transform: translateY(24px); transition: opacity .5s, transform .5s; padding: 26px 28px; }
+.iracol.on { opacity: 1; transform: none; }
+.iracol p { margin: 0 0 16px; font-size: 25px; }
+.iracol p.s { font: 600 21px/1.35 var(--font); color: var(--soft); }
+.iracol .lab { color: var(--gold); }
+.irabig { font: 800 34px/1.25 var(--font); margin: 6px 0 18px; }
+.irabig .g { color: var(--green); }
+.irabig .s2 { font: 600 22px var(--font); color: var(--soft); }
+.irabk { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 16px; }
+.irabk b { font: 800 28px var(--font); padding: 6px 16px; border-radius: 14px; background: var(--panel2); border: 2px solid var(--line); }
+.irafunds { margin: 4px 0 16px; }
+.irafunds .ib { font: 800 18px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--soft); margin: 12px 0 6px; }
+.irafunds .if { display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: baseline; font: 650 21px var(--font); padding: 4px 0; border-bottom: 1px solid var(--line); }
+.irafunds .if b { font-family: ui-monospace, Menlo, monospace; color: var(--ink); }
+.irafunds .if span { color: var(--soft); }
+.irafunds .if i { font-style: normal; font-weight: 800; color: var(--green); }
+.irafunds.nar .if { grid-template-columns: 60px 1fr auto; }
