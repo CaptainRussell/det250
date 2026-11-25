@@ -306,3 +306,5 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 /* net worth, one year per click */
 .nwnow .big{font-size:80px;margin-top:6px;white-space:nowrap}
 .nwnote{color:var(--soft);max-width:1100px}
+/* 2d Lt pay over the percentile graph */
+.lthead{display:flex;align-items:center;gap:26px}
