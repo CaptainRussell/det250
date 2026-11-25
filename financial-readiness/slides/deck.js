@@ -512,6 +512,70 @@
     },
   };
 
+  // ---- four topic slides built over clicks, one card per click (Captain Russell, 25 Nov 2026: SGLI, the TSP funds,
+  // credit scores, and what to watch out for). Same look as the Roth IRA slide.
+  const cardsLive = (head, body, kicker, title, cols) => ({
+    head, body,
+    build(el) {
+      const W = cols.length === 3 ? 440 : 680, gap = 30;
+      el.innerHTML = `<div class="abs in" style="left:90px;top:56px;--d:.05"><div class="k">${esc(kicker)}</div></div>
+        <h1 class="abs in" style="left:90px;top:96px;font-size:58px;--d:.1">${esc(title)}</h1>` +
+        cols.map((c, i) => `<div class="abs card iracol" style="left:${90 + i * (W + gap)}px;top:200px;width:${W}px"><div class="lab">${esc(c[0])}</div>${c[1]}</div>`).join('');
+      const cs = [...el.querySelectorAll('.iracol')];
+      let k = 0;
+      const show = () => cs.forEach((c, i) => c.classList.toggle('on', i <= k));
+      return { enter() { k = 0; show(); }, next() { if (k >= cs.length - 1) return false; k++; show(); return true; }, replay() { k = 0; show(); } };
+    },
+  });
+  LIVE.sgli = cardsLive('SGLI: your life insurance', 'That **$26 SGLI line** on your LES is $500,000 of life insurance. **Check who it goes to.**', 'The line nobody reads', 'SGLI',
+    [['What it is', `<p>Servicemembers' Group Life Insurance. You're signed up for the max on day 1.</p>
+        <div class="irabig"><span class="g">$500,000</span> of coverage<br>for about <span class="g">$26</span> a month</div>
+        <p class="s">$25 for the $500,000 plus $1 for traumatic injury coverage. That's cheaper than almost anything you can buy on your own.</p>`],
+     ['Do this in your first week', `<p><b>Check your beneficiaries</b> in milConnect (SGLI Online Enrollment). If you never pick, the law picks for you.</p>
+        <p>Married? Your spouse is covered too, up to $100,000, for a few dollars a month. Mine is the <b>$4 SGLI FAM/SPOUSE</b> line.</p>
+        <p class="s">Update it every time life changes: marriage, a baby, a divorce.</p>`],
+     ['When you get out', `<p>SGLI ends 120 days after you separate. You can convert it to <b>VGLI</b> without a health check if you apply in time.</p>
+        <p class="s">Leaving at 4 years? Shop term life before you go. Skip the whole life policies that get pitched on base.</p>`]]);
+  LIVE.funds = cardsLive('What is in your TSP', 'If you never pick, the BRS puts you in an **L fund** for your age. That\'s fine. **Mine is all C Fund.**', '2. The TSP, up close', 'Your TSP funds',
+    [['The five funds', `<div class="irafunds nar">
+        <div class="if"><b>G</b><span>Government securities, never loses money</span><i>safe</i></div>
+        <div class="if"><b>F</b><span>Bonds</span><i>low</i></div>
+        <div class="if"><b>C</b><span>The S&amp;P 500, the 500 biggest U.S. companies</span><i>stocks</i></div>
+        <div class="if"><b>S</b><span>Smaller U.S. companies</span><i>stocks</i></div>
+        <div class="if"><b>I</b><span>Companies outside the U.S.</span><i>stocks</i></div></div>
+        <p class="s">Fees are about 0.05% a year, $5 on $10,000. Among the cheapest anywhere.</p>`],
+     ['L funds: set it and forget it', `<p>An <b>L fund</b> mixes all five for you and gets safer as you get close to retirement.</p>
+        <div class="irabig">Pick the one closest to the year <span class="g">you turn about 60</span></div>
+        <p class="s">New BRS members land in an L fund by default. Great choice if you don't want to think about it.</p>`],
+     ['What I do', `<p>All of my Roth TSP is in the <b>C Fund</b>. I'm decades from retirement, so I want all stocks and I don't sell when it drops.</p>
+        <p class="s">G Fund "never loses," but at 22 it barely beats inflation. Don't hide in it after a bad month.</p>`]]);
+  LIVE.credit = cardsLive('Your credit score', 'A score from **300 to 850** that decides your rate on a car or a house. **Pay the full balance every month** and it takes care of itself.', 'Order of operations, the fine print', 'Your credit score',
+    [["What it's made of", `<div class="irafunds nar">
+        <div class="if"><b>35%</b><span>Paying on time, every time</span><i></i></div>
+        <div class="if"><b>30%</b><span>How much of your limit you use</span><i></i></div>
+        <div class="if"><b>15%</b><span>How long you've had credit</span><i></i></div>
+        <div class="if"><b>10%</b><span>New accounts you open</span><i></i></div>
+        <div class="if"><b>10%</b><span>Mix of card and loan types</span><i></i></div></div>
+        <p class="s">FICO. 740 and up gets you the best rates.</p>`],
+     ['How to build it', `<p>One card, put a bill or two on it, <b>autopay the full statement balance</b>. You never pay a dime of interest.</p>
+        <p>Keep what you use <b>under 30%</b> of the limit, and don't close your oldest card.</p>
+        <p class="s">Free reports at annualcreditreport.com. Freeze your credit when you're not borrowing.</p>`],
+     ['Your protections', `<p><b>Military Lending Act:</b> most consumer loans to active duty are capped at <b>36%</b> a year.</p>
+        <p><b>SCRA:</b> debt from before you came on active duty, like student loans, gets capped at <b>6%</b> while you serve. You have to ask.</p>
+        <p class="s">Lots of cards waive annual fees for active duty too.</p>`]]);
+  LIVE.watch = cardsLive('Watch out for', 'New lieutenants are a **target**: steady pay, no credit history, and a guaranteed paycheck. **Free help is on every base.**', 'Before you sign anything', 'Watch out for',
+    [['The traps', `<p><b>The 84-month car loan.</b> "What payment are you looking for?" means you'll pay way more for the car.</p>
+        <p><b>Buy now, pay later</b> on everyday stuff. Four easy payments adds up fast.</p>
+        <p><b>Loan shops outside the gate</b> and "military loans" with fast approval.</p>
+        <p class="s">If a deal only works because of the monthly payment, walk away.</p>`],
+     ['The pitches', `<p><b>Whole life insurance</b> or "investment" accounts sold at a briefing or a free lunch. High fees, big commissions for the seller.</p>
+        <p>You already have SGLI and the TSP. <b>Index funds and term life</b> beat almost anything you'll get pitched.</p>
+        <p class="s">If someone buys you lunch to talk about money, they're selling something.</p>`],
+     ['Free help', `<p><b>Airman &amp; Family Readiness Center:</b> personal financial counselors on every base, free.</p>
+        <p><b>Air Force Aid Society:</b> 0% loans and grants for real emergencies.</p>
+        <p><b>Military OneSource:</b> free financial counseling by phone, any time.</p>
+        <p class="s">Ask before you sign, not after.</p>`]]);
+
   // ---- money calls: five choices, one line that moves as you change them
   LIVE.calls = {
     head: 'Money calls', body: 'Five decisions you\'re going to face in your first ten years. **Flip them and watch the line move.**',
@@ -1142,11 +1206,11 @@
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
   scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('r-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); 
-  live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
+  live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('sgli', 3); live('board2', 3);
   scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension'); live('q-pworth', 4); live('pworth', 4);
-  live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
+  live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth'); live('funds', 4);
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
-  live('foo', 6); live('q-order', 6); live('q-efund', 6); live('q-ira', 6); live('ira', 6);
+  live('foo', 6); live('q-order', 6); live('q-efund', 6); live('q-ira', 6); live('ira', 6); live('credit', 6); live('watch', 6);
   live('books', 7); live('q-calls', 7); live('calls', 7); live('board4', 7); scn('fr4', 7, 'My mantra', 'My mantra'); live('q-commit', 7);
   live('close', 7);
   SL.forEach((s, k) => { if (s.scene) { const m = SCENES[s.scene].sc.steps[s.i].meta; s.head = m.head; s.body = m.body; s.grp = m.grp; } else { const L = LIVE[s.live]; s.head = L.head; s.body = L.body; s.spin = L.spin; s.explore = L.explore; } });

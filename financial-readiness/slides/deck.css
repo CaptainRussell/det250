@@ -361,3 +361,4 @@ html.solo #stage.go { cursor: default; }
 .irafunds .if b { font-family: ui-monospace, Menlo, monospace; color: var(--ink); }
 .irafunds .if span { color: var(--soft); }
 .irafunds .if i { font-style: normal; font-weight: 800; color: var(--green); }
+.irafunds.nar .if { grid-template-columns: 60px 1fr auto; }
