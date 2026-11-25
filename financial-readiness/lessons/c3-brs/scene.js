@@ -83,10 +83,6 @@ const ZOOMS = [
     z.pts = z.pts.map(([f, v]) => [f, v * Math.exp(k * (endAnchor ? f - 1 : f))]);
   };
   tilt(ZOOMS[2], true); tilt(ZOOMS[1], false); tilt(ZOOMS[0], true);
-  // ten years: its last 12 months are the one year line itself, and the years before are tilted to meet it
-  const T = ZOOMS[3].pts, Y = ZOOMS[2].pts, n = T.length - Y.length, start = Y[Y.length - 1][1] / (1 + want.t / 100);
-  const A = start / T[0][1], e = Math.log((Y[0][1] / T[n][1]) / A);
-  ZOOMS[3].pts = T.map(([f, v], i) => [f, i >= n ? Y[i - n][1] : v * A * Math.exp(e * i / n)]);
   const day = ZOOMS[0].pts, sc = ZOOMS[1].pts[ZOOMS[1].pts.length - 1][1] / day[day.length - 1][1];
   ZOOMS[0].pts = day.map(([f, v]) => [f, v * sc]);
   // the month's day before the last closes where the one day opened, so the last step of the month is that day's
@@ -96,6 +92,16 @@ const ZOOMS = [
   // and its last day is the one day itself, open to close, so the month line runs right down the one day's drop
   ZOOMS[1].pts = ZOOMS[1].pts.slice(0, m2 + 1).concat(ZOOMS[0].pts.map(([f, v]) => [(m2 + f) / (m2 + 1), v]));
   ZOOMS[1].at = ZOOMS[1].at.slice(0, m2 + 1).concat(ZOOMS[0].at);
+  // the year ends where the month (and the one day) ends, 26 Oct, so its last point is that close and its start
+  // sits 3.82% below it: the year really reads as up 3.82% even after the month's drop (Captain Russell, 25 Nov 2026)
+  const YE = ZOOMS[1].pts[ZOOMS[1].pts.length - 1][1], yl = ZOOMS[2].pts.length - 1;
+  ZOOMS[2].pts[yl] = [1, YE]; ZOOMS[2].at[yl] = ZOOMS[1].at[ZOOMS[1].at.length - 1];
+  tilt(ZOOMS[2], true);
+  // ten years: its last 12 months are the one year line itself, and the years before are tilted to meet it
+  const T = ZOOMS[3].pts, Y = ZOOMS[2].pts, n = T.length - Y.length, start = Y[Y.length - 1][1] / (1 + want.t / 100);
+  const A = start / T[0][1], e = Math.log((Y[0][1] / T[n][1]) / A);
+  ZOOMS[3].pts = T.map(([f, v], i) => [f, i >= n ? Y[i - n][1] : v * A * Math.exp(e * i / n)]);
+  ZOOMS[3].at[ZOOMS[3].at.length - 1] = ZOOMS[2].at[yl];
   ZOOMS[0].when = ''; ZOOMS[1].when = ''; ZOOMS[2].when = ''; ZOOMS[3].when = '';
   ZOOMS[4].off = true;
 })();
