@@ -308,3 +308,7 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 .nwnote{color:var(--soft);max-width:1100px}
 /* 2d Lt pay over the percentile graph */
 .lthead{display:flex;align-items:center;gap:26px}
+/* ?solo=<chart>: one slide on its own inside the participant page (join/) on a laptop */
+html.solo #bar, html.solo #ticker, html.solo #cap .nav, html.solo #prog, html.solo #roomBadge { display: none !important; }
+html.solo #cap { min-height: 0; padding-top: 8px; padding-bottom: 10px; }
+html.solo #stage.go { cursor: default; }

@@ -70,7 +70,7 @@
     d.svg = document.createElementNS(NS, 'svg'); d.svg.setAttribute('class', 'scene');
     d.layer.appendChild(d.svg); stage.appendChild(d.layer);
   });
-  const stepOf = (id, head) => SCENES[id].sc.steps.findIndex((s) => s.meta.head === head);
+  const stepOf = (id, head) => SCENES[id].sc.steps.findIndex((s) => s.meta.key === head || (!s.meta.key && s.meta.head === head));
 
   // ---------------------------------------------------------------- small SVG helpers for the live slides
   function sv(tag, attrs, parent) {
@@ -209,15 +209,15 @@
     },
   };
 
-  // ---- lifestyle inflation: how much of the 2d Lt paycheck you bank (Captain Russell, 25 Nov 2026: "Spend it all" on the
-  // left where it starts, drag right to bank more; taxes come out first; millions to the nearest tenth; on the phones too)
+  // ---- lifestyle inflation: how much of the 2d Lt paycheck you invest (Captain Russell, 25 Nov 2026: "Spend it all" on the
+  // left where it starts, drag right to invest more; taxes come out first; millions to the nearest tenth; on the phones too)
   LIVE.life = {
-    head: 'Drag it: how much do you bank?', body: 'Your first month as a 2d Lt is **$6,062.68**, and about **' + fmt(FR.LIFE.TAX) + '** of it goes to taxes. Slide what you bank and watch what it turns into.', explore: 'life',
+    head: 'Drag it: how much do you invest?', body: 'Your first month as a 2d Lt is **$6,062.68**, and about **' + fmt(FR.LIFE.TAX) + '** of it goes to taxes. Slide what you invest and watch what it turns into.', explore: 'life',
     build(el) {
       const L = FR.LIFE, PAY = L.PAY, MAXB = Math.floor((L.TAKE - 1500) / 50) * 50;
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
       div(el, 'abs k in', 'left:70px;top:200px;--d:.05', 'Your first paycheck as a 2d Lt: <span class="g">$6,062.68</span> a month');
-      // the paycheck bar: taxes, what you spend, what you bank
+      // the paycheck bar: taxes, what you spend, what you invest
       const BX = 70, BW = 1460, BY = 236, BH = 84, px = (v) => BW * v / PAY;
       sv('rect', { x: BX, y: BY, width: BW, height: BH, rx: 18, fill: C.panel2, stroke: C.line, 'stroke-width': 3 }, svg);
       sv('rect', { x: BX, y: BY, width: px(L.TAX), height: BH, rx: 18, fill: C.red }, svg);
@@ -227,7 +227,7 @@
       const bankR = sv('rect', { y: BY, height: BH, rx: 18, fill: C.green }, svg);
       const spendT = sv('text', { y: BY + 55, fill: '#1a1203', 'font-size': 34, 'font-weight': 850, 'font-family': Anim.FONT }, svg);
       const bankT = sv('text', { y: BY + 55, x: BX + BW - 26, 'text-anchor': 'end', fill: '#04140e', 'font-size': 34, 'font-weight': 850, 'font-family': Anim.FONT }, svg);
-      // the growth chart: bank it for your 4-year commitment, then leave it alone until 60
+      // the growth chart: invest it for your 4-year commitment, then leave it alone until 60
       const G = { x0: 140, x1: 1000, y0: 800, y1: 440, a: 22, b: 60, lo: 0, hi: 2.4e6 };
       const m = chart(svg, G);
       [0, 0.5e6, 1e6, 1.5e6, 2e6].forEach((v) => {
@@ -240,8 +240,8 @@
       const area = sv('path', { fill: 'rgba(52,245,164,.12)' }, svg);
       const ln = sv('path', { fill: 'none', stroke: C.green, 'stroke-width': 7, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
       const dot = sv('circle', { r: 12, fill: C.green }, svg);
-      div(el, 'abs lab in', 'left:70px;top:350px;font-size:26px;--d:.2', 'Bank it for your 4-year commitment at 7%, then just leave it alone:');
-      const s1 = div(el, 'stat in', 'left:1080px;top:400px;width:450px;--d:.35', '<div class="lab">Banked every month</div><div class="big g">$0</div>');
+      div(el, 'abs lab in', 'left:70px;top:350px;font-size:26px;--d:.2', 'Invest it for your 4-year commitment at 7%, then just leave it alone:');
+      const s1 = div(el, 'stat in', 'left:1080px;top:400px;width:450px;--d:.35', '<div class="lab">Invested every month</div><div class="big g">$0</div>');
       const s2 = div(el, 'stat in', 'left:1080px;top:560px;width:450px;--d:.45', '<div class="lab">After your 4 years</div><div class="big g">$0</div>');
       const s3 = div(el, 'stat in', 'left:1080px;top:720px;padding:16px 26px;width:450px;--d:.55;border-color:#1f7a5c', '<div class="lab">Left alone until you\'re 60</div><div class="big g">$0</div>');
       const c1 = counter($('.big', s1), (v) => fmt(v)), c2 = counter($('.big', s2), (v) => fmt(v, { k: true })), c3 = counter($('.big', s3), (v) => '$' + (v / 1e6).toFixed(1) + 'M');
@@ -251,14 +251,14 @@
         const wS = px(spend);
         spendR.setAttribute('width', Math.max(0, wS)); bankR.setAttribute('x', BX + px(L.TAX) + wS); bankR.setAttribute('width', Math.max(0, px(bank)));
         spendT.setAttribute('x', BX + px(L.TAX) + 26); spendT.textContent = wS > 330 ? 'Spend ' + fmt(spend) : '';
-        bankT.textContent = px(bank) > 280 ? 'Bank ' + fmt(bank) : '';
+        bankT.textContent = px(bank) > 280 ? 'Invest ' + fmt(bank) : '';
         const pts = L.curve(bank).map(([a, v]) => [m.x(a), m.y(Math.min(v, G.hi * 1.02))]);
         ln.setAttribute('d', pathOf(pts)); area.setAttribute('d', pathOf(pts) + `L${G.x1} ${G.y0}L${G.x0} ${G.y0}Z`);
         dot.setAttribute('cx', pts[pts.length - 1][0]); dot.setAttribute('cy', pts[pts.length - 1][1]);
         if (live) raf = requestAnimationFrame(draw);
       };
       const BANK = Math.round(L.BANK / 50) * 50;
-      const sl = slider(el, { x: 70, y: 30, w: 1460, label: 'What you bank each month', min: 0, max: MAXB, step: 50, value: 0, color: C.green, d: 0.15,
+      const sl = slider(el, { x: 70, y: 30, w: 1460, label: 'What you invest each month', min: 0, max: MAXB, step: 50, value: 0, color: C.green, d: 0.15,
         ticks: [[0, 'Spend it all'], [BANK, 'Live on a $3,000 college budget'], [MAXB, 'Live on $1,500']], play: [0, BANK, 2.4],
         show: (v) => `<span class="g">${fmt(v)}</span>`, on: (v) => { sm.t = v; const r = L.grow(v); c1(v); c2(r.f4); c3(r.f60); } });
       return {
@@ -529,7 +529,7 @@
         <div class="sob">
           ${[['The BRS', 'A smaller pension, the TSP match and continuation pay. The match is free money, so take all of it.'],
              ['Three types of pay', 'Base pay (taxed), allowances like Basic Allowance for Housing and Basic Allowance for Subsistence (not taxed), and special and incentive pay.'],
-             ['Money calls', 'Cars, emergencies, a spouse, promotions. Keep the big things small and bank the raises.']].map(([t, p], i) => `
+             ['Money calls', 'Cars, emergencies, a spouse, promotions. Keep the big things small and invest the raises.']].map(([t, p], i) => `
           <div class="card in" style="--d:${0.2 + i * 0.25}"><div class="n g" style="color:var(--green)">✓</div><p style="font-weight:850">${t}</p><p style="font-size:22px;color:var(--soft);font-weight:600">${p}</p></div>`).join('')}
         </div>
         <h1 class="in" style="--d:1;margin-top:70px;font-size:88px">Questions?</h1>
@@ -623,10 +623,13 @@
   // ======================================================================
   // the live room: cadets' phones (../join/), questions, the scoreboard
   // ======================================================================
+  // ?solo=<chart>: one interactive slide on its own, for a participant on a laptop (join/ shows it in a frame;
+  // Captain Russell, 25 Nov 2026: desktops get the full slide, phones the smaller version). No room, no keys, no paging.
+  const SOLO = (location.search.match(/[?&]solo=([a-z0-9-]+)/) || [])[1] || null;
   const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
   const ROOM = (function () {
     let code = store.get('d250-fr-room-code');
-    if (!code) { code = Array.from({ length: 4 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ'[Math.floor(Math.random() * 23)]).join(''); store.set('d250-fr-room-code', code); }
+    if (!code && !SOLO) { code = Array.from({ length: 4 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ'[Math.floor(Math.random() * 23)]).join(''); store.set('d250-fr-room-code', code); }
     // players and scores survive a reload of the deck; the scoreboard reset button on the join slide clears them
     const R = { code, players: store.get('d250-fr-players-v1') || {}, q: null, phase: null, opened: 0, revealed: store.get('d250-fr-revealed-v1') || {}, status: 'off', listeners: [] };
     const save = () => { store.set('d250-fr-players-v1', R.players); store.set('d250-fr-revealed-v1', R.revealed); };
@@ -740,7 +743,7 @@
     captain: { type: 'choice', prompt: 'A captain at 8 years makes about **$10,460 a month**. Who in the enlisted force makes about the same?', info: 'Base pay + Basic Allowance for Housing + Basic Allowance for Subsistence, no dependents, San Antonio, 2026.',
       opts: ['Senior Airman (E-4) at 4 years', 'Staff Sergeant (E-5) at 8 years', 'Master Sergeant (E-7) at 16 years', 'Chief Master Sergeant (E-9) at 20+ years'], ins: ['E-4', 'E-5', 'E-7', 'E-9'], ans: 3,
       why: 'A chief master sergeant at 20+ years makes about $10,558. You get there in 8.' },
-    life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you bank the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
+    life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you invest the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
       min: 100000, max: 3000000, step: 100000, unit: '$M', start: 100000, ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
       why: 'About $' + (Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) / 10).toFixed(1) + ' million, from just 4 years of living like a college student.' },
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
@@ -981,7 +984,7 @@
   const scn = (id, sec, from, to) => { const s = SCENES[id].sc.steps; const a = from == null ? 0 : stepOf(id, from), b = to == null ? s.length - 1 : stepOf(id, to); for (let i = a; i <= b; i++) SL.push({ sec, scene: id, i }); };
   const live = (id, sec) => SL.push({ sec, live: id });
   live('join', 0); live('title', 0); live('obj', 0);
-  live('q-post', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'Now compare it', 'Now compare it'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
+  live('q-post', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'oe0', 'oe4'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
   scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
@@ -991,7 +994,10 @@
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
   live('books', 6); live('q-calls', 6); live('calls', 6); scn('fr4', 6, 'My mantra', 'My mantra'); live('board4', 6);
   live('close', 6);
-  SL.forEach((s) => { if (s.scene) { const m = SCENES[s.scene].sc.steps[s.i].meta; s.head = m.head; s.body = m.body; } else { const L = LIVE[s.live]; s.head = L.head; s.body = L.body; s.spin = L.spin; s.explore = L.explore; } });
+  SL.forEach((s, k) => { if (s.scene) { const m = SCENES[s.scene].sc.steps[s.i].meta; s.head = m.head; s.body = m.body; s.grp = m.grp; } else { const L = LIVE[s.live]; s.head = L.head; s.body = L.body; s.spin = L.spin; s.explore = L.explore; } });
+
+  // clicks that build one slide (the same grp) keep its slide number
+  let NUM = 0; SL.forEach((s, k) => { if (!(s.grp && k && SL[k - 1].grp === s.grp)) NUM++; s.num = NUM; });
 
   // live slide layers, built on first use
   const built = {};
@@ -1044,7 +1050,7 @@
     $('#head').innerHTML = md(s.head); $('#body').innerHTML = md(s.body);
     txt.classList.remove('swap'); void txt.offsetWidth; txt.classList.add('swap');
     // bar
-    $('#count').textContent = `${k + 1} / ${SL.length}`;
+    $('#count').textContent = `${s.num} / ${NUM}`;
     $('#prog i').style.width = ((k + 1) / SL.length * 100) + '%';
     $$('#tabs button').forEach((b, i) => {
       const idx = SL.map((x, j) => [x, j]).filter(([x]) => x.sec === i).map(([, j]) => j);
@@ -1052,7 +1058,7 @@
       b.style.setProperty('--p', p); b.classList.toggle('on', s.sec === i); b.classList.toggle('done', k > idx[idx.length - 1]);
     });
     $('[data-act=prev]').disabled = k === 0; $('[data-act=next]').disabled = k === SL.length - 1;
-    try { history.replaceState(null, '', '#' + (k + 1)); } catch (e) {}
+    if (!SOLO) try { history.replaceState(null, '', '#' + (k + 1)); } catch (e) {}
   }
   const $$ = (s) => Array.from(document.querySelectorAll(s));
   // a band that sweeps across when a new section starts; the slide changes behind it
@@ -1090,7 +1096,7 @@
     const items = [
       ['TSP', 'PUT IN 5% ON DAY 1', 'gd'], ['S&P 500 1 DAY', pct(ch(Z[0])), ch(Z[0]) < 0 ? 'd' : 'u'], ['THE MATCH', 'FREE MONEY. TAKE ALL OF IT', 'gd'],
       ['ROTH TSP', 'WHILE YOUR TAX RATE IS LOW', 'gd'], ['S&P 500 1 YR', pct(ch(Z[2])), 'u'], ['COLLEGE BUDGET', 'KEEP LIVING ON IT', 'gd'],
-      ['EVERY RAISE', 'BANK IT', 'gd'], ['S&P 500 10 YR', pct(ch(Z[3])), 'u'], ['EMERGENCY FUND', '3 TO 6 MONTHS', 'gd'],
+      ['EVERY RAISE', 'INVEST IT', 'gd'], ['S&P 500 10 YR', pct(ch(Z[3])), 'u'], ['EMERGENCY FUND', '3 TO 6 MONTHS', 'gd'],
       ['CARS', 'BUY USED. PAY IT OFF FAST', 'gd'], ['S&P 500 100 YR', pct(ch(Z[4])), 'u'], ['MARKET DROPS', 'KEEP BUYING', 'gd'],
       ['CONTINUATION PAY', 'INVEST IT', 'gd'], ['BIG THINGS', 'KEEP THEM SMALL', 'gd'],
     ];
@@ -1101,6 +1107,7 @@
   // a click on the slide goes on, like any slideshow; controls on the slide keep working
   stage.classList.add('go');
   stage.addEventListener('click', (e) => {
+    if (SOLO) return;
     if (e.target.closest('input, button, select, a, label, .seg, .slide-ctl, .calls')) return;
     next();
   });
@@ -1154,6 +1161,7 @@
 
   // keys: always change slides, even while a slider has focus
   window.addEventListener('keydown', (e) => {
+    if (SOLO) return;
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     const k = e.key;
     if (!$('#blank').hidden && k !== 'F' && k !== 'f') { e.preventDefault(); $('#blank').hidden = true; return; }
@@ -1181,8 +1189,14 @@
     Anim.setStageWidth(1600 * s, 1600);
   }
   addEventListener('resize', fit); fit();
-  addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1), 10); if (n && n - 1 !== cur) go(n - 1, false); });
+  addEventListener('hashchange', () => { if (SOLO) return; const n = parseInt(location.hash.slice(1), 10); if (n && n - 1 !== cur) go(n - 1, false); });
 
+  if (SOLO) {
+    document.documentElement.classList.add('solo');
+    const k = SL.findIndex((x) => x.explore === SOLO || x.live === SOLO);
+    go(k < 0 ? 0 : k, true); fit();
+    return;
+  }
   ROOM.start();
   const start = parseInt(location.hash.slice(1), 10);
   go(start > 0 ? start - 1 : 0, true);
