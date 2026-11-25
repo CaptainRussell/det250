@@ -71,6 +71,26 @@ const ZOOMS = [
   ZOOMS[3].at = ZY10.map((v, i) => 2016 + (8 + i + 0.5) / 12);
   ZOOMS[4].at = ZY100.map((v, i) => (i < ZY100.length - 1 ? 1926 + i + 0.5 / 12 : 2026 + 8.5 / 12));
 })();
+// Captain Russell's numbers for each window (25 Nov 2026): one day −2.45%, one month −8.5%, one year +3.82%,
+// ten years +217.46%, and no 100 year window. Each line keeps its shape and is tilted smoothly until its start to
+// end change matches his number: the year keeps its last value, ten years ends on the year line, the month keeps
+// its first value, and the day is tilted, then moved so its close lands on the month's line on that day.
+(function () {
+  const want = { d: -2.45, m: -8.5, y: 3.82, t: 217.46 };
+  const tilt = (z, endAnchor) => {
+    const a = z.pts[0][1], b = z.pts[z.pts.length - 1][1], k = Math.log((1 + want[z.key] / 100) / (b / a));
+    z.pts = z.pts.map(([f, v]) => [f, v * Math.exp(k * (endAnchor ? f - 1 : f))]);
+  };
+  tilt(ZOOMS[2], true); tilt(ZOOMS[1], false); tilt(ZOOMS[0], true);
+  // ten years: its last 12 months are the one year line itself, and the years before are tilted to meet it
+  const T = ZOOMS[3].pts, Y = ZOOMS[2].pts, n = T.length - Y.length, start = Y[Y.length - 1][1] / (1 + want.t / 100);
+  const A = start / T[0][1], e = Math.log((Y[0][1] / T[n][1]) / A);
+  ZOOMS[3].pts = T.map(([f, v], i) => [f, i >= n ? Y[i - n][1] : v * A * Math.exp(e * i / n)]);
+  const day = ZOOMS[0].pts, sc = ZOOMS[1].pts[14][1] / day[day.length - 1][1];
+  ZOOMS[0].pts = day.map(([f, v]) => [f, v * sc]);
+  ZOOMS[0].when = ''; ZOOMS[1].when = ''; ZOOMS[2].when = ''; ZOOMS[3].when = '';
+  ZOOMS[4].off = true;
+})();
 
 // The zoom chart, shared by the slide and the phone page. o = { svg, box: {x0, x1, y0, y1}, sw (line width),
 // fs (font size), col: {green, red, gold, line, faint, soft} }. go(k) glides the camera to window k: the window you
@@ -182,7 +202,7 @@ function scene(st) {
   add('pBigS', 'text', { size: 30, anchor: 'start', weight: 700 }, { x: 1065, y: 380, content: 'of your top 36 months', fill: C.soft, o: 0 });
   add('pBigS2', 'text', { size: 30, anchor: 'start', weight: 700 }, { x: 1065, y: 420, content: 'of base pay, for life', fill: C.soft, o: 0 });
   add('pCatch', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 120, y: 650, content: 'The catch: serve 20 years. Leave at 19 and get $0.', fill: C.red, o: 0 });
-  add('pStat', 'text', { size: 32, anchor: 'start', weight: 600 }, { x: 120, y: 710, content: 'About half of officers ever collect one (CRS RL34751).', fill: C.soft, o: 0 });
+  add('pStat', 'text', { size: 32, anchor: 'start', weight: 600 }, { x: 120, y: 710, content: 'About half of all officers stay in 20+ years to collect.', fill: C.soft, o: 0 });
 
   // ---- 2: the TSP, pick a number
   add('tHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'TSP: the Air Force adds money to yours', fill: C.ink, o: 0 });
@@ -238,6 +258,8 @@ function scene(st) {
   add('cLock', 'rect', {}, { x: tx(12), y: TY - 26, w: 0, h: 52, rx: 10, fill: C.red, fo: 0.3, stroke: C.red, sw: 3, o: 0 });
   add('cLockL', 'text', { size: 26, anchor: 'middle', weight: 800 }, { x: tx(14), y: TY + 130, content: 'In until 16', fill: C.red, o: 0 });
   add('cGold', 'rect', { dash: '12 8' }, { x: tx(16), y: TY - 26, w: 0, h: 52, rx: 10, fill: C.amber, fo: 0.18, stroke: C.amber, sw: 3, o: 0 });
+  // gold handcuffs art over the golden handcuffs stretch (Captain Russell, 25 Nov 2026): two cuffs and a short chain
+  add('cCuff', 'path', { d: 'M 1232 250 m -38 0 a 38 38 0 1 0 76 0 a 38 38 0 1 0 -76 0 M 1424 250 m -38 0 a 38 38 0 1 0 76 0 a 38 38 0 1 0 -76 0 M 1278 236 h 16 v 28 h -16 z M 1362 236 h 16 v 28 h -16 z M 1300 242 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1316 258 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1334 242 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1203 222 l 18 -14 M 1453 222 l -18 -14' }, { stroke: C.amber, sw: 7, draw: 0, o: 0 });
   add('cGoldL', 'text', { size: 26, anchor: 'middle', weight: 800 }, { x: tx(18), y: TY + 130, content: 'Golden handcuffs', fill: C.amber, o: 0 });
   add('cH1', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 140, y: 650, content: 'At 16, you\'re 4 years from a pension that pays for life.', fill: C.ink, o: 0 });
   add('cH2', 'text', { size: 32, anchor: 'start', weight: 600, maxw: 1320 }, { x: 140, y: 710, content: 'Leave then and you leave millions on the table over a normal lifespan. Almost nobody does.', fill: C.amber, o: 0 });
@@ -264,7 +286,7 @@ function scene(st) {
 
   // ---- zoom out: one chart box, one line per zoom level
   const ZX0 = 270, ZX1 = 1440, ZY0 = 760, ZY1 = 290;
-  add('zHead', 'text', { size: 46, anchor: 'start', weight: 850 }, { x: 120, y: 110, content: 'When in doubt, zoom out', fill: C.ink, o: 0 });
+  add('zHead', 'text', { size: 46, anchor: 'start', weight: 850 }, { x: 120, y: 110, content: 'When in Doubt, Zoom Out', fill: C.ink, o: 0 });
   add('zFrame', 'rect', {}, { x: ZX0 - 20, y: ZY1 - 30, w: ZX1 - ZX0 + 40, h: ZY0 - ZY1 + 60, rx: 18, fill: C.panel2, stroke: C.line, sw: 2, o: 0 });
   ZOOMS.forEach((z, k) => {
     const vs = z.pts.map((p) => (z.log ? Math.log10(p[1]) : p[1])), lo = Math.min(...vs), hi = Math.max(...vs), pad = (hi - lo) * 0.08;
@@ -337,7 +359,7 @@ function scene(st) {
   S.step({ head: 'Golden handcuffs', grp: 'cp', body: 'Take it at 12 and you owe **4 more years**. At 16 the pension is 4 years away, and **almost nobody walks away from it.**' })
     .beat(0.6, (s) => { s.cAmt.o = 0; s.cEx.o = 0; s.cy16.o = 1; })
     .beat(1.0, (s) => { s.cLock.o = 1; s.cLock.w = tx(16) - tx(12); s.cLockL.o = 1; })
-    .beat(1.0, (s) => { s.cGold.o = 1; s.cGold.w = tx(20) - tx(16); s.cGoldL.o = 1; })
+    .beat(1.0, (s) => { s.cGold.o = 1; s.cGold.w = tx(20) - tx(16); s.cGoldL.o = 1; s.cCuff.o = 1; s.cCuff.draw = 1; })
     .beat(0.8, (s) => { s.cH1.o = 1; s.cH2.o = 1; });
 
   // Roth or Traditional is explained first, then the phone question, then why Roth (Captain Russell, 25 Nov 2026)
