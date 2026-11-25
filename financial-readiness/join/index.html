@@ -45,7 +45,7 @@ input.name { width: 100%; background: var(--panel); border: 2px solid var(--line
 .me .s small { display: block; font-size: 11px; color: var(--faint); letter-spacing: .1em; }
 .q { margin-top: 16px; }
 .q .info { background: var(--panel); border-left: 3px solid var(--gold); border-radius: 8px; padding: 10px 12px; color: var(--soft); margin-bottom: 14px; font-size: 15px; }
-.opts { display: grid; gap: 10px; }
+.opts { display: grid; gap: 10px; margin-bottom: 14px; }
 .opts button { text-align: left; border: 2px solid var(--line); background: var(--panel); border-radius: 14px; padding: 15px 16px; font-weight: 750; font-size: 17px; }
 .opts button.on { border-color: var(--gold); background: #2a2310; }
 .opts button { display: flex; align-items: center; gap: 12px; }
@@ -201,7 +201,8 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
 
   function renderQ(q) {
     let h = `<div class="q"><h1>${md(q.prompt)}</h1>${q.info ? `<div class="info">${md(q.info)}</div>` : ''}`;
-    if (q.type === 'choice') h += `<div class="opts">${q.opts.map((o, i) => { const g = q.ins && q.ins[i]; return `<button data-i="${i}">${g ? `<img class="oi" src="${esc(g[0])}" alt="" style="width:${Math.min(40, 30 * g[1])}px">` : ''}<span>${esc(o)}</span></button>`; }).join('')}</div>`;
+    // tap picks, Lock it in sends (Captain Russell, 25 Nov 2026: a tap shouldn't lock the answer right away)
+    if (q.type === 'choice') h += `<div class="opts">${q.opts.map((o, i) => { const g = q.ins && q.ins[i]; return `<button data-i="${i}" class="${draft.i === i ? 'on' : ''}" aria-pressed="${draft.i === i}">${g ? `<img class="oi" src="${esc(g[0])}" alt="" style="width:${Math.min(40, 30 * g[1])}px">` : ''}<span>${esc(o)}</span></button>`; }).join('')}</div><button class="big-btn" id="oGo" ${draft.i == null ? 'disabled' : ''}>${draft.i == null ? 'Pick an answer' : 'Lock it in'}</button>`;
     if (q.type === 'slider') {
       const v = draft.v != null ? draft.v : q.start != null ? q.start : q.min;
       h += `<div class="slider"><div class="v" id="sv">${fmtV(q, v)}</div><input type="range" id="sr" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}"></div><button class="big-btn" id="sGo">Lock it in</button>`;
@@ -215,7 +216,8 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
   const fmtV = (q, v) => (q.unit === '$' ? '$' + Number(v).toLocaleString() : q.unit === '$M' ? '$' + (v / 1e6).toFixed(1) + 'M' : v + (q.unit || ''));
   function wireQ(q) {
     if (!q || S.phase !== 'open' || S.mine != null) return;
-    document.querySelectorAll('.opts button').forEach((b) => { b.onclick = () => net.send({ t: 'ans', qid: q.qid, v: +b.dataset.i }); });
+    document.querySelectorAll('.opts button').forEach((b) => { b.onclick = () => { draft.i = +b.dataset.i; render(); }; });
+    const og = $('#oGo'); if (og) og.onclick = () => { if (draft.i != null) net.send({ t: 'ans', qid: q.qid, v: draft.i }); };
     const sr = $('#sr');
     if (sr) { sr.oninput = () => { draft.v = +sr.value; $('#sv').textContent = fmtV(q, +sr.value); }; $('#sGo').onclick = () => net.send({ t: 'ans', qid: q.qid, v: +sr.value }); }
     document.querySelectorAll('.seg button').forEach((b) => { b.onclick = () => { draft[b.dataset.k] = b.dataset.v; render(); }; });
