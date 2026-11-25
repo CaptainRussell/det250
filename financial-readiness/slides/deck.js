@@ -432,13 +432,13 @@
   // ---- cold open (Captain Russell, 25 Nov 2026: start with something personal). Where I started, and a teaser
   // for where I am now; the class guesses that number in My story before the net worth chart shows it.
   LIVE.cold = {
-    head: 'Where I started', body: 'June 2019, brand new 2d Lt, **$19,421 in debt**. Where am I now? **You\'ll get to guess in a few minutes.**',
+    head: 'Where I started', body: 'June 2019, brand new 2d Lt, **$19,421 in debt**. Where am I now? **Guess on your phone next. The answer comes later.**',
     build(el) {
       el.innerHTML = `<div class="abs in" style="left:110px;top:90px;--d:.05"><div class="k">Me, 7 years ago</div></div>
         <div class="abs card in cold1" style="left:110px;top:170px;width:640px;--d:.15"><div class="lab">June 2019</div><div class="big r">−$19,421</div>
           <p>Brand new 2d Lt. Student loans and a car loan, and that was my net worth.</p></div>
         <div class="abs card cold2" style="left:850px;top:170px;width:640px"><div class="lab">Today, November 2026</div><div class="big a qm">$???</div>
-          <p>Same pay as every other officer at my rank. You'll guess this number in a few minutes.</p></div>
+          <p>Same pay as every other officer at my rank. Guess it on your phone next. I'll show you the answer later.</p></div>
         <div class="abs cold3" style="left:110px;top:640px;width:1380px"><h2>Here's how I got there, and how you can get there faster.</h2></div>`;
       let k = 0;
       const show = () => { $('.cold2', el).classList.toggle('on', k >= 1); $('.cold3', el).classList.toggle('on', k >= 2); };
@@ -689,9 +689,10 @@
         },
       });
     };
-    R.open = (q) => {
+    R.open = (q, locked) => {
       R.q = q;
       if (R.revealed[q.qid]) R.phase = 'reveal';
+      else if (locked) R.phase = 'locked';
       else { R.phase = 'open'; R.opened = performance.now(); botsAnswer(q); }
       R.push(); R.changed();
     };
@@ -728,7 +729,7 @@
     R.removeBots = () => { botT.forEach(clearTimeout); botT = []; Object.keys(R.players).forEach((cid) => { if (R.players[cid].bot) delete R.players[cid]; }); save(); R.push(); R.changed(); };
     R.close = () => { botT.forEach(clearTimeout); botT = []; R.q = null; R.phase = null; R.push(); R.changed(); };
     R.reveal = () => {
-      const q = R.q; if (!q || R.phase !== 'open') return;
+      const q = R.q; if (!q || (R.phase !== 'open' && R.phase !== 'locked')) return;
       Object.values(R.players).forEach((p) => { const a = p.ans && p.ans[q.qid]; if (a) { a.pts = q.score(a.v, a.t); p.score = (p.score || 0) + a.pts; } });
       R.revealed[q.qid] = 1; R.phase = 'reveal'; save(); R.push(); R.changed();
     };
@@ -796,12 +797,13 @@
   const fixPick = (v) => { const o = {}; D4.CALLS.forEach((c) => { const raw = v && v[c.key]; const hit = c.opts.find((q) => String(q[0]) === String(raw)); o[c.key] = hit ? hit[0] : D4.EASY[c.key]; }); return o; };
   const QS = {
     // where a new 2d Lt lands among US workers, guessed before we go over the discussion post (Captain Russell, 25 Nov 2026)
-    pct: { type: 'slider', prompt: 'Your discussion post had you work out what a **brand new 2d Lt** makes. Where does that land among **all American workers?**', info: 'Out of 100 workers, how many make less? First year, base pay plus allowances.',
+    pct: { type: 'slider', prompt: 'Line up **100 American workers** by pay. How many make **less than a brand new 2d Lt?**', info: 'First year, base pay plus allowances. Slide to how many of the 100 are below the 2d Lt.',
       min: 1, max: 99, step: 1, unit: 'pct', start: 50, ticks: [10, 25, 50, 75, 90], ans: 64, tol: 30,
-      why: 'The **64th percentile**. A brand new 2d Lt out-earns about 64 of every 100 American workers, before a single promotion.' },
-    // my net worth today, guessed before the chart shows it (Captain Russell, 25 Nov 2026)
-    guess: { type: 'slider', prompt: 'June 2019: I was **$19,421 in debt**. What\'s my **net worth today**, 7 years later?', info: 'Everything I own minus everything I owe. Same pay as any other officer at my rank.',
-      min: 0, max: 500000, step: 10000, unit: '$M', start: 0, ticks: [0, 100000, 200000, 300000, 400000, 500000], ans: Math.round(FR.DATA.fr1.NOW / 1e4) * 1e4, tol: 150000,
+      why: '**64 of 100.** A brand new 2d Lt out-earns about 64 of every 100 American workers (the 64th percentile), before a single promotion.' },
+    // my net worth today (Captain Russell, 25 Nov 2026): guessed during the cold open, answered much later, right
+    // before the net worth chart (defer: the guess slide moves on without a reveal; r-guess reveals it)
+    guess: { type: 'slider', defer: true, prompt: 'Seven years in, what\'s my **net worth today?**', info: 'Everything I own minus everything I owe. I started at **−$19,421** in June 2019. You\'ll see the answer later.',
+      min: 0, max: 1000000, step: 10000, unit: '$M', start: 0, ticks: [0, 250000, 500000, 750000, 1000000], ans: Math.round(FR.DATA.fr1.NOW / 1e4) * 1e4, tol: 250000,
       why: 'About **' + fmt(Math.round(FR.DATA.fr1.NOW / 1e4) * 1e4, { k: true }) + '**. Here\'s how it happened, one year at a time.' },
     order: { type: 'choice', prompt: 'You have **$1,000 in savings**, you put **5% in the TSP**, and you owe **$4,000 on a credit card at 24%**. Where does your next extra $500 go?',
       opts: ['More in the TSP', 'The credit card', 'Your emergency fund', 'A Roth IRA'], ans: 1,
@@ -820,8 +822,11 @@
       opts: ['Senior Airman (E-4) at 4 years', 'Staff Sergeant (E-5) at 8 years', 'Master Sergeant (E-7) at 16 years', 'Chief Master Sergeant (E-9) at 20+ years'], ins: ['E-4', 'E-5', 'E-7', 'E-9'], ans: 3,
       why: 'A chief master sergeant at 20+ years makes about $10,558. You get there in 8.' },
     life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you invest the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
-      min: 100000, max: 3000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 1000000, 2000000, 3000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
+      min: 100000, max: 2000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 500000, 1000000, 1500000, 2000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
       why: 'About $' + (Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) / 10).toFixed(1) + ' million, from just 4 years of living like a college student.' },
+    pworth: { type: 'slider', prompt: 'You retire as an **O-5 at 45** with 20 years in. Your pension starts at **$4,816.72 a month** (40% of base pay) and goes up **3% a year** for cost of living. If you live to 90, **how much does it pay you in total?**',
+      min: 0, max: 8000000, step: 100000, unit: '$M', start: 0, ticks: [0, 2000000, 4000000, 6000000, 8000000], ans: 5400000, tol: 2000000,
+      why: 'About **$5.4 million**, paid out over 45 years. That\'s what you walk away from if you leave at 19.' },
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
     allot: { type: 'choice', prompt: 'What\'s an **allotment** on your LES?', opts: ['A bonus for a hard assignment', 'Money sent out before your pay hits the bank', 'The tax taken from base pay', 'A loan from the finance office'], ans: 1,
       why: 'Money that goes out automatically, before you can spend it. The easiest way to pay yourself first.' },
@@ -839,13 +844,12 @@
       calls: D4.CALLS.map((c) => ({ key: c.key, when: c.title.split(':')[0], ask: c.ask, opts: c.opts.map((o) => [String(o[0]), o[1]]) })),
       why: 'The best calls end near ' + fmt(V_BEST, { k: true }) + ' at year 10. The easy calls end at ' + fmt(V_EASY, { k: true }) + '.' },
   };
-  const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
   Object.entries(QS).forEach(([id, q]) => {
     q.qid = id;
     if (q.type === 'choice') { q.score = choiceScore(q.ans); q.say = (v) => 'You picked: ' + q.opts[v]; q.answerText = '**' + q.opts[q.ans] + '.** ' + q.why; }
     if (q.type === 'slider') {
       // money in the hundred thousands reads $100K, millions read $1.3 million (Captain Russell, 25 Nov 2026)
-      const f = (v) => (q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? ordinal(v) : v + q.unit);
+      const f = (v) => (q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? v + ' of 100' : v + q.unit);
       q.fmt = f; q.score = q.poll ? () => 0 : sliderScore(q.ans, q.tol); q.say = (v) => 'You said ' + f(v); q.answerText = q.why;
     }
     if (q.type === 'calls') {
@@ -853,22 +857,23 @@
       q.say = (v) => 'Your year 10: ' + fmt(CALL_V10(fixPick(v)), { k: true }); q.answerText = q.why;
     }
     LIVE['q-' + id] = {
-      head: 'On your phones', body: q.type === 'calls' ? 'Make all five calls on your phone, then lock it in.' : q.poll ? 'Answer on your phone. **No points, no wrong answer.**' : 'Answer on your phone. **Faster right answers score more.**',
+      head: 'On your phones', body: q.type === 'calls' ? 'Make all five calls on your phone, then lock it in.' : q.poll ? 'Answer on your phone. **No points, no wrong answer.**' : q.defer ? 'Lock in your guess on your phone. **I\'ll show you the answer later.**' : 'Answer on your phone. **Faster right answers score more.**',
       build(el) { return buildQ(el, q); },
     };
+    if (q.defer) LIVE['r-' + id] = { head: 'Your guesses', body: 'Remember your guess from the start of class? **Here\'s the real number.**', build(el) { return buildQ(el, q, true); } };
   });
 
-  function buildQ(el, q) {
+  function buildQ(el, q, later) {
     el.innerHTML = `<div class="abs in" style="left:90px;top:56px;--d:.05"><div class="k">On your phones</div></div>
-      <div class="abs in qprompt" style="left:90px;top:100px;width:1420px;--d:.15">${md(q.prompt)}</div>
-      ${q.info ? `<div class="abs in qinfo" style="left:90px;top:250px;--d:.25">${md(q.info)}</div>` : ''}
+      <div class="abs" style="left:90px;top:100px;width:1420px"><div class="in qprompt" style="--d:.15">${md(q.prompt)}</div>
+      ${q.info && !later ? `<div class="in qinfo" style="margin-top:16px;--d:.25">${md(q.info)}</div>` : ''}</div>
       <div class="abs qbody" style="left:90px;top:330px;width:1420px;height:420px"></div>
       <div class="abs answered" style="left:90px;top:780px;width:1420px"><span class="cnt"></span><span class="faces"></span></div>`;
     const body = $('.qbody', el), cnt = $('.answered .cnt', el), faces = $('.answered .faces', el);
     const paint = () => {
       if (!el.isConnected || ROOM.q !== q) return;
       const L = ROOM.list(), A = L.filter((p) => p.ans && p.ans[q.qid]), rev = ROOM.phase === 'reveal' && ROOM.q === q;
-      cnt.textContent = rev ? '' : `${A.length} of ${L.length} answered`;
+      cnt.textContent = rev ? '' : later ? `${A.length} guesses locked in` : `${A.length} of ${L.length} answered`;
       faces.innerHTML = rev ? '' : A.map((p) => face(p, 40)).join('');
       if (q.type === 'choice') {
         const n = q.opts.map((_, i) => A.filter((p) => p.ans[q.qid].v === i).length), mx = Math.max(1, ...n);
@@ -895,9 +900,10 @@
     };
     ROOM.listeners.push(paint);
     return {
-      enter() { ROOM.start(); ROOM.open(q); paint(); },
+      enter() { ROOM.start(); ROOM.open(q, later); paint(); },
       leave() { ROOM.close(); },
-      next() { if (ROOM.q === q && ROOM.phase === 'open') { ROOM.reveal(); paint(); return true; } return false; },
+      // a deferred guess moves on without showing the answer; its later slide reveals it
+      next() { if (q.defer && !later) return false; if (ROOM.q === q && (ROOM.phase === 'open' || ROOM.phase === 'locked')) { ROOM.reveal(); paint(); return true; } return false; },
     };
   }
 
@@ -1028,6 +1034,49 @@
     },
   };
 
+  // ---- what a 20-year pension is worth (Captain Russell, 25 Nov 2026): O-5 with 20 years, retires at 45, lives to 90,
+  // no Survivor Benefit Plan, 40% of $12,041.80 base pay, plus a 3% cost of living adjustment every year
+  LIVE.pworth = {
+    head: 'What a pension is worth', body: 'An **O-5 who retires at 45** and lives to 90. **40% of base pay**, plus a **3% cost of living raise** every year.',
+    build(el) {
+      const M0 = 4816.72, A0 = 45, N = 45, COLA = 0.03, Y = [];
+      let tot = 0; for (let k = 0; k < N; k++) { const y = 12 * M0 * Math.pow(1 + COLA, k); tot += y; Y.push(y); }
+      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
+      const x0 = 250, x1 = 1440, yb = 760, H = 360, bw = (x1 - x0) / N, top = Y[N - 1];
+      [0, 100000, 200000].forEach((v) => {
+        const yy = yb - H * v / 220000;
+        sv('line', { x1: x0 - 16, x2: x1 + 16, y1: yy, y2: yy, stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: 0.8 }, svg);
+        sv('text', { x: x0 - 28, y: yy + 9, 'text-anchor': 'end', fill: C.faint, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = v ? '$' + v / 1000 + 'K' : '$0';
+      });
+      sv('text', { x: x0 - 28, y: yb - H * 220000 / 220000 - 20, 'text-anchor': 'end', fill: C.faint, 'font-size': 20, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'per year';
+      [45, 55, 65, 75, 89].forEach((a) => sv('text', { x: x0 + (a - A0 + 0.5) * bw, y: yb + 40, 'text-anchor': 'middle', fill: C.faint, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'Age ' + a);
+      const bars = Y.map((v, k) => sv('rect', { x: x0 + k * bw + 2, width: bw - 4, y: yb, height: 0, rx: 4, fill: C.amber, opacity: 0.55 + 0.45 * k / N }, svg));
+      const first = div(el, 'abs lab', `left:${x0}px;top:${yb - H * Y[0] / 220000 - 90}px;font-size:26px;opacity:0;transition:opacity .4s`, '<b style="color:var(--ink)">' + fmt(M0, { cents: true }) + '</b> a month at 45');
+      const last = div(el, 'abs lab', `right:${1600 - x1}px;top:${yb - H * top / 220000 - 84}px;font-size:26px;text-align:right;opacity:0;transition:opacity .4s`, '<b style="color:var(--ink)">' + fmt(M0 * Math.pow(1 + COLA, N - 1)) + '</b> a month at 89');
+      el.insertAdjacentHTML('beforeend', `<div class="abs" style="left:${x0}px;top:70px"><div class="k" id="pwK">Paid to you, age 45 to 90</div><div class="big" id="pwV" style="color:var(--amber);font-size:96px;margin-top:8px">$0</div></div>
+        <div class="abs lab in" style="right:${1600 - x1}px;top:86px;text-align:right;font-size:24px;line-height:1.5;--d:.2">O-5, 20 years · base pay $12,041.80<br>40% = $4,816.72 a month<br>3% cost of living raise a year · no survivor benefit</div>
+        <div class="abs" id="pwMore" style="left:${x0}px;top:${yb + 76}px;font:700 28px var(--font);color:var(--soft);opacity:0;transition:opacity .5s">To get that same check from savings, you'd need about <b style="color:var(--green)">$1.4 million</b> invested by 45, using the 4% rule.</div>`);
+      const cV = counter($('#pwV', el), (v) => fmt(v));
+      let k = 0, raf = 0;
+      const grow = (p) => { let run = 0; Y.forEach((v, i) => { const q = clamp(p * N - i, 0, 1), h = H * v / 220000 * q; bars[i].setAttribute('height', h); bars[i].setAttribute('y', yb - h); run += v * q; }); $('#pwV', el).textContent = fmt(run); };
+      const reset = () => { cancelAnimationFrame(raf); k = 0; grow(0); first.style.opacity = 0; last.style.opacity = 0; $('#pwMore', el).style.opacity = 0; cV(0, true); };
+      return {
+        enter() { reset(); },
+        next() {
+          if (k === 0) {
+            k = 1; first.style.opacity = 1; const t0 = performance.now(), dur = reduce ? 1 : 4200;
+            const tick = (t) => { const p = clamp((t - t0) / dur, 0, 1); grow(p); if (p < 1) raf = requestAnimationFrame(tick); else { last.style.opacity = 1; cV(tot, true); } };
+            raf = requestAnimationFrame(tick); return true;
+          }
+          if (k === 1) { k = 2; cancelAnimationFrame(raf); grow(1); last.style.opacity = 1; cV(tot, true); $('#pwMore', el).style.opacity = 1; return true; }
+          return false;
+        },
+        replay() { reset(); },
+        leave() { cancelAnimationFrame(raf); },
+      };
+    },
+  };
+
   // ---- keep the big things small: the real house and cars
   LIVE.big = {
     head: 'Keep the big things small', body: 'The house, the car and debt decide most of it. **Get those right and the little things don\'t hurt.**',
@@ -1064,13 +1113,13 @@
   const SL = [];
   const scn = (id, sec, from, to) => { const s = SCENES[id].sc.steps; const a = from == null ? 0 : stepOf(id, from), b = to == null ? s.length - 1 : stepOf(id, to); for (let i = a; i <= b; i++) SL.push({ sec, scene: id, i }); };
   const live = (id, sec) => SL.push({ sec, live: id });
-  live('join', 0); live('title', 0); live('cold', 0); live('obj', 0);
+  live('join', 0); live('title', 0); live('cold', 0); live('q-guess', 0); live('obj', 0);
   live('q-pct', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'oe0', 'oe4'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
-  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('q-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
+  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('r-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
   live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
-  scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension');
+  scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension'); live('q-pworth', 4); live('pworth', 4);
   live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
   live('foo', 6); live('q-order', 6); live('q-efund', 6);

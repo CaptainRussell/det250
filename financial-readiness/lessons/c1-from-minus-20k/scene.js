@@ -204,7 +204,10 @@ function scene(st) {
 
   // ---- what I earned vs what I have: each year's base pay, then all of it together, then what is left today
   const KW = 1280, kx = 160, EB = 600, EH = 330, ek = (v) => v / 90000 * EH, ex = (i) => 250 + i * 185;
-  add('kHead', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: kx, y: 110, content: 'What I earned vs what I have', fill: C.ink, o: 0 });
+  add('kHead', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: kx, y: 110, content: 'What I Earned (Base Pay)', fill: C.ink, o: 0 });
+  add('kHead2', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: kx, y: 110, content: 'What I earned vs what I have', fill: C.ink, o: 0 });
+  // rank each year, under the year (Captain Russell, 25 Nov 2026: 2d Lt, 2d Lt, 1st Lt, 1st Lt, Capt, Capt, Capt)
+  const KR = ['O-1', 'O-1', 'O-2', 'O-2', 'O-3', 'O-3', 'O-3'];
   add('kEl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: kx, y: 236, content: 'All my base pay, June 2020 to now (W-2s)', fill: C.soft, o: 0 });
   let cum = 0;
   EARN.forEach(([yr, v], i) => {
@@ -212,8 +215,9 @@ function scene(st) {
     add('kE' + i, 'rect', {}, { x: ex(i) - 60, y: EB, w: 120, h: 0, rx: 8, fill: C.cyan, fo: 0.55 + i * 0.06, o: 0, cx: sx, cw: sw - 3 });
     add('kEv' + i, 'text', { size: 25, anchor: 'middle', weight: 800, mono: true }, { x: ex(i), y: EB - ek(v) - 16, content: fmt(v, { k: true }), fill: C.ink, o: 0 });
     add('kEy' + i, 'text', { size: 24, anchor: 'middle', weight: 700, mono: true }, { x: ex(i), y: EB + 38, content: yr === 2026 ? '2026*' : String(yr), fill: C.faint, o: 0 });
+    insImg('kR' + i, KR[i], ex(i), EB + 54, 58);
   });
-  add('kEn', 'text', { size: 22, anchor: 'start', weight: 600 }, { x: kx, y: EB + 90, content: '*2026 through October. The dotted bar is the whole year at that pace.', fill: C.faint, o: 0 });
+  add('kEn', 'text', { size: 22, anchor: 'start', weight: 600 }, { x: kx, y: EB + 152, content: '*2026 through October. The dotted bar is the whole year at that pace.', fill: C.faint, o: 0 });
   // 2026 isn't over: a dotted outline of the full year at the same pace shows the climb (Captain Russell, 25 Nov 2026)
   const E26 = EARN[EARN.length - 1][1] * 12 / 10, i26 = EARN.length - 1;
   add('kEx', 'rect', { dash: '10 8' }, { x: ex(i26) - 60, y: EB - ek(E26), w: 120, h: ek(E26), rx: 8, fill: 'rgba(78,168,255,.06)', stroke: C.cyan, sw: 3, o: 0 });
@@ -310,21 +314,21 @@ function scene(st) {
 
   // one year per click on the same slide, then all of it together, then my net worth (Captain Russell, 25 Nov 2026)
   const KB = 'Every dollar of base pay I\'ve been paid since 2020, **one year at a time.**';
-  const year = (s, i) => { const h = ek(EARN[i][1]); s['kE' + i].o = 1; s['kE' + i].h = h; s['kE' + i].y = EB - h; s['kEv' + i].o = 1; s['kEy' + i].o = 1; };
-  S.step({ head: 'Earned vs kept', key: 'k0', grp: 'k', body: KB })
+  const year = (s, i) => { const h = ek(EARN[i][1]); s['kE' + i].o = 1; s['kE' + i].h = h; s['kE' + i].y = EB - h; s['kEv' + i].o = 1; s['kEy' + i].o = 1; s['kR' + i].o = 1; };
+  S.step({ head: 'What I earned', key: 'k0', grp: 'k', body: KB })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.kHead.o = 1; })
     .beat(0.9, (s) => year(s, 0));
   EARN.forEach((e, i) => {
     if (!i) return;
-    const st = S.step({ head: 'Earned vs kept', key: 'k' + i, grp: 'k', body: i === EARN.length - 1 ? 'And 2026 isn\'t over yet. **The dotted bar is the whole year at the same pace.**' : KB })
+    const st = S.step({ head: 'What I earned', key: 'k' + i, grp: 'k', body: i === EARN.length - 1 ? 'And 2026 isn\'t over yet. **The dotted bar is the whole year at the same pace.**' : KB })
       .beat(0.9, (s) => year(s, i));
     if (i === EARN.length - 1) st.beat(0.8, (s) => { s.kEx.o = 1; s.kExv.o = 1; s.kEn.o = 1; });
   });
-  S.step({ head: 'Earned vs kept', key: 'kAll', grp: 'k', body: 'All of it together: **every dollar of base pay** since June 2020.' })
-    .beat(1.6, (s) => { EARN.forEach((_, i) => { const r = s['kE' + i]; r.x = r.cx; r.w = r.cw; r.y = 256; r.h = 90; s['kEv' + i].o = 0; s['kEy' + i].o = 0; }); s.kEn.o = 0; s.kEx.o = 0; s.kExv.o = 0; s.kEl.o = 1; })
+  S.step({ head: 'What I earned', key: 'kAll', grp: 'k', body: 'All of it together: **every dollar of base pay** since June 2020.' })
+    .beat(1.6, (s) => { EARN.forEach((_, i) => { const r = s['kE' + i]; r.x = r.cx; r.w = r.cw; r.y = 256; r.h = 90; s['kEv' + i].o = 0; s['kEy' + i].o = 0; s['kR' + i].o = 0; }); s.kEn.o = 0; s.kEx.o = 0; s.kExv.o = 0; s.kEl.o = 1; })
     .beat(0.6, (s) => { s.kEv.o = 1; });
   S.step({ head: 'Earned vs kept', key: 'kNw', grp: 'k', body: 'All my base pay since 2020, next to **what I have today.**', go: [800, 470, 1340, 650, 'Now, the budget'] })
-    .beat(0.5, (s) => { s.kHl.o = 1; })
+    .beat(0.5, (s) => { s.kHead.o = 0; s.kHead2.o = 1; s.kHl.o = 1; })
     .beat(1.4, (s) => { s.kH.o = 1; s.kH.w = KW * NOW / LIFETIME; s.kHv.o = 1; })
     .beat(0.8, (s) => { s.kBig.o = 1; })
     .beat(0.8, (s) => { s.kTsp.o = 1; s.kSub.o = 1; });
