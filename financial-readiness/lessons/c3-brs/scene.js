@@ -40,7 +40,7 @@ const END = CHOICES.map(at20);
 const YTD = 851.07 + 3404.28;   // my LES: TSP agency automatic + match, 2026 so far
 
 // ---------------------------------------------------------------- when in doubt, zoom out (Captain Russell, 24 Nov 2026)
-// The S&P 500, which the C Fund tracks. One day: 16 Oct 2026 open, high, low, close. One month: daily closes,
+// The S&P 500, which the C Fund tracks. One day: the shape of the 16 Oct 2026 open, high, low and close, placed on 26 Oct, the month's last day. One month: daily closes,
 // 28 Sep to 26 Oct 2026 (investing.com). One year, 10 years and 100 years: monthly averages from the Shiller data
 // (github.com/datasets/s-and-p-500, through Sep 2026); 100 years uses each January and is drawn on a log scale.
 const ZM = [7683.69, 7670.84, 7651.54, 7666.45, 7722.72, 7773.95, 7818.93, 7801.77, 7765.36, 7811.54, 7807.24, 7805.45, 7718.94, 7744.06, 7659.44, 7690.73, 7712.57, 7757.17, 7663.43, 7623.68, 7676.77];
@@ -51,7 +51,7 @@ const ZDAY = [7745.32, 7756.84, 7631.77, 7659.44];   // open, high, low, close
 // CPI-U factors to Nov 2026 dollars for each ZY100 point (Captain Russell, 25 Nov 2026: real values everywhere)
 const ZR100 = [18.7181, 19.1459, 19.3673, 19.5938, 19.5938, 21.0726, 23.4304, 25.9732, 25.3829, 24.6363, 24.2793, 23.7627, 23.5954, 23.9324, 24.1046, 23.7627, 21.341, 19.8257, 19.256, 18.8233, 18.4096, 15.5839, 14.1373, 13.9606, 14.2576, 13.1911, 12.6435, 12.596, 12.4555, 12.5488, 12.502, 12.1396, 11.7152, 11.5536, 11.4353, 11.2434, 11.1685, 11.0215, 10.8432, 10.7389, 10.5363, 10.184, 9.8256, 9.4116, 8.8639, 8.4184, 8.1522, 7.8651, 7.19, 6.431, 6.0262, 5.7274, 5.3609, 4.9056, 4.3066, 3.8512, 3.5531, 3.4259, 3.2881, 3.1759, 3.0571, 3.0131, 2.8959, 2.7668, 2.6299, 2.4893, 2.4262, 2.3496, 2.2918, 2.2292, 2.17, 2.1059, 2.0734, 2.0393, 1.9849, 1.9135, 1.8919, 1.844, 1.8091, 1.757, 1.6896, 1.6552, 1.5873, 1.5869, 1.5462, 1.5215, 1.4782, 1.455, 1.4323, 1.4336, 1.4142, 1.3797, 1.3517, 1.3311, 1.2988, 1.2809, 1.1917, 1.1199, 1.0897, 1.0582, 1.0224, 1.0045];
 const ZOOMS = [
-  { key: 'd', name: 'One day', when: '16 October 2026', pts: ZDAY.map((v, i) => [[0, 0.25, 0.7, 1][i], v]) },
+  { key: 'd', name: 'One day', when: '26 October 2026', pts: ZDAY.map((v, i) => [[0, 0.25, 0.7, 1][i], v]) },
   { key: 'm', name: 'One month', when: '28 Sep to 26 Oct 2026', pts: ZM.map((v, i) => [i / (ZM.length - 1), v]) },
   { key: 'y', name: 'One year', when: 'Oct 2025 to Sep 2026', pts: ZY1.map((v, i) => [i / (ZY1.length - 1), v]) },
   { key: 't', name: 'Ten years', when: '2016 to 2026', pts: ZY10.map((v, i) => [i / (ZY10.length - 1), v]) },
@@ -59,12 +59,12 @@ const ZOOMS = [
 ];
 // Real dates for every point, as decimal years, so each window sits inside the next one at its true place
 // (Captain Russell, 25 Nov 2026: switching time frames should show the smaller window inside the bigger chart).
-// Month: the 21 trading days 28 Sep to 26 Oct 2026. Day: 16 Oct, the 15th of them, 9:30 to 4:00, ending on its close.
+// Month: the 21 trading days 28 Sep to 26 Oct 2026. Day: the last of them, 26 Oct, 9:30 to 4:00, ending on its close (Captain Russell, 25 Nov 2026: the one day is the most recent day).
 // Monthly averages sit mid-month; the 100 year line is each January, then Sep 2026.
 (function () {
   const dy = (y, m, d, h) => y + (Date.UTC(y, m - 1, d, h || 0) - Date.UTC(y, 0, 1)) / (365.25 * 864e5);
   const days = []; for (let d = new Date(Date.UTC(2026, 8, 28)); days.length < ZM.length; d.setUTCDate(d.getUTCDate() + 1)) { const w = d.getUTCDay(); if (w && w < 6) days.push(dy(2026, d.getUTCMonth() + 1, d.getUTCDate(), 16)); }
-  const close = days[14], open = close - 6.5 / 24 / 365.25;
+  const close = days[days.length - 1], open = close - 6.5 / 24 / 365.25;
   ZOOMS[0].at = [0, 0.25, 0.7, 1].map((f) => open + f * (close - open));
   ZOOMS[1].at = days;
   ZOOMS[2].at = ZY1.map((v, i) => 2025 + (9 + i + 0.5) / 12);
@@ -86,7 +86,7 @@ const ZOOMS = [
   const T = ZOOMS[3].pts, Y = ZOOMS[2].pts, n = T.length - Y.length, start = Y[Y.length - 1][1] / (1 + want.t / 100);
   const A = start / T[0][1], e = Math.log((Y[0][1] / T[n][1]) / A);
   ZOOMS[3].pts = T.map(([f, v], i) => [f, i >= n ? Y[i - n][1] : v * A * Math.exp(e * i / n)]);
-  const day = ZOOMS[0].pts, sc = ZOOMS[1].pts[14][1] / day[day.length - 1][1];
+  const day = ZOOMS[0].pts, sc = ZOOMS[1].pts[ZOOMS[1].pts.length - 1][1] / day[day.length - 1][1];
   ZOOMS[0].pts = day.map(([f, v]) => [f, v * sc]);
   ZOOMS[0].when = ''; ZOOMS[1].when = ''; ZOOMS[2].when = ''; ZOOMS[3].when = '';
   ZOOMS[4].off = true;
@@ -282,7 +282,7 @@ function scene(st) {
   // ---- the rule
   add('rule', 'text', { size: 300, anchor: 'middle', weight: 900, mono: true }, { x: 800, y: 520, content: '5%', fill: C.green, o: 0, s: 0.6 });
   add('ruleS', 'text', { size: 44, anchor: 'middle', weight: 800 }, { x: 800, y: 640, content: 'The least you should ever put in the TSP.', fill: C.ink, o: 0 });
-  add('ruleS2', 'text', { size: 32, anchor: 'middle', weight: 600 }, { x: 800, y: 700, content: 'Set it on day 1 in myPay, before you get used to the money.', fill: C.soft, o: 0 });
+  add('ruleS2', 'text', { size: 32, anchor: 'middle', weight: 600 }, { x: 800, y: 700, content: 'It\'s the default contribution, into a Lifecycle (L) Fund.', fill: C.soft, o: 0 });
 
   // ---- zoom out: one chart box, one line per zoom level
   const ZX0 = 270, ZX1 = 1440, ZY0 = 760, ZY1 = 290;
@@ -402,7 +402,7 @@ function scene(st) {
     .beat(1.2, (s) => { s.abW.o = 1; s.abW.w = 1280; s.abWv.o = 1; })
     .beat(0.8, (s) => { s.abBig.o = 1; s.abMe.o = 1; });
 
-  S.step({ head: 'The one rule', body: 'Put in at least 5% starting with your very first paycheck. Anything less and you\'re basically giving yourself a pay cut. **Next up: where every extra dollar should go.**' })
+  S.step({ head: 'The one rule', body: '5% is the **default contribution**, into a Lifecycle (L) Fund, so it starts with your very first paycheck. Never go below it: anything less is basically giving yourself a pay cut. **Next up: where every extra dollar should go.**' })
     .beat(0.5, (s) => { off(s); })
     .beat(0.9, (s) => { s.rule.o = 1; s.rule.s = 1; })
     .beat(0.7, (s) => { s.ruleS.o = 1; s.ruleS2.o = 1; });
