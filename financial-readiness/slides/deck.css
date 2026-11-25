@@ -350,13 +350,7 @@ html.solo #stage.go { cursor: default; }
 .iracol p { margin: 0 0 16px; font-size: 25px; }
 .iracol p.s { font: 600 21px/1.35 var(--font); color: var(--soft); }
 .iracol .lab { color: var(--gold); }
-.irabig { font: 800 34px/1.25 var(--font); margin: 6px 0 18px; }
-.irabig .g { color: var(--green); }
-.irabig .s2 { font: 600 22px var(--font); color: var(--soft); }
-.irabk { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 16px; }
-.irabk b { font: 800 28px var(--font); padding: 6px 16px; border-radius: 14px; background: var(--panel2); border: 2px solid var(--line); }
 .irafunds { margin: 4px 0 16px; }
-.irafunds .ib { font: 800 18px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--soft); margin: 12px 0 6px; }
 .irafunds .if { display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: baseline; font: 650 21px var(--font); padding: 4px 0; border-bottom: 1px solid var(--line); }
 .irafunds .if b { font-family: ui-monospace, Menlo, monospace; color: var(--ink); }
 .irafunds .if span { color: var(--soft); }
@@ -407,3 +401,63 @@ html.solo #stage.go { cursor: default; }
 @keyframes engPulse { 0% { box-shadow: 0 0 0 0 rgba(241,190,72,.7); } 70% { box-shadow: 0 0 0 18px rgba(241,190,72,0); } 100% { box-shadow: 0 0 0 0 rgba(241,190,72,0); } }
 @keyframes engBuzz { 0%, 60%, 100% { transform: none; } 65% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } 85% { transform: rotate(-8deg); } }
 @media (prefers-reduced-motion: reduce) { #engage, #engage svg { animation: none; } }
+
+/* beat slides (25 Nov 2026): one big visual per click, few words (Roth IRA, Watch out for, Money calls) */
+.btdots { right: 90px; top: 112px; display: flex; gap: 10px; }
+.btdots i { font: 750 17px var(--font); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); padding: 8px 16px; border-radius: 999px; border: 2px solid var(--line); opacity: .55; transition: all .3s; }
+.btdots i.done { opacity: .85; }
+.btdots i.on { color: #1a1203; background: var(--gold); border-color: var(--gold); opacity: 1; }
+.beat { left: 90px; top: 200px; width: 1420px; height: 650px; display: flex; flex-direction: column; justify-content: center; gap: 44px;
+  opacity: 0; transform: translateY(24px); transition: opacity .45s, transform .45s; pointer-events: none; }
+.beat.on { opacity: 1; transform: none; pointer-events: auto; }
+.bt-row { display: flex; align-items: center; justify-content: center; gap: 40px; }
+.bt-node { width: 340px; box-sizing: border-box; text-align: center; padding: 30px 20px; border-radius: 26px; background: var(--panel); border: 2px solid var(--line); }
+.bt-node svg { width: 120px; height: 120px; display: block; margin: 0 auto 14px; }
+.bt-node b { display: block; font: 800 40px/1.15 var(--font); }
+.bt-node span { display: block; font: 600 26px var(--font); color: var(--soft); margin-top: 6px; }
+.bt-node big { display: block; font: 900 120px/1 var(--font); color: var(--green); margin-bottom: 14px; }
+.bt-node.gn { border-color: var(--green); box-shadow: 0 0 40px rgba(63,214,154,.25); }
+.bt-arr { position: relative; flex: none; width: 60px; height: 6px; border-radius: 3px; background: var(--gold); }
+.bt-arr::after { content: ""; position: absolute; right: -6px; top: -11px; border: 14px solid transparent; border-left: 20px solid var(--gold); border-right: 0; }
+.bt-big { text-align: center; font: 800 56px/1.2 var(--font); }
+.bt-small { text-align: center; font: 600 28px/1.4 var(--font); color: var(--soft); }
+.bt-logo { width: 340px; text-align: center; }
+.bt-logo img { width: 160px; height: 160px; display: block; margin: 0 auto 18px; }
+.bt-logo b { font: 800 42px var(--font); }
+.bt-zero { width: 340px; text-align: center; }
+.bt-zero big { display: block; font: 900 110px/1 var(--font); color: var(--green); }
+.bt-zero span { font: 700 32px var(--font); color: var(--soft); }
+.bt-tick { width: 340px; box-sizing: border-box; text-align: center; padding: 30px 20px; border-radius: 26px; background: var(--panel); border: 2px solid var(--line); }
+.bt-tick img { width: 84px; height: 84px; display: block; margin: 0 auto 14px; }
+.bt-tick b { display: block; font: 900 72px/1.05 ui-monospace, Menlo, monospace; }
+.bt-tick span { display: block; font: 800 32px var(--font); color: var(--green); margin-top: 8px; }
+.bt-bars { width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 300px 1fr; gap: 30px 26px; align-items: center; }
+.bt-bars .l { font: 750 34px var(--font); text-align: right; color: var(--soft); }
+.bt-bars .b { height: 110px; box-sizing: border-box; border-radius: 16px; display: flex; align-items: center; padding: 0 26px; font: 900 52px var(--font); color: #04140e; white-space: nowrap; width: 0; overflow: hidden; transition: width 1.3s cubic-bezier(.3,.7,.2,1) .35s; }
+.beat.on .bt-bars .b { width: var(--w); }
+.bt-vs { display: flex; gap: 44px; justify-content: center; }
+.bt-side { width: 620px; box-sizing: border-box; padding: 32px 38px; border-radius: 26px; background: var(--panel); border: 3px solid var(--line); text-align: center; }
+.bt-side.bad { border-color: var(--red); } .bt-side.good { border-color: var(--green); }
+.bt-side svg { width: 84px; height: 84px; display: block; margin: 0 auto 12px; }
+.bt-side .t { font: 800 24px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--soft); margin-bottom: 10px; }
+.bt-side h3 { margin: 0 0 10px; font: 800 46px/1.15 var(--font); }
+.bt-side big { display: block; font: 900 88px/1.05 var(--font); }
+.bt-side p { margin: 0; font: 650 30px/1.3 var(--font); color: var(--soft); }
+.bt-car { display: flex; gap: 60px; align-items: center; }
+.bt-car figure { margin: 0; width: 560px; flex: none; }
+.bt-car img { width: 560px; height: 404px; object-fit: cover; border-radius: 22px; display: block; border: 3px solid var(--line); }
+.bt-car figcaption { margin-top: 14px; font: 600 26px/1.35 var(--font); color: var(--soft); }
+.bt-car figcaption b { color: var(--green); }
+.bt-carr h2 { margin: 0 0 34px; font: 700 64px/1.1 var(--serif); }
+.bt-carr p { margin: 30px 0 0; font: 650 30px/1.35 var(--font); color: var(--soft); }
+.bt-eq { display: flex; align-items: center; gap: 34px; }
+.bt-eq b { display: block; font: 900 84px/1 var(--font); }
+.bt-eq span { display: block; font: 650 26px var(--font); color: var(--soft); margin-top: 8px; }
+.bt-rate { display: flex; justify-content: center; }
+.bt-rate div { width: 420px; padding: 30px 0; text-align: center; }
+.bt-rate .r1 { background: rgba(255,111,125,.18); border-radius: 22px 0 0 22px; border-bottom: 8px solid var(--red); }
+.bt-rate .r2 { background: rgba(232,181,74,.14); border-bottom: 8px solid var(--amber); }
+.bt-rate .r3 { background: rgba(63,214,154,.16); border-radius: 0 22px 22px 0; border-bottom: 8px solid var(--green); }
+.bt-rate b { display: block; font: 900 64px/1.1 var(--font); }
+.bt-rate span { display: block; font: 700 30px var(--font); color: var(--soft); margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .beat, .bt-bars .b { transition: none; } }
