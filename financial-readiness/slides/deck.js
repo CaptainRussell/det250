@@ -28,6 +28,7 @@
     { name: 'Your LES', sweep: 'Your first LES' },
     { name: 'The BRS', sweep: 'The BRS' },
     { name: 'Zoom out', sweep: 'Zoom out' },
+    { name: 'Order', sweep: 'Your order of operations' },
     { name: 'Money calls', sweep: 'Money calls' },
   ];
 
@@ -428,6 +429,55 @@
     },
   };
 
+  // ---- cold open (Captain Russell, 25 Nov 2026: start with something personal). Where I started, and a teaser
+  // for where I am now; the class guesses that number in My story before the net worth chart shows it.
+  LIVE.cold = {
+    head: 'Where I started', body: 'June 2019, brand new 2d Lt, **$19,421 in debt**. Where am I now? **You\'ll get to guess in a few minutes.**',
+    build(el) {
+      el.innerHTML = `<div class="abs in" style="left:110px;top:90px;--d:.05"><div class="k">Me, 7 years ago</div></div>
+        <div class="abs card in cold1" style="left:110px;top:170px;width:640px;--d:.15"><div class="lab">June 2019</div><div class="big r">−$19,421</div>
+          <p>Brand new 2d Lt. Student loans and a car loan, and that was my net worth.</p></div>
+        <div class="abs card cold2" style="left:850px;top:170px;width:640px"><div class="lab">Today, November 2026</div><div class="big a qm">$???</div>
+          <p>Same pay as every other officer at my rank. You'll guess this number in a few minutes.</p></div>
+        <div class="abs cold3" style="left:110px;top:640px;width:1380px"><h2>Here's how I got there, and how you can get there faster.</h2></div>`;
+      let k = 0;
+      const show = () => { $('.cold2', el).classList.toggle('on', k >= 1); $('.cold3', el).classList.toggle('on', k >= 2); };
+      return { enter() { k = 0; show(); }, next() { if (k >= 2) return false; k++; show(); return true; } };
+    },
+  };
+
+  // ---- the Financial Order of Operations (Captain Russell, 25 Nov 2026: cover the emergency fund, high-interest
+  // debt and the rest, in the order The Money Guy Show teaches it). One step per click, with what it means for an officer.
+  const FOO = [
+    ['Deductibles covered', 'Cash for your biggest deductible, so one surprise bill doesn\'t land on a credit card.', 'TRICARE costs you almost nothing, so this is mostly your car insurance deductible. Call it $1,000 in savings.'],
+    ['Employer match', 'Free money. Take all of it before anything else.', 'Put in 5% of base pay from day 1. The Air Force\'s 1% starts after 60 days, the match after 2 years.'],
+    ['High-interest debt', 'A credit card at 20% or more costs you more than any investment will make you.', 'Pay the card off in full every month. If you\'re carrying a balance, this is where your extra money goes.'],
+    ['Emergency fund', '3 to 6 months of what you spend, in savings you can get to.', 'On a $3,000 budget that\'s $9,000 to $18,000. Your paycheck is steady, but a PCS, a family emergency or a dead car won\'t wait.'],
+    ['Roth IRA and HSA', 'More tax-free growth, outside the TSP.', 'Up to $7,500 a year in a Roth IRA in 2026. TRICARE doesn\'t qualify for an HSA, so skip that part.'],
+    ['Max out retirement', 'Fill the rest of the TSP.', 'The 2026 elective deferral limit is $24,500. In a combat zone you can put in even more.'],
+    ['Hyper-accumulation', 'Invest past your retirement accounts, in a regular brokerage account.', 'The Money Guy goal is 25% of your gross income going to investing.'],
+    ['Prepaid future expenses', 'Save ahead for things you know are coming.', 'Kids\' college in a 529, your next car in cash, a down payment.'],
+    ['Low-interest debt', 'Pay off cheap debt early, last.', 'A mortgage or a loan under about 6%. Your money usually grows faster invested.'],
+  ];
+  LIVE.foo = {
+    head: 'Your order of operations', body: 'Where each extra dollar goes, in order, from The Money Guy Show. **Finish a step before you jump to the next one.**',
+    build(el) {
+      el.innerHTML = `<div class="abs in" style="left:90px;top:56px;--d:.05"><div class="k">The Money Guy Show</div></div>
+        <h1 class="abs in" style="left:90px;top:96px;font-size:54px;--d:.1">Financial Order of Operations</h1>
+        <div class="abs foo">${FOO.map(([t], i) => `<div class="st" style="left:${i * 38}px;top:${(8 - i) * 66}px"><b>${i + 1}</b><span>${esc(t)}</span></div>`).join('')}</div>
+        <div class="abs card foocard" style="left:960px;top:200px;width:550px"><div class="n"></div><h2></h2><p class="w"></p><div class="lab g">For you</div><p class="y"></p></div>`;
+      const st = [...el.querySelectorAll('.foo .st')], card = $('.foocard', el);
+      let k = 0;
+      const show = () => {
+        st.forEach((d, i) => { d.className = 'st' + (i < k ? ' done' : i === k ? ' cur' : ''); });
+        const [t, w, y] = FOO[k];
+        $('.n', card).textContent = 'Step ' + (k + 1) + ' of 9'; $('h2', card).textContent = t; $('.w', card).textContent = w; $('.y', card).textContent = y;
+        card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+      };
+      return { enter() { k = 0; show(); }, next() { if (k >= FOO.length - 1) return false; k++; show(); return true; } };
+    },
+  };
+
   // ---- money calls: five choices, one line that moves as you change them
   LIVE.calls = {
     head: 'Money calls', body: 'Five decisions you\'re going to face in your first ten years. **Flip them and watch the line move.**',
@@ -493,18 +543,19 @@
 
   // ---- close: the three samples of behavior, checked off
   LIVE.close = {
-    head: 'Questions?', body: 'If you only remember one thing: **put in at least 5% on day 1 and live like a cadet for a while.** You\'ll thank yourself later.',
+    explore: 'plan', head: 'Questions?', body: 'If you only remember one thing: **put in at least 5% on day 1 and live like a cadet for a while.** You\'ll thank yourself later.',
     build(el) {
       el.innerHTML = `<div class="obj" style="top:110px">
         <div class="k in" style="--d:.05;margin-bottom:26px">What we covered</div>
-        <div class="sob">
+        <div class="sob four">
           ${[['The BRS', 'A smaller pension, the TSP match and continuation pay. The match is free money, so take all of it.'],
              ['Three types of pay', 'Base pay (taxed), allowances like Basic Allowance for Housing and Basic Allowance for Subsistence (not taxed), and special and incentive pay.'],
+             ['Order of operations', 'Deductible cash, the match, high-interest debt, then 3 to 6 months saved. Then the rest.'],
              ['Money calls', 'Cars, emergencies, a spouse, promotions. Keep the big things small and invest the raises.']].map(([t, p], i) => `
           <div class="card in" style="--d:${0.2 + i * 0.25}"><div class="n g" style="color:var(--green)">✓</div><p style="font-weight:850">${t}</p><p style="font-size:22px;color:var(--soft);font-weight:600">${p}</p></div>`).join('')}
         </div>
         <h1 class="in" style="--d:1;margin-top:70px;font-size:88px">Questions?</h1>
-        <div class="lab in" style="--d:1.15;margin-top:14px;font-size:26px">These slides live on Storm HQ under Class Activities if you want to go back through them at your own pace.</div></div>`;
+        <div class="lab in" style="--d:1.15;margin-top:14px;font-size:26px">Your Day 1 plan is on your phone, so screenshot it. These slides live on Storm HQ under Class Activities.</div></div>`;
       return {};
     },
   };
@@ -614,7 +665,7 @@
         st.q = { qid: q.qid, type: q.type, prompt: q.prompt, info: q.info, opts: q.opts, min: q.min, max: q.max, step: q.step, unit: q.unit, start: q.start, calls: q.calls,
           ins: q.ins ? q.ins.map((g) => { const r = FR.INSIGNIA[g]; return r ? [FRChars.BASE + 'insignia/' + r[0] + '.svg', r[1]] : null; }) : null };
         st.mine = a ? a.v : null; st.mineText = a ? q.say(a.v) : '';
-        if (R.phase === 'reveal') st.res = a ? { pts: a.pts || 0, ok: a.pts > 0, text: q.answerText } : { pts: 0, ok: false, text: 'No answer this time. ' + q.answerText };
+        if (R.phase === 'reveal') st.res = q.poll ? { poll: true, pts: 0, ok: true, text: q.answerText, mine: a ? q.say(a.v) : '' } : a ? { pts: a.pts || 0, ok: a.pts > 0, text: q.answerText } : { pts: 0, ok: false, text: 'No answer this time. ' + q.answerText };
       }
       return st;
     }
@@ -744,8 +795,24 @@
   const V_EASY = CALL_V10(D4.EASY), V_BEST = CALL_V10(D4.BEST);
   const fixPick = (v) => { const o = {}; D4.CALLS.forEach((c) => { const raw = v && v[c.key]; const hit = c.opts.find((q) => String(q[0]) === String(raw)); o[c.key] = hit ? hit[0] : D4.EASY[c.key]; }); return o; };
   const QS = {
-    post: { type: 'choice', prompt: 'Your discussion post: what does a single 2d Lt in San Antonio make a month?', info: 'Base pay + Basic Allowance for Housing + Basic Allowance for Subsistence, 2026 rates.',
-      opts: ['$4,150.20', '$6,062.68', '$7,601.20', '$5,195.32'], ans: 1, why: 'Base pay $4,150.20 + Basic Allowance for Housing $1,584 + Basic Allowance for Subsistence $328.48.' },
+    // where a new 2d Lt lands among US workers, guessed before we go over the discussion post (Captain Russell, 25 Nov 2026)
+    pct: { type: 'slider', prompt: 'Your discussion post had you work out what a **brand new 2d Lt** makes. Where does that land among **all American workers?**', info: 'Out of 100 workers, how many make less? First year, base pay plus allowances.',
+      min: 1, max: 99, step: 1, unit: 'pct', start: 50, ticks: [10, 25, 50, 75, 90], ans: 64, tol: 30,
+      why: 'The **64th percentile**. A brand new 2d Lt out-earns about 64 of every 100 American workers, before a single promotion.' },
+    // my net worth today, guessed before the chart shows it (Captain Russell, 25 Nov 2026)
+    guess: { type: 'slider', prompt: 'June 2019: I was **$19,421 in debt**. What\'s my **net worth today**, 7 years later?', info: 'Everything I own minus everything I owe. Same pay as any other officer at my rank.',
+      min: 0, max: 500000, step: 10000, unit: '$M', start: 0, ticks: [0, 100000, 200000, 300000, 400000, 500000], ans: Math.round(FR.DATA.fr1.NOW / 1e4) * 1e4, tol: 150000,
+      why: 'About **' + fmt(Math.round(FR.DATA.fr1.NOW / 1e4) * 1e4, { k: true }) + '**. Here\'s how it happened, one year at a time.' },
+    order: { type: 'choice', prompt: 'You have **$1,000 in savings**, you put **5% in the TSP**, and you owe **$4,000 on a credit card at 24%**. Where does your next extra $500 go?',
+      opts: ['More in the TSP', 'The credit card', 'Your emergency fund', 'A Roth IRA'], ans: 1,
+      why: 'Paying off 24% interest is a guaranteed 24% return, and no investment beats that.' },
+    efund: { type: 'choice', prompt: 'You live on that **$3,000 college budget**. How big should your **emergency fund** be?',
+      opts: ['$1,000', '$9,000 to $18,000', '$50,000', 'Nothing, the military always pays you'], ans: 1,
+      why: '3 to 6 months of what you spend. Your paycheck is steady, but a PCS or a dead car won\'t wait.' },
+    // no points, no wrong answer: what the class says it will do (Captain Russell, 25 Nov 2026)
+    commit: { type: 'slider', poll: true, prompt: 'No points on this one. **What % of your base pay will you put in the TSP on day 1?**', info: 'Be honest. Nobody sees your answer but you.',
+      min: 0, max: 25, step: 1, unit: '%', start: 5, ticks: [0, 5, 10, 15, 20, 25], ans: 8, tol: 8,
+      why: 'Whatever you picked, set it up in myPay before your first paycheck so you never miss it. Your Day 1 plan is on your phone.' },
     lt: { type: 'choice', prompt: 'A brand new **2d Lt** makes about **$6,062 a month**. Who in the enlisted force makes about the same?', info: 'Base pay + Basic Allowance for Housing + Basic Allowance for Subsistence, no dependents, San Antonio, 2026.',
       opts: ['Airman First Class (E-3) at 2 years', 'Senior Airman (E-4) at 4 years', 'Staff Sergeant (E-5) at 8 years', 'Master Sergeant (E-7) at 16 years'], ins: ['E-3', 'E-4', 'E-5', 'E-7'], ans: 2,
       why: 'A staff sergeant at 8 years makes about $6,276. You start there on day 1.' },
@@ -772,20 +839,21 @@
       calls: D4.CALLS.map((c) => ({ key: c.key, when: c.title.split(':')[0], ask: c.ask, opts: c.opts.map((o) => [String(o[0]), o[1]]) })),
       why: 'The best calls end near ' + fmt(V_BEST, { k: true }) + ' at year 10. The easy calls end at ' + fmt(V_EASY, { k: true }) + '.' },
   };
+  const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
   Object.entries(QS).forEach(([id, q]) => {
     q.qid = id;
     if (q.type === 'choice') { q.score = choiceScore(q.ans); q.say = (v) => 'You picked: ' + q.opts[v]; q.answerText = '**' + q.opts[q.ans] + '.** ' + q.why; }
     if (q.type === 'slider') {
       // money in the hundred thousands reads $100K, millions read $1.3 million (Captain Russell, 25 Nov 2026)
-      const f = (v) => (q.unit === '$M' ? (v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : v + q.unit);
-      q.fmt = f; q.score = sliderScore(q.ans, q.tol); q.say = (v) => 'You said ' + f(v); q.answerText = q.why;
+      const f = (v) => (q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? ordinal(v) : v + q.unit);
+      q.fmt = f; q.score = q.poll ? () => 0 : sliderScore(q.ans, q.tol); q.say = (v) => 'You said ' + f(v); q.answerText = q.why;
     }
     if (q.type === 'calls') {
       q.score = (v) => Math.round(1000 * clamp((CALL_V10(fixPick(v)) - V_EASY) / (V_BEST - V_EASY), 0, 1));
       q.say = (v) => 'Your year 10: ' + fmt(CALL_V10(fixPick(v)), { k: true }); q.answerText = q.why;
     }
     LIVE['q-' + id] = {
-      head: 'On your phones', body: q.type === 'calls' ? 'Make all five calls on your phone, then lock it in.' : 'Answer on your phone. **Faster right answers score more.**',
+      head: 'On your phones', body: q.type === 'calls' ? 'Make all five calls on your phone, then lock it in.' : q.poll ? 'Answer on your phone. **No points, no wrong answer.**' : 'Answer on your phone. **Faster right answers score more.**',
       build(el) { return buildQ(el, q); },
     };
   });
@@ -811,7 +879,8 @@
         const ticks = q.ticks || [0, 0.25, 0.5, 0.75, 1].map((f) => q.min + f * (q.max - q.min));
         body.innerHTML = `<div class="line"><i></i>${ticks.map((t) => `<span style="left:${x(t)}px">${q.fmt(t)}</span>`).join('')}
           ${rev ? A.map((p, k) => `<div class="pin" style="left:${x(p.ans[q.qid].v)}px;top:${-60 - (k % 4) * 46}px">${face(p, 40)}</div>`).join('') : ''}
-          ${rev ? `<div class="truth" style="left:${x(q.ans)}px"><b>${q.fmt(q.ans)}</b></div>` : ''}</div>`;
+          ${rev && !q.poll ? `<div class="truth" style="left:${x(q.ans)}px"><b>${q.fmt(q.ans)}</b></div>` : ''}
+          ${rev && q.poll && A.length ? (() => { const m = Math.round(A.reduce((t, p) => t + p.ans[q.qid].v, 0) / A.length); return `<div class="truth" style="left:${x(m)}px"><b>Class average ${q.fmt(m)}</b></div>`; })() : ''}</div>`;
       } else {
         const lo = Math.min(V_EASY, ...A.map((p) => CALL_V10(fixPick(p.ans[q.qid].v)))), hi = V_BEST;
         const x = (v) => 40 + 1340 * (v - lo) / Math.max(1, hi - lo);
@@ -995,17 +1064,18 @@
   const SL = [];
   const scn = (id, sec, from, to) => { const s = SCENES[id].sc.steps; const a = from == null ? 0 : stepOf(id, from), b = to == null ? s.length - 1 : stepOf(id, to); for (let i = a; i <= b; i++) SL.push({ sec, scene: id, i }); };
   const live = (id, sec) => SL.push({ sec, live: id });
-  live('join', 0); live('title', 0); live('obj', 0);
-  live('q-post', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'oe0', 'oe4'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
+  live('join', 0); live('title', 0); live('cold', 0); live('obj', 0);
+  live('q-pct', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'oe0', 'oe4'); live('q-lt', 1); scn('fr1', 1, 'The Airmen who work for you', 'Lead with it');
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
-  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
+  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('q-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
   live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
   scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension');
   live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
-  live('books', 6); live('q-calls', 6); live('calls', 6); scn('fr4', 6, 'My mantra', 'My mantra'); live('board4', 6);
-  live('close', 6);
+  live('foo', 6); live('q-order', 6); live('q-efund', 6);
+  live('books', 7); live('q-calls', 7); live('calls', 7); live('board4', 7); scn('fr4', 7, 'My mantra', 'My mantra'); live('q-commit', 7);
+  live('close', 7);
   SL.forEach((s, k) => { if (s.scene) { const m = SCENES[s.scene].sc.steps[s.i].meta; s.head = m.head; s.body = m.body; s.grp = m.grp; } else { const L = LIVE[s.live]; s.head = L.head; s.body = L.body; s.spin = L.spin; s.explore = L.explore; } });
 
   // clicks that build one slide (the same grp) keep its slide number

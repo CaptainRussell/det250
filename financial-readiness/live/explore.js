@@ -8,6 +8,11 @@
  */
 (function (root) {
   'use strict';
+  // what this phone picked on the sliders, for the Day 1 plan at the end (localStorage d250-fr-plan-v1)
+  root.FRPlan = {
+    get() { try { return JSON.parse(localStorage.getItem('d250-fr-plan-v1')) || {}; } catch (e) { return {}; } },
+    set(o) { try { localStorage.setItem('d250-fr-plan-v1', JSON.stringify(Object.assign(this.get(), o))); } catch (e) {} },
+  };
   const NS = 'http://www.w3.org/2000/svg';
   const W = 340, H = 210, X0 = 44, X1 = 330, Y0 = 186, Y1 = 14;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -41,7 +46,7 @@
     host.appendChild(d);
     const inp = d.querySelector('input'), out = d.querySelector('.rl b');
     const paint = () => { const v = +inp.value; inp.style.setProperty('--fill', ((v - o.min) / (o.max - o.min) * 100) + '%'); out.textContent = o.show(v); o.on(v); };
-    inp.addEventListener('input', paint);
+    inp.addEventListener('input', () => { paint(); if (o.keep) o.keep(+inp.value); });
     return { paint, get value() { return +inp.value; } };
   }
 
@@ -64,7 +69,7 @@
       sv('line', { x1: ax(26), x2: ax(26), y1: Y1, y2: Y0, stroke: COL.faint, 'stroke-dasharray': '3 4' }, f.svg);
       const area = sv('path', { fill: 'rgba(63,214,154,.15)' }, f.svg), ln = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, f.svg);
       const b1 = stat(f.r, 'Invest a month', 'g'), b2 = stat(f.r, 'After 4 years', 'g'), b3 = stat(f.r, 'At 60', 'g');
-      const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 1, value: 0, ends: ['Spend it all', 'Live on $2,000'], show: money,
+      const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 1, value: 0, ends: ['Spend it all', 'Live on $2,000'], show: money, keep: (v) => FRPlan.set({ invest: v }),
         on(v) {
           const pts = L.curve(v).map(([a, b]) => [ax(a), Y0 - (Y0 - Y1) * Math.min(b, HI) / HI]);
           ln.setAttribute('d', pathOf(pts)); area.setAttribute('d', pathOf(pts) + `L${X1} ${Y0}L${X0} ${Y0}Z`);
@@ -96,7 +101,7 @@
         sA.textContent = R(A[A.length - 1][1]); sB.textContent = R(mo * 12 * 38);
         sC.textContent = d < 0 ? (A.free == null ? 'After 60' : 'Age ' + Math.ceil(A.free * 2) / 2) : 'No debt';
       };
-      range(f.s, { label: 'Invest a month ', min: 100, max: 2000, step: 50, value: 500, ends: ['$100', '$2,000'], show: money, on(v) { mo = v; draw(); } }).paint();
+      range(f.s, { label: 'Invest a month ', min: 100, max: 2000, step: 50, value: 500, ends: ['$100', '$2,000'], show: money, keep: (v) => FRPlan.set({ invest: v }), on(v) { mo = v; draw(); } }).paint();
       range(f.s, { label: 'Starting debt ', min: -50000, max: 0, step: 5000, value: 0, ends: ['−$50K', '$0'], show: (v) => (v ? '−' + kM(-v) : '$0'), on(v) { d = v; draw(); } }).paint();
       return {};
     },
@@ -115,7 +120,7 @@
         return r;
       });
       const sY = stat(f.r, 'You a month', 'c'), sG = stat(f.r, 'Air Force', 'g'), s20 = stat(f.r, 'After 20 yrs', 'g');
-      range(f.s, { label: 'You put in ', min: 0, max: MAXP, step: 1, value: 0, ends: ['0%', '25%'], show: (v) => v + '%',
+      range(f.s, { label: 'You put in ', min: 0, max: MAXP, step: 1, value: 0, ends: ['0%', '25%'], show: (v) => v + '%', keep: (v) => FRPlan.set({ tsp: v }),
         on(v) {
           bars.forEach((b, i) => b.setAttribute('fill', i === v ? (i >= 5 ? COL.green : COL.red) : i >= 5 ? '#174a3a' : COL.panel));
           sY.textContent = money(BASE * v / 100); sG.textContent = money(BASE * D3.govPct(v, 3) / 100) + ' (' + D3.govPct(v, 3) + '%)'; s20.textContent = kM(AT[v]);
@@ -147,6 +152,32 @@
       pick(0, true);
       return {};
     },
+  };
+
+  // ---- your Day 1 plan (Captain Russell, 25 Nov 2026: something to take home). Uses the numbers this phone picked on
+  // the sliders and the TSP poll, then the order of operations as a checklist. Kept on this phone only.
+  CHARTS.plan = function (el) {
+    const P = FRPlan.get(), L = root.FR.LIFE;
+    const inv = P.invest != null ? P.invest : null, tsp = P.tsp != null ? P.tsp : null;
+    const spend = inv != null ? Math.max(1000, Math.round((L.TAKE - inv) / 100) * 100) : 3000;
+    const ITEMS = [
+      ['tsp', `Set up your TSP in myPay before your first paycheck: <b>Roth, ${tsp != null && tsp >= 5 ? tsp : 5}%</b> or more.` + (tsp != null && tsp < 5 ? ' (You said ' + tsp + '%. 5% gets you the whole match once it starts.)' : '')],
+      ['ded', 'Keep <b>$1,000</b> in savings for a deductible or a surprise bill.'],
+      ['card', 'Pay any credit card off <b>in full, every month</b>. Carrying a balance? That comes before more investing.'],
+      ['ef', `Build an emergency fund of <b>${money(spend * 3)} to ${money(spend * 6)}</b>, 3 to 6 months of what you spend.`],
+      ['auto', inv != null ? `Set an allotment so <b>${money(inv)} a month</b> gets invested before you can spend it.` : 'Set an allotment so your investing happens before you can spend it.'],
+      ['ira', 'Open a <b>Roth IRA</b> and work toward $7,500 a year.'],
+      ['raise', 'Every raise and promotion: <b>invest at least half of it.</b>'],
+    ];
+    const done = new Set(P.done || []);
+    el.innerHTML = `<div class="ex plan"><h2>Your Day 1 plan</h2><p class="hint">Screenshot this. Tap each one as you do it.</p>
+      <ol>${ITEMS.map(([k, t]) => `<li><button type="button" data-k="${k}" class="${done.has(k) ? 'on' : ''}" aria-pressed="${done.has(k)}"><i></i><span>${t}</span></button></li>`).join('')}</ol>
+      <p class="hint">In that order. From the Financial Order of Operations, The Money Guy Show.</p></div>`;
+    el.querySelectorAll('button[data-k]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.k; if (done.has(k)) done.delete(k); else done.add(k);
+      b.classList.toggle('on', done.has(k)); b.setAttribute('aria-pressed', done.has(k)); FRPlan.set({ done: [...done] });
+    }));
+    return {};
   };
 
   root.FRExplore = {

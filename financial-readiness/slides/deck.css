@@ -25,12 +25,12 @@ svg { display: block; }
 .home:hover { color: var(--ink); background: var(--panel2); }
 .home svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 #tabs { flex: 1; display: flex; gap: 4px; min-width: 0; overflow: hidden; justify-content: center; }
-#tabs button { position: relative; border: 0; background: none; color: var(--faint); font-weight: 700; font-size: 13.5px; padding: 8px 12px 10px; border-radius: 10px; white-space: nowrap; transition: color .25s; }
+#tabs button { position: relative; border: 0; background: none; color: var(--faint); font-weight: 700; font-size: 13.5px; padding: 8px 9px 10px; border-radius: 10px; white-space: nowrap; transition: color .25s; }
 #tabs button b { color: var(--line); margin-right: 6px; font-family: var(--mono); transition: color .25s; }
 #tabs button:hover { color: var(--ink); background: var(--panel); }
 #tabs button.on { color: var(--ink); }
 #tabs button.on b { color: var(--gold); }
-#tabs button i { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 3px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
+#tabs button i { position: absolute; left: 9px; right: 9px; bottom: 3px; height: 3px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
 #tabs button i::after { content: ""; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--p, 0)); background: var(--gold); transition: transform .45s cubic-bezier(.3,.7,.2,1); }
 #tabs button.done i::after { background: #6b5a2c; }
 .ctl { display: flex; align-items: center; gap: 6px; }
@@ -320,3 +320,28 @@ html.solo #stage.go { cursor: default; }
 .zpick .lab { margin: 0; white-space: nowrap; }
 .zpick .seg { flex: 1; }
 .zpick .seg button { font-size: 24px; padding: 14px 8px; cursor: pointer; }
+.sob.four { grid-template-columns: repeat(4, 1fr); }
+.sob.four .card { min-height: 230px; }
+/* cold open (Captain Russell, 25 Nov 2026) */
+.cold1 .big, .cold2 .big { font-size: 110px; margin: 14px 0 18px; }
+.cold1 p, .cold2 p { font-size: 26px; color: var(--soft); }
+.cold2, .cold3 { opacity: 0; transform: translateY(26px); transition: opacity .6s, transform .6s cubic-bezier(.2,.8,.2,1); }
+.cold2.on, .cold3.on { opacity: 1; transform: none; }
+.cold3 h2 { font-size: 48px; color: var(--gold); }
+.qm { animation: qm 1.6s ease-in-out infinite; }
+@keyframes qm { 50% { opacity: .45; } }
+/* the Financial Order of Operations, one step per click */
+.foo { left: 90px; top: 200px; width: 840px; height: 600px; }
+.foo .st { position: absolute; width: 520px; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 18px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--faint); transition: all .4s; }
+.foo .st b { font: 900 28px var(--mono); width: 34px; }
+.foo .st span { font: 750 24px var(--font); opacity: 0; transition: opacity .4s; }
+.foo .st.done { border-color: rgba(63,214,154,.5); color: var(--green); }
+.foo .st.done span { opacity: .85; color: var(--soft); }
+.foo .st.cur { border-color: var(--gold); background: var(--panel2); color: var(--gold); box-shadow: 0 0 24px rgba(232,181,74,.25); }
+.foo .st.cur span { opacity: 1; color: var(--ink); }
+.foocard { padding: 30px 34px; }
+.foocard .n { font: 800 20px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.foocard h2 { font-size: 46px; margin: 10px 0 14px; }
+.foocard .w { font-size: 26px; margin-bottom: 22px; }
+.foocard .y { font-size: 26px; color: var(--soft); }
+.foocard.flash { animation: flash .5s; }
