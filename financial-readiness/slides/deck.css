@@ -560,3 +560,15 @@ html.solo #stage.go { cursor: default; }
 .top3 b { display: block; font: 800 40px/1.15 var(--font); color: var(--ink); text-wrap: balance; }
 .top3 span { display: block; margin-top: 8px; font: 600 27px/1.3 var(--font); color: var(--soft); }
 .top3 span.by { font-style: italic; }
+
+/* official logos (Captain Russell, 25 Nov 2026) */
+.logok { display: flex; align-items: center; gap: 12px; }
+.logok img { border-radius: 10px; }
+.foocard .tri { display: none; width: 190px; margin-top: 18px; border-radius: 10px; }
+.foocard.tc .tri { display: block; }
+.freehelp .k { margin-bottom: 14px; }
+.freehelp .fh { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 20px; margin-bottom: 14px; }
+.freehelp .fh img { width: 84px; height: 84px; justify-self: center; }
+.freehelp .fh img.wide { width: 150px; height: auto; border-radius: 8px; }
+.freehelp .fh p { margin: 0; font: 600 22px/1.3 var(--font); color: var(--soft); }
+.freehelp .fh b { display: block; font: 800 26px var(--font); color: var(--ink); }
