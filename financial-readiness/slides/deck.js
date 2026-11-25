@@ -824,6 +824,9 @@
     life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you invest the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
       min: 100000, max: 2000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 500000, 1000000, 1500000, 2000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
       why: 'About $' + (Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) / 10).toFixed(1) + ' million, from just 4 years of living like a college student.' },
+    pworth: { type: 'slider', prompt: 'You retire as an **O-5 at 45** with 20 years in. Your pension starts at **$4,816.72 a month** (40% of base pay) and goes up **3% a year** for cost of living. If you live to 90, **how much does it pay you in total?**',
+      min: 0, max: 8000000, step: 100000, unit: '$M', start: 0, ticks: [0, 2000000, 4000000, 6000000, 8000000], ans: 5400000, tol: 2000000,
+      why: 'About **$5.4 million**, paid out over 45 years. That\'s what you walk away from if you leave at 19.' },
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
     allot: { type: 'choice', prompt: 'What\'s an **allotment** on your LES?', opts: ['A bonus for a hard assignment', 'Money sent out before your pay hits the bank', 'The tax taken from base pay', 'A loan from the finance office'], ans: 1,
       why: 'Money that goes out automatically, before you can spend it. The easiest way to pay yourself first.' },
@@ -1031,6 +1034,49 @@
     },
   };
 
+  // ---- what a 20-year pension is worth (Captain Russell, 25 Nov 2026): O-5 with 20 years, retires at 45, lives to 90,
+  // no Survivor Benefit Plan, 40% of $12,041.80 base pay, plus a 3% cost of living adjustment every year
+  LIVE.pworth = {
+    head: 'What a pension is worth', body: 'An **O-5 who retires at 45** and lives to 90. **40% of base pay**, plus a **3% cost of living raise** every year.',
+    build(el) {
+      const M0 = 4816.72, A0 = 45, N = 45, COLA = 0.03, Y = [];
+      let tot = 0; for (let k = 0; k < N; k++) { const y = 12 * M0 * Math.pow(1 + COLA, k); tot += y; Y.push(y); }
+      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
+      const x0 = 250, x1 = 1440, yb = 760, H = 360, bw = (x1 - x0) / N, top = Y[N - 1];
+      [0, 100000, 200000].forEach((v) => {
+        const yy = yb - H * v / 220000;
+        sv('line', { x1: x0 - 16, x2: x1 + 16, y1: yy, y2: yy, stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: 0.8 }, svg);
+        sv('text', { x: x0 - 28, y: yy + 9, 'text-anchor': 'end', fill: C.faint, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = v ? '$' + v / 1000 + 'K' : '$0';
+      });
+      sv('text', { x: x0 - 28, y: yb - H * 220000 / 220000 - 20, 'text-anchor': 'end', fill: C.faint, 'font-size': 20, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'per year';
+      [45, 55, 65, 75, 89].forEach((a) => sv('text', { x: x0 + (a - A0 + 0.5) * bw, y: yb + 40, 'text-anchor': 'middle', fill: C.faint, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'Age ' + a);
+      const bars = Y.map((v, k) => sv('rect', { x: x0 + k * bw + 2, width: bw - 4, y: yb, height: 0, rx: 4, fill: C.amber, opacity: 0.55 + 0.45 * k / N }, svg));
+      const first = div(el, 'abs lab', `left:${x0}px;top:${yb - H * Y[0] / 220000 - 90}px;font-size:26px;opacity:0;transition:opacity .4s`, '<b style="color:var(--ink)">' + fmt(M0, { cents: true }) + '</b> a month at 45');
+      const last = div(el, 'abs lab', `right:${1600 - x1}px;top:${yb - H * top / 220000 - 84}px;font-size:26px;text-align:right;opacity:0;transition:opacity .4s`, '<b style="color:var(--ink)">' + fmt(M0 * Math.pow(1 + COLA, N - 1)) + '</b> a month at 89');
+      el.insertAdjacentHTML('beforeend', `<div class="abs" style="left:${x0}px;top:70px"><div class="k" id="pwK">Paid to you, age 45 to 90</div><div class="big" id="pwV" style="color:var(--amber);font-size:96px;margin-top:8px">$0</div></div>
+        <div class="abs lab in" style="right:${1600 - x1}px;top:86px;text-align:right;font-size:24px;line-height:1.5;--d:.2">O-5, 20 years · base pay $12,041.80<br>40% = $4,816.72 a month<br>3% cost of living raise a year · no survivor benefit</div>
+        <div class="abs" id="pwMore" style="left:${x0}px;top:${yb + 76}px;font:700 28px var(--font);color:var(--soft);opacity:0;transition:opacity .5s">To get that same check from savings, you'd need about <b style="color:var(--green)">$1.4 million</b> invested by 45, using the 4% rule.</div>`);
+      const cV = counter($('#pwV', el), (v) => fmt(v));
+      let k = 0, raf = 0;
+      const grow = (p) => { let run = 0; Y.forEach((v, i) => { const q = clamp(p * N - i, 0, 1), h = H * v / 220000 * q; bars[i].setAttribute('height', h); bars[i].setAttribute('y', yb - h); run += v * q; }); $('#pwV', el).textContent = fmt(run); };
+      const reset = () => { cancelAnimationFrame(raf); k = 0; grow(0); first.style.opacity = 0; last.style.opacity = 0; $('#pwMore', el).style.opacity = 0; cV(0, true); };
+      return {
+        enter() { reset(); },
+        next() {
+          if (k === 0) {
+            k = 1; first.style.opacity = 1; const t0 = performance.now(), dur = reduce ? 1 : 4200;
+            const tick = (t) => { const p = clamp((t - t0) / dur, 0, 1); grow(p); if (p < 1) raf = requestAnimationFrame(tick); else { last.style.opacity = 1; cV(tot, true); } };
+            raf = requestAnimationFrame(tick); return true;
+          }
+          if (k === 1) { k = 2; cancelAnimationFrame(raf); grow(1); last.style.opacity = 1; cV(tot, true); $('#pwMore', el).style.opacity = 1; return true; }
+          return false;
+        },
+        replay() { reset(); },
+        leave() { cancelAnimationFrame(raf); },
+      };
+    },
+  };
+
   // ---- keep the big things small: the real house and cars
   LIVE.big = {
     head: 'Keep the big things small', body: 'The house, the car and debt decide most of it. **Get those right and the little things don\'t hurt.**',
@@ -1073,7 +1119,7 @@
   scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('r-guess', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
   live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
-  scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension');
+  scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension'); live('q-pworth', 4); live('pworth', 4);
   live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
   live('foo', 6); live('q-order', 6); live('q-efund', 6);
