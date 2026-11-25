@@ -822,7 +822,7 @@
       opts: ['Senior Airman (E-4) at 4 years', 'Staff Sergeant (E-5) at 8 years', 'Master Sergeant (E-7) at 16 years', 'Chief Master Sergeant (E-9) at 20+ years'], ins: ['E-4', 'E-5', 'E-7', 'E-9'], ans: 3,
       why: 'A chief master sergeant at 20+ years makes about $10,558. You get there in 8.' },
     life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you invest the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
-      min: 100000, max: 3000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 1000000, 2000000, 3000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
+      min: 100000, max: 2000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 500000, 1000000, 1500000, 2000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
       why: 'About $' + (Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) / 10).toFixed(1) + ' million, from just 4 years of living like a college student.' },
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
     allot: { type: 'choice', prompt: 'What\'s an **allotment** on your LES?', opts: ['A bonus for a hard assignment', 'Money sent out before your pay hits the bank', 'The tax taken from base pay', 'A loan from the finance office'], ans: 1,
