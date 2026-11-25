@@ -66,37 +66,42 @@
       return {};
     },
 
-    // ---- start now vs wait
+    // ---- start now vs wait, with your own numbers and a starting debt (Captain Russell, 25 Nov 2026)
     wait(el) {
-      const f = frame(el, 'What does waiting cost?', 'Same amount every month until you\'re 60. Change when you start.');
+      const f = frame(el, 'Your own numbers', 'Pick what you\'d invest, any debt you start with, and when you start. Debt grows at 6%, investments at 7%.');
       const ax = (a) => X0 + (X1 - X0) * (a - 22) / 38;
       [22, 30, 40, 50, 60].forEach((a) => { sv('text', { x: ax(a), y: H - 2, 'text-anchor': 'middle', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = a; });
       let g = null;
       const aA = sv('path', { fill: 'rgba(63,214,154,.12)' }, f.svg), aB = sv('path', { fill: 'rgba(255,111,125,.14)' }, f.svg);
       const lA = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5 }, f.svg), lB = sv('path', { fill: 'none', stroke: COL.red, 'stroke-width': 3.5 }, f.svg);
-      const run = (mo, w) => { const pts = []; let b = 0; for (let m = 0; m <= 456; m++) { if (m % 3 === 0) pts.push([22 + m / 12, b]); b = b * Math.pow(1.07, 1 / 12) + (m >= w * 12 ? mo : 0); } return pts; };
+      const run = (mo, w, debt) => { const pts = []; let b = debt, free = debt >= 0 ? 22 : null; for (let m = 0; m <= 456; m++) { if (m % 3 === 0) pts.push([22 + m / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + (m >= w * 12 ? mo : 0); if (free == null && b >= 0) free = 22 + (m + 1) / 12; } pts.free = free; return pts; };
+      const R = root.FR.fmtR;
       const sA = stat(f.r, 'Start at 22', 'g'), sB = stat(f.r, 'Wait', 'r'), sC = stat(f.r, 'Waiting cost', 'a');
-      let mo = 500, w = 0;
+      const out = document.createElement('p'); out.className = 'hint'; f.r.after(out);
+      let mo = 500, w = 0, d = 0;
       const draw = () => {
-        const A = run(mo, 0), B = run(mo, w), hi = A[A.length - 1][1] * 1.1;
+        const A = run(mo, 0, d), B = run(mo, w, d), hi0 = Math.max(A[A.length - 1][1], 1e5) * 1.1, lo0 = Math.min(0, ...B.map((p) => p[1])) * 1.1;
         if (g) g.remove();
-        const step = hi > 3e6 ? 1e6 : hi > 1.2e6 ? 5e5 : 2e5;
-        g = grid(f.svg, 0, Math.floor(hi / step) * step, step, (v) => (v ? kM(v) : '$0')); f.svg.prepend(g);
-        const P = (pts) => pts.map(([a, v]) => [ax(a), Y0 - (Y0 - Y1) * v / hi]);
+        const span = hi0 - lo0, step = span > 3e6 ? 1e6 : span > 1.2e6 ? 5e5 : span > 5e5 ? 2e5 : 1e5, lo = Math.floor(lo0 / step) * step, hi = Math.ceil(hi0 / step) * step;
+        g = grid(f.svg, lo, hi, step, (v) => R(v)); f.svg.prepend(g);
+        const P = (pts) => pts.map(([a, v]) => [ax(a), Y0 - (Y0 - Y1) * (v - lo) / (hi - lo)]), z = Y0 - (Y0 - Y1) * (0 - lo) / (hi - lo);
         const pa = P(A), pb = P(B);
         lA.setAttribute('d', pathOf(pa)); lB.setAttribute('d', pathOf(pb));
-        aA.setAttribute('d', pathOf(pa) + `L${X1} ${Y0}L${X0} ${Y0}Z`); aB.setAttribute('d', pathOf(pb) + `L${X1} ${Y0}L${X0} ${Y0}Z`);
+        aA.setAttribute('d', pathOf(pa) + `L${X1} ${z}L${X0} ${z}Z`); aB.setAttribute('d', pathOf(pb) + `L${X1} ${z}L${X0} ${z}Z`);
         const a = A[A.length - 1][1], b = B[B.length - 1][1];
-        sA.textContent = kM(a); sB.previousElementSibling.textContent = w ? `Wait ${w} yr` : 'Start at 22 too'; sB.textContent = kM(b); sC.textContent = kM(a - b);
+        sA.textContent = R(a); sB.previousElementSibling.textContent = w ? `Wait ${w} yr` : 'Start at 22 too'; sB.textContent = R(b); sC.textContent = R(a - b);
+        const age = (x) => (x == null ? 'after 60' : 'at ' + Math.ceil(x * 2) / 2);
+        out.textContent = d < 0 ? `Out of debt ${age(A.free)} if you start now${w ? `, ${age(B.free)} if you wait` : ''}.` : '';
       };
       range(f.s, { label: 'Invest a month ', min: 100, max: 2000, step: 50, value: 500, show: money, on(v) { mo = v; draw(); } }).paint();
+      range(f.s, { label: 'Starting debt ', min: -50000, max: 0, step: 5000, value: 0, ends: ['−$50K', '$0'], show: (v) => (v ? '−' + kM(-v) : '$0'), on(v) { d = v; draw(); } }).paint();
       range(f.s, { label: 'Years you wait ', min: 0, max: 10, step: 1, value: 0, ends: ['Day 1', '10 years'], show: (v) => String(v), on(v) { w = v; draw(); } }).paint();
       return {};
     },
 
     // ---- the TSP: you, the Air Force, 20 years later
     tsp(el) {
-      const D3 = root.FR.DATA.fr3, BASE = 4150.20, MAXP = 15, AT = [];
+      const D3 = root.FR.DATA.fr3, BASE = 4150.20, MAXP = 25, AT = [];
       for (let x = 0; x <= MAXP; x++) AT.push(D3.at20(x));
       const f = frame(el, 'Your TSP contribution', 'The Air Force puts in 1%, then matches you up to 4% more once you hit 2 years.');
       const bw = (X1 - X0) / (MAXP + 1);
@@ -108,7 +113,7 @@
         return r;
       });
       const sY = stat(f.r, 'You a month', 'c'), sG = stat(f.r, 'Air Force', 'g'), s20 = stat(f.r, 'After 20 yrs', 'g');
-      range(f.s, { label: 'You put in ', min: 0, max: MAXP, step: 1, value: 0, ends: ['0%', '15%'], show: (v) => v + '%',
+      range(f.s, { label: 'You put in ', min: 0, max: MAXP, step: 1, value: 0, ends: ['0%', '25%'], show: (v) => v + '%',
         on(v) {
           bars.forEach((b, i) => b.setAttribute('fill', i === v ? (i >= 5 ? COL.green : COL.red) : i >= 5 ? '#174a3a' : COL.panel));
           sY.textContent = money(BASE * v / 100); sG.textContent = money(BASE * D3.govPct(v, 3) / 100) + ' (' + D3.govPct(v, 3) + '%)'; s20.textContent = kM(AT[v]);

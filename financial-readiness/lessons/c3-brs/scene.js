@@ -27,9 +27,12 @@ const BASE1 = 4150.20;
 const pay = (y) => (y <= 2 ? 4150.2 : y <= 3 ? 5446.2 : y <= 4 ? 6272.4 : y <= 6 ? 7382.7 : y <= 10 ? 7737 : y <= 12 ? 8900 : y <= 16 ? 9888.3 : 11000);
 // what the Air Force puts in for a given contribution: 1% always; after 2 years, 100% of the first 3% and 50% of the next 2%
 const govPct = (x, yr) => (yr <= 2 ? 1 : 1 + Math.min(x, 3) + Math.max(0, Math.min(x, 5) - 3) * 0.5);
+// Promoted on time (Captain Russell, 25 Nov 2026): 2d Lt, 1st Lt at 2 years, Capt at 4, Maj at 10, Lt Col at 16, at 2026 pay.
+// 7% a year after inflation, so it is all in today's dollars. Your own part stops at the 2026 limit, $24,500 a year.
+const CAP = 24500;
 function at20(x) {
   let b = 0;
-  for (let y = 1; y <= 20; y++) for (let m = 0; m < 12; m++) b = b * Math.pow(1.07, 1 / 12) + pay(y) * (x + govPct(x, y)) / 100;
+  for (let y = 1; y <= 20; y++) for (let m = 0; m < 12; m++) b = b * Math.pow(1.07, 1 / 12) + Math.min(pay(y) * x / 100, CAP / 12) + pay(y) * govPct(x, y) / 100;
   return Math.round(b);
 }
 const CHOICES = [0, 1, 3, 5];
@@ -61,11 +64,19 @@ function scene(st) {
   const X = st.pct, xi = Math.max(0, CHOICES.indexOf(X));
 
   // ---- the three parts, as tabs along the top
+  // line icons for the three parts (Captain Russell, 25 Nov 2026): a medal for the pension you earn by serving,
+  // a rising chart for the TSP, a stack of bills for continuation pay
+  const ICONS = [
+    'M-34 -78 L-12 -30 M34 -78 L12 -30 M-34 -78 H-10 L0 -56 L10 -78 H34 M0 -32 a40 40 0 1 0 0.01 0 Z M0 -10 l7 15 l16 2 l-12 11 l3 16 l-14 -8 l-14 8 l3 -16 l-12 -11 l16 -2 Z',
+    'M-70 64 H72 M-52 64 V28 M-20 64 V6 M12 64 V-18 M44 64 V-42 M-64 -6 L-20 -40 L8 -20 L62 -72 M36 -72 H62 V-46',
+    'M-66 -40 H50 V26 H-66 Z M-8 -7 m-20 0 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0 M-56 -30 V16 M40 -30 V16 M-54 40 H64 V-24 M-42 54 H78 V-8',
+  ];
   const TABS = [['Pension', 'Defined benefit'], ['TSP', 'Defined contribution'], ['Continuation pay', 'Mid-career bonus']];
   TABS.forEach(([t, sub], i) => {
     const x = 300 + i * 500;
     add('tab' + i, 'rect', {}, { x: x - 220, y: 260, w: 440, h: 360, rx: 28, fill: C.panel2, stroke: C.line, sw: 3, o: 0 });
-    add('tabN' + i, 'text', { size: 120, anchor: 'middle', weight: 850, mono: true }, { x, y: 420, content: String(i + 1), fill: C.faint, o: 0 });
+    add('tabN' + i, 'text', { size: 40, anchor: 'start', weight: 850, mono: true }, { x: x - 190, y: 316, content: String(i + 1), fill: C.faint, o: 0 });
+    add('tabI' + i, 'path', { d: ICONS[i] }, { x, y: 392, stroke: [C.amber, C.green, C.cyan][i], sw: 7, draw: 0, o: 0 });
     add('tabT' + i, 'text', { size: 46, anchor: 'middle', weight: 800 }, { x, y: 520, content: t, fill: C.ink, o: 0 });
     add('tabS' + i, 'text', { size: 28, anchor: 'middle', weight: 600 }, { x, y: 568, content: sub, fill: C.soft, o: 0 });
   });
@@ -194,7 +205,7 @@ function scene(st) {
   // ================================================================ steps
   S.step({ head: 'Three parts, one system', body: 'The BRS mixes a smaller pension with the TSP and a mid-career bonus. Most of it comes down to the choices you make.', go: [300, 440, 450, 370, 'Start with the pension'] })
     .beat(0.8, (s) => { s.title.o = 1; s.since.o = 1; })
-    .beat(1.4, (s) => { on(s, tabs); }, (id) => { const m = /^tab[NTS]?(\d)$/.exec(id); return m ? { w: [+m[1] / 4, (+m[1] + 2) / 4] } : null; });
+    .beat(1.8, (s) => { on(s, tabs); [0, 1, 2].forEach((i) => { s['tabI' + i].draw = 1; }); }, (id) => { const m = /^tab[NTSI]?(\d)$/.exec(id); return m ? { w: [+m[1] / 4, (+m[1] + 2) / 4] } : null; });
 
   S.step({ head: '1. The pension', body: '**2% × years served × the average of your highest 36 months of base pay.** At 20 years that is 40%, paid every month for life.', go: [1260, 340, 440, 220, 'Next: the TSP'] })
     .beat(0.6, (s) => { off(s); s.pHead.o = 1; s.pYears.o = 1; for (let i = 0; i < 30; i++) { s['blk' + i].o = i < 20 ? 0 : 0.5; } })
@@ -271,7 +282,7 @@ function scene(st) {
 }
 
 FR.DATA = FR.DATA || {};
-FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, BASE1 };
+FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, BASE1, CAP };
 FR.SCENES = FR.SCENES || {};
 FR.SCENES.fr3 = scene;
 })();

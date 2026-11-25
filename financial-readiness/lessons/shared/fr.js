@@ -91,5 +91,7 @@
   // Books: ISU's $800 a year. The rest is a typical month for a cadet with a car.
   const COLLEGE = [['Dorm + meal plan', 1240], ['Car payment', 350], ['Fun and trips home', 300], ['Eating out + coffee', 250], ['Clothes + personal', 200],
     ['Entertainment', 200], ['Car insurance', 150], ['Gas', 120], ['Books + supplies', 90], ['Phone', 60], ['Subscriptions', 40]];
-  root.FR = { CHAPTERS, next, fmt, ASSET, INSIGNIA, RANK, LIFE, COLLEGE };
+  // big round numbers (Captain Russell, 25 Nov 2026): the nearest $10K, or the nearest tenth of a million from $1M up
+  const fmtR = (v) => { const a = Math.abs(v), sg = v < -0.5 ? '−' : ''; return a >= 1e6 ? sg + '$' + (a / 1e6).toFixed(1) + 'M' : a < 5000 ? '$0' : sg + '$' + Math.round(a / 1e4) * 10 + 'K'; };
+  root.FR = { CHAPTERS, next, fmt, fmtR, ASSET, INSIGNIA, RANK, LIFE, COLLEGE };
 })(this);

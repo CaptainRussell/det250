@@ -33,8 +33,8 @@
 
   // ---------------------------------------------------------------- chapter scenes, without the steps that ask the learner to tap
   const SCENES = {
-    fr1: { st: { guess: '' }, drop: ['Your guess'] },
-    fr2: { st: { married: 'no' }, drop: ['Your turn'] },
+    fr1: { st: {}, drop: [] },
+    fr2: { st: {}, drop: [] },
     fr3: { st: { pct: 5 }, drop: ['2. The TSP: your choice', 'Every month', 'Twenty years later', 'When in doubt, zoom out', 'Zoom out: one month', 'Zoom out: one year', 'Zoom out: ten years', 'Zoom out: one hundred years'] },
     fr4: { st: { c: Object.assign({}, D4.BEST) }, keep: ['My mantra'] },
   };
@@ -269,59 +269,67 @@
     },
   };
 
-  // ---- start now vs wait
+  // ---- start now vs wait, with your own numbers (Captain Russell, 25 Nov 2026: a starting debt from −$50K to $0 to see how
+  // fast you climb out; numbers to the nearest $10K, and to the nearest tenth once it passes $1M). Same chart on the phones.
+  const fmtR = FR.fmtR;
   LIVE.wait = {
-    head: 'Drag it: what does waiting cost?', body: 'Same amount every month until you\'re 60. The only difference is **when you start.**', explore: 'wait',
+    head: 'Drag it: your own numbers', body: 'Pick what you\'d invest each month, any debt you start with, and **when you start.** Debt grows at 6% until it\'s paid off, investments at 7%.', explore: 'wait',
     build(el) {
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
-      const G = { x0: 150, x1: 1040, y0: 800, y1: 300, a: 22, b: 60, lo: 0, hi: 2e6 };
+      const G = { x0: 150, x1: 1040, y0: 800, y1: 320, a: 22, b: 60, lo: 0, hi: 2e6 };
       const m = chart(svg, G);
       const grid = sv('g', {}, svg);
       [22, 30, 40, 50, 60].forEach((a) => sv('text', { x: m.x(a), y: G.y0 + 36, 'text-anchor': 'middle', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'Age ' + a);
       const areaA = sv('path', { fill: 'rgba(52,245,164,.10)' }, svg), areaB = sv('path', { fill: 'rgba(251,90,114,.12)' }, svg);
       const lnA = sv('path', { fill: 'none', stroke: C.green, 'stroke-width': 7, 'stroke-linejoin': 'round' }, svg);
-      const lnB = sv('path', { fill: 'none', stroke: C.red, 'stroke-width': 7, 'stroke-linejoin': 'round', 'stroke-dasharray': '2 0' }, svg);
+      const lnB = sv('path', { fill: 'none', stroke: C.red, 'stroke-width': 7, 'stroke-linejoin': 'round' }, svg);
       const gap = sv('line', { stroke: C.amber, 'stroke-width': 4, 'stroke-dasharray': '6 8' }, svg);
       const lab = (fill) => sv('text', { fill, 'font-size': 26, 'font-weight': 850, 'font-family': Anim.FONT }, svg);
       const tA = lab(C.green), tB = lab(C.red);
       const s1 = div(el, 'stat in', 'left:1110px;top:300px;width:430px;--d:.3', '<div class="lab">Start at 22</div><div class="big g">$0</div>');
       const s2 = div(el, 'stat in', 'left:1110px;top:470px;width:430px;--d:.4', '<div class="lab" id="wLab">Wait 3 years</div><div class="big r">$0</div>');
       const s3 = div(el, 'stat in', 'left:1110px;top:640px;width:430px;--d:.5;border-color:#7a5a12', '<div class="lab">What waiting cost you</div><div class="big a">$0</div><div class="lab" style="margin:10px 0 0;font-size:19px" id="wSkip"></div>');
-      const cA = counter($('.big', s1), (v) => fmt(v, { k: true })), cB = counter($('.big', s2), (v) => fmt(v, { k: true })), cG = counter($('.big', s3), (v) => fmt(v, { k: true }));
-      const st = { mo: Smooth(500), w: Smooth(3), hi: Smooth(1.2e6) };
+      const cA = counter($('.big', s1), fmtR), cB = counter($('.big', s2), fmtR), cG = counter($('.big', s3), fmtR);
+      const st = { mo: Smooth(500), w: Smooth(3), d: Smooth(0), hi: Smooth(1.2e6), lo: Smooth(0) };
       let raf = 0, live = false, gridKey = '';
-      const run = (mo, w) => { const pts = []; let b = 0; for (let mth = 0; mth <= 456; mth++) { if (mth % 3 === 0) pts.push([22 + mth / 12, b]); b = b * Math.pow(1.07, 1 / 12) + (mth >= w * 12 ? mo : 0); } return pts; };
+      const run = (mo, w, debt) => { const pts = []; let b = debt, free = debt >= 0 ? 22 : null; for (let mth = 0; mth <= 456; mth++) { if (mth % 3 === 0) pts.push([22 + mth / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + (mth >= w * 12 ? mo : 0); if (free == null && b >= 0) free = 22 + (mth + 1) / 12; } pts.free = free; return pts; };
       const draw = () => {
-        const mo = st.mo.step(0.2), w = st.w.step(0.2);
-        const A = run(mo, 0), B = run(mo, w);
-        st.hi.t = A[A.length - 1][1] * 1.12; G.hi = st.hi.step(0.12);
-        const step = G.hi > 3e6 ? 1e6 : G.hi > 1.2e6 ? 5e5 : G.hi > 6e5 ? 2e5 : 1e5, key = step + ':' + Math.floor(G.hi / step);
-        if (key !== gridKey) { gridKey = key; grid.innerHTML = ''; for (let v = 0; v <= G.hi; v += step) { sv('line', { x1: G.x0, x2: G.x1, y1: m.y(v), y2: m.y(v), stroke: C.line, 'stroke-width': 2, opacity: 0.6 }, grid); sv('text', { x: G.x0 - 14, y: m.y(v) + 8, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, grid).textContent = v >= 1e6 ? '$' + (v / 1e6) + 'M' : fmt(v, { k: true }); } }
-        else grid.querySelectorAll('line').forEach((l, i) => { l.setAttribute('y1', m.y(i * step)); l.setAttribute('y2', m.y(i * step)); }), grid.querySelectorAll('text').forEach((t, i) => t.setAttribute('y', m.y(i * step) + 8));
-        const pa = A.map(([a, v]) => [m.x(a), m.y(v)]), pb = B.map(([a, v]) => [m.x(a), m.y(v)]);
+        const mo = st.mo.step(0.2), w = st.w.step(0.2), d = st.d.step(0.2);
+        const A = run(mo, 0, d), B = run(mo, w, d);
+        st.hi.t = Math.max(A[A.length - 1][1], 1e5) * 1.12; G.hi = st.hi.step(0.12);
+        st.lo.t = Math.min(0, ...B.map((p) => p[1])) * 1.15; G.lo = st.lo.step(0.12);
+        const span = G.hi - G.lo, step = span > 3e6 ? 1e6 : span > 1.2e6 ? 5e5 : span > 6e5 ? 2e5 : span > 2.5e5 ? 1e5 : 5e4, v0 = Math.ceil(G.lo / step) * step, key = step + ':' + v0 + ':' + Math.floor(G.hi / step);
+        if (key !== gridKey) { gridKey = key; grid.innerHTML = ''; for (let v = v0; v <= G.hi; v += step) { sv('line', { x1: G.x0, x2: G.x1, 'data-v': v, stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: v ? 0.6 : 0.9 }, grid); sv('text', { x: G.x0 - 14, 'data-v': v, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, grid).textContent = fmtR(v); } }
+        grid.querySelectorAll('line').forEach((l) => { const y = m.y(+l.dataset.v); l.setAttribute('y1', y); l.setAttribute('y2', y); });
+        grid.querySelectorAll('text').forEach((t) => t.setAttribute('y', m.y(+t.dataset.v) + 8));
+        const pa = A.map(([a, v]) => [m.x(a), m.y(v)]), pb = B.map(([a, v]) => [m.x(a), m.y(v)]), z = m.y(0);
         lnA.setAttribute('d', pathOf(pa)); lnB.setAttribute('d', pathOf(pb));
-        areaA.setAttribute('d', pathOf(pa) + `L${G.x1} ${G.y0}L${G.x0} ${G.y0}Z`); areaB.setAttribute('d', pathOf(pb) + `L${G.x1} ${G.y0}L${G.x0} ${G.y0}Z`);
+        areaA.setAttribute('d', pathOf(pa) + `L${G.x1} ${z}L${G.x0} ${z}Z`); areaB.setAttribute('d', pathOf(pb) + `L${G.x1} ${z}L${G.x0} ${z}Z`);
         const ea = pa[pa.length - 1], eb = pb[pb.length - 1];
         gap.setAttribute('x1', ea[0] + 24); gap.setAttribute('x2', ea[0] + 24); gap.setAttribute('y1', ea[1]); gap.setAttribute('y2', eb[1]);
         tA.setAttribute('x', ea[0] - 10); tA.setAttribute('y', ea[1] - 18); tA.setAttribute('text-anchor', 'end'); tA.textContent = 'Start now';
         tB.setAttribute('x', eb[0] - 10); tB.setAttribute('y', Math.max(eb[1] + 38, ea[1] + 40)); tB.setAttribute('text-anchor', 'end'); tB.textContent = w >= 0.05 ? 'Wait ' + Math.round(w) + (Math.round(w) === 1 ? ' year' : ' years') : '';
         if (live) raf = requestAnimationFrame(draw);
       };
+      const age = (a) => (a == null ? 'after 60' : 'at ' + Math.ceil(a * 2) / 2);
       const nums = () => {
-        const mo = sMo.value, w = sW.value, A = run(mo, 0), B = run(mo, w), a = A[A.length - 1][1], b = B[B.length - 1][1];
+        const mo = sMo.value, w = sW.value, d = sD.value, A = run(mo, 0, d), B = run(mo, w, d), a = A[A.length - 1][1], b = B[B.length - 1][1];
         cA(a); cB(b); cG(a - b);
         $('#wLab', el).textContent = w ? `Wait ${w} ${w === 1 ? 'year' : 'years'}` : 'Start at 22 too';
-        $('#wSkip', el).textContent = w ? `You only skipped ${fmt(mo * 12 * w, { k: true })} of deposits.` : 'No wait, no cost.';
+        $('#wSkip', el).textContent = d < 0 ? `Out of debt ${age(A.free)} if you start now${w ? `, ${age(B.free)} if you wait` : ''}.` : w ? `You only skipped ${fmtR(mo * 12 * w)} of deposits.` : 'No wait, no cost.';
       };
-      let sMo = { value: 500 }, sW = { value: 3 };
-      sMo = slider(el, { x: 70, y: 40, w: 720, label: 'Invest each month', min: 100, max: 2000, step: 50, value: 500, d: 0.1,
+      let sMo = { value: 500 }, sW = { value: 3 }, sD = { value: 0 };
+      sMo = slider(el, { x: 70, y: 40, w: 470, label: 'Invest each month', min: 100, max: 2000, step: 50, value: 500, d: 0.1,
         show: (v) => `<span class="g">${fmt(v)}</span>`, on: (v) => { st.mo.t = v; nums(); } });
-      sW = slider(el, { x: 820, y: 40, w: 710, label: 'Years you wait to start', min: 0, max: 10, step: 1, value: 3, color: C.red, d: 0.2, play: [0, 10, 4],
-        ticks: [[0, 'Day 1'], [2, '2'], [4, '4'], [6, '6'], [8, '8'], [10, '10']],
+      sD = slider(el, { x: 565, y: 40, w: 470, label: 'Starting debt', min: -50000, max: 0, step: 5000, value: 0, color: C.amber, d: 0.15,
+        ticks: [[-50000, '−$50K'], [-25000, '−$25K'], [0, '$0']],
+        show: (v) => `<span class="${v ? 'r' : 'g'}">${v ? '−' + fmt(-v, { k: true }) : '$0'}</span>`, on: (v) => { st.d.t = v; nums(); } });
+      sW = slider(el, { x: 1060, y: 40, w: 470, label: 'Years you wait', min: 0, max: 10, step: 1, value: 3, color: C.red, d: 0.2, play: [0, 10, 4],
+        ticks: [[0, 'Day 1'], [5, '5'], [10, '10']],
         show: (v) => `<span class="r">${v}</span>`, on: (v) => { st.w.t = v; nums(); } });
       nums();
       return {
-        enter() { live = true; sMo.set(500); sW.set(0); raf = requestAnimationFrame(draw); setTimeout(() => live && sW.play(0, 5, 2.2), reduce ? 0 : 900); },
+        enter() { live = true; sMo.set(500); sD.set(0); sW.set(0); raf = requestAnimationFrame(draw); setTimeout(() => live && sW.play(0, 5, 2.2), reduce ? 0 : 900); },
         leave() { live = false; cancelAnimationFrame(raf); sW.stop(); },
         replay() { this.leave(); this.enter(); },
       };
@@ -332,11 +340,11 @@
   LIVE.tsp = {
     explore: 'tsp', head: 'Drag it: your TSP contribution', body: 'The Air Force puts in **1%** no matter what. Once you hit 2 years, they **match you up to 4% more**, but only if you put in 5%.',
     build(el) {
-      const BASE = 4150.20, MAXP = 15;
+      const BASE = 4150.20, MAXP = 25;   // Captain Russell, 25 Nov 2026: up to 25%
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
       const AT = []; for (let x = 0; x <= MAXP; x++) AT.push(D3.at20(x));
       // left: a stack of money per month. you (cyan) on the bottom, the Air Force (green) on top, the match you skip (red outline)
-      const SX = 150, SW = 260, SY = 780, K = 0.55;   // px per dollar
+      const SX = 150, SW = 260, SY = 780, K = 0.4;   // px per dollar
       div(el, 'abs k in', 'left:120px;top:236px;--d:.15', 'Every month, base pay ' + fmt(BASE, { cents: true }));
       const youR = sv('rect', { x: SX, width: SW, rx: 14, fill: C.cyan }, svg);
       const govR = sv('rect', { x: SX, width: SW, rx: 14, fill: C.green }, svg);
@@ -348,6 +356,7 @@
       // right: what each choice is worth after 20 years
       const RX = 820, RW = 720, RY = 800, RH = 440;
       div(el, 'abs k in', `left:${RX}px;top:236px;--d:.25`, 'Your TSP after 20 years');
+      div(el, 'abs lab in', `left:${RX - 10}px;top:838px;width:760px;font-size:17px;line-height:1.3;--d:.5`, 'Promoted on time (1st Lt at 2 years, Capt at 4, Maj at 10, Lt Col at 16), 2026 pay, 7% a year after inflation. Your part stops at the $24,500 limit.');
       const bars = AT.map((v, x) => {
         const w = RW / AT.length - 8, bx = RX + x * (RW / AT.length);
         const r = sv('rect', { x: bx, width: w, rx: 6, fill: C.panel2, stroke: C.line, 'stroke-width': 2 }, svg);
@@ -377,7 +386,7 @@
         if (live) raf = requestAnimationFrame(draw);
       };
       const sl = slider(el, { x: 70, y: 40, w: 1460, label: 'You put in (% of base pay)', min: 0, max: MAXP, step: 1, value: 0, color: C.cyan, d: 0.1, play: [0, 5, 2.2],
-        ticks: [[0, '0%'], [1, '1%'], [3, '3%'], [5, '5%: the whole match'], [10, '10%'], [15, '15%']],
+        ticks: [[0, '0%'], [5, '5%: the whole match'], [10, '10%'], [15, '15%'], [20, '20%'], [25, '25%']],
         show: (v) => `<span class="c">${v}%</span> <span class="s" style="font-size:28px">+ Air Force ${D3.govPct(v, 3)}%</span>`,
         on: (v) => { sm.t = v; cBig(AT[v]); note.innerHTML = v >= 5 ? `You're getting every dollar of the match.${v > 5 ? ` The extra ${v - 5}% is all you, and it adds up.` : ''}` : `Bump it to 5% and you'd have <b class="g">${fmt(AT[5] - AT[v], { k: true })}</b> more. Same career, same pay.`; } });
       return {
@@ -815,15 +824,105 @@
   LIVE.board3 = boardLive('After the BRS');
   LIVE.board4 = boardLive('Final standings');
 
-  // ---- where it started: Oregon State and the student loans (Captain Russell, 24 Nov 2026)
+  // ---- where it started: Oregon State and the student loans (Captain Russell, 24 Nov 2026). 25 Nov 2026: add the loans
+  // going down steadily from June 2019 until they were paid off in November 2022.
   LIVE.osu = {
-    head: 'Where it started', body: 'Oregon State University. I commissioned in June 2019 and went on active duty in June 2020 owing **$24,920** in student loans.',
+    head: 'Where it started', body: 'Oregon State University. I commissioned in June 2019 owing **$24,920** in student loans and paid them down every month until they were **gone in November 2022.**',
     build(el) {
+      const LOAN = 24920.13, T0 = 2019 + 5 / 12, T1 = 2022 + 10 / 12;
       el.innerHTML = `<div class="abs in osulogo" style="left:110px;top:110px;--d:.1"><img src="${FRChars.BASE}osu-logo.webp" alt="Oregon State University"><div class="o4">Corvallis, Oregon · Commissioned June 2019</div></div>
-        <div class="abs in" style="left:860px;top:160px;width:640px;--d:.35"><div class="k">Student loans on day one</div><div class="big r" id="loan" style="font-size:96px;margin-top:10px;white-space:nowrap">$0</div>
-          <div class="lab" style="font-size:28px;margin-top:20px">Paid off by 2022, about two years after I went on active duty.</div></div>`;
-      const n = $('#loan', el); let raf = 0;
-      return { enter() { cancelAnimationFrame(raf); const t0 = performance.now() + 500; const tick = (t) => { const p = clamp((t - t0) / 1600, 0, 1); n.textContent = '−' + fmt(24920.13 * (1 - Math.pow(1 - p, 3)), { cents: true }); if (p < 1) raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); }, leave() { cancelAnimationFrame(raf); } };
+        <div class="abs in" style="left:820px;top:96px;width:700px;--d:.35"><div class="k" id="loanK">Student loans, June 2019</div><div class="big r" id="loan" style="font-size:96px;margin-top:10px;white-space:nowrap">$0</div></div>
+        <div class="abs paid" id="paid" style="left:1180px;top:330px">Fully paid off!</div>`;
+      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0;pointer-events:none' }); el.appendChild(svg);
+      const G = { x0: 900, x1: 1480, y0: 740, y1: 420, a: T0, b: T1, lo: 0, hi: 26000 }, m = chart(svg, G);
+      [0, 10000, 20000].forEach((v) => {
+        sv('line', { x1: G.x0, x2: G.x1, y1: m.y(v), y2: m.y(v), stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: 0.8 }, svg);
+        sv('text', { x: G.x0 - 14, y: m.y(v) + 8, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = v ? '$' + v / 1000 + 'K' : '$0';
+      });
+      [2020, 2021, 2022].forEach((y) => sv('text', { x: m.x(y), y: G.y0 + 36, 'text-anchor': 'middle', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = String(y));
+      const area = sv('path', { d: `M${m.x(T0)} ${m.y(LOAN)}L${m.x(T1)} ${m.y(0)}L${m.x(T0)} ${m.y(0)}Z`, fill: 'rgba(255,111,125,.12)', opacity: 0 }, svg);
+      const ln = sv('path', { d: `M${m.x(T0)} ${m.y(LOAN)}L${m.x(T1)} ${m.y(0)}`, fill: 'none', stroke: C.red, 'stroke-width': 7, 'stroke-linecap': 'round' }, svg);
+      const dot = sv('circle', { r: 12, fill: C.red, stroke: C.bg, 'stroke-width': 4, opacity: 0 }, svg);
+      const L = ln.getTotalLength();
+      const n = $('#loan', el), k = $('#loanK', el), paid = $('#paid', el); let raf = 0;
+      const mon = (t) => { const mm = Math.round((t - 2019) * 12), y = 2019 + Math.floor(mm / 12); return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][mm % 12] + ' ' + y; };
+      const at = (p) => { ln.setAttribute('stroke-dasharray', `${L * p} ${L}`); area.setAttribute('opacity', p ? 1 : 0); const t = lerp(T0, T1, p), q = ln.getPointAtLength(L * p); dot.setAttribute('cx', q.x); dot.setAttribute('cy', q.y); return t; };
+      return {
+        enter() {
+          cancelAnimationFrame(raf); paid.classList.remove('on'); at(0); dot.setAttribute('opacity', 0); n.className = 'big r'; k.textContent = 'Student loans, June 2019';
+          const t0 = performance.now() + 500, t1 = t0 + 2400, dur = reduce ? 1 : 3600;
+          const tick = (t) => {
+            const p = clamp((t - t0) / 1600, 0, 1);
+            if (t < t1) n.textContent = '−' + fmt(LOAN * (1 - Math.pow(1 - p, 3)), { cents: true });
+            else {
+              const q = clamp((t - t1) / dur, 0, 1), when = at(q); dot.setAttribute('opacity', 1);
+              const left = LOAN * (1 - q);
+              n.textContent = left > 0.5 ? '−' + fmt(left, { cents: true }) : '$0.00'; k.textContent = 'Student loans, ' + mon(when);
+              if (q >= 1) { n.className = 'big g'; dot.setAttribute('fill', C.green); paid.classList.add('on'); return; }
+            }
+            raf = requestAnimationFrame(tick);
+          };
+          dot.setAttribute('fill', C.red); raf = requestAnimationFrame(tick);
+        },
+        leave() { cancelAnimationFrame(raf); },
+      };
+    },
+  };
+
+  // ---- my net worth, one year per click on the same slide (Captain Russell, 25 Nov 2026: build the suspense slowly,
+  // and show what each year added right on the line)
+  LIVE.nw = {
+    head: 'This is me, one year at a time', body: 'I get paid the same as every other officer at my rank. **I didn\'t inherit anything or win the lottery.** Watch what each year adds.',
+    build(el) {
+      const { NW, NOW } = FR.DATA.fr1;
+      const NOTE = ['June 2019: commissioned, owing my student loans', 'June 2020: on active duty', '2021: paid off my car in 6 months, started the TSP', '2022: crossed $0, and the loans were gone that November', '2023: started maxing out the TSP', '2024: promoted to captain the December before', '2025: same plan, the line just keeps getting steeper', '2026: same plan again', 'November 2026, and the year isn\'t over yet'];
+      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
+      const G = { x0: 250, x1: 1420, y0: 790, y1: 230, a: 2019, b: 2027, lo: -50000, hi: 320000 }, m = chart(svg, G);
+      [0, 100000, 200000, 300000].forEach((v) => {
+        sv('line', { x1: G.x0 - 20, x2: G.x1 + 40, y1: m.y(v), y2: m.y(v), stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 4, opacity: v ? 0.7 : 0.9 }, svg);
+        sv('text', { x: G.x0 - 32, y: m.y(v) + 9, 'text-anchor': 'end', fill: C.faint, 'font-size': 26, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = v ? '$' + v / 1000 + 'K' : '$0';
+      });
+      for (let y = 2019; y <= 2026; y++) sv('text', { x: m.x(y), y: G.y0 + 48, 'text-anchor': 'middle', fill: C.faint, 'font-size': 26, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = String(y);
+      const area = sv('path', { fill: 'rgba(63,214,154,.10)' }, svg);
+      const segG = sv('g', {}, svg), lblG = sv('g', {}, svg), dotG = sv('g', {}, svg);
+      const now = div(el, 'abs nwnow', 'left:250px;top:60px', '<div class="k" id="nwWhen"></div><div class="big" id="nwVal"></div>');
+      const note = div(el, 'abs lab nwnote', 'left:250px;top:176px;font-size:28px', '');
+      const cVal = counter($('#nwVal', el), (v) => (v < 0 ? '−' : '') + fmt(Math.abs(v)));
+      const P = NW.map(([t, v]) => [m.x(t), m.y(v)]);
+      let k = 0, anims = [];
+      const kText = (i) => (i === NW.length - 1 ? 'Today, November 2026' : 'January ' + NW[i][0]);
+      const show = (i, animate) => {
+        const v = NW[i][1], el2 = $('#nwVal', el);
+        $('#nwWhen', el).textContent = i === 0 ? 'June 2019' : kText(i);
+        el2.className = 'big ' + (v < 0 ? 'r' : 'g'); cVal(v, !animate);
+        note.textContent = NOTE[i];
+        area.setAttribute('d', i ? pathOf(P.slice(0, i + 1)) + `L${P[i][0]} ${m.y(0)}L${P[0][0]} ${m.y(0)}Z` : '');
+      };
+      const addDot = (i, last) => {
+        const v = NW[i][1], c = sv('circle', { cx: P[i][0], cy: P[i][1], r: last ? 14 : 10, fill: v < 0 ? C.red : C.green, stroke: C.bg, 'stroke-width': 4 }, dotG);
+        if (!reduce) anims.push(c.animate([{ r: 0 }, { r: last ? 14 : 10 }], { duration: 400, easing: 'ease-out' }));
+        if (last) { const g = sv('circle', { cx: P[i][0], cy: P[i][1], r: 14, fill: 'none', stroke: C.green, 'stroke-width': 4 }, dotG); if (!reduce) anims.push(g.animate([{ r: 14, opacity: 0.9 }, { r: 64, opacity: 0 }], { duration: 1400, iterations: Infinity })); }
+      };
+      const step = (i) => {   // draw the segment into point i and label what that year added
+        const a = P[i - 1], b = P[i], g = NW[i][1] - NW[i - 1][1], col = NW[i][1] < 0 ? C.red : NW[i - 1][1] < 0 ? C.amber : C.green;
+        const ln = sv('path', { d: `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`, stroke: col, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, segG);
+        const L = ln.getTotalLength(); ln.setAttribute('stroke-dasharray', L + ' ' + L);
+        if (!reduce) anims.push(ln.animate([{ strokeDashoffset: L }, { strokeDashoffset: 0 }], { duration: 900, easing: 'ease-in-out' }));
+        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, gl = sv('g', { transform: `translate(${mx - 18} ${my - 34})` }, lblG);
+        const txt = (g >= 0 ? '+' : '−') + fmt(Math.abs(g), { k: true });
+        sv('rect', { x: -txt.length * 8.6 - 14, y: -24, width: txt.length * 17.2 + 28, height: 40, rx: 20, fill: C.panel2, stroke: col, 'stroke-width': 2 }, gl);
+        sv('text', { x: 0, y: 6, 'text-anchor': 'middle', fill: col, 'font-size': 24, 'font-weight': 850, 'font-family': Anim.FONT }, gl).textContent = txt;
+        if (!reduce) anims.push(gl.animate([{ opacity: 0 }, { opacity: 0 }, { opacity: 1 }], { duration: 1100 }));
+        addDot(i, i === NW.length - 1);
+        show(i, true);
+      };
+      const reset = () => { anims.forEach((x) => x.cancel()); anims = []; segG.innerHTML = ''; lblG.innerHTML = ''; dotG.innerHTML = ''; k = 0; addDot(0, false); show(0, false); };
+      return {
+        enter() { reset(); },
+        next() { if (k >= NW.length - 1) return false; k++; step(k); return true; },
+        replay() { reset(); },
+        leave() { anims.forEach((x) => x.cancel()); anims = []; },
+      };
     },
   };
 
@@ -866,9 +965,9 @@
   live('join', 0); live('title', 0); live('obj', 0);
   live('q-post', 1); scn('fr1', 1, 'What did you find?', 'What did you find?'); live('us', 1); live('q-captain', 1); scn('fr1', 1, 'Now compare it', 'Lead with it');
   live('budget', 1); live('q-life', 1); scn('fr1', 1, 'Avoid lifestyle inflation', 'Avoid lifestyle inflation'); live('life', 1); live('board1', 1);
-  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); scn('fr1', 2, 'This is me today.', 'What I got wrong'); live('wait', 2);
+  scn('fr1', 2, 'This was me in 2019.', 'This was me in 2019.'); live('osu', 2); live('nw', 2); scn('fr1', 2, 'What I put in', 'What I got wrong'); live('wait', 2);
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
-  live('q-taxed', 3); scn('fr2', 3, 'My real LES', 'Deductions: what is taken out'); live('q-allot', 3); scn('fr2', 3, 'Allotments: pay yourself first'); live('board2', 3);
+  live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
   scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension');
   live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', '3. Continuation pay'); live('q-roth', 4); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);

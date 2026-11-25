@@ -4,12 +4,12 @@
 'use strict';
 /* =====================================================================
    Chapter 2: Your First LES
-   My real November 2026 Leave and Earnings Statement, redrawn (no SSN,
-   ADSN or remarks), read one column at a time: entitlements (base pay,
+   A Leave and Earnings Statement, read one column at a time: entitlements (base pay,
    then the allowances BAH and BAS, then the third type, special and
    incentive pay), deductions, allotments (what each one really is) and
-   the net. Then the learner picks single or married and the same LES
-   turns into a new 2d Lt's first one at JBSA-Lackland, San Antonio.
+   the net, walked through on a new 2d Lt's first LES (single, JBSA-
+   Lackland, San Antonio). Then my real November 2026 LES, briefly, as
+   where it goes (Captain Russell, 25 Nov 2026).
    Sources: my LES (DFAS Form 702), DFAS 2026 officer basic pay table
    (O-1 under 2 years $4,150.20), 2026 officer BAS $328.48, 2026 BAH
    San Antonio O-1 $1,584 without and $1,905 with dependents, 2026
@@ -50,117 +50,103 @@ const PX = [40, 430, 820, 1210], PW = 350, PY = 196, PH = 470, ROW0 = 290, RH = 
 const HEADS = [['NAME', 40, 400], ['GRADE', 470, 120], ['YRS SVC', 620, 150], ['PERIOD COVERED', 1210, 350]];
 const LES_FIT = 1.1;   // LES text may grow only a little on a phone, so the columns keep their shape
 
-function scene(st) {
+function scene() {
   const S = new Scene('fr2');
   const all = [];
   const add = (id, kind, cfg, props) => { all.push(id); return S.add(id, kind, cfg, props); };
-  const Y = yours(st.married === 'yes');
+  // Captain Russell, 25 Nov 2026: walk a new 2d Lt's LES first, in detail, then show mine briefly as where it goes
+  const Y = yours(false);
+  const net = Math.round((sum(Y.E) - sum(Y.D)) * 100) / 100;
 
-  // ---- the form
+  // ---- the form, filled in with the 2d Lt's first month
   add('form', 'rect', {}, { x: 20, y: 40, w: 1560, h: 646, rx: 14, fill: '#0a1220', stroke: C.line, sw: 2, o: 0 });
   add('title', 'text', { size: 22, anchor: 'middle', weight: 800, mono: true, fit: LES_FIT }, { x: 800, y: 76, content: 'MILITARY LEAVE AND EARNINGS STATEMENT', fill: C.soft, o: 0 });
-  HEADS.forEach(([k, x, w], i) => {
+  HEADS.forEach(([k, x], i) => {
     add('hk' + i, 'text', { size: 17, anchor: 'start', weight: 700, mono: true, fit: LES_FIT }, { x, y: 112, content: k, fill: C.faint, o: 0 });
-    add('hv' + i, 'text', { size: 26, anchor: 'start', weight: 800, mono: true, fit: LES_FIT }, { x, y: 148, content: MINE.head[i], fill: C.ink, o: 0 });
+    add('hv' + i, 'text', { size: 26, anchor: 'start', weight: 800, mono: true, fit: LES_FIT }, { x, y: 148, content: Y.head[i], fill: i ? C.ink : C.amber, o: 0 });
   });
   COLS.forEach(([name], c) => {
     add('col' + c, 'rect', {}, { x: PX[c], y: PY, w: PW, h: PH, rx: 10, fill: C.panel2, stroke: C.line, sw: 2, o: 0 });
     add('cn' + c, 'text', { size: 22, anchor: 'middle', weight: 800, mono: true, fit: LES_FIT }, { x: PX[c] + PW / 2, y: PY + 40, content: name, fill: C.soft, o: 0 });
     add('cl' + c, 'rect', {}, { x: PX[c] + 16, y: PY + 56, w: PW - 32, h: 2, rx: 1, fill: C.line, o: 0 });
   });
-  // rows: E 0-3 (3 is the empty special pay line), D 0-5, A 0-3
+  // rows: E 0-3 (3 is the special pay line), D 0-5, A 0-3
   const rows = { E: 4, D: 6, A: 4 };
   Object.entries(rows).forEach(([k, n]) => {
     const c = 'EDA'.indexOf(k);
     for (let r = 0; r < n; r++) {
-      const src = MINE[k][r];
+      const src = Y[k][r];
       add(k + 'l' + r, 'text', { size: 19, anchor: 'start', weight: 700, mono: true, fit: LES_FIT }, { x: PX[c] + 18, y: ROW0 + r * RH, content: src ? src[0] : '', fill: C.ink, o: 0 });
       add(k + 'v' + r, 'money', { size: 20, anchor: 'end', weight: 800, mono: true, les: true, fit: LES_FIT }, { x: PX[c] + PW - 18, y: ROW0 + r * RH, num: src ? src[1] : 0, fill: C.ink, o: 0 });
     }
     add(k + 'tl', 'text', { size: 19, anchor: 'start', weight: 800, mono: true, fit: LES_FIT }, { x: PX[c] + 18, y: TOT_Y, content: 'TOTAL', fill: C.soft, o: 0 });
-    add(k + 'tv', 'money', { size: 22, anchor: 'end', weight: 850, mono: true, les: true, fit: LES_FIT }, { x: PX[c] + PW - 18, y: TOT_Y, num: sum(MINE[k]), fill: C.ink, o: 0 });
+    add(k + 'tv', 'money', { size: 22, anchor: 'end', weight: 850, mono: true, les: true, fit: LES_FIT }, { x: PX[c] + PW - 18, y: TOT_Y, num: sum(Y[k]), fill: C.ink, o: 0 });
   });
   add('special', 'rect', { dash: '10 8' }, { x: PX[0] + 10, y: ROW0 + 3 * RH - 32, w: PW - 20, h: 44, rx: 8, fill: 'rgba(251,191,36,.06)', stroke: C.amber, sw: 2, o: 0 });
   add('none', 'text', { size: 24, anchor: 'middle', weight: 700, fit: LES_FIT }, { x: PX[2] + PW / 2, y: ROW0 + 60, content: 'None yet. Your call.', fill: C.faint, o: 0 });
-  const SUM = [['+TOT ENT', sum(MINE.E)], ['-TOT DED', sum(MINE.D)], ['-TOT ALMT', sum(MINE.A)]];
+  const SUM = [['+TOT ENT', sum(Y.E)], ['-TOT DED', sum(Y.D)], ['-TOT ALMT', 0]];
   SUM.forEach(([k, v], r) => {
     add('Sl' + r, 'text', { size: 19, anchor: 'start', weight: 700, mono: true, fit: LES_FIT }, { x: PX[3] + 18, y: ROW0 + r * RH, content: k, fill: C.ink, o: 0 });
     add('Sv' + r, 'money', { size: 20, anchor: 'end', weight: 800, mono: true, les: true, fit: LES_FIT }, { x: PX[3] + PW - 18, y: ROW0 + r * RH, num: v, fill: C.ink, o: 0 });
   });
   add('netl', 'text', { size: 22, anchor: 'start', weight: 850, mono: true, fit: LES_FIT }, { x: PX[3] + 18, y: ROW0 + 4 * RH + 30, content: '=NET AMT', fill: C.green, o: 0 });
-  add('netv', 'money', { size: 34, anchor: 'end', weight: 850, mono: true, les: true, fit: LES_FIT }, { x: PX[3] + PW - 18, y: ROW0 + 4 * RH + 34, num: 4000, fill: C.green, o: 0 });
+  add('netv', 'money', { size: 34, anchor: 'end', weight: 850, mono: true, les: true, fit: LES_FIT }, { x: PX[3] + PW - 18, y: ROW0 + 4 * RH + 34, num: 0, fill: C.green, o: 0 });
 
   // ---- the key point under the form
   add('kp', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 40, y: 770, content: '', fill: C.ink, o: 0 });
   add('kp2', 'text', { size: 28, anchor: 'start', weight: 600 }, { x: 40, y: 818, content: '', fill: C.soft, o: 0 });
   add('kp3', 'text', { size: 28, anchor: 'start', weight: 600 }, { x: 40, y: 860, content: '', fill: C.soft, o: 0 });
 
-  // ---- your turn: single or married
-  add('qHead', 'text', { size: 46, anchor: 'middle', weight: 800 }, { x: 800, y: 250, content: 'Your turn: a brand new 2d Lt at JBSA-Lackland', fill: C.ink, o: 0 });
-  add('qSub', 'text', { size: 30, anchor: 'middle', weight: 600 }, { x: 800, y: 304, content: 'San Antonio, Texas (78236). Are you single or married?', fill: C.soft, o: 0 });
-  ['Single', 'Married'].forEach((t, i) => {
-    add('qt' + i, 'rect', {}, { x: 520 + i * 360 - 150, y: 400, w: 300, h: 200, rx: 26, fill: C.panel2, stroke: C.cyan, sw: 4, o: 0 });
-    add('qtt' + i, 'text', { size: 56, anchor: 'middle', weight: 850 }, { x: 520 + i * 360, y: 520, content: t, fill: C.cyan, o: 0 });
-  });
-
   const ids = (re) => all.filter((i) => re.test(i));
   const FORM = ids(/^(form|title|h[kv]\d|col\d|cn\d|cl\d)$/);
   const focus = (s, c) => { COLS.forEach((_, k) => { s['col' + k].stroke = k === c ? C.cyan : C.line; s['col' + k].sw = k === c ? 4 : 2; }); };
-  const showCol = (s, k, on) => ids(new RegExp('^' + k + '[lv]\\d$|^' + k + 't[lv]$')).forEach((i) => { if (!(k === 'E' && /[lv]3$/.test(i))) s[i].o = on; });
+  const rowsOf = (k) => ids(new RegExp('^' + k + '[lv]\\d$'));
+  const showCol = (s, k, on) => { rowsOf(k).forEach((i) => { const r = +i.slice(-1); if ((k === 'E' && r === 3) || !s[k + 'l' + r].content) return; s[i].o = on; }); s[k + 'tl'].o = on; s[k + 'tv'].o = on; };
+  const sumCol = (s, on) => ids(/^S[lv]\d$|^net[lv]$/).forEach((i) => { s[i].o = on; });
   const say = (s, a, b, c) => { s.kp.content = a; s.kp2.content = b || ''; s.kp3.content = c || ''; s.kp.o = 1; s.kp2.o = b ? 1 : 0; s.kp3.o = c ? 1 : 0; };
+  const quiet = (s) => { s.kp.o = 0; s.kp2.o = 0; s.kp3.o = 0; };
   const colGo = (c, label) => [PX[c] + PW / 2, PY + PH / 2, PW + 8, PH + 8, label, 'top'];   // label above, so the key point below stays clear
 
   // ================================================================ steps
-  S.step({ head: 'My real LES', body: 'This is my actual November 2026 LES. Once you know the four columns, you can read any LES.', go: colGo(0, 'Start with entitlements') })
+  S.step({ head: 'Your first LES', body: 'This is what a brand new 2d Lt\'s first Leave and Earnings Statement looks like: single, at JBSA-Lackland in San Antonio. **Four columns**, and once you know them you can read any LES.', go: colGo(0, 'Start with entitlements') })
     .beat(0.8, (s) => { FORM.forEach((i) => { s[i].o = 1; }); })
-    .beat(1.0, (s) => { ['E', 'D', 'A'].forEach((k) => showCol(s, k, 1)); ids(/^S[lv]\d$|^net[lv]$/).forEach((i) => { s[i].o = 1; }); });
+    .beat(1.2, (s) => { showCol(s, 'E', 1); showCol(s, 'D', 1); s.Atl.o = 1; s.Atv.o = 1; s.none.o = 1; sumCol(s, 1); s.netv.num = net; })
+    .beat(0.6, (s) => { say(s, 'Entitlements, deductions, allotments, and what\'s left', 'Read it left to right, every month.', ''); });
 
-  S.step({ head: 'Entitlements: what you earn', body: '**Type 1: base pay**, set by rank and years of service. It is taxed. **Type 2: allowances.** Basic Allowance for Housing (BAH) pays for housing and Basic Allowance for Subsistence (BAS) for food. They are not taxed.', go: [PX[0] + PW / 2, ROW0 + 3 * RH - 10, PW, 70, 'Is there a third type?'] })
-    .beat(0.6, (s) => { focus(s, 0); ['D', 'A'].forEach((k) => showCol(s, k, 0.25)); ids(/^S[lv]\d$|^net[lv]$/).forEach((i) => { s[i].o = 0.25; }); })
+  S.step({ head: 'Entitlements: what you earn', body: '**Type 1: base pay**, set by rank and years of service. It is taxed. **Type 2: allowances.** Basic Allowance for Housing pays for housing and Basic Allowance for Subsistence for food. They are not taxed.', go: [PX[0] + PW / 2, ROW0 + 3 * RH - 10, PW, 70, 'Is there a third type?'] })
+    .beat(0.6, (s) => { quiet(s); focus(s, 0); showCol(s, 'D', 0.25); s.Atl.o = 0.25; s.Atv.o = 0.25; s.none.o = 0.25; sumCol(s, 0.25); })
     .beat(0.8, (s) => { s.El0.fill = C.cyan; s.Ev0.fill = C.cyan; ['1', '2'].forEach((r) => { s['El' + r].fill = C.violet; s['Ev' + r].fill = C.violet; });
-      say(s, 'Base pay is taxed. Allowances are not.', 'Basic Allowance for Housing: rank, zip code, dependents.', 'Basic Allowance for Subsistence: $328.48 for every officer.'); });
+      say(s, `${fmt(sum(Y.E), { cents: true })} a month. Only the base pay is taxed.`, 'Basic Allowance for Housing: set by rank, zip code and dependents. San Antonio: $1,584.', 'Basic Allowance for Subsistence: $328.48 for every officer.'); });
 
-  S.step({ head: 'Type 3: special and incentive pay', body: 'Extra pay for certain jobs or locations, like flight pay or hazardous duty pay. **I don\'t get any**, so it\'s blank on mine.', go: colGo(1, 'Now, deductions') })
+  S.step({ head: 'Type 3: special and incentive pay', body: 'Extra pay for certain jobs or locations, like flight pay or hazardous duty pay. **Most new lieutenants don\'t get any yet**, so it\'s blank here.', go: colGo(1, 'Now, deductions') })
     .beat(0.8, (s) => { s.special.o = 1; s.El3.o = 1; s.El3.content = 'SPECIAL/INCENTIVE'; s.El3.fill = C.amber; s.Ev3.o = 1; s.Ev3.num = 0; s.Ev3.fill = C.amber; })
-    .beat(0.6, (s) => { say(s, 'Flight, jump, dive, language, hazard pay', 'Only for certain jobs or places.', ''); });
+    .beat(0.6, (s) => { say(s, 'Flight, jump, dive, language, hazard pay', 'Only for certain jobs or places. Pilots pick up flight pay later.', ''); });
 
-  S.step({ head: 'Deductions: what is taken out', body: 'Taxes, life insurance (SGLI) and my TSP. **Federal tax and FICA come from base pay only**, because allowances are not taxed.', go: colGo(2, 'Now, allotments') })
-    .beat(0.6, (s) => { s.special.o = 0; s.El3.o = 0; s.Ev3.o = 0; showCol(s, 'E', 0.25); showCol(s, 'D', 1); focus(s, 1); s.kp.o = 0; s.kp2.o = 0; s.kp3.o = 0; })
-    .beat(0.8, (s) => { s.Dl5.fill = C.green; s.Dv5.fill = C.green; say(s, 'Roth TSP: 27% of base pay, every month', 'The BRS adds 1% + 4% on top of it.', ''); });
+  S.step({ head: 'Deductions: what is taken out', body: 'Federal income tax, FICA (Social Security and Medicare), life insurance (SGLI) and your TSP. **Taxes come from base pay only**, because allowances aren\'t taxed.', go: colGo(2, 'Now, allotments') })
+    .beat(0.6, (s) => { s.special.o = 0; s.El3.o = 0; s.Ev3.o = 0; showCol(s, 'E', 0.25); showCol(s, 'D', 1); focus(s, 1); quiet(s); })
+    .beat(0.8, (s) => { s.Dl4.fill = C.green; s.Dv4.fill = C.green;
+      say(s, 'Roth TSP: 5% of base pay, ' + fmt(Y.D[4][1], { cents: true }) + ' a month', 'That gets you the full Air Force match. More on that in the BRS.', 'Federal tax here is a 2026 estimate for a single 2d Lt.'); });
 
-  S.step({ head: 'Allotments: pay yourself first', body: 'Money that goes out **before** my pay ever hits the bank. Here\'s what each one actually is.', go: colGo(3, 'What is left?') })
-    .beat(0.6, (s) => { showCol(s, 'D', 0.25); showCol(s, 'A', 1); focus(s, 2); s.kp.o = 0; s.kp2.o = 0; })
-    .beat(1.0, (s) => { MINE.Areal.forEach((t, r) => { s['Al' + r].content = t; s['Al' + r].fill = r === 1 ? C.ink : C.green; }); })
-    .beat(0.5, (s) => { say(s, 'Two Roth IRAs and an emergency fund', 'Saved before I can spend it.', ''); });
+  S.step({ head: 'Allotments: pay yourself first', body: 'Money sent out **before** your pay ever hits the bank. You start with none, and **setting them up is your first big money decision.**', go: colGo(3, 'What is left?') })
+    .beat(0.6, (s) => { showCol(s, 'D', 0.25); s.Atl.o = 1; s.Atv.o = 1; s.none.o = 1; focus(s, 2); quiet(s); })
+    .beat(0.6, (s) => { say(s, 'Set it up once and it just happens', 'A Roth IRA, an emergency fund, a savings account: paid before you can spend it.', ''); });
 
-  S.step({ head: 'What is left: $4,000', body: 'Every month the same $4,000 hits my account and **that\'s what we live on.** Everything else is already put to work.', go: colGo(3, 'Your turn') })
-    .beat(0.6, (s) => { showCol(s, 'A', 0.25); focus(s, 3); ids(/^S[lv]\d$|^net[lv]$/).forEach((i) => { s[i].o = 1; }); s.kp.o = 0; s.kp2.o = 0; })
-    .beat(1.6, (s) => { s.netv.num = 4000; s.netv.s = 1.12; say(s, '$10,345 − $3,393 − $2,953 = $4,000', 'Half my pay is saved before I see it.', ''); })
-    .beat(0.4, (s) => { s.netv.s = 1; });
-
-  S.step({ head: 'Your turn', body: 'Tap one. Basic Allowance for Housing is higher with dependents.',
-    act(ctx) { ['no', 'yes'].forEach((m, i) => ctx.hit(520 + i * 360, 500, 310, 210, i ? 'Married' : 'Single', () => ctx.done({ married: m }), 'quiet')); } })
-    .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); })
-    .beat(0.7, (s) => { ['qHead', 'qSub', 'qt0', 'qtt0', 'qt1', 'qtt1'].forEach((i) => { s[i].o = 1; }); });
-
-  S.step({ head: 'Your entitlements', body: `Base pay for an O-1 under 2 years is **$4,150.20**. Add Basic Allowance for Subsistence and the San Antonio Basic Allowance for Housing ${st.married === 'yes' ? 'with' : 'without'} dependents.`, go: colGo(1, 'What comes out?') })
-    .beat(0.6, (s) => { ['qHead', 'qSub', 'qt0', 'qtt0', 'qt1', 'qtt1'].forEach((i) => { s[i].o = 0; }); FORM.forEach((i) => { s[i].o = 1; }); focus(s, 0);
-      Y.head.forEach((v, i) => { s['hv' + i].content = v; }); s.hv0.fill = C.amber; })
-    .beat(1.4, (s) => { Y.E.forEach((r, i) => { s['El' + i].o = 1; s['El' + i].content = r[0]; s['Ev' + i].o = 1; s['Ev' + i].num = r[1]; });
-      s.El0.fill = C.cyan; s.Ev0.fill = C.cyan; [1, 2].forEach((r) => { s['El' + r].fill = C.violet; s['Ev' + r].fill = C.violet; });
-      s.Etl.o = 1; s.Etv.o = 1; s.Etv.num = sum(Y.E);
-      say(s, `${fmt(sum(Y.E))} a month, ${fmt(sum(Y.E) * 12)} a year`, `${fmt(sum(Y.E.slice(1)) * 12)} a year of it is tax free.`, ''); });
-
-  const net = Math.round((sum(Y.E) - sum(Y.D)) * 100) / 100;
-  S.step({ head: 'Your take-home pay', body: '5% to the Roth TSP so you get the whole match (more on that in Chapter 3). No allotments yet, **that\'s your first big decision.** *Federal tax is a 2026 estimate.' })
-    .beat(0.6, (s) => { focus(s, 1); s.kp.o = 0; s.kp2.o = 0;
-      for (let r = 0; r < 6; r++) { const v = Y.D[r]; s['Dl' + r].o = v ? 1 : 0; s['Dv' + r].o = v ? 1 : 0; if (v) { s['Dl' + r].content = v[0]; s['Dv' + r].num = v[1]; s['Dl' + r].fill = r === 4 ? C.green : C.ink; s['Dv' + r].fill = r === 4 ? C.green : C.ink; } }
-      s.Dtl.o = 1; s.Dtv.o = 1; s.Dtv.num = sum(Y.D); })
-    .beat(0.6, (s) => { for (let r = 0; r < 4; r++) { s['Al' + r].o = 0; s['Av' + r].o = 0; } s.Atv.num = 0; s.Atl.o = 1; s.Atv.o = 1; s.none.o = 1; focus(s, 3);
-      s.Sv0.num = sum(Y.E); s.Sv1.num = sum(Y.D); s.Sv2.num = 0; ids(/^S[lv]\d$|^net[lv]$/).forEach((i) => { s[i].o = 1; }); })
+  S.step({ head: 'What is left', body: 'Entitlements, minus deductions, minus allotments. **That\'s what lands in your bank account** every month.', go: colGo(3, 'And mine?') })
+    .beat(0.6, (s) => { s.Atl.o = 0.25; s.Atv.o = 0.25; s.none.o = 0.25; focus(s, 3); sumCol(s, 1); s.netv.num = 0; quiet(s); })
     .beat(1.6, (s) => { s.netv.num = net; s.netv.s = 1.12;
-      say(s, `You take home ${fmt(net)} a month.`, 'More than my $4,000 as a captain.', 'The difference: I pay myself first.'); })
+      say(s, `${fmt(sum(Y.E), { cents: true })} − ${fmt(sum(Y.D), { cents: true })} − $0 = ${fmt(net, { cents: true })}`, 'Your take-home pay as a single 2d Lt, before you set up a single allotment.', ''); })
     .beat(0.4, (s) => { s.netv.s = 1; });
+
+  // mine, as a reference: the same four columns as a captain, six years in
+  S.step({ head: 'My LES, six years in', body: 'Same four columns on my November 2026 LES as a captain. More pay, and **about half of it goes to work before it ever hits the bank.**' })
+    .beat(0.6, (s) => { quiet(s); focus(s, -1); ['E', 'D', 'A'].forEach((k) => { rowsOf(k).forEach((i) => { s[i].o = 0; }); s[k + 'tl'].o = 0; s[k + 'tv'].o = 0; }); s.none.o = 0; sumCol(s, 0); })
+    .beat(1.6, (s) => {
+      MINE.head.forEach((v, i) => { s['hv' + i].content = v; }); s.hv0.fill = C.ink;
+      ['E', 'D', 'A'].forEach((k) => { for (let r = 0; r < rows[k]; r++) { const src = MINE[k][r]; s[k + 'l' + r].content = src ? (k === 'A' ? MINE.Areal[r] : src[0]) : ''; s[k + 'v' + r].num = src ? src[1] : 0; s[k + 'l' + r].fill = C.ink; s[k + 'v' + r].fill = C.ink; s[k + 'l' + r].o = src ? 1 : 0; s[k + 'v' + r].o = src ? 1 : 0; } s[k + 'tl'].o = 1; s[k + 'tv'].o = 1; s[k + 'tv'].num = sum(MINE[k]); });
+      s.Dl5.fill = C.green; s.Dv5.fill = C.green; [0, 2, 3].forEach((r) => { s['Al' + r].fill = C.green; s['Av' + r].fill = C.green; });
+      s.Sv0.num = sum(MINE.E); s.Sv1.num = sum(MINE.D); s.Sv2.num = sum(MINE.A); sumCol(s, 1); s.netv.num = 4000; },
+      (id) => { const m = /^([EDAS])[lv](\d)$/.exec(id); return m ? { w: ['EDAS'.indexOf(m[1]) / 5, ('EDAS'.indexOf(m[1]) + 2) / 5] } : null; })
+    .beat(0.6, (s) => { say(s, `${fmt(sum(MINE.E))} in, $4,000 to my bank account`, 'Roth TSP, two Roth IRAs and an emergency fund all come out first.', `Your ${fmt(net)} is more than my $4,000. The difference is I pay myself first.`); });
 
   return S;
 }
