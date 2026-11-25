@@ -53,7 +53,7 @@
   const CHARTS = {
     // ---- invest the difference for 4 years, then leave it alone
     life(el) {
-      const L = root.FR.LIFE, MAXB = Math.round(L.PAY - 2000), HI = 2.4e6;
+      const L = root.FR.LIFE, MAXB = Math.round(L.TAKE - 2000), HI = 2.4e6;
       const f = frame(el, 'How much do you invest?', `Your first month: ${money(L.PAY)}. About ${money(L.TAX)} goes to taxes. Slide right to invest more.`);
       // the paycheck bar above the chart, like the big screen: taxes, what you spend, what you invest
       const bar = document.createElementNS(NS, 'svg'); bar.setAttribute('viewBox', `0 0 ${W} 44`); bar.setAttribute('class', 'exc exbar'); f.svg.before(bar);

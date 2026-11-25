@@ -519,3 +519,6 @@ html.solo #stage.go { cursor: default; }
 .bpie .pi { opacity: 0; transition: opacity .4s ease; transition-delay: var(--d, 0s); }
 .bpie.on .pi { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .bpie .pi { transition: none; } }
+
+/* scoreboard title: just SCOREBOARD, larger (Captain Russell, 25 Nov 2026) */
+.sbhead { margin: 0; font: 900 76px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--amber); }
