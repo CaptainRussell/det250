@@ -572,3 +572,15 @@ html.solo #stage.go { cursor: default; }
 .freehelp .fh img.wide { width: 150px; height: auto; border-radius: 8px; }
 .freehelp .fh p { margin: 0; font: 600 22px/1.3 var(--font); color: var(--soft); }
 .freehelp .fh b { display: block; font: 800 26px var(--font); color: var(--ink); }
+
+/* no caption band while presenting (Captain Russell, 25 Nov 2026): the ticker sits at the very bottom, the slide gets
+   the room, and Back / Next float small at the bottom right. C brings the captions back as presenter notes. */
+#app { position: relative; }
+html:not(.solo):not(.notes) #cap { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 44px; z-index: 20;
+  min-height: 0; padding: 0; background: none; border: 0; }
+html:not(.solo):not(.notes) #cap .txt { display: none; }
+html:not(.solo):not(.notes) #cap .nav { opacity: .35; transition: opacity .2s ease; }
+html:not(.solo):not(.notes) #cap .nav:hover, html:not(.solo):not(.notes) #cap .nav:focus-within { opacity: 1; }
+html:not(.solo):not(.notes) #cap .nav button { height: 34px; padding: 0 10px; }
+html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
+@media (max-width: 700px) { html:not(.solo):not(.notes) #prog { bottom: 28px; } html:not(.solo):not(.notes) #cap { bottom: 36px; } }
