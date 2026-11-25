@@ -78,6 +78,7 @@ input.name { width: 100%; background: var(--panel); border: 2px solid var(--line
 .exseg button.on { background: var(--green); border-color: var(--green); color: #04140e; }
 .slider { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
 .slider .v { font: 850 40px var(--font); text-align: center; color: var(--amber); margin-bottom: 6px; }
+.slider .vs { text-align: center; color: var(--soft); font-weight: 700; margin: -4px 0 8px; }
 input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
 .calls { display: grid; gap: 12px; margin-bottom: 14px; }
 .call { background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 12px; }
@@ -190,6 +191,7 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     let h = '';
     if (q && S.phase === 'open' && S.mine == null) h += renderQ(q);
     else if (q && S.phase === 'open') h += `<div class="wait"><div class="big">Locked in</div><p>${esc(S.mineText || '')}</p><p>Eyes up front for the answer.</p></div>`;
+    else if (q && S.phase === 'locked') h += `<div class="wait"><div class="big">Guesses are locked</div><p>${esc(S.mineText || 'You didn\'t get a guess in.')}</p><p>Eyes up front for the answer.</p></div>`;
     else if (q && S.phase === 'reveal' && S.res) {
       const r = S.res;
       h += r.poll ? `<div class="res ok"><div class="p">Thanks</div><div class="a">${esc(r.mine || '')}</div><div class="a">${md(r.text || '')}</div></div>`
@@ -228,7 +230,7 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     if (q.type === 'choice') h += `<div class="opts">${q.opts.map((o, i) => { const g = q.ins && q.ins[i]; return `<button data-i="${i}" class="${draft.i === i ? 'on' : ''}" aria-pressed="${draft.i === i}">${g ? `<img class="oi" src="${esc(g[0])}" alt="" style="width:${Math.min(40, 30 * g[1])}px">` : ''}<span>${esc(o)}</span></button>`; }).join('')}</div><button class="big-btn" id="oGo" ${draft.i == null ? 'disabled' : ''}>${draft.i == null ? 'Pick an answer' : 'Lock it in'}</button>`;
     if (q.type === 'slider') {
       const v = draft.v != null ? draft.v : q.start != null ? q.start : q.min;
-      h += `<div class="slider"><div class="v" id="sv">${fmtV(q, v)}</div><input type="range" id="sr" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}"></div><button class="big-btn" id="sGo">Lock it in</button>`;
+      h += `<div class="slider"><div class="v" id="sv">${fmtV(q, v)}</div>${q.unit === 'pct' ? '<div class="vs">make less than a new 2d Lt</div>' : ''}<input type="range" id="sr" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}"></div><button class="big-btn" id="sGo">Lock it in</button>`;
     }
     if (q.type === 'calls') {
       h += `<div class="calls">${q.calls.map((c) => `<div class="call"><div class="t"><small>${esc(c.when)}</small>${esc(c.ask)}</div><div class="seg">${c.opts.map((o) => `<button data-k="${c.key}" data-v="${esc(o[0])}" class="${draft[c.key] === String(o[0]) ? 'on' : ''}">${esc(o[1])}</button>`).join('')}</div></div>`).join('')}</div>
@@ -236,8 +238,7 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     }
     return h + '</div>';
   }
-  const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
-  const fmtV = (q, v) => (q.unit === '$' ? '$' + Number(v).toLocaleString() : q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? ordinal(+v) + ' percentile' : v + (q.unit || ''));
+  const fmtV = (q, v) => (q.unit === '$' ? '$' + Number(v).toLocaleString() : q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? v + ' of 100' : v + (q.unit || ''));
   function wireQ(q) {
     if (!q || S.phase !== 'open' || S.mine != null) return;
     document.querySelectorAll('.opts button').forEach((b) => { b.onclick = () => { draft.i = +b.dataset.i; render(); }; });
