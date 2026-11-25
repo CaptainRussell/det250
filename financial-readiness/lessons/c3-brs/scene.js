@@ -7,7 +7,7 @@
    The three parts: the pension (2% x years x the average of the highest
    36 months of base pay, at 20 or more years), the TSP (1% automatic
    from 60 days, then a match of up to 4% more after 2 full years, 5% in
-   all when you put in 5%) and continuation pay (a bonus between 7 and 12
+   all when you put in 5%) and continuation pay (a bonus at 12
    years for 4 more years). The learner picks a TSP contribution and sees
    the monthly money and what it grows to after 20 years next to the
    other choices. Then Roth or Traditional, and the 5% rule.
@@ -48,12 +48,14 @@ const ZY1 = [6735.69, 6740.89, 6853.03, 6929.12, 6919.47, 6654.42, 6957.01, 7412
 const ZY10 = [2157.7, 2143.0, 2165.0, 2246.6, 2275.1, 2329.9, 2366.8, 2359.3, 2395.3, 2434.0, 2454.1, 2456.2, 2492.8, 2557.0, 2593.6, 2664.3, 2789.8, 2705.2, 2702.8, 2653.6, 2701.5, 2754.3, 2793.6, 2857.8, 2901.5, 2785.5, 2723.2, 2567.3, 2607.4, 2754.9, 2804.0, 2903.8, 2854.7, 2890.2, 2996.1, 2897.5, 2982.2, 2977.7, 3104.9, 3176.7, 3278.2, 3277.3, 2652.4, 2762.0, 2919.6, 3104.7, 3207.6, 3391.7, 3365.5, 3418.7, 3549.0, 3695.3, 3793.7, 3883.4, 3910.5, 4141.2, 4167.8, 4238.5, 4363.7, 4454.2, 4445.5, 4460.7, 4667.4, 4674.8, 4573.8, 4436.0, 4391.3, 4391.3, 4040.4, 3898.9, 3911.7, 4158.6, 3850.5, 3726.1, 3917.5, 3912.4, 3960.7, 4079.7, 3968.6, 4121.5, 4146.2, 4345.4, 4508.1, 4457.4, 4515.8, 4269.4, 4460.1, 4685.1, 4804.5, 5012.0, 5170.6, 5112.5, 5235.2, 5415.1, 5538.0, 5478.2, 5621.3, 5792.3, 5929.9, 6010.9, 5979.5, 6038.7, 5684.0, 5369.5, 5810.9, 6029.9, 6296.5, 6408.9, 6584.0, 6735.7, 6740.9, 6853.0, 6929.1, 6919.5, 6654.4, 6957.0, 7412.6, 7450.0, 7481.3, 7711.3, 7669.4];
 const ZY100 = [12.65, 13.4, 17.53, 24.86, 21.71, 15.98, 8.3, 7.09, 10.54, 9.26, 13.76, 17.59, 11.31, 12.5, 12.3, 10.55, 8.93, 10.09, 11.85, 13.49, 18.02, 15.21, 14.83, 15.36, 16.88, 21.21, 24.19, 26.18, 25.46, 35.6, 44.15, 45.43, 41.12, 55.62, 58.03, 59.72, 69.07, 65.06, 76.45, 86.12, 93.32, 84.45, 95.04, 102.0, 90.31, 93.49, 103.3, 118.4, 96.11, 72.56, 96.86, 103.8, 90.25, 99.71, 110.9, 133.0, 117.3, 144.3, 166.4, 171.6, 208.2, 264.5, 250.5, 285.4, 339.97, 325.49, 416.08, 435.23, 472.99, 465.25, 614.42, 766.22, 963.36, 1248.77, 1425.59, 1335.63, 1140.21, 895.84, 1132.52, 1181.41, 1278.73, 1424.16, 1378.76, 865.58, 1123.58, 1282.62, 1300.58, 1480.4, 1822.36, 2028.18, 1918.6, 2275.12, 2789.8, 2607.39, 3278.2, 3793.75, 4573.82, 3960.66, 4804.49, 5979.52, 6929.12, 7669.41];
 const ZDAY = [7745.32, 7756.84, 7631.77, 7659.44];   // open, high, low, close
+// CPI-U factors to Nov 2026 dollars for each ZY100 point (Captain Russell, 25 Nov 2026: real values everywhere)
+const ZR100 = [18.7181, 19.1459, 19.3673, 19.5938, 19.5938, 21.0726, 23.4304, 25.9732, 25.3829, 24.6363, 24.2793, 23.7627, 23.5954, 23.9324, 24.1046, 23.7627, 21.341, 19.8257, 19.256, 18.8233, 18.4096, 15.5839, 14.1373, 13.9606, 14.2576, 13.1911, 12.6435, 12.596, 12.4555, 12.5488, 12.502, 12.1396, 11.7152, 11.5536, 11.4353, 11.2434, 11.1685, 11.0215, 10.8432, 10.7389, 10.5363, 10.184, 9.8256, 9.4116, 8.8639, 8.4184, 8.1522, 7.8651, 7.19, 6.431, 6.0262, 5.7274, 5.3609, 4.9056, 4.3066, 3.8512, 3.5531, 3.4259, 3.2881, 3.1759, 3.0571, 3.0131, 2.8959, 2.7668, 2.6299, 2.4893, 2.4262, 2.3496, 2.2918, 2.2292, 2.17, 2.1059, 2.0734, 2.0393, 1.9849, 1.9135, 1.8919, 1.844, 1.8091, 1.757, 1.6896, 1.6552, 1.5873, 1.5869, 1.5462, 1.5215, 1.4782, 1.455, 1.4323, 1.4336, 1.4142, 1.3797, 1.3517, 1.3311, 1.2988, 1.2809, 1.1917, 1.1199, 1.0897, 1.0582, 1.0224, 1.0045];
 const ZOOMS = [
   { key: 'd', name: 'One day', when: '16 October 2026', pts: ZDAY.map((v, i) => [[0, 0.25, 0.7, 1][i], v]) },
   { key: 'm', name: 'One month', when: '28 Sep to 26 Oct 2026', pts: ZM.map((v, i) => [i / (ZM.length - 1), v]) },
   { key: 'y', name: 'One year', when: 'Oct 2025 to Sep 2026', pts: ZY1.map((v, i) => [i / (ZY1.length - 1), v]) },
   { key: 't', name: 'Ten years', when: '2016 to 2026', pts: ZY10.map((v, i) => [i / (ZY10.length - 1), v]) },
-  { key: 'c', name: 'One hundred years', when: '1926 to 2026', pts: ZY100.map((v, i) => [i / (ZY100.length - 1), v]), log: true },
+  { key: 'c', name: 'One hundred years', when: '1926 to 2026, in today\'s dollars', pts: ZY100.map((v, i) => [i / (ZY100.length - 1), v * ZR100[i]]), log: true },
 ];
 // Real dates for every point, as decimal years, so each window sits inside the next one at its true place
 // (Captain Russell, 25 Nov 2026: switching time frames should show the smaller window inside the bigger chart).
@@ -139,7 +141,9 @@ function zoomChart(o) {
 // $500 every month, June 2020 to Nov 2026 (78 buys) at the monthly average price (Shiller data through Sep, the Oct daily closes,
 // Nov at the 24 Nov 2026 close of 7,201.09), dividends reinvested each month (Shiller dividends to Jun 2023, then +5% a year),
 // valued at the 24 Nov 2026 close (Captain Russell, 25 Nov 2026: worth as of now, with dividends). Price only it is $58,742.
-const DCA_IN = 39000, DCA_NOW = 61643;
+// In today's dollars (Captain Russell, 25 Nov 2026: real values everywhere): each $500 grown by CPI-U to Nov 2026
+// (CPI from the Shiller data to Sep 2023, BLS Dec 2023, Dec 2024 and Sep 2025, then 2.7% a year) is $43,673.
+const DCA_IN = 43673, DCA_NOW = 61643;
 
 function scene(st) {
   const S = new Scene('fr3');
@@ -221,9 +225,9 @@ function scene(st) {
   add('cHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Continuation pay: a bonus to stay', fill: C.ink, o: 0 });
   const TX0 = 140, TX1 = 1460, tx = (y) => TX0 + (TX1 - TX0) * y / 20, TY = 430;
   add('cLine', 'rect', {}, { x: TX0, y: TY - 4, w: TX1 - TX0, h: 8, rx: 4, fill: C.line, o: 0 });
-  add('cWin', 'rect', {}, { x: tx(7), y: TY - 34, w: 0, h: 68, rx: 12, fill: C.violet, fo: 0.35, stroke: C.violet, sw: 3, o: 0 });
-  [2, 7, 12, 20].forEach((y) => add('cy' + y, 'text', { size: 28, anchor: 'middle', weight: 700, mono: true }, { x: tx(y), y: TY + 80, content: y ? `${y} yrs` : 'Day 1', fill: C.faint, o: 0 }));
-  add('cWinL', 'text', { size: 32, anchor: 'middle', weight: 800 }, { x: tx(9.5), y: TY - 60, content: 'Offered between 7 and 12 years', fill: C.violet, o: 0 });
+  add('cWin', 'rect', {}, { x: tx(12) - 16, y: TY - 34, w: 0, h: 68, rx: 12, fill: C.violet, fo: 0.35, stroke: C.violet, sw: 3, o: 0 });
+  [2, 12, 20].forEach((y) => add('cy' + y, 'text', { size: 28, anchor: 'middle', weight: 700, mono: true }, { x: tx(y), y: TY + 80, content: y ? `${y} yrs` : 'Day 1', fill: C.faint, o: 0 }));
+  add('cWinL', 'text', { size: 32, anchor: 'middle', weight: 800 }, { x: tx(12), y: TY - 60, content: 'Offered at 12 years', fill: C.violet, o: 0 });
   add('c2y', 'text', { size: 26, anchor: 'middle', weight: 700 }, { x: tx(2), y: TY - 60, content: 'Match starts', fill: C.green, o: 0 });
   add('c20', 'text', { size: 26, anchor: 'middle', weight: 700 }, { x: tx(20) - 40, y: TY - 60, content: 'Pension', fill: C.amber, o: 0 });
   add('cAmt', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 140, y: 650, content: 'At least 2.5 months of base pay, for 4 more years of service', fill: C.ink, o: 0 });
@@ -282,14 +286,14 @@ function scene(st) {
   // ---- always be buying
   add('abHead', 'text', { size: 46, anchor: 'start', weight: 850 }, { x: 120, y: 130, content: 'Always be buying', fill: C.ink, o: 0 });
   add('abSub', 'text', { size: 28, anchor: 'start', weight: 600, maxw: 1360 }, { x: 120, y: 180, content: '$500 into the S&P 500 every month from June 2020, the month I started. Up or down.', fill: C.soft, o: 0 });
-  add('abIl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 286, content: 'What went in', fill: C.soft, o: 0 });
+  add('abIl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 286, content: 'What went in, in today\'s dollars', fill: C.soft, o: 0 });
   add('abI', 'rect', {}, { x: 160, y: 306, w: 0, h: 90, rx: 8, fill: C.cyan, fo: 0.85, o: 0 });
   add('abIv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 * DCA_IN / DCA_NOW - 20, y: 364, content: fmt(DCA_IN), fill: '#06101c', o: 0 });
   add('abWl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 466, content: 'What it is worth today (24 Nov 2026, dividends reinvested)', fill: C.soft, o: 0 });
   add('abW', 'rect', {}, { x: 160, y: 486, w: 0, h: 90, rx: 8, fill: C.green, fo: 0.85, o: 0 });
   add('abWv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 - 20, y: 544, content: fmt(DCA_NOW), fill: '#06101c', o: 0 });
   add('abBig', 'text', { size: 50, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 690, content: 'Time in the market beats timing the market.', fill: C.green, o: 0 });
-  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $2.54 today, with dividends reinvested.', fill: C.amber, o: 0 });
+  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $1.95 today, after inflation, with dividends reinvested.', fill: C.amber, o: 0 });
 
   const off = (s) => all.forEach((i) => { s[i].o = 0; });
   const on = (s, list) => list.forEach((i) => { s[i].o = 1; });
@@ -324,9 +328,9 @@ function scene(st) {
     .beat(2.2, (s) => { CHOICES.forEach((c, i) => { const h = END[i] / EMAX * EH; s['e' + i].o = 1; s['e' + i].h = h; s['e' + i].y = EB - h; s['ev' + i].o = 1; }); },
       (id) => { const m = /^ev?(\d)$/.exec(id); return m ? { w: [+m[1] / 5, (+m[1] + 2) / 5] } : null; });
 
-  S.step({ head: '3. Continuation pay', grp: 'cp', body: 'A one-time bonus somewhere between 7 and 12 years, if you sign up for 4 more. The Air Force sets the amount each year.', go: [800, 680, 1360, 130, 'Roth or Traditional?'] })
-    .beat(0.6, (s) => { off(s); s.cHead.o = 1; s.cLine.o = 1; [2, 7, 12, 20].forEach((y) => { s['cy' + y].o = 1; }); s.c2y.o = 1; s.c20.o = 1; })
-    .beat(1.0, (s) => { s.cWin.o = 1; s.cWin.w = tx(12) - tx(7); s.cWinL.o = 1; })
+  S.step({ head: '3. Continuation pay', grp: 'cp', body: 'A one-time bonus **at 12 years of service**, if you sign up for 4 more. The Air Force sets the amount each year.', go: [800, 680, 1360, 130, 'Roth or Traditional?'] })
+    .beat(0.6, (s) => { off(s); s.cHead.o = 1; s.cLine.o = 1; [2, 12, 20].forEach((y) => { s['cy' + y].o = 1; }); s.c2y.o = 1; s.c20.o = 1; })
+    .beat(1.0, (s) => { s.cWin.o = 1; s.cWin.w = 32; s.cWinL.o = 1; })
     .beat(0.8, (s) => { s.cAmt.o = 1; s.cEx.o = 1; });
   S.step({ head: 'Golden handcuffs', grp: 'cp', body: 'Take it at 12 and you owe **4 more years**. At 16 the pension is 4 years away, and **almost nobody walks away from it.**' })
     .beat(0.6, (s) => { s.cAmt.o = 0; s.cEx.o = 0; s.cy16.o = 1; })
@@ -364,7 +368,7 @@ function scene(st) {
   S.step({ head: 'Zoom out: one hundred years', body: '**Your TSP is going to be invested for 40+ years.** This is the chart you should actually care about.', go: [855, 520, 1250, 540, 'So what do I do?', 'top'] })
     .beat(0.6, (s) => { off(s); s.zHead.o = 1; s.zFrame.o = 1; ['zn', 'zw', 'zhi', 'zlo'].forEach((p) => { s[p + 4].o = 1; }); })
     .beat(2.0, (s) => { s.zl4.o = 1; s.zl4.draw = 1; })
-    .beat(0.6, (s) => { s.zc4.o = 1; s.zLesson.o = 1; s.zLesson.content = 'Every crisis in a century is a wiggle. Up more than 600 times.'; s.zTag3.o = 1; });
+    .beat(0.6, (s) => { s.zc4.o = 1; s.zLesson.o = 1; s.zLesson.content = 'Every crisis in a century is a wiggle. Up more than 30 times over after inflation, before dividends.'; s.zTag3.o = 1; });
 
   S.step({ head: 'Always be buying', body: 'Nobody can time the market. Just keep buying every month, good months and bad. That\'s **dollar cost averaging**, and your TSP does it for you every payday.', go: [800, 525, 1340, 560, 'The one rule'] })
     .beat(0.6, (s) => { off(s); s.abHead.o = 1; s.abSub.o = 1; s.abIl.o = 1; })

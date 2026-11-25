@@ -1,0 +1,6 @@
+# The plain deck and chapters 1, 2 and 4 are sealed in slides/deck.lock.json (tools/fr-lock.mjs).
+# Keep the plain files outside the repo so cadets cannot pre-watch the lesson.
+slides/deck.js
+lessons/c1-from-minus-20k/scene.js
+lessons/c2-first-les/scene.js
+lessons/c4-money-calls/scene.js

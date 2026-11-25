@@ -362,3 +362,40 @@ html.solo #stage.go { cursor: default; }
 .irafunds .if span { color: var(--soft); }
 .irafunds .if i { font-style: normal; font-weight: 800; color: var(--green); }
 .irafunds.nar .if { grid-template-columns: 60px 1fr auto; }
+
+/* final standings (25 Nov 2026): slow climb from 10th, the top 3 in shadow, a big finish for 1st */
+.board.fin .row { height: 54px; animation-delay: var(--dl, 0s); gap: 18px; }
+.board.fin .row.sh, .board.fin .row.up { animation: none; opacity: 1; transform: none; }
+.board.fin .row.sh { opacity: .55; }
+.board.fin .row .rk { width: 200px; font: 700 21px var(--font); color: var(--soft); }
+.board.fin .row .nm { flex: 1; width: auto; }
+.board.fin .sil { width: 44px; height: 44px; border-radius: 50%; background: #000; box-shadow: 0 0 0 2px var(--line); }
+.board.fin .row.sh .nm, .board.fin .row.sh .pts { color: var(--faint); }
+.board.fin .row.up { animation: pop .7s cubic-bezier(.2,1.4,.4,1) both; border-radius: 12px; }
+.board.fin .row.champ { height: 74px; margin: 0 0 6px; padding: 0 14px; background: linear-gradient(90deg, rgba(241,190,72,.35), rgba(241,190,72,.05)); box-shadow: 0 0 0 3px var(--gold), 0 0 50px rgba(241,190,72,.55); animation: champ 1.1s cubic-bezier(.2,1.5,.4,1) both, glow 1.6s 1.1s ease-in-out infinite alternate; }
+.board.fin .row.champ .nm { font-size: 36px; color: var(--gold); }
+.board.fin .row.champ .pts { font-size: 34px; color: var(--gold); }
+.board.fin .row.champ .pxf { width: 64px; height: 64px; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes champ { 0% { transform: scale(.3) rotate(-4deg); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: none; } }
+@keyframes glow { to { box-shadow: 0 0 0 3px var(--gold), 0 0 90px rgba(241,190,72,.85); } }
+.confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti i { position: absolute; top: -30px; border-radius: 2px; animation: fall 3s cubic-bezier(.3,.1,.6,1) both; }
+@keyframes fall { to { transform: translate(var(--x), 960px) rotate(var(--r)); } }
+@media (prefers-reduced-motion: reduce) { .board.fin .row, .board.fin .row.up, .board.fin .row.champ { animation: none !important; opacity: 1; } }
+
+/* the lock (25 Nov 2026): the deck is sealed until the admin password opens it (lock.js) */
+#lockbox { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg, #070b14); padding: 16px; }
+#lockbox .panel { width: min(440px, 100%); background: var(--panel, #0d1424); border: 1px solid var(--line, #22324f); border-radius: 18px; padding: 28px; display: grid; gap: 12px; text-align: center; }
+#lockbox img { justify-self: center; border-radius: 14px; }
+#lockbox h2 { margin: 0; font: 800 28px var(--font); color: var(--ink, #e6f1ff); }
+#lockbox p { margin: 0; color: var(--soft, #8ea3c2); font: 600 17px/1.4 var(--font); }
+#lockbox label { text-align: left; font: 700 14px var(--font); color: var(--soft, #8ea3c2); letter-spacing: .06em; text-transform: uppercase; }
+#lockbox input { font: 600 18px var(--font); padding: 12px 14px; border-radius: 10px; border: 1px solid #3b4e72; background: #070b14; color: var(--ink, #e6f1ff); width: 100%; box-sizing: border-box; }
+#lockbox button[type=submit] { font: 800 18px var(--font); padding: 12px; border-radius: 10px; border: 0; background: var(--gold, #f1be48); color: #1a1203; cursor: pointer; }
+#lockbox button[type=submit]:disabled { opacity: .6; }
+#lockbox .err { color: var(--red, #fb5a72); }
+#lockbox a { color: var(--gold, #f1be48); font: 700 16px var(--font); }
+#lockbox .d250-pw-wrap { position: relative; display: flex; }
+#lockbox .d250-pw-wrap input { padding-right: 64px; }
+#lockbox .d250-pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--soft, #8ea3c2); font: 700 13px var(--font); padding: 8px; cursor: pointer; }
