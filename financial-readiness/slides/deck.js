@@ -217,7 +217,9 @@
   LIVE.life = {
     head: 'Drag it: how much do you invest?', body: 'Your first month as a 2d Lt is **$6,062.68**, and about **' + fmt(FR.LIFE.TAX) + '** of it goes to taxes. Slide what you invest and watch what it turns into.', explore: 'life',
     build(el) {
-      const L = FR.LIFE, PAY = L.PAY, MAXB = Math.floor((L.TAKE - 1500) / 50) * 50;
+      // the ticks count the taxes inside what you live on (Captain Russell, 25 Nov 2026): the $3,000 mark is where taxes plus
+      // spending come to $3,000, and the slider stops where they come to $2,000
+      const L = FR.LIFE, PAY = L.PAY, MAXB = Math.round(PAY - 2000);
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
       div(el, 'abs k in', 'left:70px;top:200px;--d:.05', 'Your first paycheck as a 2d Lt: <span class="g">$6,062.68</span> a month');
       // the paycheck bar: taxes, what you spend, what you invest
@@ -260,9 +262,9 @@
         dot.setAttribute('cx', pts[pts.length - 1][0]); dot.setAttribute('cy', pts[pts.length - 1][1]);
         if (live) raf = requestAnimationFrame(draw);
       };
-      const BANK = Math.round(L.BANK / 50) * 50;
-      const sl = slider(el, { x: 70, y: 30, w: 1460, label: 'What you invest each month', min: 0, max: MAXB, step: 50, value: 0, color: C.green, d: 0.15,
-        ticks: [[0, 'Spend it all'], [BANK, 'Live on a $3,000 college budget'], [MAXB, 'Live on $1,500']], play: [0, BANK, 2.4],
+      const BANK = Math.round(PAY - 3000);
+      const sl = slider(el, { x: 70, y: 30, w: 1460, label: 'What you invest each month', min: 0, max: MAXB, step: 1, value: 0, color: C.green, d: 0.15,
+        ticks: [[0, 'Spend it all'], [BANK, 'Live on a $3,000 college budget'], [MAXB, 'Live on $2,000']], play: [0, BANK, 2.4],
         show: (v) => `<span class="g">${fmt(v)}</span>`, on: (v) => { sm.t = v; const r = L.grow(v); c1(v); c2(r.f4); c3(r.f60); } });
       return {
         enter() { live = true; sl.set(0); sm.v = 0; raf = requestAnimationFrame(draw); setTimeout(() => live && sl.play(0, BANK, 2.4), reduce ? 0 : 1400); },
@@ -785,7 +787,7 @@
       opts: ['Senior Airman (E-4) at 4 years', 'Staff Sergeant (E-5) at 8 years', 'Master Sergeant (E-7) at 16 years', 'Chief Master Sergeant (E-9) at 20+ years'], ins: ['E-4', 'E-5', 'E-7', 'E-9'], ans: 3,
       why: 'A chief master sergeant at 20+ years makes about $10,558. You get there in 8.' },
     life: { type: 'slider', prompt: 'You commission at 22 and live on that **$3,000 college budget**. After taxes, you invest the rest, about **' + fmt(FR.LIFE.BANK) + ' a month**, for your 4-year commitment. Then you separate at 26 and **never put in another dime**. At 7% a year, what\'s it worth when you\'re 60?',
-      min: 100000, max: 3000000, step: 100000, unit: '$M', start: 100000, ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
+      min: 100000, max: 3000000, step: 100000, unit: '$M', start: 100000, ticks: [100000, 1000000, 2000000, 3000000], ans: Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) * 1e5, tol: 1000000,
       why: 'About $' + (Math.round(FR.LIFE.grow(FR.LIFE.BANK).f60 / 1e5) / 10).toFixed(1) + ' million, from just 4 years of living like a college student.' },
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
     allot: { type: 'choice', prompt: 'What\'s an **allotment** on your LES?', opts: ['A bonus for a hard assignment', 'Money sent out before your pay hits the bank', 'The tax taken from base pay', 'A loan from the finance office'], ans: 1,
@@ -806,7 +808,8 @@
     q.qid = id;
     if (q.type === 'choice') { q.score = choiceScore(q.ans); q.say = (v) => 'You picked: ' + q.opts[v]; q.answerText = '**' + q.opts[q.ans] + '.** ' + q.why; }
     if (q.type === 'slider') {
-      const f = (v) => (q.unit === '$M' ? '$' + (v / 1e6).toFixed(1) + 'M' : v + q.unit);
+      // money in the hundred thousands reads $100K, millions read $1.3 million (Captain Russell, 25 Nov 2026)
+      const f = (v) => (q.unit === '$M' ? (v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : v + q.unit);
       q.fmt = f; q.score = sliderScore(q.ans, q.tol); q.say = (v) => 'You said ' + f(v); q.answerText = q.why;
     }
     if (q.type === 'calls') {
@@ -837,7 +840,7 @@
           <b>${'ABCD'[i]}</b>${q.ins && FR.INSIGNIA[q.ins[i]] ? `<img class="oins" src="${FRChars.BASE}insignia/${FR.INSIGNIA[q.ins[i]][0]}.svg" alt="">` : ''}<span>${esc(o)}</span>${rev ? `<em>${n[i]}</em><i style="width:${n[i] / mx * 100}%"></i>` : ''}</div>`).join('')}</div>`;
       } else if (q.type === 'slider') {
         const x = (v) => 40 + 1340 * (v - q.min) / (q.max - q.min);
-        const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => q.min + f * (q.max - q.min));
+        const ticks = q.ticks || [0, 0.25, 0.5, 0.75, 1].map((f) => q.min + f * (q.max - q.min));
         body.innerHTML = `<div class="line"><i></i>${ticks.map((t) => `<span style="left:${x(t)}px">${q.fmt(t)}</span>`).join('')}
           ${rev ? A.map((p, k) => `<div class="pin" style="left:${x(p.ans[q.qid].v)}px;top:${-60 - (k % 4) * 46}px">${face(p, 40)}</div>`).join('') : ''}
           ${rev ? `<div class="truth" style="left:${x(q.ans)}px"><b>${q.fmt(q.ans)}</b></div>` : ''}</div>`;

@@ -48,7 +48,7 @@
   const CHARTS = {
     // ---- invest the difference for 4 years, then leave it alone
     life(el) {
-      const L = root.FR.LIFE, MAXB = Math.floor((L.TAKE - 1500) / 50) * 50, HI = 2.4e6;
+      const L = root.FR.LIFE, MAXB = Math.round(L.PAY - 2000), HI = 2.4e6;
       const f = frame(el, 'How much do you invest?', `Your first month: ${money(L.PAY)}. About ${money(L.TAX)} goes to taxes. Slide right to invest more.`);
       // the paycheck bar above the chart, like the big screen: taxes, what you spend, what you invest
       const bar = document.createElementNS(NS, 'svg'); bar.setAttribute('viewBox', `0 0 ${W} 44`); bar.setAttribute('class', 'exc exbar'); f.svg.before(bar);
@@ -64,7 +64,7 @@
       sv('line', { x1: ax(26), x2: ax(26), y1: Y1, y2: Y0, stroke: COL.faint, 'stroke-dasharray': '3 4' }, f.svg);
       const area = sv('path', { fill: 'rgba(63,214,154,.15)' }, f.svg), ln = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, f.svg);
       const b1 = stat(f.r, 'Invest a month', 'g'), b2 = stat(f.r, 'After 4 years', 'g'), b3 = stat(f.r, 'At 60', 'g');
-      const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 50, value: 0, ends: ['Spend it all', 'Live on $1,500'], show: money,
+      const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 1, value: 0, ends: ['Spend it all', 'Live on $2,000'], show: money,
         on(v) {
           const pts = L.curve(v).map(([a, b]) => [ax(a), Y0 - (Y0 - Y1) * Math.min(b, HI) / HI]);
           ln.setAttribute('d', pathOf(pts)); area.setAttribute('d', pathOf(pts) + `L${X1} ${Y0}L${X0} ${Y0}Z`);
