@@ -253,6 +253,8 @@ function scene(st) {
   });
   add('rWhy', 'text', { size: 36, anchor: 'start', weight: 800 }, { x: 120, y: 670, content: 'As a 2d Lt, your tax rate will never be lower.', fill: C.ink, o: 0 });
   add('rWhy2', 'text', { size: 30, anchor: 'start', weight: 600 }, { x: 120, y: 720, content: 'Your housing and food allowances aren\'t taxed, so your taxable pay is small.', fill: C.soft, o: 0 });
+  // Captain Russell, 25 Nov 2026: even 7 years in, with allowances untaxed, he is still in the 12% bracket
+  add('rTax', 'text', { size: 30, anchor: 'start', weight: 700 }, { x: 120, y: 820, content: 'Even now, 7 years in and making about $128K a year, I\'m still in the 12% tax bracket.', fill: C.amber, o: 0 });
   add('rMe', 'text', { size: 30, anchor: 'start', weight: 600 }, { x: 120, y: 770, content: 'Me: 100% Roth TSP, 100% C Fund, and I convert the match to Roth too.', fill: C.green, o: 0 });
 
   // ---- the rule
@@ -343,7 +345,8 @@ function scene(st) {
     .beat(0.6, (s) => { off(s); s.rHead.o = 1; })
     .beat(1.0, (s) => { [0, 1].forEach((i) => ['rc', 'rt', 'ra', 'rb'].forEach((k) => { s[k + i].o = 1; })); });
   S.step({ head: 'Why Roth', body: 'As a 2d Lt, **your tax rate will probably never be lower**, so pay the tax now while it\'s small.' })
-    .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; s.rMe.o = 1; });
+    .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; s.rMe.o = 1; })
+    .beat(0.8, (s) => { s.rTax.o = 1; });
 
   S.step({ head: 'When in doubt, zoom out', body: 'The C Fund tracks the S&P 500. **Here\'s one day.** The news would be calling this a sell-off.', go: [855, 520, 1250, 540, 'Zoom out', 'top'] })
     .beat(0.6, (s) => { off(s); s.zHead.o = 1; s.zFrame.o = 1; ['zn', 'zw', 'zhi', 'zlo'].forEach((p) => { s[p + 0].o = 1; }); })
