@@ -153,34 +153,37 @@
         <h1 class="abs in" style="left:110px;top:200px;font-size:112px;line-height:1.02;--d:.25">Financial<br>Readiness</h1>
         <div class="abs in lab" style="left:114px;top:460px;font-size:30px;width:600px;--d:.5">In a few years you'll make more than most Americans. The habits you start with that first paycheck decide where it takes you.</div>
         <div class="abs in" style="left:114px;top:690px;display:flex;align-items:center;gap:22px;--d:.8"><img src="${FRChars.BASE}scott-russell.jpg" alt="" width="110" height="110" style="border-radius:50%;border:4px solid var(--gold);object-fit:cover">
-          <div class="lab" style="font-size:26px;line-height:1.35"><b style="color:var(--ink)">Capt Scott D. Russell</b><br>Operations Flight Commander · AFROTC Det 250</div></div>
-        <div class="abs in legend" style="left:820px;top:150px;--d:.6"><i></i><span>My net worth: <b class="r">−$19K</b> in 2019 to <b class="g" id="tNum">$290K</b> today</span></div>`;
+          <div class="lab" style="font-size:26px;line-height:1.35"><b style="color:var(--ink)">Capt Scott D. Russell</b><br>Operations Flight Commander · AFROTC Det 250</div></div>`;
+      // the activity's own icon, the one on the Class Activities card (shared/card-art/financial-readiness.webp), drawn
+      // big so it stays sharp (Captain Russell, 25 Nov 2026: the hub icon here, not my net worth); the bars grow, then the curve
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0;pointer-events:none' });
       el.prepend(svg);
-      const NW = [[2019.45, -19421.40], [2020, -12000], [2021, -3500], [2022, 24000], [2023, 58000], [2024, 110000], [2025, 170000], [2026, 240000], [2026.9, 290039]];
-      const m = chart(svg, { x0: 820, x1: 1500, y0: 700, y1: 230, a: 2019.45, b: 2026.9, lo: -40000, hi: 300000 });
-      sv('line', { x1: 820, x2: 1500, y1: m.y(0), y2: m.y(0), stroke: C.line, 'stroke-width': 3, 'stroke-dasharray': '8 10' }, svg);
-      sv('text', { x: 1500, y: m.y(0) + 34, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = '$0';
-      const pts = NW.map(([t, v]) => [m.x(t), m.y(v)]);
-      const area = sv('path', { d: pathOf(pts) + `L${pts[pts.length - 1][0]} ${m.y(0)}L${pts[0][0]} ${m.y(0)}Z`, fill: 'rgba(52,245,164,.10)', opacity: 0 }, svg);
-      const ln = sv('path', { d: pathOf(pts), fill: 'none', stroke: C.green, 'stroke-width': 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
-      const dot = sv('circle', { r: 14, fill: C.green, stroke: C.bg, 'stroke-width': 5 }, svg);
-      const glow = sv('circle', { r: 14, fill: 'none', stroke: C.green, 'stroke-width': 4, opacity: 0 }, svg);
-      ['2019', '2026'].forEach((t, i) => { sv('text', { x: i ? 1500 : 820, y: 745, 'text-anchor': i ? 'end' : 'start', fill: C.faint, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = t; });
+      const g = sv('g', { transform: 'translate(900 170) scale(2.5)' }, svg);
+      const defs = sv('defs', {}, svg), gr = sv('linearGradient', { id: 'ttlTile', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+      sv('stop', { offset: 0, 'stop-color': '#11234a' }, gr); sv('stop', { offset: 1, 'stop-color': '#172b32' }, gr);
+      sv('rect', { x: 0, y: 0, width: 224, height: 224, rx: 40, fill: 'url(#ttlTile)', stroke: 'rgba(201,162,74,.35)', 'stroke-width': 1.2 }, g);
+      const BARS = [[42, 171], [71, 168], [99, 156], [127, 138], [156, 109], [184, 63]];
+      const bars = BARS.map(([x, top]) => sv('rect', { x: x - 8, y: 181, width: 16, height: 0, rx: 8, fill: 'rgba(201,162,74,.58)' }, g));
+      sv('rect', { x: 34, y: 180, width: 160, height: 4, rx: 1, fill: '#c9a24a' }, g);
+      const ln = sv('path', { d: 'M44 170 C 112 160, 152 128, 184 52', fill: 'none', stroke: '#3fd69a', 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
+      const dot = sv('circle', { cx: 184, cy: 50, r: 0, fill: '#3fd69a', stroke: '#11234a', 'stroke-width': 2.5 }, g);
+      const glow = sv('circle', { cx: 184, cy: 50, r: 9, fill: 'none', stroke: '#3fd69a', 'stroke-width': 2, opacity: 0 }, g);
       const L = ln.getTotalLength();
       let raf = 0;
+      const paint = (t) => {
+        BARS.forEach(([x, top], i) => { const e = clamp((t - i * 0.12) / 0.5, 0, 1), h = (181 - top) * (1 - Math.pow(1 - e, 3)); bars[i].setAttribute('y', 181 - h); bars[i].setAttribute('height', Math.max(0, h)); });
+        const c = clamp((t - 0.7) / 1.1, 0, 1), ce = 1 - Math.pow(1 - c, 2.2);
+        ln.setAttribute('stroke-dasharray', `${L * ce} ${L}`); ln.setAttribute('opacity', c > 0 ? 1 : 0);
+        dot.setAttribute('r', 9 * clamp((t - 1.7) / 0.25, 0, 1));
+      };
       return {
         enter() {
-          cancelAnimationFrame(raf);
-          const t0 = performance.now() + 500, dur = reduce ? 1 : 2600;
+          cancelAnimationFrame(raf); paint(0);
+          const t0 = performance.now() + 450, dur = 2.0;
           const tick = (now) => {
-            const p = clamp((now - t0) / dur, 0, 1), e = 1 - Math.pow(1 - p, 2.2);
-            ln.setAttribute('stroke-dasharray', `${L * e} ${L}`);
-            const q = ln.getPointAtLength(L * e); dot.setAttribute('cx', q.x); dot.setAttribute('cy', q.y);
-            glow.setAttribute('cx', q.x); glow.setAttribute('cy', q.y);
-            area.setAttribute('opacity', e);
-            if (p < 1) raf = requestAnimationFrame(tick);
-            else { glow.animate([{ r: 14, opacity: 0.9 }, { r: 60, opacity: 0 }], { duration: 1400, iterations: Infinity }); glow.setAttribute('opacity', 1); }
+            const t = reduce ? dur : clamp((now - t0) / 1000, 0, dur); paint(t);
+            if (t < dur) raf = requestAnimationFrame(tick);
+            else if (!reduce) { glow.animate([{ r: 9, opacity: 0.9 }, { r: 30, opacity: 0 }], { duration: 1400, iterations: Infinity }); glow.setAttribute('opacity', 1); }
           };
           raf = requestAnimationFrame(tick);
         },
@@ -647,7 +650,7 @@
       }
       return st;
     }
-    R.push = () => { if (R.net) Object.keys(R.players).forEach((cid) => R.net.send(cid, view(cid))); };
+    R.push = () => { if (R.net) Object.keys(R.players).forEach((cid) => { if (!R.players[cid].bot) R.net.send(cid, view(cid)); }); };
     R.start = () => {
       if (R.net) return;
       R.net = FRNet.host(code, {
@@ -670,10 +673,41 @@
     R.open = (q) => {
       R.q = q;
       if (R.revealed[q.qid]) R.phase = 'reveal';
-      else { R.phase = 'open'; R.opened = performance.now(); }
+      else { R.phase = 'open'; R.opened = performance.now(); botsAnswer(q); }
       R.push(); R.changed();
     };
-    R.close = () => { R.q = null; R.phase = null; R.push(); R.changed(); };
+    // ---- test players (Captain Russell, 25 Nov 2026: try the room at class size, about 20, without 20 phones).
+    // They join one by one, answer every question 2 to 15 seconds after it opens (right about 60% of the time,
+    // sliders near the answer), score like anyone else, and are never sent anything. Remove them on the join slide.
+    let botT = [];
+    const later = (ms, f) => botT.push(setTimeout(f, ms));
+    function botsAnswer(q) {
+      botT.forEach(clearTimeout); botT = [];
+      Object.entries(R.players).forEach(([cid, p]) => {
+        if (!p.bot || !p.char) return;
+        later(2000 + Math.random() * 13000, () => {
+          if (R.q !== q || R.phase !== 'open' || p.ans[q.qid]) return;
+          let v;
+          if (q.type === 'choice') v = Math.random() < 0.6 ? q.ans : Math.floor(Math.random() * q.opts.length);
+          else if (q.type === 'slider') v = clamp(Math.round((q.ans + (Math.random() * 2 - 1) * q.tol * 1.2) / q.step) * q.step, q.min, q.max);
+          else if (q.type === 'calls') { v = {}; q.calls.forEach((c) => { v[c.key] = c.opts[Math.floor(Math.random() * c.opts.length)][0]; }); }
+          p.ans[q.qid] = { v, t: (performance.now() - R.opened) / 1000 }; save(); R.changed();
+        });
+      });
+    }
+    R.addBots = (n) => {
+      const used = new Set(taken());
+      const free = FRChars.list.filter((c) => !used.has(c.id));
+      let k = Object.values(R.players).filter((p) => p.bot).length;
+      free.slice(0, n).forEach((c, i) => later(i * 220, () => {
+        k++; const cid = 'bot-' + Date.now().toString(36) + '-' + k;
+        R.players[cid] = { bot: true, char: c.id, name: c.kind === 'guest' ? 'Test player ' + k : c.name, score: 0, ans: {}, joined: Date.now() };
+        save(); R.changed();
+        if (R.q && R.phase === 'open') botsAnswer(R.q);
+      }));
+    };
+    R.removeBots = () => { botT.forEach(clearTimeout); botT = []; Object.keys(R.players).forEach((cid) => { if (R.players[cid].bot) delete R.players[cid]; }); save(); R.push(); R.changed(); };
+    R.close = () => { botT.forEach(clearTimeout); botT = []; R.q = null; R.phase = null; R.push(); R.changed(); };
     R.reveal = () => {
       const q = R.q; if (!q || R.phase !== 'open') return;
       Object.values(R.players).forEach((p) => { const a = p.ans && p.ans[q.qid]; if (a) { a.pts = q.score(a.v, a.t); p.score = (p.score || 0) + a.pts; } });
@@ -710,19 +744,26 @@
           <div class="lab" style="font-size:24px;margin-top:8px">${esc(ROOM.joinUrl().replace(/^https?:\/\//, '').replace(/\?.*$/, ''))}</div></div>
         <div class="abs in" style="left:560px;top:330px;width:980px;--d:.35"><div class="k" id="jn">Joined: 0</div><div class="crew" id="crew"></div></div>
         <div class="abs in" style="left:80px;top:800px;--d:.5;display:flex;gap:12px"><button type="button" class="pillbtn" id="rst" style="font-size:16px;padding:8px 16px">Reset scores</button>
-          <button type="button" class="pillbtn" id="rstAll" style="font-size:16px;padding:8px 16px">Start over with a new room</button></div>`;
+          <button type="button" class="pillbtn" id="rstAll" style="font-size:16px;padding:8px 16px">Start over with a new room</button>
+          <button type="button" class="pillbtn" id="bots" style="font-size:16px;padding:8px 16px" title="Fake players for a practice run">Add 20 test players</button>
+          <button type="button" class="pillbtn" id="botsOff" style="font-size:16px;padding:8px 16px" hidden>Remove test players</button></div>`;
       const crew = $('#crew', el), seen = new Set();
       const paint = () => {
         const L = ROOM.list().sort((a, b) => a.joined - b.joined);
         $('#jn', el).textContent = `Joined: ${L.length}`;
-        crew.innerHTML = L.map((p) => `<div class="mate${seen.has(p.cid) ? '' : ' new'}">${face(p, 88)}<span>${esc(p.name)}</span></div>`).join('');
+        const px = L.length > 30 ? 52 : L.length > 14 ? 64 : 88; crew.classList.toggle('many', L.length > 14 && L.length <= 30); crew.classList.toggle('lots', L.length > 30);
+        crew.innerHTML = L.map((p) => `<div class="mate${seen.has(p.cid) ? '' : ' new'}">${face(p, px)}<span>${esc(p.name)}</span></div>`).join('');
         L.forEach((p) => seen.add(p.cid));
       };
       let armed = 0;
       $('#rst', el).onclick = (e) => { e.currentTarget.blur(); if (Date.now() - armed < 3000) { ROOM.reset(); e.currentTarget.textContent = 'Scores cleared'; } else { armed = Date.now(); e.currentTarget.textContent = 'Press again to clear'; } };
       let armedAll = 0;
       $('#rstAll', el).onclick = (e) => { e.currentTarget.blur(); if (Date.now() - armedAll < 3000) ROOM.resetAll(); else { armedAll = Date.now(); e.currentTarget.textContent = 'Press again: new code, everyone logs in again'; } };
-      ROOM.listeners.push(() => { if (el.isConnected) paint(); });
+      $('#bots', el).onclick = (e) => { e.currentTarget.blur(); ROOM.addBots(20); };
+      $('#botsOff', el).onclick = (e) => { e.currentTarget.blur(); ROOM.removeBots(); };
+      const paintBots = () => { $('#botsOff', el).hidden = !Object.values(ROOM.players).some((p) => p.bot); };
+      ROOM.listeners.push(() => { if (el.isConnected) { paint(); paintBots(); } });
+      paintBots();
       return { enter: paint };
     },
   };
