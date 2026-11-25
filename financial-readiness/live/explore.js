@@ -64,9 +64,9 @@
       const spR = sv('rect', { x: 2 + bx(L.TAX), y: 2, height: 40, rx: 8, fill: COL.amber }, bar), inR = sv('rect', { y: 2, height: 40, rx: 8, fill: COL.green }, bar);
       const spT = sv('text', { x: 10 + bx(L.TAX), y: 27, fill: '#1a1203', 'font-size': 13, 'font-weight': 850 }, bar), inT = sv('text', { x: W - 10, y: 27, 'text-anchor': 'end', fill: '#04140e', 'font-size': 13, 'font-weight': 850 }, bar);
       grid(f.svg, 0, 2e6, 5e5, (v) => (v ? '$' + v / 1e6 + 'M' : '$0'));
-      const ax = (a) => X0 + (X1 - X0) * (a - 22) / 38;
-      [22, 26, 40, 60].forEach((a) => { sv('text', { x: ax(a), y: H - 2, 'text-anchor': 'middle', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = a; });
-      sv('line', { x1: ax(26), x2: ax(26), y1: Y1, y2: Y0, stroke: COL.faint, 'stroke-dasharray': '3 4' }, f.svg);
+      const ax = (a) => X0 + (X1 - X0) * (a - L.AGE) / (60 - L.AGE);
+      [L.AGE, L.AGE + 4, 40, 60].forEach((a) => { sv('text', { x: ax(a), y: H - 2, 'text-anchor': 'middle', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = a; });
+      sv('line', { x1: ax(L.AGE + 4), x2: ax(L.AGE + 4), y1: Y1, y2: Y0, stroke: COL.faint, 'stroke-dasharray': '3 4' }, f.svg);
       const area = sv('path', { fill: 'rgba(63,214,154,.15)' }, f.svg), ln = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, f.svg);
       const b1 = stat(f.r, 'Invest a month', 'g'), b2 = stat(f.r, 'After 4 years', 'g'), b3 = stat(f.r, 'At 60', 'g');
       const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 1, value: 0, ends: ['Spend it all', 'Live on $2,000'], show: money, keep: (v) => FRPlan.set({ invest: v }),
@@ -131,8 +131,8 @@
     // ---- when in doubt, zoom out
     zoom(el) {
       // five buttons, not a slider (Captain Russell, 25 Nov 2026); the chart itself is FR.DATA.fr3.zoomChart, the same as the big screen
-      const D = root.FR.DATA.fr3, Z = D.ZOOMS;
-      const f = frame(el, 'When in doubt, zoom out', 'The C Fund tracks the S&amp;P 500. Tap a time frame. The gold strip is the one you just saw.');
+      const D = root.FR.DATA.fr3, Z = D.ZOOMS.filter((z) => !z.off);
+      const f = frame(el, 'When in Doubt, Zoom Out', 'The C Fund tracks the S&amp;P 500. Tap a time frame. The gold strip is the one you just saw.');
       f.svg.setAttribute('viewBox', `0 0 ${W} ${H + 14}`);
       const zc = D.zoomChart({ svg: f.svg, box: { x0: X0 + 8, x1: X1, y0: Y0, y1: Y1 + 14 }, sw: 3.5, fs: 11, col: { green: COL.green, red: COL.red, gold: COL.amber, line: COL.line, faint: COL.faint, soft: '#b9c6de' } });
       const when = sv('text', { x: X0 + 8, y: H + 10, fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg);
@@ -144,9 +144,9 @@
       const pick = (n, now) => {
         zc.go(n, now); btns.forEach((b, i) => { b.classList.toggle('on', i === n); b.setAttribute('aria-checked', i === n); });
         const c = zc.chg(n), up = c >= 0;
-        when.textContent = Z[n].when + (Z[n].log ? ' (log scale)' : '');
+        when.textContent = (Z[n].when || '') + (Z[n].log ? ' (log scale)' : '');
         sW.textContent = Z[n].name; sC.className = up ? 'g' : 'r';
-        sC.textContent = (up ? '+' : '−') + Math.abs(c).toLocaleString('en-US', { maximumFractionDigits: Math.abs(c) < 10 ? 1 : 0 }) + '%';
+        sC.textContent = (up ? '+' : '−') + Math.abs(c).toLocaleString('en-US', { maximumFractionDigits: 2 }) + '%';
       };
       btns.forEach((b, i) => b.addEventListener('click', () => pick(i)));
       pick(0, true);

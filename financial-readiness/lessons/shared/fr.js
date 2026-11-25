@@ -80,11 +80,13 @@
     const PAY = 6062.68, BASE = 4150.20, yr = BASE * 12, taxable = Math.max(0, yr - 16100);
     const fedYr = Math.min(taxable, 12400) * 0.10 + Math.max(0, Math.min(taxable, 50400) - 12400) * 0.12;
     const FED = fedYr / 12, FICA = BASE * 0.0765, TAX = FED + FICA, TAKE = PAY - TAX, BUDGET = 3000;
+    // commission age 23 (Captain Russell, 25 Nov 2026)
+    const AGE = 23;
     const fv = (pmt, months, r) => { const i = Math.pow(1 + r, 1 / 12) - 1; return pmt * (Math.pow(1 + i, months) - 1) / i; };
-    // bank an amount every month for the 4-year commitment (age 22 to 26), then never add another dime; 7% a year after inflation
-    const grow = (bank) => { const f4 = fv(bank, 48, 0.07); return { f4, f60: f4 * Math.pow(1.07, 34) }; };
-    const curve = (bank) => { const pts = []; let b = 0; for (let m = 0; m <= 456; m++) { if (m % 3 === 0) pts.push([22 + m / 12, b]); b = b * Math.pow(1.07, 1 / 12) + (m < 48 ? bank : 0); } return pts; };
-    return { PAY, BASE, FED, FICA, TAX, TAKE, BUDGET, BANK: TAKE - BUDGET, fv, grow, curve };
+    // invest an amount every month for the 4-year commitment (age 23 to 27), then never add another dime; 7% a year after inflation
+    const grow = (bank) => { const f4 = fv(bank, 48, 0.07); return { f4, f60: f4 * Math.pow(1.07, 60 - AGE - 4) }; };
+    const curve = (bank) => { const pts = []; let b = 0; for (let m = 0; m <= (60 - AGE) * 12; m++) { if (m % 3 === 0) pts.push([AGE + m / 12, b]); b = b * Math.pow(1.07, 1 / 12) + (m < 48 ? bank : 0); } return pts; };
+    return { AGE, PAY, BASE, FED, FICA, TAX, TAKE, BUDGET, BANK: TAKE - BUDGET, fv, grow, curve };
   })();
   // a college student's month (Captain Russell, 25 Nov 2026: realistic Iowa State numbers, no student loans).
   // Housing and food: ISU 2026-27 cost of attendance, on campus with the Cardinal meal plan, $11,162 for the year (9 months).

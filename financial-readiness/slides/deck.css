@@ -461,3 +461,34 @@ html.solo #stage.go { cursor: default; }
 .bt-rate b { display: block; font: 900 64px/1.1 var(--font); }
 .bt-rate span { display: block; font: 700 30px var(--font); color: var(--soft); margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { .beat, .bt-bars .b { transition: none; } }
+
+/* college budget: one click turns the bars into a pie (Captain Russell, 25 Nov 2026) */
+.bud { transition: opacity .45s ease, transform .45s ease; }
+.bud.gone { opacity: 0; transform: scale(.96); pointer-events: none; }
+.bpie { opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+.bpie.on { opacity: 1; }
+.bpie svg { position: absolute; left: 20px; top: 0; }
+.bpie circle { stroke-dasharray: 0 1300; transition: stroke-dasharray .8s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0s); }
+.bpie.on circle { stroke-dasharray: var(--len) 1300; }
+.bpie ol { position: absolute; left: 700px; top: 10px; width: 660px; margin: 0; padding: 0; list-style: none; }
+.bpie li { display: grid; grid-template-columns: 30px 1fr 110px; align-items: center; gap: 18px; height: 52px; opacity: 0; transform: translateX(20px); transition: opacity .4s ease, transform .4s ease; transition-delay: var(--d, 0s); }
+.bpie.on li { opacity: 1; transform: none; }
+.bpie li i { width: 26px; height: 26px; border-radius: 7px; }
+.bpie li span { font: 700 28px var(--font); color: var(--ink); }
+.bpie li b { font: 850 32px var(--mono); color: var(--ink); text-align: right; }
+
+/* a beat that builds one part per click (data-s), e.g. Roth IRA: What it is */
+.beat [data-s] { opacity: 0; transform: translateY(16px); transition: opacity .45s ease, transform .45s ease; }
+.beat [data-s].on { opacity: 1; transform: none; }
+
+/* bonus: Day 1 plan */
+.d1plan { margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.d1plan li { display: grid; grid-template-columns: 64px 1fr; grid-template-rows: auto auto; column-gap: 26px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.d1plan li:last-child { border-bottom: 0; }
+.d1plan i { grid-row: span 2; align-self: center; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font: 900 28px var(--mono); font-style: normal; color: #1a1203; background: var(--amber); }
+.d1plan b { font: 800 34px var(--font); color: var(--ink); }
+.d1plan span { font: 600 25px var(--font); color: var(--soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bud, .bpie, .bpie circle, .bpie li, .beat [data-s] { transition: none; }
+}
