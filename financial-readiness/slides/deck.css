@@ -522,3 +522,18 @@ html.solo #stage.go { cursor: default; }
 
 /* scoreboard title: just SCOREBOARD, larger (Captain Russell, 25 Nov 2026) */
 .sbhead { margin: 0; font: 900 76px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--amber); }
+/* my real budget pie (LIVE.lines): three groups, then every line item */
+.lpie ol.big li { height: 96px; grid-template-columns: 34px 1fr 120px; }
+.lpie ol.big li span { font-size: 34px; }
+.lpie ol.big li em { font: 800 30px var(--mono); font-style: normal; color: var(--soft); margin-left: auto; padding-right: 10px; }
+.lpie ol.big li b { font-size: 40px; }
+.lpie .lcols { position: absolute; left: 650px; top: 0; width: 740px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.lpie .lcols ol { position: static; width: auto; }
+.lpie .lcols li { height: 38px; grid-template-columns: 20px 1fr 62px; gap: 10px; }
+.lpie .lcols li i { width: 18px; height: 18px; border-radius: 5px; }
+.lpie .lcols li span { font: 650 21px var(--font); }
+.lpie .lcols li b { font: 800 22px var(--mono); }
+.lpie .lcols li.gh { height: 50px; margin-top: 8px; }
+.lpie .lcols li.gh span { font: 800 23px var(--font); }
+.lpie .lcols li.gh b { font-size: 24px; }
+.lpie .lcols li.gh:not(:first-child) { margin-top: 26px; }
