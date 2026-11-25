@@ -74,7 +74,8 @@ const ZOOMS = [
 // Captain Russell's numbers for each window (25 Nov 2026): one day −2.45%, one month −8.5%, one year +3.82%,
 // ten years +217.46%, and no 100 year window. Each line keeps its shape and is tilted smoothly until its start to
 // end change matches his number: the year keeps its last value, ten years ends on the year line, the month keeps
-// its first value, and the day is tilted, then moved so its close lands on the month's line on that day.
+// its first value, and the day is tilted, then moved so its close lands on the month's line on that day and the
+// month's day before ends at its open.
 (function () {
   const want = { d: -2.45, m: -8.5, y: 3.82, t: 217.46 };
   const tilt = (z, endAnchor) => {
@@ -88,6 +89,13 @@ const ZOOMS = [
   ZOOMS[3].pts = T.map(([f, v], i) => [f, i >= n ? Y[i - n][1] : v * A * Math.exp(e * i / n)]);
   const day = ZOOMS[0].pts, sc = ZOOMS[1].pts[ZOOMS[1].pts.length - 1][1] / day[day.length - 1][1];
   ZOOMS[0].pts = day.map(([f, v]) => [f, v * sc]);
+  // the month's day before the last closes where the one day opened, so the last step of the month is that day's
+  // drop (Captain Russell, 25 Nov 2026); the days before are tilted up to meet it, keeping the month's first value
+  const M = ZOOMS[1].pts, m2 = M.length - 2, km = Math.log(ZOOMS[0].pts[0][1] / M[m2][1]);
+  ZOOMS[1].pts = M.map(([f, v], i) => [f, i > m2 ? v : v * Math.exp(km * i / m2)]);
+  // and its last day is the one day itself, open to close, so the month line runs right down the one day's drop
+  ZOOMS[1].pts = ZOOMS[1].pts.slice(0, m2 + 1).concat(ZOOMS[0].pts.map(([f, v]) => [(m2 + f) / (m2 + 1), v]));
+  ZOOMS[1].at = ZOOMS[1].at.slice(0, m2 + 1).concat(ZOOMS[0].at);
   ZOOMS[0].when = ''; ZOOMS[1].when = ''; ZOOMS[2].when = ''; ZOOMS[3].when = '';
   ZOOMS[4].off = true;
 })();
@@ -184,11 +192,14 @@ function scene(st) {
     const x = 300 + i * 500;
     add('tab' + i, 'rect', {}, { x: x - 220, y: 260, w: 440, h: 360, rx: 28, fill: C.panel2, stroke: C.line, sw: 3, o: 0 });
     add('tabN' + i, 'text', { size: 40, anchor: 'start', weight: 850, mono: true }, { x: x - 190, y: 316, content: String(i + 1), fill: C.faint, o: 0 });
-    add('tabI' + i, 'path', { d: ICONS[i] }, { x, y: 392, stroke: [C.amber, C.green, C.cyan][i], sw: 7, draw: 0, o: 0 });
+    // the TSP card carries the official Thrift Savings Plan logo (Captain Russell, 25 Nov 2026)
+    if (i === 1) add('tabI' + i, 'img', { href: 'logos/tsp-logo.webp' }, { x: x - 66, y: 326, w: 132, h: 132, o: 0 });
+    else add('tabI' + i, 'path', { d: ICONS[i] }, { x, y: 392, stroke: [C.amber, C.green, C.cyan][i], sw: 7, draw: 0, o: 0 });
     add('tabT' + i, 'text', { size: 46, anchor: 'middle', weight: 800 }, { x, y: 520, content: t, fill: C.ink, o: 0 });
     add('tabS' + i, 'text', { size: 28, anchor: 'middle', weight: 600 }, { x, y: 568, content: sub, fill: C.soft, o: 0 });
   });
-  add('title', 'text', { size: 52, anchor: 'middle', weight: 800 }, { x: 800, y: 170, content: 'The Blended Retirement System', fill: C.ink, o: 0 });
+  // the official BRS logo as the title (Captain Russell, 25 Nov 2026); it spells out the name
+  add('title', 'img', { href: 'logos/brs-logo.webp' }, { x: 800 - 226, y: 50, w: 452, h: 130, o: 0 });
   add('since', 'text', { size: 28, anchor: 'middle', weight: 600 }, { x: 800, y: 214, content: 'Everyone who joined on or after 1 January 2018', fill: C.soft, o: 0 });
 
   // ---- 1: the pension, 2% a year
@@ -265,6 +276,9 @@ function scene(st) {
   add('cH2', 'text', { size: 32, anchor: 'start', weight: 600, maxw: 1320 }, { x: 140, y: 710, content: 'Leave then and you leave millions on the table over a normal lifespan. Almost nobody does.', fill: C.amber, o: 0 });
 
   // ---- Roth or Traditional
+  // official logos (Captain Russell, 25 Nov 2026): the IRS on Roth or Traditional, myPay on the one rule
+  add('rIrs', 'img', { href: 'logos/irs.webp' }, { x: 1300, y: 70, w: 190, h: 100, o: 0 });
+  add('ruleMp', 'img', { href: 'logos/mypay.webp' }, { x: 800 - 125, y: 740, w: 250, h: 90, o: 0 });
   add('rHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Roth or Traditional?', fill: C.ink, o: 0 });
   [['Roth', 'Pay the tax now.', 'Every dollar comes out tax free.', C.green], ['Traditional', 'Skip the tax now.', 'Pay tax when you take it out.', C.cyan]].forEach(([t, a, b, col], i) => {
     const x = 120 + i * 700;
@@ -364,7 +378,7 @@ function scene(st) {
 
   // Roth or Traditional is explained first, then the phone question, then why Roth (Captain Russell, 25 Nov 2026)
   S.step({ head: 'Roth or Traditional?', body: 'You get the same match either way. It really just comes down to **when you pay the tax**.', go: [800, 360, 1420, 310, 'Where does it go?'] })
-    .beat(0.6, (s) => { off(s); s.rHead.o = 1; })
+    .beat(0.6, (s) => { off(s); s.rHead.o = 1; s.rIrs.o = 1; })
     .beat(1.0, (s) => { [0, 1].forEach((i) => ['rc', 'rt', 'ra', 'rb'].forEach((k) => { s[k + i].o = 1; })); });
   S.step({ head: 'Why Roth', body: 'As a 2d Lt, **your tax rate will probably never be lower**, so pay the tax now while it\'s small.' })
     .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; s.rMe.o = 1; })
@@ -405,7 +419,7 @@ function scene(st) {
   S.step({ head: 'The one rule', body: '5% is the **default contribution**, into a Lifecycle (L) Fund, so it starts with your very first paycheck. Never go below it: anything less is basically giving yourself a pay cut. **Next up: where every extra dollar should go.**' })
     .beat(0.5, (s) => { off(s); })
     .beat(0.9, (s) => { s.rule.o = 1; s.rule.s = 1; })
-    .beat(0.7, (s) => { s.ruleS.o = 1; s.ruleS2.o = 1; });
+    .beat(0.7, (s) => { s.ruleS.o = 1; s.ruleS2.o = 1; s.ruleMp.o = 1; });
 
   return S;
 }
