@@ -46,20 +46,30 @@
   }
 
   const CHARTS = {
-    // ---- bank the difference for 4 years, then leave it alone
+    // ---- invest the difference for 4 years, then leave it alone
     life(el) {
       const L = root.FR.LIFE, MAXB = Math.floor((L.TAKE - 1500) / 50) * 50, HI = 2.4e6;
-      const f = frame(el, 'How much do you bank?', `Your first month: ${money(L.PAY)}. About ${money(L.TAX)} goes to taxes. Slide right to bank more.`);
+      const f = frame(el, 'How much do you invest?', `Your first month: ${money(L.PAY)}. About ${money(L.TAX)} goes to taxes. Slide right to invest more.`);
+      // the paycheck bar above the chart, like the big screen: taxes, what you spend, what you invest
+      const bar = document.createElementNS(NS, 'svg'); bar.setAttribute('viewBox', `0 0 ${W} 44`); bar.setAttribute('class', 'exc exbar'); f.svg.before(bar);
+      const bx = (v) => (W - 4) * v / L.PAY;
+      sv('rect', { x: 2, y: 2, width: W - 4, height: 40, rx: 8, fill: COL.panel, stroke: COL.line }, bar);
+      sv('rect', { x: 2, y: 2, width: bx(L.TAX), height: 40, rx: 8, fill: COL.red }, bar);
+      sv('text', { x: 2 + bx(L.TAX) / 2, y: 27, 'text-anchor': 'middle', fill: '#1c0507', 'font-size': 11, 'font-weight': 850 }, bar).textContent = 'Taxes';
+      const spR = sv('rect', { x: 2 + bx(L.TAX), y: 2, height: 40, rx: 8, fill: COL.amber }, bar), inR = sv('rect', { y: 2, height: 40, rx: 8, fill: COL.green }, bar);
+      const spT = sv('text', { x: 10 + bx(L.TAX), y: 27, fill: '#1a1203', 'font-size': 13, 'font-weight': 850 }, bar), inT = sv('text', { x: W - 10, y: 27, 'text-anchor': 'end', fill: '#04140e', 'font-size': 13, 'font-weight': 850 }, bar);
       grid(f.svg, 0, 2e6, 5e5, (v) => (v ? '$' + v / 1e6 + 'M' : '$0'));
       const ax = (a) => X0 + (X1 - X0) * (a - 22) / 38;
       [22, 26, 40, 60].forEach((a) => { sv('text', { x: ax(a), y: H - 2, 'text-anchor': 'middle', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = a; });
       sv('line', { x1: ax(26), x2: ax(26), y1: Y1, y2: Y0, stroke: COL.faint, 'stroke-dasharray': '3 4' }, f.svg);
       const area = sv('path', { fill: 'rgba(63,214,154,.15)' }, f.svg), ln = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, f.svg);
-      const b1 = stat(f.r, 'Bank a month', 'g'), b2 = stat(f.r, 'After 4 years', 'g'), b3 = stat(f.r, 'At 60', 'g');
-      const rg = range(f.s, { label: 'You bank ', min: 0, max: MAXB, step: 50, value: 0, ends: ['Spend it all', 'Live on $1,500'], show: money,
+      const b1 = stat(f.r, 'Invest a month', 'g'), b2 = stat(f.r, 'After 4 years', 'g'), b3 = stat(f.r, 'At 60', 'g');
+      const rg = range(f.s, { label: 'You invest ', min: 0, max: MAXB, step: 50, value: 0, ends: ['Spend it all', 'Live on $1,500'], show: money,
         on(v) {
           const pts = L.curve(v).map(([a, b]) => [ax(a), Y0 - (Y0 - Y1) * Math.min(b, HI) / HI]);
           ln.setAttribute('d', pathOf(pts)); area.setAttribute('d', pathOf(pts) + `L${X1} ${Y0}L${X0} ${Y0}Z`);
+          const ws = bx(L.TAKE - v); spR.setAttribute('width', Math.max(0, ws)); inR.setAttribute('x', 2 + bx(L.TAX) + ws); inR.setAttribute('width', Math.max(0, bx(v)));
+          spT.textContent = ws > 120 ? 'Spend ' + money(L.TAKE - v) : ''; inT.textContent = bx(v) > 92 ? 'Invest ' + money(v) : '';
           const g = L.grow(v); b1.textContent = money(v); b2.textContent = kM(g.f4); b3.textContent = '$' + (g.f60 / 1e6).toFixed(1) + 'M';
         } });
       rg.paint();

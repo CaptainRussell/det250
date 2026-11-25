@@ -83,6 +83,16 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
 .res .a { color: var(--soft); margin-top: 6px; }
 .promo { animation: pop .8s cubic-bezier(.2,1.6,.4,1); }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+/* name and points go under the question or chart, so what you tap is on top (Captain Russell, 25 Nov 2026) */
+#app { max-width: 620px; margin: 0 auto; }
+#app.wide { max-width: 1500px; }
+.mebot { position: sticky; bottom: 0; margin-top: 16px; padding-bottom: max(6px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 30%); padding-top: 10px; }
+.mebot .me { padding: 10px 14px; }
+/* a laptop gets the whole slide, as on the big screen; phones the smaller chart (switch either way) */
+.solo { position: relative; width: 100%; aspect-ratio: 16 / 10.4; max-height: calc(100vh - 210px); border: 2px solid var(--line); border-radius: 18px; overflow: hidden; background: #070f20; }
+.solo iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.vt { display: block; margin: 10px auto 0; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 16px; color: var(--soft); font-weight: 750; font-size: 14px; }
+.vt:hover { border-color: var(--gold); color: var(--ink); }
 .small { font-size: 13px; color: var(--faint); text-align: center; margin-top: 18px; }
 .small button { background: none; border: 0; color: var(--soft); text-decoration: underline; }
 </style>
@@ -111,7 +121,8 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
   // one id per phone, kept so a reload keeps your character and score (?cid= lets a test run several in one browser)
   let cid = params.get('cid') || store.get('d250-fr-cid'); if (!cid) { cid = 'c' + Math.random().toString(36).slice(2, 12); store.set('d250-fr-cid', cid); }
   let code = (params.get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
-  let net = null, S = null, status = 'off', pick = null, draft = {}, lastRes = null, prevRank = null, mountedEx = null;
+  let net = null, S = null, status = 'off', pick = null, draft = {}, lastRes = null, prevRank = null, mountedEx = null, fullPick = null;
+  const wideScreen = () => matchMedia('(min-width: 900px) and (min-height: 560px)').matches;
 
   function connect() {
     $('#roomLab').textContent = 'Room ' + code;
@@ -149,19 +160,28 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     // the chart on the screen has a phone version: play with it here (kept while the state updates)
     const ex = !q && S.explore && window.FRExplore && FRExplore.has(S.explore) ? S.explore : null;
     if (ex) {
-      if (mountedEx !== ex || !$('#exHost')) { app.innerHTML = '<div id="meBox"></div><div id="exHost"></div>'; FRExplore.mount($('#exHost'), ex); mountedEx = ex; }
+      const full = fullPick != null ? fullPick : wideScreen(), key = ex + (full ? ':full' : '');
+      if (mountedEx !== key || !$('#exHost')) {
+        app.innerHTML = '<div id="exHost"></div><button type="button" class="vt" id="vt"></button><div class="mebot" id="meBox"></div>';
+        app.classList.toggle('wide', full);
+        if (full) $('#exHost').innerHTML = `<div class="solo"><iframe src="../slides/?solo=${encodeURIComponent(ex)}" title="The slide on the screen"></iframe></div>`;
+        else FRExplore.mount($('#exHost'), ex);
+        $('#vt').textContent = full ? 'Show the simple version' : 'Show the full slide';
+        $('#vt').onclick = () => { fullPick = !full; render(); };
+        mountedEx = key;
+      }
       $('#meBox').innerHTML = meCard();
       return;
     }
-    mountedEx = null;
-    let h = meCard();
+    mountedEx = null; app.classList.remove('wide');
+    let h = '';
     if (q && S.phase === 'open' && S.mine == null) h += renderQ(q);
     else if (q && S.phase === 'open') h += `<div class="wait"><div class="big">Locked in</div><p>${esc(S.mineText || '')}</p><p>Eyes up front for the answer.</p></div>`;
     else if (q && S.phase === 'reveal' && S.res) {
       const r = S.res;
       h += `<div class="res ${r.pts > 0 && r.ok !== false ? 'ok' : 'no'}"><div class="p">+${r.pts.toLocaleString()}</div><div class="a">${md(r.text || '')}</div></div>`;
     } else h += `<div class="wait"><div class="big">Watch the screen</div><p>Questions show up here as we go. Faster right answers score more.</p></div>`;
-    app.innerHTML = h;
+    app.innerHTML = h + '<div class="mebot">' + meCard() + '</div>';
     wireQ(q);
   }
 

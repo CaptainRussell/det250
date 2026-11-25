@@ -118,7 +118,7 @@ function scene(st) {
   add('ldD', 'text', { size: 50, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 710, content: 'to make big decisions.', fill: C.green, o: 0 });
 
   // lifestyle inflation with the taxes counted (Captain Russell, 25 Nov 2026): the 2d Lt paycheck is taxes, then the
-  // college budget, then what's left to bank (FR.LIFE in ../shared/fr.js)
+  // college budget, then what's left to invest (FR.LIFE in ../shared/fr.js)
   const L = FR.LIFE, LB = L.BUDGET, LP = L.PAY, LX = 200, LWD = 1200, lw = (v) => LWD * v / LP, LG = L.grow(L.BANK);
   add('liHead', 'text', { size: 44, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 130, content: 'The easiest way to win', fill: C.ink, o: 0 });
   add('liAl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: LX, y: 236, content: 'A college student\'s budget', fill: C.soft, o: 0 });
@@ -131,7 +131,7 @@ function scene(st) {
   add('liBv', 'text', { size: 30, anchor: 'middle', weight: 850, mono: true }, { x: LX + lw(L.TAX) + lw(LB) / 2, y: 494, content: 'Budget ' + fmt(LB), fill: '#06101c', o: 0 });
   add('liX', 'rect', {}, { x: LX + lw(L.TAX + LB), y: 436, w: 0, h: 90, rx: 8, fill: C.green, fo: 0.9, o: 0 });
   add('liXv', 'text', { size: 34, anchor: 'middle', weight: 850, mono: true }, { x: LX + lw(L.TAX + LB) + lw(L.BANK) / 2, y: 494, content: '+' + fmt(L.BANK), fill: '#06101c', o: 0 });
-  add('liBig', 'text', { size: 52, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 650, content: 'Keep the college budget. Bank the rest.', fill: C.green, o: 0 });
+  add('liBig', 'text', { size: 52, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 650, content: 'Keep the college budget. Invest the rest.', fill: C.green, o: 0 });
   add('liSub', 'text', { size: 30, anchor: 'middle', weight: 600, maxw: 1400 }, { x: 800, y: 720, content: 'Invested for your 4-year commitment at 7%: about ' + fmt(Math.round(LG.f4 / 1000) * 1000) + '.', fill: C.ink, o: 0 });
   add('liSub2', 'text', { size: 30, anchor: 'middle', weight: 600, maxw: 1400 }, { x: 800, y: 770, content: 'Never add another dime, and at 60 it\'s about $' + (LG.f60 / 1e6).toFixed(1) + ' million, in today\'s dollars.', fill: C.amber, o: 0 });
 
@@ -253,11 +253,15 @@ function scene(st) {
     .beat(1.4, (s) => { s.hwM.o = 1; s.hwM.num = 6062.68; s.hwML.o = 1; })
     .beat(0.6, (s) => { s.hwY.o = 1; });
 
-  S.step({ head: 'Now compare it', body: 'Same base, same pay tables. **Check out the last two bars.**', go: [800, 485, 1420, 610, 'What that means'] })
+  // one pair of bars per click on the same slide, then the E-9 by itself (Captain Russell, 25 Nov 2026)
+  const pair = (s, i) => { const [, , ov, , ev] = OE[i]; s['oeO' + i].o = 1; s['oeO' + i].h = oh(ov); s['oeO' + i].y = OB - oh(ov); s['oeE' + i].o = 1; s['oeE' + i].h = oh(ev); s['oeE' + i].y = OB - oh(ev);
+    ['Ov', 'Ev', 'G', 'H', 'N', 'Y', 'Oi', 'Ei'].forEach((k) => { if (s['oe' + k + i]) s['oe' + k + i].o = 1; }); };
+  const OEB = 'Same base, same pay tables. **Watch each pair as the years go by.**';
+  S.step({ head: 'Now compare it', key: 'oe0', grp: 'oe', body: OEB, go: [800, 485, 1420, 610, 'Next pair'] })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.oeHead.o = 1; s.oeSub.o = 1; s.oeKey.o = 1; s.oeKey2.o = 1; })
-    .beat(2.2, (s) => { OE.forEach(([, , ov, , ev], i) => { s['oeO' + i].o = 1; s['oeO' + i].h = oh(ov); s['oeO' + i].y = OB - oh(ov); s['oeE' + i].o = 1; s['oeE' + i].h = oh(ev); s['oeE' + i].y = OB - oh(ev);
-        ['Ov', 'Ev', 'G', 'H', 'N', 'Y', 'Oi', 'Ei'].forEach((k) => { if (s['oe' + k + i]) s['oe' + k + i].o = 1; }); }); },
-      (id) => { const m = /^oe(O|E|Ov|Ev|G|H|N|Y|Oi|Ei)(\d)$/.exec(id); return m ? { w: [+m[2] / 6, (+m[2] + 2) / 6] } : null; })
+    .beat(1.0, (s) => pair(s, 0));
+  [1, 2, 3].forEach((i) => S.step({ head: 'Now compare it', key: 'oe' + i, grp: 'oe', body: OEB, go: [800, 485, 1420, 610, 'Next pair'] }).beat(1.0, (s) => pair(s, i)));
+  S.step({ head: 'Now compare it', key: 'oe4', grp: 'oe', body: 'Same base, same pay tables. **Check out the last two bars.**', go: [800, 485, 1420, 610, 'What that means'] })
     .beat(1.0, (s) => { s.oeE9.o = 1; s.oeE9.h = oh(E9); s.oeE9.y = OB - oh(E9); ['oeE9v', 'oeE9g', 'oeE9n', 'oeE9y', 'oeE9i'].forEach((k) => { s[k].o = 1; }); })
     .beat(0.9, (s) => { s.oeLine.o = 1; s.oeLine.w = ex9 + 60 - (ogx(3) - 100); })
     .beat(0.7, (s) => { s.oeBig.o = 1; s.oeBig2.o = 1; });
@@ -276,7 +280,7 @@ function scene(st) {
     .beat(0.8, (s) => { s.ldA.o = 1; s.ldB.o = 1; }, (id) => (id === 'ldB' ? { w: [0.4, 1] } : null))
     .beat(0.9, (s) => { s.ldC.o = 1; s.ldD.o = 1; });
 
-  S.step({ head: 'Avoid lifestyle inflation', body: 'You already know how to live on a college budget, so keep doing it for a while. Taxes come out first, then **bank whatever is above that baseline**, every time you get a raise.', go: [800, 480, 1300, 600, 'Here is my story'] })
+  S.step({ head: 'Avoid lifestyle inflation', body: 'You already know how to live on a college budget, so keep doing it for a while. Taxes come out first, then **invest whatever is above that baseline**, every time you get a raise.', go: [800, 480, 1300, 600, 'Here is my story'] })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.liHead.o = 1; s.liAl.o = 1; })
     .beat(1.0, (s) => { s.liA.o = 1; s.liA.w = lw(LB); s.liAv.o = 1; })
     .beat(0.4, (s) => { s.liBl.o = 1; })
