@@ -297,7 +297,7 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 @media (prefers-reduced-motion: reduce) { #spinPop, #spinPop.out, #spinPop .spinwrap, .spinwho.landed { animation: none; } }
 /* Oregon State's logo (Captain Russell, 25 Nov 2026) on a white card, since it's drawn for a light background */
 .osulogo { width: 640px; background: #fff; border-radius: 24px; padding: 34px 40px 26px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.45); border: 3px solid var(--gold); }
-.osulogo img { width: 100%; max-width: 470px; display: block; margin: 0 auto; }
+.osulogo img { width: 100%; max-width: 330px; display: block; margin: 0 auto; }
 .osulogo .o4 { margin-top: 14px; font: 800 22px var(--font); color: #2b2b2b; }
 
 /* Oregon State: the loans going to zero (25 Nov 2026) */
@@ -492,3 +492,22 @@ html.solo #stage.go { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   .bud, .bpie, .bpie circle, .bpie li, .beat [data-s] { transition: none; }
 }
+
+/* cold open photos: commissioning in 2019 and today (Captain Russell, 25 Nov 2026) */
+.coldpic { margin: 0; width: 330px; text-align: center; }
+.coldpic img { display: block; width: 330px; height: 330px; object-fit: cover; object-position: 50% 40%; border-radius: 20px; border: 3px solid var(--line); box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+.coldpic figcaption { margin-top: 12px; font: 700 22px var(--font); color: var(--soft); }
+/* Det 685 patch on Where it started */
+.det685 { display: flex; align-items: center; gap: 26px; }
+.det685 img { width: 210px; height: 210px; object-fit: contain; filter: drop-shadow(0 12px 24px rgba(0,0,0,.5)); }
+.det685 b { display: block; font: 850 34px var(--font); color: var(--ink); }
+.det685 span { display: block; margin-top: 6px; font: 600 24px var(--font); color: var(--soft); }
+
+/* US worker pay: the class's percentile guesses land on the curve (Captain Russell, 25 Nov 2026) */
+.uspin { position: absolute; width: 42px; height: 42px; border-radius: 50%; opacity: 0; transform: translateY(-80px) scale(.6); transition: opacity .45s ease, transform .6s cubic-bezier(.2,1.4,.4,1); transition-delay: var(--d, 0s); }
+.uspin .pxf { display: block; border-radius: 50%; background: var(--panel2); box-shadow: 0 0 0 3px var(--amber), 0 6px 14px rgba(0,0,0,.5); }
+.uspins.on .uspin { opacity: 1; transform: none; }
+.usbest { opacity: 0; transition: opacity .5s ease .4s; }
+.usbest.on { opacity: 1; }
+.usbest .lab { font-size: 22px; }
+@media (prefers-reduced-motion: reduce) { .uspin, .usbest { transition: none; } }
