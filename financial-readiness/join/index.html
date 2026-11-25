@@ -66,6 +66,9 @@ input.name { width: 100%; background: var(--panel); border: 2px solid var(--line
 .rg .rl { font-weight: 800; font-size: 15px; } .rg .rl b { color: var(--gold); }
 .rg .re { display: flex; justify-content: space-between; font-size: 12px; color: var(--faint); font-weight: 700; }
 .rg .re i { font-style: normal; }
+.exseg { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+.exseg button { border: 2px solid var(--line); background: var(--panel2, #1b335c); color: var(--soft); border-radius: 10px; padding: 9px 2px; font: 800 12.5px/1.15 var(--font); cursor: pointer; }
+.exseg button.on { background: var(--green); border-color: var(--green); color: #04140e; }
 .slider { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
 .slider .v { font: 850 40px var(--font); text-align: center; color: var(--amber); margin-bottom: 6px; }
 input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }

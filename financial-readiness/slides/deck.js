@@ -395,60 +395,35 @@
 
   // ---- when in doubt, zoom out: one chart that morphs from a day to a hundred years
   LIVE.zoom = {
-    explore: 'zoom', head: 'When in doubt, zoom out', body: 'The C Fund tracks the S&P 500. **Drag from one day out to a hundred years** and watch the "sell-off" disappear.',
+    explore: 'zoom', head: 'When in doubt, zoom out', body: 'The C Fund tracks the S&P 500. **Pick one day out to a hundred years** and watch the "sell-off" disappear.',
     build(el) {
-      const Z = D3.ZOOMS, N = 160;
-      const norm = Z.map((z) => {
-        const ys = z.pts.map((p) => (z.log ? Math.log(p[1]) : p[1])), lo = Math.min(...ys), hi = Math.max(...ys);
-        const out = [];
-        for (let i = 0; i < N; i++) {
-          const t = i / (N - 1); let j = 0;
-          while (j < z.pts.length - 2 && z.pts[j + 1][0] < t) j++;
-          const a = z.pts[j], b = z.pts[j + 1], f = clamp((t - a[0]) / Math.max(1e-9, b[0] - a[0]), 0, 1);
-          const v = lerp(z.log ? Math.log(a[1]) : a[1], z.log ? Math.log(b[1]) : b[1], f);
-          out.push((v - lo) / (hi - lo || 1));
-        }
-        const first = z.pts[0][1], last = z.pts[z.pts.length - 1][1];
-        return { pts: out, chg: (last / first - 1) * 100, lo: Math.min(...z.pts.map((p) => p[1])), hi: Math.max(...z.pts.map((p) => p[1])) };
-      });
-      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
-      const X0 = 200, X1 = 1180, Y0 = 790, Y1 = 260;
-      for (let i = 0; i <= 4; i++) sv('line', { x1: X0, x2: X1, y1: lerp(Y0, Y1, i / 4), y2: lerp(Y0, Y1, i / 4), stroke: C.line, 'stroke-width': 2, opacity: 0.6 }, svg);
-      const area = sv('path', {}, svg), ln = sv('path', { fill: 'none', 'stroke-width': 7, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
-      const dot = sv('circle', { r: 13 }, svg), ring = sv('circle', { r: 13, fill: 'none', 'stroke-width': 4 }, svg);
-      const tHi = sv('text', { x: X0 - 16, y: Y1 + 8, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg);
-      const tLo = sv('text', { x: X0 - 16, y: Y0 + 8, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg);
-      const tWhen = sv('text', { x: X0, y: Y0 + 44, fill: C.soft, 'font-size': 24, 'font-weight': 700, 'font-family': Anim.FONT }, svg);
-      const tLog = sv('text', { x: X1, y: Y0 + 44, 'text-anchor': 'end', fill: C.faint, 'font-size': 20, 'font-weight': 700, 'font-family': Anim.FONT }, svg);
-      const big = div(el, 'stat in', 'left:1240px;top:260px;width:300px;--d:.3', '<div class="lab">Over this window</div><div class="big">0%</div>');
-      const say = div(el, 'card in', 'left:1240px;top:450px;width:300px;--d:.45', '<div class="lab s">What the news says</div><p></p>');
+      // five buttons, not a slider (Captain Russell, 25 Nov 2026): each pick glides the camera out (or in), and the
+      // window you just left stays on the bigger chart as a gold strip, so you see how small it really was
+      const Z = D3.ZOOMS;
+      const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0;font-family:' + Anim.FONT }); el.appendChild(svg);
+      const X0 = 200, X1 = 1180, Y0 = 790, Y1 = 270;
+      const zc = D3.zoomChart({ svg, box: { x0: X0, x1: X1, y0: Y0, y1: Y1 }, sw: 7, fs: 24, col: { green: C.green, red: C.red, gold: C.amber, line: C.line, faint: C.faint, soft: C.soft } });
+      const tWhen = sv('text', { x: X0, y: Y0 + 46, fill: C.soft, 'font-size': 24, 'font-weight': 700 }, svg);
+      const tLog = sv('text', { x: X1, y: Y0 + 46, 'text-anchor': 'end', fill: C.faint, 'font-size': 20, 'font-weight': 700 }, svg);
+      const big = div(el, 'stat in', 'left:1240px;top:270px;width:300px;--d:.3', '<div class="lab">Over this window</div><div class="big">0%</div>');
+      const say = div(el, 'card in', 'left:1240px;top:460px;width:300px;--d:.45', '<div class="lab s">What the news says</div><p></p>');
       const SAY = ['"Stocks tumble!"', '"Rough month for markets."', '"A solid year."', '"Wow, more than triple."', '"Through a depression, a world war, 2008 and COVID."'];
-      const sm = Smooth(0); let raf = 0, live = false, lastK = -1;
-      const draw = () => {
-        const z = sm.step(0.14), k = Math.min(3, Math.floor(z)), f = z - k, A = norm[k], B = norm[Math.min(4, k + 1)];
-        const pts = A.pts.map((v, i) => [lerp(X0, X1, i / (N - 1)), lerp(Y0, Y1, lerp(v, B.pts[i], f) * 0.9 + 0.05)]);
-        const near = Math.round(z), Zn = norm[near], up = Zn.chg >= 0, col = up ? C.green : C.red;
-        ln.setAttribute('d', pathOf(pts)); ln.setAttribute('stroke', col);
-        area.setAttribute('d', pathOf(pts) + `L${X1} ${Y0}L${X0} ${Y0}Z`); area.setAttribute('fill', up ? 'rgba(52,245,164,.10)' : 'rgba(251,90,114,.12)');
-        const e = pts[pts.length - 1]; dot.setAttribute('cx', e[0]); dot.setAttribute('cy', e[1]); dot.setAttribute('fill', col);
-        ring.setAttribute('cx', e[0]); ring.setAttribute('cy', e[1]); ring.setAttribute('stroke', col);
-        if (near !== lastK) {
-          lastK = near;
-          tHi.textContent = fmt(Zn.hi, { pre: '' }); tLo.textContent = fmt(Zn.lo, { pre: '' });
-          tWhen.textContent = Z[near].name + ': ' + Z[near].when; tLog.textContent = Z[near].log ? 'log scale' : '';
-          const b = $('.big', big); b.className = 'big ' + (up ? 'g' : 'r');
-          b.textContent = (up ? '+' : '−') + Math.abs(Zn.chg).toLocaleString('en-US', { maximumFractionDigits: Math.abs(Zn.chg) < 10 ? 1 : 0 }) + '%';
-          $('p', say).textContent = SAY[near]; say.classList.remove('flash'); void say.offsetWidth; say.classList.add('flash');
-        }
-        if (live) raf = requestAnimationFrame(draw);
+      const box = div(el, 'zpick in', 'left:70px;top:40px;width:1460px;--d:.1', `<div class="lab">Zoom out</div><div class="seg" role="radiogroup" aria-label="Time frame">${Z.map((z, i) => `<button type="button" role="radio" data-k="${i}">${z.name}</button>`).join('')}</div>`);
+      const btns = [...box.querySelectorAll('button')];
+      let k = 0;
+      const pick = (n, now) => {
+        k = n; zc.go(n, now);
+        btns.forEach((b, i) => { b.classList.toggle('on', i === n); b.setAttribute('aria-checked', i === n); });
+        const c = zc.chg(n), up = c >= 0, b = $('.big', big); b.className = 'big ' + (up ? 'g' : 'r');
+        b.textContent = (up ? '+' : '−') + Math.abs(c).toLocaleString('en-US', { maximumFractionDigits: Math.abs(c) < 10 ? 1 : 0 }) + '%'; b.style.fontSize = b.textContent.length > 6 ? '60px' : '';
+        tWhen.textContent = Z[n].name + ': ' + Z[n].when; tLog.textContent = Z[n].log ? 'log scale' : '';
+        $('p', say).textContent = SAY[n]; say.classList.remove('flash'); void say.offsetWidth; say.classList.add('flash');
       };
-      const sl = slider(el, { x: 70, y: 40, w: 1460, label: 'Zoom out', min: 0, max: 4, step: 0.01, value: 0, d: 0.1, play: [0, 4, 6],
-        ticks: Z.map((z, i) => [i, z.name]),
-        show: (v) => `<span class="g">${Z[Math.round(v)].name}</span>`, on: (v) => { sm.t = v; } });
+      btns.forEach((b, i) => b.addEventListener('click', (e) => { e.stopPropagation(); pick(i); }));
       return {
-        enter() { live = true; lastK = -1; sl.set(0); sm.v = 0; raf = requestAnimationFrame(draw); ring.animate([{ r: 13, opacity: 0.9 }, { r: 48, opacity: 0 }], { duration: 1400, iterations: Infinity }); },
-        leave() { live = false; cancelAnimationFrame(raf); sl.stop(); ring.getAnimations().forEach((a) => a.cancel()); },
-        replay() { this.leave(); this.enter(); },
+        enter() { pick(0, true); },
+        leave() { zc.stop(); },
+        replay() { pick(0, true); },
       };
     },
   };
@@ -1027,7 +1002,7 @@
   scn('fr1', 2, 'What I got right', 'What I got right'); live('big', 2);
   live('q-taxed', 3); scn('fr2', 3, 'Your first LES', 'Allotments: pay yourself first'); live('q-allot', 3); scn('fr2', 3, 'What is left'); live('board2', 3);
   scn('fr3', 4, 'Three parts, one system', 'Three parts, one system'); live('q-pension', 4); scn('fr3', 4, '1. The pension', '1. The pension');
-  live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', '3. Continuation pay'); live('q-roth', 4); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?');
+  live('q-match', 4); live('tsp', 4); live('q-tsp', 4); scn('fr3', 4, '3. Continuation pay', 'Golden handcuffs'); scn('fr3', 4, 'Roth or Traditional?', 'Roth or Traditional?'); live('q-roth', 4); scn('fr3', 4, 'Why Roth', 'Why Roth');
   live('q-market', 5); live('zoom', 5); scn('fr3', 5, 'Always be buying', 'The one rule'); live('board3', 5);
   live('books', 6); live('q-calls', 6); live('calls', 6); scn('fr4', 6, 'My mantra', 'My mantra'); live('board4', 6);
   live('close', 6);

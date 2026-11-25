@@ -55,6 +55,87 @@ const ZOOMS = [
   { key: 't', name: 'Ten years', when: '2016 to 2026', pts: ZY10.map((v, i) => [i / (ZY10.length - 1), v]) },
   { key: 'c', name: 'One hundred years', when: '1926 to 2026', pts: ZY100.map((v, i) => [i / (ZY100.length - 1), v]), log: true },
 ];
+// Real dates for every point, as decimal years, so each window sits inside the next one at its true place
+// (Captain Russell, 25 Nov 2026: switching time frames should show the smaller window inside the bigger chart).
+// Month: the 21 trading days 28 Sep to 26 Oct 2026. Day: 16 Oct, the 15th of them, 9:30 to 4:00, ending on its close.
+// Monthly averages sit mid-month; the 100 year line is each January, then Sep 2026.
+(function () {
+  const dy = (y, m, d, h) => y + (Date.UTC(y, m - 1, d, h || 0) - Date.UTC(y, 0, 1)) / (365.25 * 864e5);
+  const days = []; for (let d = new Date(Date.UTC(2026, 8, 28)); days.length < ZM.length; d.setUTCDate(d.getUTCDate() + 1)) { const w = d.getUTCDay(); if (w && w < 6) days.push(dy(2026, d.getUTCMonth() + 1, d.getUTCDate(), 16)); }
+  const close = days[14], open = close - 6.5 / 24 / 365.25;
+  ZOOMS[0].at = [0, 0.25, 0.7, 1].map((f) => open + f * (close - open));
+  ZOOMS[1].at = days;
+  ZOOMS[2].at = ZY1.map((v, i) => 2025 + (9 + i + 0.5) / 12);
+  ZOOMS[3].at = ZY10.map((v, i) => 2016 + (8 + i + 0.5) / 12);
+  ZOOMS[4].at = ZY100.map((v, i) => (i < ZY100.length - 1 ? 1926 + i + 0.5 / 12 : 2026 + 8.5 / 12));
+})();
+
+// The zoom chart, shared by the slide and the phone page. o = { svg, box: {x0, x1, y0, y1}, sw (line width),
+// fs (font size), col: {green, red, gold, line, faint, soft} }. go(k) glides the camera to window k: the window you
+// just left stays on the bigger chart as a gold strip at its real dates, so you see it shrink into place.
+function zoomChart(o) {
+  const NS = 'http://www.w3.org/2000/svg', B = o.box, C2 = o.col, Z = ZOOMS;
+  const el = (t, a, p) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); (p || o.svg).appendChild(n); return n; };
+  const lerp = (a, b, t) => a + (b - a) * t, ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const id = 'zc' + Math.random().toString(36).slice(2, 8);
+  const cp = el('clipPath', { id }); el('rect', { x: B.x0, y: B.y1 - 30, width: B.x1 - B.x0, height: B.y0 - B.y1 + 60 }, cp);
+  for (let i = 0; i <= 4; i++) el('line', { x1: B.x0, x2: B.x1, y1: lerp(B.y0, B.y1, i / 4), y2: lerp(B.y0, B.y1, i / 4), stroke: C2.line, 'stroke-width': Math.max(1, o.sw / 3.5), opacity: 0.6 });
+  const g = el('g', { 'clip-path': `url(#${id})` });
+  const band = el('rect', { y: B.y1 - 8, height: B.y0 - B.y1 + 16, rx: o.fs / 3, fill: C2.gold, 'fill-opacity': 0.13, stroke: C2.gold, 'stroke-opacity': 0.5, 'stroke-width': Math.max(1, o.sw / 4), 'stroke-dasharray': `${o.sw} ${o.sw}` }, g);
+  const area = el('path', {}, g);
+  const lines = Z.map(() => el('path', { fill: 'none', 'stroke-width': o.sw, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g));
+  lines.slice().reverse().forEach((l) => g.appendChild(l));   // the window you just left draws on top
+  const bandL = el('text', { y: B.y1 - 14, fill: C2.gold, 'font-size': o.fs, 'font-weight': 800 });
+  const tHi = el('text', { x: B.x0 - o.fs * 0.6, y: B.y1 + o.fs * 0.35, 'text-anchor': 'end', fill: C2.faint, 'font-size': o.fs * 0.9, 'font-weight': 700 });
+  const tLo = el('text', { x: B.x0 - o.fs * 0.6, y: B.y0 + o.fs * 0.35, 'text-anchor': 'end', fill: C2.faint, 'font-size': o.fs * 0.9, 'font-weight': 700 });
+  // what each window looks like on its own: its dates (stretched to fit the one before it) and its price range
+  const view = Z.map((z, k) => {
+    let t0 = z.at[0], t1 = z.at[z.at.length - 1], vs = z.pts.map((p) => p[1]);
+    if (k) { const q = Z[k - 1]; t1 = Math.max(t1, q.at[q.at.length - 1]); vs = vs.concat(q.pts.map((p) => p[1])); }
+    return { t0, t1, lo: Math.min(...vs), hi: Math.max(...vs), lg: z.log ? 1 : 0 };
+  });
+  let cur = Object.assign({}, view[0]), from = cur, to = 0, t = 1, raf = 0, k = 0;
+  const op = Z.map((z, j) => (j ? 0 : 1));
+  const X = (tt) => B.x0 + (B.x1 - B.x0) * (tt - cur.t0) / (cur.t1 - cur.t0);
+  const Y = (v) => {
+    const lin = (v - cur.lo) / (cur.hi - cur.lo || 1), lg = (Math.log(v) - Math.log(cur.lo)) / (Math.log(cur.hi) - Math.log(cur.lo) || 1);
+    return B.y0 - (B.y0 - B.y1) * (0.05 + 0.9 * lerp(lin, lg, cur.lg));
+  };
+  const money = (v) => '$' + Math.round(v).toLocaleString('en-US');
+  function paint() {
+    const up = Z[k].pts[Z[k].pts.length - 1][1] >= Z[k].pts[0][1], col = up ? C2.green : C2.red;
+    Z.forEach((z, j) => {
+      const P = z.pts.map((p, i) => [X(z.at[i]), Y(p[1])]);
+      const d = 'M' + P.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L');
+      lines[j].setAttribute('d', d); lines[j].setAttribute('opacity', op[j].toFixed(3));
+      lines[j].setAttribute('stroke', j === k ? col : C2.gold);
+      if (j === k) { area.setAttribute('d', d + `L${P[P.length - 1][0]} ${B.y0}L${P[0][0]} ${B.y0}Z`); area.setAttribute('fill', up ? C2.green : C2.red); area.setAttribute('fill-opacity', 0.1); }
+    });
+    if (k) {
+      const q = Z[k - 1], a = Math.max(B.x0, X(q.at[0]) - o.sw), b = Math.min(B.x1 + o.sw, X(q.at[q.at.length - 1]) + o.sw);
+      band.setAttribute('x', a); band.setAttribute('width', Math.max(0, b - a)); band.setAttribute('opacity', op[k - 1].toFixed(3));
+      bandL.textContent = 'The ' + q.name.toLowerCase() + ' you just saw';
+      bandL.setAttribute('x', Math.min(B.x1, b)); bandL.setAttribute('text-anchor', 'end'); bandL.setAttribute('opacity', op[k - 1].toFixed(3));
+    } else { band.setAttribute('opacity', 0); bandL.setAttribute('opacity', 0); }
+    tHi.textContent = money(cur.hi); tLo.textContent = money(cur.lo);
+  }
+  function tick() {
+    t = Math.min(1, t + 1 / 60 / 1.3); const e = ease(t), F = from, T = view[to];
+    const s0 = F.t1 - F.t0, s1 = T.t1 - T.t0, span = Math.exp(lerp(Math.log(s0), Math.log(s1), e)), right = lerp(F.t1, T.t1, e);
+    cur = { t0: right - span, t1: right, lo: Math.exp(lerp(Math.log(F.lo), Math.log(T.lo), e)), hi: Math.exp(lerp(Math.log(F.hi), Math.log(T.hi), e)), lg: lerp(F.lg, T.lg, e) };
+    Z.forEach((z, j) => { const want = j === k || j === k - 1 ? 1 : 0; op[j] = t >= 1 ? want : lerp(op[j], want, 0.12); });
+    paint(); raf = t < 1 ? requestAnimationFrame(tick) : 0;
+  }
+  paint();
+  return {
+    go(n, now) {
+      k = n; from = Object.assign({}, cur); to = n; t = now ? 1 : 0; cancelAnimationFrame(raf);
+      if (now) { cur = Object.assign({}, view[n]); Z.forEach((z, j) => { op[j] = j === n || j === n - 1 ? 1 : 0; }); paint(); } else raf = requestAnimationFrame(tick);
+    },
+    stop() { cancelAnimationFrame(raf); },
+    chg: (n) => (Z[n].pts[Z[n].pts.length - 1][1] / Z[n].pts[0][1] - 1) * 100,
+  };
+}
 const DCA_IN = 38000, DCA_NOW = 61534;   // $500 every month, June 2020 to Sep 2026, at the monthly average price, price only
 
 function scene(st) {
@@ -144,6 +225,15 @@ function scene(st) {
   add('c20', 'text', { size: 26, anchor: 'middle', weight: 700 }, { x: tx(20) - 40, y: TY - 60, content: 'Pension', fill: C.amber, o: 0 });
   add('cAmt', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 140, y: 650, content: 'At least 2.5 months of base pay, for 4 more years of service', fill: C.ink, o: 0 });
   add('cEx', 'text', { size: 32, anchor: 'start', weight: 600 }, { x: 140, y: 710, content: `A Major over 12 years: 2.5 × ${fmt(9888.30)} = ${fmt(2.5 * 9888.30)}, in one payment.`, fill: C.soft, o: 0 });
+  // the golden handcuffs (Captain Russell, 25 Nov 2026): take it at 12 and you're in until 16; by then the pension at 20 is so
+  // close, and worth so much over a normal lifespan, that almost nobody walks away
+  add('cy16', 'text', { size: 28, anchor: 'middle', weight: 700, mono: true }, { x: tx(16), y: TY + 80, content: '16 yrs', fill: C.faint, o: 0 });
+  add('cLock', 'rect', {}, { x: tx(12), y: TY - 26, w: 0, h: 52, rx: 10, fill: C.red, fo: 0.3, stroke: C.red, sw: 3, o: 0 });
+  add('cLockL', 'text', { size: 26, anchor: 'middle', weight: 800 }, { x: tx(14), y: TY + 130, content: 'In until 16', fill: C.red, o: 0 });
+  add('cGold', 'rect', { dash: '12 8' }, { x: tx(16), y: TY - 26, w: 0, h: 52, rx: 10, fill: C.amber, fo: 0.18, stroke: C.amber, sw: 3, o: 0 });
+  add('cGoldL', 'text', { size: 26, anchor: 'middle', weight: 800 }, { x: tx(18), y: TY + 130, content: 'Golden handcuffs', fill: C.amber, o: 0 });
+  add('cH1', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 140, y: 650, content: 'At 16, you\'re 4 years from a pension that pays for life.', fill: C.ink, o: 0 });
+  add('cH2', 'text', { size: 32, anchor: 'start', weight: 600, maxw: 1320 }, { x: 140, y: 710, content: 'Leave then and you leave millions on the table over a normal lifespan. Almost nobody does.', fill: C.amber, o: 0 });
 
   // ---- Roth or Traditional
   add('rHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Roth or Traditional?', fill: C.ink, o: 0 });
@@ -231,14 +321,21 @@ function scene(st) {
     .beat(2.2, (s) => { CHOICES.forEach((c, i) => { const h = END[i] / EMAX * EH; s['e' + i].o = 1; s['e' + i].h = h; s['e' + i].y = EB - h; s['ev' + i].o = 1; }); },
       (id) => { const m = /^ev?(\d)$/.exec(id); return m ? { w: [+m[1] / 5, (+m[1] + 2) / 5] } : null; });
 
-  S.step({ head: '3. Continuation pay', body: 'A one-time bonus somewhere between 7 and 12 years, if you sign up for 4 more. The Air Force sets the amount each year.', go: [800, 680, 1360, 130, 'Roth or Traditional?'] })
+  S.step({ head: '3. Continuation pay', grp: 'cp', body: 'A one-time bonus somewhere between 7 and 12 years, if you sign up for 4 more. The Air Force sets the amount each year.', go: [800, 680, 1360, 130, 'Roth or Traditional?'] })
     .beat(0.6, (s) => { off(s); s.cHead.o = 1; s.cLine.o = 1; [2, 7, 12, 20].forEach((y) => { s['cy' + y].o = 1; }); s.c2y.o = 1; s.c20.o = 1; })
     .beat(1.0, (s) => { s.cWin.o = 1; s.cWin.w = tx(12) - tx(7); s.cWinL.o = 1; })
     .beat(0.8, (s) => { s.cAmt.o = 1; s.cEx.o = 1; });
+  S.step({ head: 'Golden handcuffs', grp: 'cp', body: 'Take it at 12 and you owe **4 more years**. At 16 the pension is 4 years away, and **almost nobody walks away from it.**' })
+    .beat(0.6, (s) => { s.cAmt.o = 0; s.cEx.o = 0; s.cy16.o = 1; })
+    .beat(1.0, (s) => { s.cLock.o = 1; s.cLock.w = tx(16) - tx(12); s.cLockL.o = 1; })
+    .beat(1.0, (s) => { s.cGold.o = 1; s.cGold.w = tx(20) - tx(16); s.cGoldL.o = 1; })
+    .beat(0.8, (s) => { s.cH1.o = 1; s.cH2.o = 1; });
 
+  // Roth or Traditional is explained first, then the phone question, then why Roth (Captain Russell, 25 Nov 2026)
   S.step({ head: 'Roth or Traditional?', body: 'You get the same match either way. It really just comes down to **when you pay the tax**.', go: [800, 360, 1420, 310, 'Where does it go?'] })
     .beat(0.6, (s) => { off(s); s.rHead.o = 1; })
-    .beat(1.0, (s) => { [0, 1].forEach((i) => ['rc', 'rt', 'ra', 'rb'].forEach((k) => { s[k + i].o = 1; })); })
+    .beat(1.0, (s) => { [0, 1].forEach((i) => ['rc', 'rt', 'ra', 'rb'].forEach((k) => { s[k + i].o = 1; })); });
+  S.step({ head: 'Why Roth', body: 'As a 2d Lt, **your tax rate will probably never be lower**, so pay the tax now while it\'s small.' })
     .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; s.rMe.o = 1; });
 
   S.step({ head: 'When in doubt, zoom out', body: 'The C Fund tracks the S&P 500. **Here\'s one day.** The news would be calling this a sell-off.', go: [855, 520, 1250, 540, 'Zoom out', 'top'] })
@@ -282,7 +379,7 @@ function scene(st) {
 }
 
 FR.DATA = FR.DATA || {};
-FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, BASE1, CAP };
+FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, zoomChart, BASE1, CAP };
 FR.SCENES = FR.SCENES || {};
 FR.SCENES.fr3 = scene;
 })();

@@ -315,3 +315,8 @@ html.solo #stage.go { cursor: default; }
 /* a full class (Captain Russell, 25 Nov 2026: about 20 in class): smaller faces so everyone fits above the buttons */
 .crew.many { gap: 10px 8px; } .crew.many .mate { width: 86px; } .crew.many .mate span { font-size: 13.5px; }
 .crew.lots { gap: 8px 6px; } .crew.lots .mate { width: 70px; } .crew.lots .mate span { font-size: 12px; }
+/* zoom out: five time frames as one row of buttons (Captain Russell, 25 Nov 2026) */
+.zpick { position: absolute; display: flex; align-items: center; gap: 22px; }
+.zpick .lab { margin: 0; white-space: nowrap; }
+.zpick .seg { flex: 1; }
+.zpick .seg button { font-size: 24px; padding: 14px 8px; cursor: pointer; }

@@ -125,32 +125,26 @@
 
     // ---- when in doubt, zoom out
     zoom(el) {
-      const Z = root.FR.DATA.fr3.ZOOMS, N = 90;
-      const norm = Z.map((z) => {
-        const ys = z.pts.map((p) => (z.log ? Math.log(p[1]) : p[1])), lo = Math.min(...ys), hi = Math.max(...ys), out = [];
-        for (let i = 0; i < N; i++) {
-          const t = i / (N - 1); let j = 0;
-          while (j < z.pts.length - 2 && z.pts[j + 1][0] < t) j++;
-          const a = z.pts[j], b = z.pts[j + 1], fr = clamp((t - a[0]) / Math.max(1e-9, b[0] - a[0]), 0, 1);
-          out.push((lerp(z.log ? Math.log(a[1]) : a[1], z.log ? Math.log(b[1]) : b[1], fr) - lo) / (hi - lo || 1));
-        }
-        return { pts: out, chg: (z.pts[z.pts.length - 1][1] / z.pts[0][1] - 1) * 100 };
-      });
-      const f = frame(el, 'When in doubt, zoom out', 'The C Fund tracks the S&amp;P 500. Drag from one day out to a hundred years.');
-      for (let i = 0; i <= 4; i++) sv('line', { x1: X0, x2: X1, y1: lerp(Y0, Y1, i / 4), y2: lerp(Y0, Y1, i / 4), stroke: COL.line }, f.svg);
-      const area = sv('path', {}, f.svg), ln = sv('path', { fill: 'none', 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, f.svg);
-      const when = sv('text', { x: X0, y: H - 2, fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg);
+      // five buttons, not a slider (Captain Russell, 25 Nov 2026); the chart itself is FR.DATA.fr3.zoomChart, the same as the big screen
+      const D = root.FR.DATA.fr3, Z = D.ZOOMS;
+      const f = frame(el, 'When in doubt, zoom out', 'The C Fund tracks the S&amp;P 500. Tap a time frame. The gold strip is the one you just saw.');
+      f.svg.setAttribute('viewBox', `0 0 ${W} ${H + 14}`);
+      const zc = D.zoomChart({ svg: f.svg, box: { x0: X0 + 8, x1: X1, y0: Y0, y1: Y1 + 14 }, sw: 3.5, fs: 11, col: { green: COL.green, red: COL.red, gold: COL.amber, line: COL.line, faint: COL.faint, soft: '#b9c6de' } });
+      const when = sv('text', { x: X0 + 8, y: H + 10, fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg);
       const sW = stat(f.r, 'Window', ''), sC = stat(f.r, 'Change', 'g');
-      range(f.s, { label: 'Zoom out ', min: 0, max: 4, step: 0.01, value: 0, ends: [Z[0].name, Z[4].name], show: (v) => Z[Math.round(v)].name,
-        on(v) {
-          const k = Math.min(3, Math.floor(v)), fr = v - k, A = norm[k], B = norm[Math.min(4, k + 1)], near = Math.round(v), up = norm[near].chg >= 0, col = up ? COL.green : COL.red;
-          const pts = A.pts.map((a, i) => [lerp(X0, X1, i / (N - 1)), lerp(Y0, Y1, lerp(a, B.pts[i], fr) * 0.9 + 0.05)]);
-          ln.setAttribute('d', pathOf(pts)); ln.setAttribute('stroke', col);
-          area.setAttribute('d', pathOf(pts) + `L${X1} ${Y0}L${X0} ${Y0}Z`); area.setAttribute('fill', up ? 'rgba(63,214,154,.14)' : 'rgba(255,111,125,.16)');
-          when.textContent = Z[near].when + (Z[near].log ? ' (log scale)' : '');
-          sW.textContent = Z[near].name; sC.className = up ? 'g' : 'r';
-          sC.textContent = (up ? '+' : '−') + Math.abs(norm[near].chg).toLocaleString('en-US', { maximumFractionDigits: Math.abs(norm[near].chg) < 10 ? 1 : 0 }) + '%';
-        } }).paint();
+      const seg = document.createElement('div'); seg.className = 'exseg'; seg.setAttribute('role', 'radiogroup'); seg.setAttribute('aria-label', 'Time frame');
+      seg.innerHTML = Z.map((z, i) => `<button type="button" role="radio">${z.name.replace('One hundred', '100').replace('Ten', '10')}</button>`).join('');
+      f.s.appendChild(seg);
+      const btns = [...seg.children];
+      const pick = (n, now) => {
+        zc.go(n, now); btns.forEach((b, i) => { b.classList.toggle('on', i === n); b.setAttribute('aria-checked', i === n); });
+        const c = zc.chg(n), up = c >= 0;
+        when.textContent = Z[n].when + (Z[n].log ? ' (log scale)' : '');
+        sW.textContent = Z[n].name; sC.className = up ? 'g' : 'r';
+        sC.textContent = (up ? '+' : '−') + Math.abs(c).toLocaleString('en-US', { maximumFractionDigits: Math.abs(c) < 10 ? 1 : 0 }) + '%';
+      };
+      btns.forEach((b, i) => b.addEventListener('click', () => pick(i)));
+      pick(0, true);
       return {};
     },
   };
