@@ -76,36 +76,28 @@
       return {};
     },
 
-    // ---- start now vs wait, with your own numbers and a starting debt (Captain Russell, 25 Nov 2026)
+    // ---- your own numbers: invest each month and a starting debt, on a locked axis (Captain Russell, 25 Nov 2026)
     wait(el) {
-      const f = frame(el, 'Your own numbers', 'Pick what you\'d invest, any debt you start with, and when you start. Debt grows at 6%, investments at 7%.');
-      const ax = (a) => X0 + (X1 - X0) * (a - 22) / 38;
+      const f = frame(el, 'Your own numbers', 'Pick what you\'d invest each month and any debt you start with. Debt grows at 6%, investments at 7%.');
+      const ax = (a) => X0 + (X1 - X0) * (a - 22) / 38, LO = -2e5, HI = 4.5e6, ay = (v) => Y0 - (Y0 - Y1) * (Math.min(v, HI) - LO) / (HI - LO);
       [22, 30, 40, 50, 60].forEach((a) => { sv('text', { x: ax(a), y: H - 2, 'text-anchor': 'middle', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = a; });
-      let g = null;
-      const aA = sv('path', { fill: 'rgba(63,214,154,.12)' }, f.svg), aB = sv('path', { fill: 'rgba(255,111,125,.14)' }, f.svg);
-      const lA = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5 }, f.svg), lB = sv('path', { fill: 'none', stroke: COL.red, 'stroke-width': 3.5 }, f.svg);
-      const run = (mo, w, debt) => { const pts = []; let b = debt, free = debt >= 0 ? 22 : null; for (let m = 0; m <= 456; m++) { if (m % 3 === 0) pts.push([22 + m / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + (m >= w * 12 ? mo : 0); if (free == null && b >= 0) free = 22 + (m + 1) / 12; } pts.free = free; return pts; };
+      for (let v = 0; v <= 4e6; v += 1e6) {
+        sv('line', { x1: X0, x2: X1, y1: ay(v), y2: ay(v), stroke: v ? COL.line : COL.faint, 'stroke-width': 1 }, f.svg);
+        sv('text', { x: X0 - 6, y: ay(v) + 4, 'text-anchor': 'end', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = v ? '$' + v / 1e6 + 'M' : '$0';
+      }
+      const aA = sv('path', { fill: 'rgba(63,214,154,.12)' }, f.svg), lA = sv('path', { fill: 'none', stroke: COL.green, 'stroke-width': 3.5 }, f.svg);
+      const run = (mo, debt) => { const pts = []; let b = debt, free = debt >= 0 ? 22 : null; for (let m = 0; m <= 456; m++) { if (m % 3 === 0) pts.push([22 + m / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + mo; if (free == null && b >= 0) free = 22 + (m + 1) / 12; } pts.free = free; return pts; };
       const R = root.FR.fmtR;
-      const sA = stat(f.r, 'Start at 22', 'g'), sB = stat(f.r, 'Wait', 'r'), sC = stat(f.r, 'Waiting cost', 'a');
-      const out = document.createElement('p'); out.className = 'hint'; f.r.after(out);
-      let mo = 500, w = 0, d = 0;
+      const sA = stat(f.r, 'At 60', 'g'), sB = stat(f.r, 'You put in', ''), sC = stat(f.r, 'Out of debt', 'a');
+      let mo = 500, d = 0;
       const draw = () => {
-        const A = run(mo, 0, d), B = run(mo, w, d), hi0 = Math.max(A[A.length - 1][1], 1e5) * 1.1, lo0 = Math.min(0, ...B.map((p) => p[1])) * 1.1;
-        if (g) g.remove();
-        const span = hi0 - lo0, step = span > 3e6 ? 1e6 : span > 1.2e6 ? 5e5 : span > 5e5 ? 2e5 : 1e5, lo = Math.floor(lo0 / step) * step, hi = Math.ceil(hi0 / step) * step;
-        g = grid(f.svg, lo, hi, step, (v) => R(v)); f.svg.prepend(g);
-        const P = (pts) => pts.map(([a, v]) => [ax(a), Y0 - (Y0 - Y1) * (v - lo) / (hi - lo)]), z = Y0 - (Y0 - Y1) * (0 - lo) / (hi - lo);
-        const pa = P(A), pb = P(B);
-        lA.setAttribute('d', pathOf(pa)); lB.setAttribute('d', pathOf(pb));
-        aA.setAttribute('d', pathOf(pa) + `L${X1} ${z}L${X0} ${z}Z`); aB.setAttribute('d', pathOf(pb) + `L${X1} ${z}L${X0} ${z}Z`);
-        const a = A[A.length - 1][1], b = B[B.length - 1][1];
-        sA.textContent = R(a); sB.previousElementSibling.textContent = w ? `Wait ${w} yr` : 'Start at 22 too'; sB.textContent = R(b); sC.textContent = R(a - b);
-        const age = (x) => (x == null ? 'after 60' : 'at ' + Math.ceil(x * 2) / 2);
-        out.textContent = d < 0 ? `Out of debt ${age(A.free)} if you start now${w ? `, ${age(B.free)} if you wait` : ''}.` : '';
+        const A = run(mo, d), pa = A.map(([a, v]) => [ax(a), ay(v)]), z = ay(0);
+        lA.setAttribute('d', pathOf(pa)); aA.setAttribute('d', pathOf(pa) + `L${X1} ${z}L${X0} ${z}Z`);
+        sA.textContent = R(A[A.length - 1][1]); sB.textContent = R(mo * 12 * 38);
+        sC.textContent = d < 0 ? (A.free == null ? 'After 60' : 'Age ' + Math.ceil(A.free * 2) / 2) : 'No debt';
       };
-      range(f.s, { label: 'Invest a month ', min: 100, max: 2000, step: 50, value: 500, show: money, on(v) { mo = v; draw(); } }).paint();
+      range(f.s, { label: 'Invest a month ', min: 100, max: 2000, step: 50, value: 500, ends: ['$100', '$2,000'], show: money, on(v) { mo = v; draw(); } }).paint();
       range(f.s, { label: 'Starting debt ', min: -50000, max: 0, step: 5000, value: 0, ends: ['−$50K', '$0'], show: (v) => (v ? '−' + kM(-v) : '$0'), on(v) { d = v; draw(); } }).paint();
-      range(f.s, { label: 'Years you wait ', min: 0, max: 10, step: 1, value: 0, ends: ['Day 1', '10 years'], show: (v) => String(v), on(v) { w = v; draw(); } }).paint();
       return {};
     },
 

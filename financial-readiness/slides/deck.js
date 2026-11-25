@@ -274,68 +274,58 @@
     },
   };
 
-  // ---- start now vs wait, with your own numbers (Captain Russell, 25 Nov 2026: a starting debt from −$50K to $0 to see how
-  // fast you climb out; numbers to the nearest $10K, and to the nearest tenth once it passes $1M). Same chart on the phones.
+  // ---- your own numbers (Captain Russell, 25 Nov 2026): what you invest each month and any debt you start with; no
+  // waiting slider. The axis is locked ($-0.2M to $4.5M) so it never moves and a bigger number visibly climbs higher.
+  // Numbers to the nearest $10K, and to the nearest tenth once past $1M. Same chart on the phones.
   const fmtR = FR.fmtR;
+  const WAIT_LO = -2e5, WAIT_HI = 4.5e6;
   LIVE.wait = {
-    head: 'Drag it: your own numbers', body: 'Pick what you\'d invest each month, any debt you start with, and **when you start.** Debt grows at 6% until it\'s paid off, investments at 7%.', explore: 'wait',
+    head: 'Drag it: your own numbers', body: 'Pick what you\'d invest each month and any debt you start with. Debt grows at 6% until it\'s paid off, investments at 7%.', explore: 'wait',
     build(el) {
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
-      const G = { x0: 150, x1: 1040, y0: 800, y1: 320, a: 22, b: 60, lo: 0, hi: 2e6 };
+      const G = { x0: 150, x1: 1040, y0: 800, y1: 300, a: 22, b: 60, lo: WAIT_LO, hi: WAIT_HI };
       const m = chart(svg, G);
-      const grid = sv('g', {}, svg);
+      for (let v = 0; v <= 4e6; v += 1e6) {
+        sv('line', { x1: G.x0, x2: G.x1, y1: m.y(v), y2: m.y(v), stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: v ? 0.6 : 0.9 }, svg);
+        sv('text', { x: G.x0 - 14, y: m.y(v) + 8, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = v ? '$' + v / 1e6 + 'M' : '$0';
+      }
       [22, 30, 40, 50, 60].forEach((a) => sv('text', { x: m.x(a), y: G.y0 + 36, 'text-anchor': 'middle', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = 'Age ' + a);
-      const areaA = sv('path', { fill: 'rgba(52,245,164,.10)' }, svg), areaB = sv('path', { fill: 'rgba(251,90,114,.12)' }, svg);
-      const lnA = sv('path', { fill: 'none', stroke: C.green, 'stroke-width': 7, 'stroke-linejoin': 'round' }, svg);
-      const lnB = sv('path', { fill: 'none', stroke: C.red, 'stroke-width': 7, 'stroke-linejoin': 'round' }, svg);
-      const gap = sv('line', { stroke: C.amber, 'stroke-width': 4, 'stroke-dasharray': '6 8' }, svg);
-      const lab = (fill) => sv('text', { fill, 'font-size': 26, 'font-weight': 850, 'font-family': Anim.FONT }, svg);
-      const tA = lab(C.green), tB = lab(C.red);
-      const s1 = div(el, 'stat in', 'left:1110px;top:300px;width:430px;--d:.3', '<div class="lab">Start at 22</div><div class="big g">$0</div>');
-      const s2 = div(el, 'stat in', 'left:1110px;top:470px;width:430px;--d:.4', '<div class="lab" id="wLab">Wait 3 years</div><div class="big r">$0</div>');
-      const s3 = div(el, 'stat in', 'left:1110px;top:640px;width:430px;--d:.5;border-color:#7a5a12', '<div class="lab">What waiting cost you</div><div class="big a">$0</div><div class="lab" style="margin:10px 0 0;font-size:19px" id="wSkip"></div>');
-      const cA = counter($('.big', s1), fmtR), cB = counter($('.big', s2), fmtR), cG = counter($('.big', s3), fmtR);
-      const st = { mo: Smooth(500), w: Smooth(3), d: Smooth(0), hi: Smooth(1.2e6), lo: Smooth(0) };
-      let raf = 0, live = false, gridKey = '';
-      const run = (mo, w, debt) => { const pts = []; let b = debt, free = debt >= 0 ? 22 : null; for (let mth = 0; mth <= 456; mth++) { if (mth % 3 === 0) pts.push([22 + mth / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + (mth >= w * 12 ? mo : 0); if (free == null && b >= 0) free = 22 + (mth + 1) / 12; } pts.free = free; return pts; };
+      const area = sv('path', { fill: 'rgba(52,245,164,.10)' }, svg);
+      const ln = sv('path', { fill: 'none', stroke: C.green, 'stroke-width': 7, 'stroke-linejoin': 'round' }, svg);
+      const dot = sv('circle', { r: 12, fill: C.green }, svg);
+      const free = sv('circle', { r: 10, fill: C.amber, stroke: C.bg, 'stroke-width': 4 }, svg);
+      const s1 = div(el, 'stat in', 'left:1110px;top:300px;width:430px;--d:.3', '<div class="lab">At 60</div><div class="big g">$0</div>');
+      const s2 = div(el, 'stat in', 'left:1110px;top:470px;width:430px;--d:.4', '<div class="lab">What you put in</div><div class="big">$0</div>');
+      const s3 = div(el, 'stat in', 'left:1110px;top:640px;width:430px;--d:.5;border-color:#7a5a12', '<div class="lab">Out of debt</div><div class="big a">-</div>');
+      const cA = counter($('.big', s1), fmtR), cB = counter($('.big', s2), fmtR);
+      const st = { mo: Smooth(500), d: Smooth(0) };
+      let raf = 0, live = false;
+      const run = (mo, debt) => { const pts = []; let b = debt, fr = debt >= 0 ? 22 : null; for (let mth = 0; mth <= 456; mth++) { if (mth % 3 === 0) pts.push([22 + mth / 12, b]); b = b * Math.pow(b < 0 ? 1.06 : 1.07, 1 / 12) + mo; if (fr == null && b >= 0) fr = 22 + (mth + 1) / 12; } pts.free = fr; return pts; };
       const draw = () => {
-        const mo = st.mo.step(0.2), w = st.w.step(0.2), d = st.d.step(0.2);
-        const A = run(mo, 0, d), B = run(mo, w, d);
-        st.hi.t = Math.max(A[A.length - 1][1], 1e5) * 1.12; G.hi = st.hi.step(0.12);
-        st.lo.t = Math.min(0, ...B.map((p) => p[1])) * 1.15; G.lo = st.lo.step(0.12);
-        const span = G.hi - G.lo, step = span > 3e6 ? 1e6 : span > 1.2e6 ? 5e5 : span > 6e5 ? 2e5 : span > 2.5e5 ? 1e5 : 5e4, v0 = Math.ceil(G.lo / step) * step, key = step + ':' + v0 + ':' + Math.floor(G.hi / step);
-        if (key !== gridKey) { gridKey = key; grid.innerHTML = ''; for (let v = v0; v <= G.hi; v += step) { sv('line', { x1: G.x0, x2: G.x1, 'data-v': v, stroke: v ? C.line : C.soft, 'stroke-width': v ? 2 : 3, opacity: v ? 0.6 : 0.9 }, grid); sv('text', { x: G.x0 - 14, 'data-v': v, 'text-anchor': 'end', fill: C.faint, 'font-size': 22, 'font-weight': 700, 'font-family': Anim.FONT }, grid).textContent = fmtR(v); } }
-        grid.querySelectorAll('line').forEach((l) => { const y = m.y(+l.dataset.v); l.setAttribute('y1', y); l.setAttribute('y2', y); });
-        grid.querySelectorAll('text').forEach((t) => t.setAttribute('y', m.y(+t.dataset.v) + 8));
-        const pa = A.map(([a, v]) => [m.x(a), m.y(v)]), pb = B.map(([a, v]) => [m.x(a), m.y(v)]), z = m.y(0);
-        lnA.setAttribute('d', pathOf(pa)); lnB.setAttribute('d', pathOf(pb));
-        areaA.setAttribute('d', pathOf(pa) + `L${G.x1} ${z}L${G.x0} ${z}Z`); areaB.setAttribute('d', pathOf(pb) + `L${G.x1} ${z}L${G.x0} ${z}Z`);
-        const ea = pa[pa.length - 1], eb = pb[pb.length - 1];
-        gap.setAttribute('x1', ea[0] + 24); gap.setAttribute('x2', ea[0] + 24); gap.setAttribute('y1', ea[1]); gap.setAttribute('y2', eb[1]);
-        tA.setAttribute('x', ea[0] - 10); tA.setAttribute('y', ea[1] - 18); tA.setAttribute('text-anchor', 'end'); tA.textContent = 'Start now';
-        tB.setAttribute('x', eb[0] - 10); tB.setAttribute('y', Math.max(eb[1] + 38, ea[1] + 40)); tB.setAttribute('text-anchor', 'end'); tB.textContent = w >= 0.05 ? 'Wait ' + Math.round(w) + (Math.round(w) === 1 ? ' year' : ' years') : '';
+        const A = run(st.mo.step(0.2), st.d.step(0.2));
+        const pa = A.map(([a, v]) => [m.x(a), m.y(Math.min(v, WAIT_HI))]), z = m.y(0);
+        ln.setAttribute('d', pathOf(pa)); area.setAttribute('d', pathOf(pa) + `L${G.x1} ${z}L${G.x0} ${z}Z`);
+        const e = pa[pa.length - 1]; dot.setAttribute('cx', e[0]); dot.setAttribute('cy', e[1]);
+        const f = A.free != null && A.free > 22 ? A.free : null;
+        free.setAttribute('opacity', f ? 1 : 0); if (f) { free.setAttribute('cx', m.x(f)); free.setAttribute('cy', z); }
         if (live) raf = requestAnimationFrame(draw);
       };
-      const age = (a) => (a == null ? 'after 60' : 'at ' + Math.ceil(a * 2) / 2);
       const nums = () => {
-        const mo = sMo.value, w = sW.value, d = sD.value, A = run(mo, 0, d), B = run(mo, w, d), a = A[A.length - 1][1], b = B[B.length - 1][1];
-        cA(a); cB(b); cG(a - b);
-        $('#wLab', el).textContent = w ? `Wait ${w} ${w === 1 ? 'year' : 'years'}` : 'Start at 22 too';
-        $('#wSkip', el).textContent = d < 0 ? `Out of debt ${age(A.free)} if you start now${w ? `, ${age(B.free)} if you wait` : ''}.` : w ? `You only skipped ${fmtR(mo * 12 * w)} of deposits.` : 'No wait, no cost.';
+        const mo = sMo.value, d = sD.value, A = run(mo, d);
+        cA(A[A.length - 1][1]); cB(mo * 12 * 38);
+        $('.big', s3).textContent = d < 0 ? (A.free == null ? 'After 60' : 'Age ' + Math.ceil(A.free * 2) / 2) : 'No debt';
       };
-      let sMo = { value: 500 }, sW = { value: 3 }, sD = { value: 0 };
-      sMo = slider(el, { x: 70, y: 40, w: 470, label: 'Invest each month', min: 100, max: 2000, step: 50, value: 500, d: 0.1,
+      let sMo = { value: 500 }, sD = { value: 0 };
+      sMo = slider(el, { x: 70, y: 40, w: 715, label: 'Invest each month', min: 100, max: 2000, step: 50, value: 500, d: 0.1, play: [100, 2000, 3],
+        ticks: [[100, '$100'], [1000, '$1,000'], [2000, '$2,000']],
         show: (v) => `<span class="g">${fmt(v)}</span>`, on: (v) => { st.mo.t = v; nums(); } });
-      sD = slider(el, { x: 565, y: 40, w: 470, label: 'Starting debt', min: -50000, max: 0, step: 5000, value: 0, color: C.amber, d: 0.15,
+      sD = slider(el, { x: 815, y: 40, w: 715, label: 'Starting debt', min: -50000, max: 0, step: 5000, value: 0, color: C.amber, d: 0.15,
         ticks: [[-50000, '−$50K'], [-25000, '−$25K'], [0, '$0']],
         show: (v) => `<span class="${v ? 'r' : 'g'}">${v ? '−' + fmt(-v, { k: true }) : '$0'}</span>`, on: (v) => { st.d.t = v; nums(); } });
-      sW = slider(el, { x: 1060, y: 40, w: 470, label: 'Years you wait', min: 0, max: 10, step: 1, value: 3, color: C.red, d: 0.2, play: [0, 10, 4],
-        ticks: [[0, 'Day 1'], [5, '5'], [10, '10']],
-        show: (v) => `<span class="r">${v}</span>`, on: (v) => { st.w.t = v; nums(); } });
       nums();
       return {
-        enter() { live = true; sMo.set(500); sD.set(0); sW.set(0); raf = requestAnimationFrame(draw); setTimeout(() => live && sW.play(0, 5, 2.2), reduce ? 0 : 900); },
-        leave() { live = false; cancelAnimationFrame(raf); sW.stop(); },
+        enter() { live = true; sMo.set(100); sD.set(0); raf = requestAnimationFrame(draw); setTimeout(() => live && sMo.play(100, 1000, 2.2), reduce ? 0 : 900); },
+        leave() { live = false; cancelAnimationFrame(raf); sMo.stop(); },
         replay() { this.leave(); this.enter(); },
       };
     },
@@ -349,8 +339,8 @@
       const svg = sv('svg', { width: 1600, height: 900, style: 'position:absolute;left:0;top:0' }); el.appendChild(svg);
       const AT = []; for (let x = 0; x <= MAXP; x++) AT.push(D3.at20(x));
       // left: a stack of money per month. you (cyan) on the bottom, the Air Force (green) on top, the match you skip (red outline)
-      const SX = 150, SW = 260, SY = 780, K = 0.4;   // px per dollar
-      div(el, 'abs k in', 'left:120px;top:236px;--d:.15', 'Every month, base pay ' + fmt(BASE, { cents: true }));
+      const SX = 150, SW = 260, SY = 780, K = 0.3;   // px per dollar, so 25% stays under the label
+      div(el, 'abs k in', 'left:120px;top:268px;--d:.15', 'Every month, base pay ' + fmt(BASE, { cents: true }));
       const youR = sv('rect', { x: SX, width: SW, rx: 14, fill: C.cyan }, svg);
       const govR = sv('rect', { x: SX, width: SW, rx: 14, fill: C.green }, svg);
       const lostR = sv('rect', { x: SX, width: SW, rx: 14, fill: 'rgba(251,90,114,.12)', stroke: C.red, 'stroke-width': 4, 'stroke-dasharray': '12 10' }, svg);
@@ -359,18 +349,19 @@
       const tLost = sv('text', { x: SX + SW + 26, fill: C.red, 'font-size': 30, 'font-weight': 850, 'font-family': Anim.FONT }, svg);
       sv('line', { x1: SX - 30, x2: SX + SW + 30, y1: SY, y2: SY, stroke: C.line, 'stroke-width': 4 }, svg);
       // right: what each choice is worth after 20 years
-      const RX = 820, RW = 720, RY = 800, RH = 440;
-      div(el, 'abs k in', `left:${RX}px;top:236px;--d:.25`, 'Your TSP after 20 years');
-      div(el, 'abs lab in', `left:${RX - 10}px;top:838px;width:760px;font-size:17px;line-height:1.3;--d:.5`, 'Promoted on time (1st Lt at 2 years, Capt at 4, Maj at 10, Lt Col at 16), 2026 pay, 7% a year after inflation. Your part stops at the $24,500 limit.');
+      // labels clear of the slider box, bars short enough to stay under the readout (Captain Russell, 25 Nov 2026)
+      const RX = 820, RW = 720, RY = 800, RH = 330;
+      div(el, 'abs k in', `left:${RX}px;top:268px;--d:.25`, 'Your TSP after 20 years');
+      div(el, 'abs lab in', `left:${RX - 10}px;top:838px;width:760px;font-size:17px;line-height:1.3;--d:.5`, 'Promoted on time (1st Lt at 2 years, Capt at 4, Maj at 10, Lt Col at 16), 2026 pay, 7% a year after inflation. Your part stops at the $24,500 elective deferral limit.');
       const bars = AT.map((v, x) => {
         const w = RW / AT.length - 8, bx = RX + x * (RW / AT.length);
         const r = sv('rect', { x: bx, width: w, rx: 6, fill: C.panel2, stroke: C.line, 'stroke-width': 2 }, svg);
         sv('text', { x: bx + w / 2, y: RY + 30, 'text-anchor': 'middle', fill: C.faint, 'font-size': 19, 'font-weight': 700, 'font-family': Anim.FONT }, svg).textContent = x % 5 === 0 ? x + '%' : '';
         return { r, h: RH * v / AT[MAXP], bx, w };
       });
-      const big = div(el, 'abs in', `left:${RX}px;top:280px;--d:.35`, '<span class="big g">$0</span>');
-      const note = div(el, 'abs lab in', `left:${RX}px;top:372px;width:720px;--d:.45`, '');
-      const cBig = counter($('.big', big), (v) => fmt(v, { k: true }));
+      const big = div(el, 'abs in', `left:${RX}px;top:304px;--d:.35`, '<span class="big g">$0</span>');
+      const note = div(el, 'abs lab in', `left:${RX}px;top:392px;width:720px;--d:.45`, '');
+      const cBig = counter($('.big', big), (v) => (v >= 999500 ? '$' + (v / 1e6).toFixed(1) + ' million' : fmt(v, { k: true })));
       const sm = Smooth(0); let raf = 0, live = false, grow = 0;
       const draw = () => {
         const x = sm.step(0.18), gov = D3.govPct(x, 3), lost = Math.max(0, 5 - gov) - Math.max(0, 5 - x) * 0 ; // the match left behind
@@ -792,10 +783,12 @@
     taxed: { type: 'choice', prompt: 'Which of these is **taxed**?', opts: ['Basic Allowance for Housing', 'Basic Allowance for Subsistence', 'Base pay', 'All three'], ans: 2, why: 'Only base pay. Allowances like Basic Allowance for Housing and Basic Allowance for Subsistence aren\'t taxed.' },
     allot: { type: 'choice', prompt: 'What\'s an **allotment** on your LES?', opts: ['A bonus for a hard assignment', 'Money sent out before your pay hits the bank', 'The tax taken from base pay', 'A loan from the finance office'], ans: 1,
       why: 'Money that goes out automatically, before you can spend it. The easiest way to pay yourself first.' },
-    pension: { type: 'choice', prompt: 'You get out at **19 years**. What\'s your BRS pension?', opts: ['38% of base pay', '19% of base pay', '$0', 'Half of base pay'], ans: 2, why: '$0. The pension only starts at 20 years.' },
-    match: { type: 'choice', prompt: 'How much do **you** have to put in the TSP to get the full 5% from the Air Force?', opts: ['1%', '3%', '5%', '10%'], ans: 2, why: '5%. The Air Force adds 1% automatically plus up to 4% more in match.' },
-    tsp: { type: 'slider', prompt: 'Brand new 2d Lt: **$4,150.20** a month base pay. The 2026 TSP limit is **$24,500**. What % do you need to hit it this year?', info: 'The TSP only takes whole percents.',
-      min: 0, max: 100, step: 1, unit: '%', start: 5, ans: 50, tol: 30, why: '50%. That\'s $24,901 a year, so you hit the $24,500 limit. 49% comes up just short.' },
+    pension: { type: 'choice', prompt: 'You get out at **19 years**. What\'s your BRS pension?', opts: ['38% of base pay', '19% of base pay', '$0', '50% of base pay'], ans: 2, why: '$0. The pension only starts at 20 years.' },
+    match: { type: 'choice', prompt: 'How much do **you** have to put in the TSP to get the full 5% from the Air Force?', info: 'Once you\'re past 2 years of service.', opts: ['1%', '3%', '5%', '10%'], ans: 2,
+      // the caveat (Captain Russell, 25 Nov 2026): the automatic 1% starts after 60 days, the match only after 2 years of service
+      why: 'The Air Force adds 1% automatically plus up to 4% more in match. **The match only starts after 2 years of service**, so for your first 2 years it\'s just the 1%. Put in 5% from day 1 anyway.' },
+    tsp: { type: 'slider', prompt: 'Brand new 2d Lt: **$4,150.20** a month base pay. What % hits the 2026 **elective deferral limit, $24,500**, this year?', info: 'Elective deferrals are what you put in yourself. The Air Force\'s 1% and match don\'t count toward it. Whole percents only.',
+      min: 0, max: 100, step: 1, unit: '%', start: 5, ans: 50, tol: 30, why: '50%. That\'s $24,901 a year, so you hit the $24,500 elective deferral limit. 49% comes up just short.' },
     roth: { type: 'choice', prompt: 'You\'re a 2d Lt. **Roth or Traditional** TSP?', opts: ['Roth: pay the tax now, take it out tax free', 'Traditional: skip the tax now, pay it later'], ans: 0,
       why: 'Roth. Your tax rate will probably never be lower than it is as a 2d Lt.' },
     market: { type: 'choice', prompt: 'The market drops **10%** the month after you start investing. What do you do?', opts: ['Sell before it drops more', 'Keep buying every month', 'Stop the TSP until it recovers', 'Move it all to the G Fund'], ans: 1,
