@@ -56,6 +56,13 @@ input.name { width: 100%; background: var(--panel); border: 2px solid var(--line
 .ex { margin-top: 16px; background: var(--panel); border: 2px solid var(--line); border-radius: 18px; padding: 14px; }
 .ex h2 { font: 700 21px var(--serif); margin: 0 0 4px; }
 .ex .hint { font-size: 14px; margin-bottom: 8px; }
+.plan ol { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 8px; }
+.plan li button { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; border: 2px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 12px; padding: 11px 12px; font: 600 15px/1.35 var(--font); cursor: pointer; }
+.plan li button i { flex: none; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--faint); margin-top: 1px; display: grid; place-items: center; }
+.plan li button.on { border-color: var(--green); }
+.plan li button.on i { background: var(--green); border-color: var(--green); }
+.plan li button.on i::after { content: ""; width: 6px; height: 11px; border: solid #04140e; border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.plan li button b { color: var(--gold); }
 .ex .exc { width: 100%; height: auto; display: block; font-family: var(--font); }
 .exr { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
 .exr .st { background: var(--panel2); border-radius: 10px; padding: 8px; text-align: center; min-width: 0; }
@@ -66,6 +73,9 @@ input.name { width: 100%; background: var(--panel); border: 2px solid var(--line
 .rg .rl { font-weight: 800; font-size: 15px; } .rg .rl b { color: var(--gold); }
 .rg .re { display: flex; justify-content: space-between; font-size: 12px; color: var(--faint); font-weight: 700; }
 .rg .re i { font-style: normal; }
+.exseg { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+.exseg button { border: 2px solid var(--line); background: var(--panel2, #1b335c); color: var(--soft); border-radius: 10px; padding: 9px 2px; font: 800 12.5px/1.15 var(--font); cursor: pointer; }
+.exseg button.on { background: var(--green); border-color: var(--green); color: #04140e; }
 .slider { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
 .slider .v { font: 850 40px var(--font); text-align: center; color: var(--amber); margin-bottom: 6px; }
 input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
@@ -162,13 +172,14 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     // the chart on the screen has a phone version: play with it here (kept while the state updates)
     const ex = !q && S.explore && window.FRExplore && FRExplore.has(S.explore) ? S.explore : null;
     if (ex) {
-      const full = fullPick != null ? fullPick : wideScreen(), key = ex + (full ? ':full' : '');
+      // the Day 1 plan is the phone's own, so it never swaps for the slide
+      const own = ex === 'plan', full = own ? false : fullPick != null ? fullPick : wideScreen(), key = ex + (full ? ':full' : '');
       if (mountedEx !== key || !$('#exHost')) {
         app.innerHTML = '<div id="exHost"></div><button type="button" class="vt" id="vt"></button><div class="mebot" id="meBox"></div>';
         app.classList.toggle('wide', full);
         if (full) $('#exHost').innerHTML = `<div class="solo"><iframe src="../slides/?solo=${encodeURIComponent(ex)}" title="The slide on the screen"></iframe></div>`;
         else FRExplore.mount($('#exHost'), ex);
-        $('#vt').textContent = full ? 'Show the simple version' : 'Show the full slide';
+        $('#vt').textContent = full ? 'Show the simple version' : 'Show the full slide'; $('#vt').hidden = own;
         $('#vt').onclick = () => { fullPick = !full; render(); };
         mountedEx = key;
       }
@@ -181,7 +192,8 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     else if (q && S.phase === 'open') h += `<div class="wait"><div class="big">Locked in</div><p>${esc(S.mineText || '')}</p><p>Eyes up front for the answer.</p></div>`;
     else if (q && S.phase === 'reveal' && S.res) {
       const r = S.res;
-      h += `<div class="res ${r.pts > 0 && r.ok !== false ? 'ok' : 'no'}"><div class="p">+${r.pts.toLocaleString()}</div><div class="a">${md(r.text || '')}</div></div>`;
+      h += r.poll ? `<div class="res ok"><div class="p">Thanks</div><div class="a">${esc(r.mine || '')}</div><div class="a">${md(r.text || '')}</div></div>`
+        : `<div class="res ${r.pts > 0 && r.ok !== false ? 'ok' : 'no'}"><div class="p">+${r.pts.toLocaleString()}</div><div class="a">${md(r.text || '')}</div></div>`;
     } else h += `<div class="wait"><div class="big">Watch the screen</div><p>Questions show up here as we go. Faster right answers score more.</p></div>`;
     app.innerHTML = h + '<div class="mebot">' + meCard() + '</div>';
     wireQ(q);
@@ -224,13 +236,14 @@ input[type=range] { width: 100%; height: 44px; accent-color: var(--gold); }
     }
     return h + '</div>';
   }
-  const fmtV = (q, v) => (q.unit === '$' ? '$' + Number(v).toLocaleString() : q.unit === '$M' ? '$' + (v / 1e6).toFixed(1) + 'M' : v + (q.unit || ''));
+  const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  const fmtV = (q, v) => (q.unit === '$' ? '$' + Number(v).toLocaleString() : q.unit === '$M' ? (!v ? '$0' : v < 1e6 ? '$' + Math.round(v / 1000) + 'K' : '$' + +(v / 1e6).toFixed(1) + ' million') : q.unit === 'pct' ? ordinal(+v) + ' percentile' : v + (q.unit || ''));
   function wireQ(q) {
     if (!q || S.phase !== 'open' || S.mine != null) return;
     document.querySelectorAll('.opts button').forEach((b) => { b.onclick = () => { draft.i = +b.dataset.i; render(); }; });
     const og = $('#oGo'); if (og) og.onclick = () => { if (draft.i != null) net.send({ t: 'ans', qid: q.qid, v: draft.i }); };
     const sr = $('#sr');
-    if (sr) { sr.oninput = () => { draft.v = +sr.value; $('#sv').textContent = fmtV(q, +sr.value); }; $('#sGo').onclick = () => net.send({ t: 'ans', qid: q.qid, v: +sr.value }); }
+    if (sr) { sr.oninput = () => { draft.v = +sr.value; $('#sv').textContent = fmtV(q, +sr.value); }; $('#sGo').onclick = () => { if (q.qid === 'commit' && window.FRPlan) FRPlan.set({ tsp: +sr.value }); net.send({ t: 'ans', qid: q.qid, v: +sr.value }); }; }
     document.querySelectorAll('.seg button').forEach((b) => { b.onclick = () => { draft[b.dataset.k] = b.dataset.v; render(); }; });
     const cg = $('#cGo'); if (cg) cg.onclick = () => net.send({ t: 'ans', qid: q.qid, v: Object.assign({}, draft) });
   }

@@ -110,11 +110,11 @@ function scene() {
   // ================================================================ steps
   S.step({ head: 'Your first LES', body: 'This is what a brand new 2d Lt\'s first Leave and Earnings Statement looks like: single, at JBSA-Lackland in San Antonio. **Four columns**, and once you know them you can read any LES.', go: colGo(0, 'Start with entitlements') })
     .beat(0.8, (s) => { FORM.forEach((i) => { s[i].o = 1; }); })
-    .beat(1.2, (s) => { showCol(s, 'E', 1); showCol(s, 'D', 1); s.Atl.o = 1; s.Atv.o = 1; s.none.o = 1; sumCol(s, 1); s.netv.num = net; })
+    // the empty form first; each column fills in as it's explained (Captain Russell, 25 Nov 2026: not all at once)
     .beat(0.6, (s) => { say(s, 'Entitlements, deductions, allotments, and what\'s left', 'Read it left to right, every month.', ''); });
 
   S.step({ head: 'Entitlements: what you earn', body: '**Type 1: base pay**, set by rank and years of service. It is taxed. **Type 2: allowances.** Basic Allowance for Housing pays for housing and Basic Allowance for Subsistence for food. They are not taxed.', go: [PX[0] + PW / 2, ROW0 + 3 * RH - 10, PW, 70, 'Is there a third type?'] })
-    .beat(0.6, (s) => { quiet(s); focus(s, 0); showCol(s, 'D', 0.25); s.Atl.o = 0.25; s.Atv.o = 0.25; s.none.o = 0.25; sumCol(s, 0.25); })
+    .beat(0.8, (s) => { quiet(s); focus(s, 0); showCol(s, 'E', 1); })
     .beat(0.8, (s) => { s.El0.fill = C.cyan; s.Ev0.fill = C.cyan; ['1', '2'].forEach((r) => { s['El' + r].fill = C.violet; s['Ev' + r].fill = C.violet; });
       say(s, `${fmt(sum(Y.E), { cents: true })} a month. Only the base pay is taxed.`, 'Basic Allowance for Housing: set by rank, zip code and dependents. San Antonio: $1,584.', 'Basic Allowance for Subsistence: $328.48 for every officer.'); });
 
@@ -137,8 +137,9 @@ function scene() {
       say(s, `${fmt(sum(Y.E), { cents: true })} − ${fmt(sum(Y.D), { cents: true })} − $0 = ${fmt(net, { cents: true })}`, 'Your take-home pay as a single 2d Lt, before you set up a single allotment.', ''); })
     .beat(0.4, (s) => { s.netv.s = 1; });
 
-  // mine, as a reference: the same four columns as a captain, six years in
-  S.step({ head: 'My LES, six years in', body: 'Same four columns on my November 2026 LES as a captain. More pay, and **about half of it goes to work before it ever hits the bank.**' })
+  // mine, as a reference (Captain Russell, 25 Nov 2026: the point is that a brand new 2d Lt could live bigger than I do
+  // right now, 7 years in, and that spending everything you take home isn't the smart move)
+  S.step({ head: 'My LES, 7 years in', body: 'A brand new 2d Lt could **live a bigger lifestyle than I do right now**, 7 years in. That doesn\'t make it smart to **spend everything you earn.**' })
     .beat(0.6, (s) => { quiet(s); focus(s, -1); ['E', 'D', 'A'].forEach((k) => { rowsOf(k).forEach((i) => { s[i].o = 0; }); s[k + 'tl'].o = 0; s[k + 'tv'].o = 0; }); s.none.o = 0; sumCol(s, 0); })
     .beat(1.6, (s) => {
       MINE.head.forEach((v, i) => { s['hv' + i].content = v; }); s.hv0.fill = C.ink;
@@ -146,7 +147,7 @@ function scene() {
       s.Dl5.fill = C.green; s.Dv5.fill = C.green; [0, 2, 3].forEach((r) => { s['Al' + r].fill = C.green; s['Av' + r].fill = C.green; });
       s.Sv0.num = sum(MINE.E); s.Sv1.num = sum(MINE.D); s.Sv2.num = sum(MINE.A); sumCol(s, 1); s.netv.num = 4000; },
       (id) => { const m = /^([EDAS])[lv](\d)$/.exec(id); return m ? { w: ['EDAS'.indexOf(m[1]) / 5, ('EDAS'.indexOf(m[1]) + 2) / 5] } : null; })
-    .beat(0.6, (s) => { say(s, `${fmt(sum(MINE.E))} in, $4,000 to my bank account`, 'Roth TSP, two Roth IRAs and an emergency fund all come out first.', `Your ${fmt(net)} is more than my $4,000. The difference is I pay myself first.`); });
+    .beat(0.6, (s) => { say(s, `A brand new 2d Lt takes home ${fmt(net)}. I live on $4,000.`, `You could live bigger than me on day 1. I bring in ${fmt(sum(MINE.E))}, and about half goes to work before I see it.`, 'Just because you can spend it all doesn\'t mean you should. Pay yourself first.'); });
 
   return S;
 }

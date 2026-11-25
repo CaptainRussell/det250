@@ -31,7 +31,9 @@ const WORTH = [['Roth TSP (C Fund)', 198148, C.green], ['Roth IRAs', 54091, C.cy
 // What I put in the TSP (my W-2s; Captain Russell, 24 Nov 2026) and the taxable base pay on the same W-2s.
 // Commissioned June 2019, active duty 14 June 2020, 1st Lt December 2021, Captain December 2023. Maxed out the TSP from 2023.
 // each year's elective deferral limit (IRS, under 50) is the cap the bar fills toward (Captain Russell, 25 Nov 2026)
-const TSP_IN = [[2021, 6308.33, 41155.49, '1st Lt', 19500], [2022, 16278.46, 59276.08, '', 20500], [2023, 22500, 67622.12, 'Capt', 22500], [2024, 23000, 81673.2, '', 23000], [2025, 23500, 87579.28, '', 23500]];
+const TSP_IN = [[2021, 6308.33, 41155.49, '1st Lt', 19500], [2022, 16278.46, 59276.08, '', 20500], [2023, 22500, 67622.12, 'Capt', 22500], [2024, 23000, 81673.2, '', 23000], [2025, 23500, 87579.28, '', 23500],
+  // 2026 isn't over yet, but he reaches the $24,500 limit this year (Captain Russell, 25 Nov 2026)
+  [2026, 24500, 77370, '', 24500, true]];
 const CAP26 = 24500;
 // base pay on each W-2 (2026 through October), adding up to LIFETIME
 const EARN = [[2020, 21295.29], [2021, 41155.49], [2022, 59276.08], [2023, 67622.12], [2024, 81673.2], [2025, 87579.28], [2026, 77370]];
@@ -188,15 +190,15 @@ function scene(st) {
   add('tspHead', 'text', { size: 40, anchor: 'middle', weight: 800 }, { x: 800, y: 110, content: 'What I put in the TSP each year', fill: C.ink, o: 0 });
   add('tspSub', 'text', { size: 26, anchor: 'middle', weight: 600, maxw: 1400 }, { x: 800, y: 152, content: 'From my W-2s. Each bar fills toward that year\'s limit. The 2026 limit is ' + fmt(CAP26) + '.', fill: C.soft, o: 0 });
   const TB = 680, TH = 400, th = (v) => v / CAP26 * TH;
-  TSP_IN.forEach(([yr, amt, base, rank, cap], i) => {
-    const x = 800 + (i - 2) * 230, h = Math.max(4, th(amt)), full = amt >= cap;
+  TSP_IN.forEach(([yr, amt, base, rank, cap, soon], i) => {
+    const x = 800 + (i - (TSP_IN.length - 1) / 2) * 225, h = Math.max(4, th(amt)), full = amt >= cap;
     add('tspC' + i, 'rect', { dash: '10 8' }, { x: x - 75, y: TB - th(cap), w: 150, h: th(cap), rx: 10, fill: 'rgba(255,255,255,.03)', stroke: C.faint, sw: 2, o: 0 });
     add('tspCv' + i, 'text', { size: 21, anchor: 'middle', weight: 700, mono: true }, { x, y: TB - th(cap) - 14, content: 'Limit ' + fmt(cap), fill: C.faint, o: 0 });
     add('tspB' + i, 'rect', {}, { x: x - 71, y: TB, w: 142, h: 0, rx: 8, fill: full ? C.green : C.amber, o: 0, hTo: h });
     add('tspP' + i, 'text', { size: 30, anchor: 'middle', weight: 850, mono: true }, { x, y: TB - Math.max(h, 40) / 2 + 10, content: Math.round(amt / cap * 100) + '%', fill: '#06101c', o: 0 });
     add('tspY' + i, 'text', { size: 26, anchor: 'middle', weight: 700, mono: true }, { x, y: TB + 38, content: String(yr), fill: C.faint, o: 0 });
     add('tspV' + i, 'text', { size: 24, anchor: 'middle', weight: 800, mono: true }, { x, y: TB + 72, content: fmt(amt), fill: C.ink, o: 0 });
-    add('tspR' + i, 'text', { size: 22, anchor: 'middle', weight: 800 }, { x, y: TB + 104, content: rank ? 'Promoted to ' + rank : '', fill: C.amber, o: 0 });
+    add('tspR' + i, 'text', { size: 22, anchor: 'middle', weight: 800 }, { x, y: TB + 104, content: soon ? 'Maxed by December' : rank ? 'Promoted to ' + rank : '', fill: soon ? C.green : C.amber, o: 0 });
   });
   add('tsp401', 'text', { size: 26, anchor: 'middle', weight: 650, maxw: 1440 }, { x: 800, y: 850, content: 'The TSP is the military\'s 401(k). It works just like the one a big company offers, match included.', fill: C.green, o: 0 });
 
@@ -211,7 +213,11 @@ function scene(st) {
     add('kEv' + i, 'text', { size: 25, anchor: 'middle', weight: 800, mono: true }, { x: ex(i), y: EB - ek(v) - 16, content: fmt(v, { k: true }), fill: C.ink, o: 0 });
     add('kEy' + i, 'text', { size: 24, anchor: 'middle', weight: 700, mono: true }, { x: ex(i), y: EB + 38, content: yr === 2026 ? '2026*' : String(yr), fill: C.faint, o: 0 });
   });
-  add('kEn', 'text', { size: 22, anchor: 'start', weight: 600 }, { x: kx, y: EB + 90, content: '*2026 through October', fill: C.faint, o: 0 });
+  add('kEn', 'text', { size: 22, anchor: 'start', weight: 600 }, { x: kx, y: EB + 90, content: '*2026 through October. The dotted bar is the whole year at that pace.', fill: C.faint, o: 0 });
+  // 2026 isn't over: a dotted outline of the full year at the same pace shows the climb (Captain Russell, 25 Nov 2026)
+  const E26 = EARN[EARN.length - 1][1] * 12 / 10, i26 = EARN.length - 1;
+  add('kEx', 'rect', { dash: '10 8' }, { x: ex(i26) - 60, y: EB - ek(E26), w: 120, h: ek(E26), rx: 8, fill: 'rgba(78,168,255,.06)', stroke: C.cyan, sw: 3, o: 0 });
+  add('kExv', 'text', { size: 22, anchor: 'middle', weight: 800, mono: true }, { x: ex(i26), y: EB - ek(E26) - 16, content: '~' + fmt(E26, { k: true }), fill: C.cyan, o: 0 });
   add('kEv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: kx + KW - 24, y: 314, content: fmt(LIFETIME), fill: '#06101c', o: 0 });
   add('kHl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: kx, y: 436, content: 'My net worth today', fill: C.soft, o: 0 });
   add('kH', 'rect', {}, { x: kx, y: 456, w: 0, h: 90, rx: 8, fill: C.green, fo: 0.85, o: 0 });
@@ -299,16 +305,25 @@ function scene(st) {
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.tspHead.o = 1; s.tspSub.o = 1; })
     .beat(1.0, (s) => { TSP_IN.forEach((_, i) => { s['tspC' + i].o = 1; s['tspCv' + i].o = 1; s['tspY' + i].o = 1; }); })
     .beat(2.4, (s) => { TSP_IN.forEach(([, amt], i) => { const h = Math.max(4, s['tspB' + i].hTo); s['tspB' + i].o = 1; s['tspB' + i].h = h; s['tspB' + i].y = 680 - h; ['P', 'V', 'R'].forEach((k) => { s['tsp' + k + i].o = 1; }); }); },
-      (id) => { const m = /^tsp[BPVR](\d)$/.exec(id); return m ? { w: [+m[1] / 7, (+m[1] + 2) / 7] } : null; })
+      (id) => { const m = /^tsp[BPVR](\d)$/.exec(id); return m ? { w: [+m[1] / 8, (+m[1] + 2) / 8] } : null; })
     .beat(0.8, (s) => { s.tsp401.o = 1; });
 
-  S.step({ head: 'Earned vs kept', body: 'Every dollar of base pay I\'ve been paid since 2020, one year at a time, then all of it next to what I have today.', go: [800, 470, 1340, 650, 'Now, the budget'] })
+  // one year per click on the same slide, then all of it together, then my net worth (Captain Russell, 25 Nov 2026)
+  const KB = 'Every dollar of base pay I\'ve been paid since 2020, **one year at a time.**';
+  const year = (s, i) => { const h = ek(EARN[i][1]); s['kE' + i].o = 1; s['kE' + i].h = h; s['kE' + i].y = EB - h; s['kEv' + i].o = 1; s['kEy' + i].o = 1; };
+  S.step({ head: 'Earned vs kept', key: 'k0', grp: 'k', body: KB })
     .beat(0.7, (s) => { all.forEach((i) => { s[i].o = 0; }); s.kHead.o = 1; })
-    .beat(3.2, (s) => { EARN.forEach(([, v], i) => { const h = ek(v); s['kE' + i].o = 1; s['kE' + i].h = h; s['kE' + i].y = EB - h; s['kEv' + i].o = 1; s['kEy' + i].o = 1; }); s.kEn.o = 1; },
-      (id) => { const m = /^kE[vy]?(\d)$/.exec(id); return m ? { w: [+m[1] / 8, (+m[1] + 1.4) / 8] } : null; })
-    .hold(0.6)
-    .beat(1.6, (s) => { EARN.forEach((_, i) => { const r = s['kE' + i]; r.x = r.cx; r.w = r.cw; r.y = 256; r.h = 90; s['kEv' + i].o = 0; s['kEy' + i].o = 0; }); s.kEn.o = 0; s.kEl.o = 1; })
-    .beat(0.6, (s) => { s.kEv.o = 1; })
+    .beat(0.9, (s) => year(s, 0));
+  EARN.forEach((e, i) => {
+    if (!i) return;
+    const st = S.step({ head: 'Earned vs kept', key: 'k' + i, grp: 'k', body: i === EARN.length - 1 ? 'And 2026 isn\'t over yet. **The dotted bar is the whole year at the same pace.**' : KB })
+      .beat(0.9, (s) => year(s, i));
+    if (i === EARN.length - 1) st.beat(0.8, (s) => { s.kEx.o = 1; s.kExv.o = 1; s.kEn.o = 1; });
+  });
+  S.step({ head: 'Earned vs kept', key: 'kAll', grp: 'k', body: 'All of it together: **every dollar of base pay** since June 2020.' })
+    .beat(1.6, (s) => { EARN.forEach((_, i) => { const r = s['kE' + i]; r.x = r.cx; r.w = r.cw; r.y = 256; r.h = 90; s['kEv' + i].o = 0; s['kEy' + i].o = 0; }); s.kEn.o = 0; s.kEx.o = 0; s.kExv.o = 0; s.kEl.o = 1; })
+    .beat(0.6, (s) => { s.kEv.o = 1; });
+  S.step({ head: 'Earned vs kept', key: 'kNw', grp: 'k', body: 'All my base pay since 2020, next to **what I have today.**', go: [800, 470, 1340, 650, 'Now, the budget'] })
     .beat(0.5, (s) => { s.kHl.o = 1; })
     .beat(1.4, (s) => { s.kH.o = 1; s.kH.w = KW * NOW / LIFETIME; s.kHv.o = 1; })
     .beat(0.8, (s) => { s.kBig.o = 1; })
