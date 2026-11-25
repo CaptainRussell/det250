@@ -537,3 +537,16 @@ html.solo #stage.go { cursor: default; }
 .lpie .lcols li.gh span { font: 800 23px var(--font); }
 .lpie .lcols li.gh b { font-size: 24px; }
 .lpie .lcols li.gh:not(:first-child) { margin-top: 26px; }
+/* Where it started: net worth in June 2019 as line items (LIVE.osu) */
+.nw0 .nwr, .nw0 .nwt { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding: 26px 0; border-bottom: 2px solid var(--line, rgba(255,255,255,.12)); opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; transition-delay: var(--d, 0s); }
+.nw0.on .nwr, .nw0.on .nwt { opacity: 1; transform: none; }
+.nw0 .k { margin-bottom: 18px; }
+.nw0 span { font: 700 36px var(--font); color: var(--ink); }
+.nw0 b { font: 850 52px var(--mono); white-space: nowrap; }
+.nw0 span { white-space: nowrap; }
+.nw0 .r b { color: var(--red); }
+.nw0 .g b { color: var(--green); }
+.nw0 .nwt { border-bottom: 0; border-top: 4px solid var(--soft); margin-top: 8px; }
+.nw0 .nwt span { font-size: 40px; font-weight: 850; }
+.nw0 .nwt b { font-size: 64px; color: var(--red); }
+@media (prefers-reduced-motion: reduce) { .nw0 .nwr, .nw0 .nwt { transition: none; } }
