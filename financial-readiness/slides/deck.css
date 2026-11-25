@@ -339,11 +339,28 @@ html.solo #stage.go { cursor: default; }
 .foo .st.done span { opacity: .85; color: var(--soft); }
 .foo .st.cur { border-color: var(--gold); background: var(--panel2); color: var(--gold); box-shadow: 0 0 24px rgba(232,181,74,.25); }
 .foo .st.cur span { opacity: 1; color: var(--ink); }
-.foocard { padding: 30px 34px; }
+.foocard { padding: 26px 32px; display: flex; flex-direction: column; }
 .foocard .n { font: 800 20px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
-.foocard h2 { font-size: 46px; margin: 10px 0 14px; }
-.foocard .w { font-size: 26px; margin-bottom: 22px; }
-.foocard .y { font-size: 26px; color: var(--soft); }
+.foocard h2 { font-size: 42px; margin: 8px 0 10px; }
+.foocard .w { font-size: 23px; margin-bottom: 14px; }
+.foocard .y { font-size: 23px; color: var(--soft); }
+/* one animated picture per step (Captain Russell, 25 Nov 2026) */
+.foocard .fa { display: block; width: 100%; height: auto; margin-top: auto; overflow: visible; font-family: var(--font); }
+.fa .ff { animation: faFade .5s both; animation-delay: var(--d, 0s); }
+.fa .fd { animation: faDrop .55s cubic-bezier(.3,1.4,.5,1) both; animation-delay: var(--d, 0s); }
+.fa .pp { transform-box: fill-box; transform-origin: center; animation: faPop .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: var(--d, 0s); }
+.fa .gx { transform-box: fill-box; transform-origin: left; animation: faGx .9s ease-out both; animation-delay: var(--d, 0s); }
+.fa .gy { transform-box: fill-box; transform-origin: bottom; animation: faGy .6s ease-out both; animation-delay: var(--d, 0s); }
+.fa .sl { animation: faSlide 1.1s ease-in-out .5s both; }
+.fa .dn { animation: faDonut 1.2s ease-out .2s both; }
+@keyframes faFade { from { opacity: 0; } }
+@keyframes faDrop { from { opacity: 0; transform: translateY(-70px); } }
+@keyframes faPop { from { opacity: 0; transform: scale(.2); } }
+@keyframes faGx { from { transform: scaleX(0); } }
+@keyframes faGy { from { transform: scaleY(0); } }
+@keyframes faSlide { to { transform: translate(-18px, 102px); } }
+@keyframes faDonut { from { stroke-dasharray: 0 502.7; } }
+@media (prefers-reduced-motion: reduce) { .fa * { animation-duration: .01s !important; animation-delay: 0s !important; } }
 .foocard.flash { animation: flash .5s; }
 .iracol { opacity: 0; transform: translateY(24px); transition: opacity .5s, transform .5s; padding: 26px 28px; }
 .iracol.on { opacity: 1; transform: none; }
