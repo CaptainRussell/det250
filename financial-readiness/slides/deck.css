@@ -606,3 +606,11 @@ html:not(.solo):not(.notes) #cap .nav:hover, html:not(.solo):not(.notes) #cap .n
 html:not(.solo):not(.notes) #cap .nav button { height: 34px; padding: 0 10px; }
 html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 @media (max-width: 700px) { html:not(.solo):not(.notes) #prog { bottom: 28px; } html:not(.solo):not(.notes) #cap { bottom: 36px; } }
+
+/* Overview and Summary, classic briefing bookends (Captain Russell, 26 Nov 2026) */
+.agenda { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.agenda li { display: grid; grid-template-columns: 52px 300px 1fr; align-items: center; column-gap: 22px; min-height: 76px; padding: 8px 28px; border-radius: 16px; background: var(--panel2, #16233f); border: 2px solid rgba(201,162,74,.45); }
+.agenda i { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font: 900 24px var(--mono); font-style: normal; color: #1a1203; background: var(--gold); }
+.agenda b { font: 800 31px/1.1 var(--font); color: var(--ink); }
+.agenda span { font: 600 25px/1.25 var(--font); color: var(--soft); }
+.agenda span em { font-style: normal; color: var(--ink); font-weight: 800; }
