@@ -182,7 +182,9 @@ function zoomChart(o) {
 // valued at the 24 Nov 2026 close (Captain Russell, 25 Nov 2026: worth as of now, with dividends). Price only it is $58,742.
 // In today's dollars (Captain Russell, 25 Nov 2026: real values everywhere): each $500 grown by CPI-U to Nov 2026
 // (CPI from the Shiller data to Sep 2023, BLS Dec 2023, Dec 2024 and Sep 2025, then 2.7% a year) is $43,673.
-const DCA_IN = 43673, DCA_NOW = 61643;
+// Scaled to $1,662.55 a month, the Roth TSP plus Roth IRA of the LES I'd set up (Captain Russell, 26 Nov 2026: the same amounts
+// as the invest questions); every buy is the same size, so the totals scale straight from $500.
+const DCA_M = 1662.55, DCA_IN = Math.round(43673 * DCA_M / 500), DCA_NOW = Math.round(61643 * DCA_M / 500);
 
 function scene(st) {
   const S = new Scene('fr3');
@@ -334,7 +336,7 @@ function scene(st) {
 
   // ---- always be buying
   add('abHead', 'text', { size: 46, anchor: 'start', weight: 850 }, { x: 120, y: 130, content: 'Always be buying', fill: C.ink, o: 0 });
-  add('abSub', 'text', { size: 28, anchor: 'start', weight: 600, maxw: 1360 }, { x: 120, y: 180, content: '$500 into the S&P 500 every month from June 2020, the month I started. Up or down.', fill: C.soft, o: 0 });
+  add('abSub', 'text', { size: 28, anchor: 'start', weight: 600, maxw: 1360 }, { x: 120, y: 180, content: '$1,662.55 into the S&P 500 every month from June 2020, the month I started. Up or down.', fill: C.soft, o: 0 });
   add('abIl', 'text', { size: 28, anchor: 'start', weight: 700 }, { x: 160, y: 286, content: 'What went in, in today\'s dollars', fill: C.soft, o: 0 });
   add('abI', 'rect', {}, { x: 160, y: 306, w: 0, h: 90, rx: 8, fill: C.cyan, fo: 0.85, o: 0 });
   add('abIv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 * DCA_IN / DCA_NOW - 20, y: 364, content: fmt(DCA_IN), fill: '#06101c', o: 0 });
@@ -342,7 +344,7 @@ function scene(st) {
   add('abW', 'rect', {}, { x: 160, y: 486, w: 0, h: 90, rx: 8, fill: C.green, fo: 0.85, o: 0 });
   add('abWv', 'text', { size: 36, anchor: 'end', weight: 850, mono: true }, { x: 160 + 1280 - 20, y: 544, content: fmt(DCA_NOW), fill: '#06101c', o: 0 });
   add('abBig', 'text', { size: 50, anchor: 'middle', weight: 850, maxw: 1400 }, { x: 800, y: 690, content: 'Time in the market beats timing the market.', fill: C.green, o: 0 });
-  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $1.95 today, after inflation, with dividends reinvested.', fill: C.amber, o: 0 });
+  add('abMe', 'text', { size: 30, anchor: 'middle', weight: 650, maxw: 1400 }, { x: 800, y: 760, content: 'Every $1 I put in the C Fund in June 2020 is worth about $1.95 today, after inflation.', fill: C.amber, o: 0 });
 
   const off = (s) => all.forEach((i) => { s[i].o = 0; });
   const on = (s, list) => list.forEach((i) => { s[i].o = 1; });
@@ -353,7 +355,7 @@ function scene(st) {
     .beat(0.8, (s) => { s.title.o = 1; s.since.o = 1; })
     .beat(1.8, (s) => { on(s, tabs); [0, 1, 2].forEach((i) => { s['tabI' + i].draw = 1; }); }, (id) => { const m = /^tab[NTSI]?(\d)$/.exec(id); return m ? { w: [+m[1] / 4, (+m[1] + 2) / 4] } : null; });
 
-  S.step({ head: '1. The pension', body: '**2% × years served × the average of your highest 36 months of base pay.** At 20 years that is 40%, paid every month for life.', go: [1260, 340, 440, 220, 'Next: the TSP'] })
+  S.step({ head: '1. The pension', body: '**2% × years served × the average of your highest 36 months of base pay.** At 20 years that is 40%, paid every month for life.', go: [1260, 340, 440, 220, 'Next: what it is worth'] })
     .beat(0.6, (s) => { off(s); s.pHead.o = 1; s.pYears.o = 1; for (let i = 0; i < 30; i++) { s['blk' + i].o = i < 20 ? 0 : 0.5; } })
     .beat(2.0, (s) => { for (let i = 0; i < 20; i++) s['blk' + i].o = 1; s.pBig.o = 1; s.pBig.num = 40; s.pBigS.o = 1; s.pBigS2.o = 1; }, (id) => { const m = /^blk(\d+)$/.exec(id); return m ? { w: [+m[1] / 22, (+m[1] + 2) / 22] } : null; })
     .beat(0.8, (s) => { s.pCatch.o = 1; s.pStat.o = 1; });

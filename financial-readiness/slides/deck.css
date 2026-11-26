@@ -615,3 +615,11 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .agenda b { font: 800 31px/1.1 var(--font); color: var(--ink); }
 .agenda span { font: 600 25px/1.25 var(--font); color: var(--soft); }
 .agenda span em { font-style: normal; color: var(--ink); font-weight: 800; }
+/* net worth legend: Assets and Liabilities headers and the Net worth total (Captain Russell, 26 Nov 2026) */
+.bpie li.wh { height: 44px; }
+.bpie li.wh span { font: 800 20px var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.bpie li.wh b { font-size: 24px; color: var(--soft); }
+.bpie li.wt { border-top: 2px solid var(--line); }
+.bpie li.wt span { font-weight: 850; }
+.bpie li b { white-space: nowrap; }
+.bpie li.wh span, .bpie li.wt span, .bpie li.wm span { padding-left: 0; }
