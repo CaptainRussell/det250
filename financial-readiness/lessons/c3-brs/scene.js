@@ -292,16 +292,22 @@ function scene(st) {
   add('rHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Roth or Traditional?', fill: C.ink, o: 0 });
   [['Roth', 'Pay the tax now.', 'Every dollar comes out tax free.', C.green], ['Traditional', 'Skip the tax now.', 'Pay tax when you take it out.', C.cyan]].forEach(([t, a, b, col], i) => {
     const x = 120 + i * 700;
-    add('rc' + i, 'rect', {}, { x, y: 210, w: 640, h: 300, rx: 24, fill: C.panel2, stroke: col, sw: 3, o: 0 });
-    add('rt' + i, 'text', { size: 56, anchor: 'start', weight: 850 }, { x: x + 40, y: 300, content: t, fill: col, o: 0 });
-    add('ra' + i, 'text', { size: 34, anchor: 'start', weight: 700 }, { x: x + 40, y: 380, content: a, fill: C.ink, o: 0 });
-    add('rb' + i, 'text', { size: 30, anchor: 'start', weight: 600 }, { x: x + 40, y: 432, content: b, fill: C.soft, o: 0 });
+    add('rc' + i, 'rect', {}, { x, y: 300, w: 640, h: 340, rx: 24, fill: C.panel2, stroke: col, sw: 3, o: 0 });
+    add('rt' + i, 'text', { size: 56, anchor: 'start', weight: 850 }, { x: x + 40, y: 400, content: t, fill: col, o: 0 });
+    add('ra' + i, 'text', { size: 34, anchor: 'start', weight: 700 }, { x: x + 40, y: 490, content: a, fill: C.ink, o: 0 });
+    add('rb' + i, 'text', { size: 30, anchor: 'start', weight: 600 }, { x: x + 40, y: 550, content: b, fill: C.soft, o: 0 });
   });
-  add('rWhy', 'text', { size: 36, anchor: 'start', weight: 800 }, { x: 120, y: 670, content: 'As a 2d Lt, your tax rate will never be lower.', fill: C.ink, o: 0 });
-  add('rWhy2', 'text', { size: 30, anchor: 'start', weight: 600 }, { x: 120, y: 720, content: 'Your housing and food allowances aren\'t taxed, so your taxable pay is small.', fill: C.soft, o: 0 });
-  // Captain Russell, 25 Nov 2026: even 7 years in, with allowances untaxed, he is still in the 12% bracket
-  add('rTax', 'text', { size: 30, anchor: 'start', weight: 700 }, { x: 120, y: 820, content: 'Even now, 7 years in and making about $128K a year, I\'m still in the 12% tax bracket.', fill: C.amber, o: 0 });
-  add('rMe', 'text', { size: 30, anchor: 'start', weight: 600 }, { x: 120, y: 770, content: 'Me: 100% Roth TSP, 100% C Fund, and I convert the match to Roth too.', fill: C.green, o: 0 });
+  // Why Roth gets its own pane (Captain Russell, 26 Nov 2026): the reasons were small under the two cards, so the cards
+  // leave and the reasons fill the slide, one big line, then my setup and my bracket in their own boxes
+  add('wHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Why Roth', fill: C.ink, o: 0 });
+  add('rWhy', 'text', { size: 54, anchor: 'start', weight: 850, maxw: 1360 }, { x: 120, y: 270, content: 'As a 2d Lt, your tax rate will never be lower.', fill: C.green, o: 0 });
+  add('rWhy2', 'text', { size: 36, anchor: 'start', weight: 600, maxw: 1360 }, { x: 120, y: 340, content: 'Your housing and food allowances aren\'t taxed, so your taxable pay is small.', fill: C.ink, o: 0 });
+  add('rMeBox', 'rect', {}, { x: 120, y: 420, w: 1360, h: 170, rx: 24, fill: C.panel2, stroke: C.green, sw: 3, o: 0 });
+  add('rMeK', 'text', { size: 26, anchor: 'start', weight: 800 }, { x: 170, y: 478, content: 'WHAT I DO', fill: C.green, o: 0 });
+  add('rMe', 'text', { size: 38, anchor: 'start', weight: 700, maxw: 1260 }, { x: 170, y: 540, content: '100% Roth TSP, 100% C Fund, and I convert the match to Roth too.', fill: C.ink, o: 0 });
+  add('rTaxBox', 'rect', {}, { x: 120, y: 620, w: 1360, h: 170, rx: 24, fill: C.panel2, stroke: C.amber, sw: 3, o: 0 });
+  add('rTaxK', 'text', { size: 26, anchor: 'start', weight: 800 }, { x: 170, y: 678, content: '7 YEARS IN', fill: C.amber, o: 0 });
+  add('rTax', 'text', { size: 38, anchor: 'start', weight: 700, maxw: 1260 }, { x: 170, y: 740, content: 'Making about $128K a year, I\'m still in the 12% tax bracket.', fill: C.ink, o: 0 });
 
   // ---- the rule
   add('rule', 'text', { size: 300, anchor: 'middle', weight: 900, mono: true }, { x: 800, y: 520, content: '5%', fill: C.green, o: 0, s: 0.6 });
@@ -391,8 +397,10 @@ function scene(st) {
     .beat(0.6, (s) => { off(s); s.rHead.o = 1; s.rIrs.o = 1; })
     .beat(1.0, (s) => { [0, 1].forEach((i) => ['rc', 'rt', 'ra', 'rb'].forEach((k) => { s[k + i].o = 1; })); });
   S.step({ head: 'Why Roth', body: 'As a 2d Lt, **your tax rate will probably never be lower**, so pay the tax now while it\'s small.' })
-    .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; s.rMe.o = 1; })
-    .beat(0.8, (s) => { s.rTax.o = 1; });
+    .beat(0.6, (s) => { off(s); s.wHead.o = 1; s.rIrs.o = 1; })
+    .beat(0.8, (s) => { s.rWhy.o = 1; s.rWhy2.o = 1; })
+    .beat(0.8, (s) => { s.rMeBox.o = 1; s.rMeK.o = 1; s.rMe.o = 1; })
+    .beat(0.8, (s) => { s.rTaxBox.o = 1; s.rTaxK.o = 1; s.rTax.o = 1; });
 
   S.step({ head: 'When in doubt, zoom out', body: 'The C Fund tracks the S&P 500. **Here\'s one day.** The news would be calling this a sell-off.', go: [855, 520, 1250, 540, 'Zoom out', 'top'] })
     .beat(0.6, (s) => { off(s); s.zHead.o = 1; s.zFrame.o = 1; ['zn', 'zw', 'zhi', 'zlo'].forEach((p) => { s[p + 0].o = 1; }); })
