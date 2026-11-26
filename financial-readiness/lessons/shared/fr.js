@@ -50,12 +50,12 @@
   };
   // pictures (rank insignia, photos) from ../assets/, wherever the page that loads fr.js lives
   const ASSET = (document.currentScript && document.currentScript.src || '').replace(/lessons\/shared\/fr\.js.*$/, 'assets/');
-  // Anim.KINDS.img: a picture. props x, y (top left), w, h, o; cfg href (under assets/), round (circle clip)
+  // Anim.KINDS.img: a picture. props x, y (top left), w, h, o; cfg href (under assets/) or data (a data: URL), round (circle clip)
   root.Anim.KINDS.img = {
     defaults: { w: 40, h: 40 },
     create(g, cfg) {
       const r = el('g', {}, g);
-      const i = el('image', { href: ASSET + cfg.href, preserveAspectRatio: cfg.cover ? 'xMidYMid slice' : 'xMidYMid meet' }, r);
+      const i = el('image', { href: cfg.data || ASSET + cfg.href, preserveAspectRatio: cfg.cover ? 'xMidYMid slice' : 'xMidYMid meet' }, r);
       if (cfg.pixel) i.setAttribute('style', 'image-rendering:pixelated');
       return { root: r, i, a: {} };
     },
