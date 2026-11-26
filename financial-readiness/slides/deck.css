@@ -626,3 +626,14 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .bpie li.wsub { height: 30px; margin-top: -10px; }
 .bpie li.wsub span { grid-column: 2 / 5; white-space: nowrap; font: 650 20px var(--mono); color: var(--soft); padding-left: 42px; }
 .truth.past b { left: auto; right: 14px; transform: none; }   /* an answer past the end of the line keeps its label on the slide */
+
+/* ---- the books slide with the real covers and the mantra under them (Captain Russell, 26 Nov 2026) */
+.books .book { text-align: center; }
+.book img.cvr { height: 320px; width: auto; max-width: 100%; border-radius: 4px 10px 10px 4px; display: block; margin: 0 auto;
+  box-shadow: 0 22px 36px rgba(0,0,0,.5); }
+.book p { text-align: center; font-size: 21px; margin-top: 16px; }
+.mantra { text-align: center; }
+.mantra .k { display: block; margin-bottom: 10px; }
+.mantra q { quotes: none; display: block; font: 850 38px/1.3 var(--font); color: var(--ink); text-wrap: balance; }
+.mantra q b { color: var(--green); font-weight: 850; }
+.mantra .by { margin-top: 12px; font: 650 24px var(--font); color: var(--violet); }
