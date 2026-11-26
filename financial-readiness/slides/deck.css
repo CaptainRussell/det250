@@ -546,6 +546,7 @@ html.solo #stage.go { cursor: default; }
 .lpie ol.big li em { font: 800 30px var(--mono); font-style: normal; color: var(--soft); margin-left: auto; padding-right: 10px; }
 .lpie ol.big li b { font-size: 40px; }
 .lpie .lcols { position: absolute; left: 585px; top: 0; width: 830px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.lpie svg { margin-left: -70px; }   /* the pie sits a little left so it clears the legend (Captain Russell, 25 Nov 2026) */
 .lpie .lcols ol { position: static; width: auto; }
 .lpie .lcols li { height: 38px; grid-template-columns: 18px 1fr auto 46px; gap: 8px; }
 .lpie .lcols li span { white-space: nowrap; }
