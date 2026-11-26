@@ -11,7 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const FILES = ["c1-from-minus-20k.scene.js", "c2-first-les.scene.js", "c4-money-calls.scene.js", "deck.js"];
+const FILES = ["les-shot.js", "c1-from-minus-20k.scene.js", "c2-first-les.scene.js", "c4-money-calls.scene.js", "deck.js"];
 const OUT = new URL("../financial-readiness/slides/deck.lock.json", import.meta.url);
 const MARK = (name) => `\n//@@file ${name}\n`;
 const [,, mode, password, dir] = process.argv;
