@@ -284,7 +284,7 @@ function scene(st) {
   add('cCuff', 'path', { d: 'M 1232 250 m -38 0 a 38 38 0 1 0 76 0 a 38 38 0 1 0 -76 0 M 1424 250 m -38 0 a 38 38 0 1 0 76 0 a 38 38 0 1 0 -76 0 M 1278 236 h 16 v 28 h -16 z M 1362 236 h 16 v 28 h -16 z M 1300 242 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1316 258 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1334 242 a 11 8 0 1 0 22 0 a 11 8 0 1 0 -22 0 M 1203 222 l 18 -14 M 1453 222 l -18 -14' }, { stroke: C.amber, sw: 7, draw: 0, o: 0 });
   add('cGoldL', 'text', { size: 26, anchor: 'middle', weight: 800 }, { x: tx(18), y: TY + 130, content: 'Golden handcuffs', fill: C.amber, o: 0 });
   add('cH1', 'text', { size: 40, anchor: 'start', weight: 800 }, { x: 140, y: 650, content: 'At 16, you\'re 4 years from a pension that pays for life.', fill: C.ink, o: 0 });
-  add('cH2', 'text', { size: 32, anchor: 'start', weight: 600, maxw: 1320 }, { x: 140, y: 710, content: 'Leave then and you leave millions on the table over a normal lifespan. Almost nobody does.', fill: C.amber, o: 0 });
+  add('cH2', 'text', { size: 32, anchor: 'start', weight: 600, maxw: 1320 }, { x: 140, y: 710, content: 'Under 10% voluntarily leave after 16 years. That\'s the weight of the golden handcuffs.', fill: C.amber, o: 0 });
 
   // ---- Roth or Traditional
   // official logos (Captain Russell, 25 Nov 2026): the IRS on Roth or Traditional, myPay on the one rule
