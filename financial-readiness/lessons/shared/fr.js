@@ -71,7 +71,7 @@
     'E-2': ['Amn', 2.182], 'E-3': ['A1C', 1.727], 'E-4': ['SrA', 1.429], 'E-5': ['SSgt', 1.218], 'E-6': ['TSgt', 1.063], 'E-7': ['MSgt', 0.735], 'E-8': ['SMSgt', 0.661], 'E-9': ['CMSgt', 0.597] };
   // rank names spelled out (Captain Russell, 25 Nov 2026)
   const RANK = { 'E-1': 'Airman Basic', 'E-2': 'Airman', 'E-3': 'Airman First Class', 'E-4': 'Senior Airman', 'E-5': 'Staff Sergeant', 'E-6': 'Technical Sergeant',
-    'E-7': 'Master Sergeant', 'E-8': 'Senior Master Sergeant', 'E-9': 'Chief Master Sergeant', 'O-1': 'Second Lieutenant', 'O-2': 'First Lieutenant', 'O-3': 'Captain' };
+    'E-7': 'Master Sergeant', 'E-8': 'Senior Master Sergeant', 'E-9': 'Chief Master Sergeant', 'O-1': 'Second Lieutenant', 'O-2': 'First Lieutenant', 'O-3': 'Captain', 'O-4': 'Major', 'O-5': 'Lieutenant Colonel', 'O-6': 'Colonel' };
   // Living on a college budget as a 2d Lt (Captain Russell, 25 Nov 2026: count the taxes). A single 2d Lt in San Antonio:
   // $6,062.68 a month (base pay $4,150.20, Basic Allowance for Housing $1,584, Basic Allowance for Subsistence $328.48).
   // Only base pay is taxed: 2026 federal income tax (single, $16,100 standard deduction, 10% to $12,400, 12% to $50,400)

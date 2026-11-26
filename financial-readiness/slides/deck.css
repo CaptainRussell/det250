@@ -260,7 +260,7 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 
 /* ---- 25 Nov 2026 review (Captain Russell) */
 /* no text cursor on the slides (a click used to leave a blinking caret) */
-#stage, #cap, #bar, #ticker { caret-color: transparent; -webkit-user-select: none; user-select: none; }
+#stage, #cap, #bar, #ticker, #spinPop, #engage { caret-color: transparent; -webkit-user-select: none; user-select: none; }
 /* insignia on answer choices */
 .opt .oins { position: relative; z-index: 1; height: 46px; width: 56px; object-fit: contain; flex: none; }
 /* title slide legend */
