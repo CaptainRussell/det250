@@ -222,9 +222,10 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 .tops span { display: flex; align-items: center; gap: 8px; font: 850 24px var(--font); color: var(--green); animation: popIn .7s both; }
 .tops span:nth-child(2) { animation-delay: .1s; } .tops span:nth-child(3) { animation-delay: .2s; } .tops span:nth-child(4) { animation-delay: .3s; } .tops span:nth-child(5) { animation-delay: .4s; }
 .answered { display: flex; align-items: center; gap: 18px; }
-.answered .cnt { font: 800 24px var(--font); color: var(--soft); white-space: nowrap; }
+.answered .cnt { font: 800 24px var(--font); color: var(--soft); white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 270px; }   /* a fixed width, so a new count never nudges the faces (Captain Russell, 26 Nov 2026) */
 .answered .faces { display: flex; flex-wrap: wrap; gap: 6px; }
-.answered .faces img { animation: popIn .6s cubic-bezier(.2,1.6,.4,1); }
+.answered .faces img { animation: faceIn .35s ease-out both; }   /* a calm fade, no bounce: faces land and stay still (Captain Russell, 26 Nov 2026) */
+@keyframes faceIn { from { opacity: 0; transform: translateY(6px); } }
 .board .row { display: flex; align-items: center; gap: 16px; height: 58px; animation: rise .6s both; animation-delay: calc(var(--i) * .08s); opacity: 0; transform: translateY(20px); }
 .board .n { width: 40px; font: 900 26px var(--mono); color: var(--gold); text-align: right; }
 .board .nm { width: 270px; font: 750 25px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

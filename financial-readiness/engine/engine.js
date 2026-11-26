@@ -141,8 +141,10 @@
       if (h.sa !== ca) { fillText(h.a, ca, h.cfg); h.sa = ca; }
       if (h.sb !== cb) { fillText(h.b, cb, h.cfg); h.sb = cb; }
       setA(h.a, 'fill', p.fill); setA(h.b, 'fill', p.fill);
-      setA(h.a, 'opacity', cross ? (p.o * (1 - e)).toFixed(3) : '0');
-      setA(h.b, 'opacity', (cross ? p.o * e : p.o).toFixed(3));
+      // a word change fades the old words out, then the new ones in, each at its own end's opacity, so text
+      // that was hidden never flashes back up and the two never sit on top of each other (Captain Russell, 26 Nov 2026)
+      setA(h.a, 'opacity', cross ? (from.o * Math.max(0, 1 - 2 * e)).toFixed(3) : '0');
+      setA(h.b, 'opacity', (cross ? to.o * Math.max(0, 2 * e - 1) : p.o).toFixed(3));
     },
   };
   KINDS.rect = {
