@@ -95,7 +95,7 @@
         if (!part) return;
         const bold = part.startsWith('**');
         const t = el('tspan', {}, ls);
-        if (bold) { t.setAttribute('font-weight', 700); t.setAttribute('fill', cfg.hi || C.cyan); }
+        if (bold) { t.setAttribute('font-weight', cfg.hiw || 700); t.setAttribute('fill', cfg.hi || C.cyan); }
         t.textContent = bold ? part.slice(2, -2) : part;
       });
     });
@@ -665,7 +665,18 @@
     render(i, t, fresh) {
       const sc = this.scene, beats = sc.steps[i].beats;
       let start = sc.stepStart(i);
-      if (fresh) { const end = sc.stepEnd(i), c = {}; for (const k in start) c[k] = end[k] && end[k].o === 0 ? Object.assign({}, start[k], { o: 0 }) : start[k]; start = c; }
+      // Also hidden: anything a beat of this step hides on the way (fade out, then refill) and any
+      // text whose words change during the step, so the last step's numbers never show as a ghost.
+      let words = null;
+      if (fresh) {
+        const end = sc.stepEnd(i), c = {}; words = [];
+        for (const k in start) {
+          if (end[k] && start[k].content !== undefined && end[k].content !== start[k].content) words.push([k, end[k].content]);
+          const hid = beats.some((b) => b.snap[k] && b.snap[k].o === 0);
+          c[k] = hid ? Object.assign({}, start[k], { o: 0 }) : start[k];
+        }
+        start = c;
+      }
       let prev = start, cur = prev, p = 1, timing = null, acc = 0;
       for (let j = 0; j < beats.length; j++) {
         const b = beats[j];
@@ -676,6 +687,15 @@
           break;
         }
         acc += b.dur;
+      }
+      // Changing words stay hidden until they read as this step's own, then fade in.
+      if (words && words.length) {
+        const hide = (snap, k) => Object.assign({}, snap[k], { o: 0 });
+        prev = Object.assign({}, prev); cur = Object.assign({}, cur);
+        for (const [k, w] of words) {
+          if (cur[k].content !== w) { prev[k] = hide(prev, k); cur[k] = hide(cur, k); }
+          else if (prev[k].content !== w) prev[k] = Object.assign({}, hide(prev, k), { content: w });
+        }
       }
       this._draw(prev, cur, p, timing);
     }
