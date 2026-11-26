@@ -625,3 +625,4 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .bpie li.wh span, .bpie li.wt span, .bpie li.wm span { padding-left: 0; }
 .bpie li.wsub { height: 30px; margin-top: -10px; }
 .bpie li.wsub span { grid-column: 2 / 5; white-space: nowrap; font: 650 20px var(--mono); color: var(--soft); padding-left: 42px; }
+.truth.past b { left: auto; right: 14px; transform: none; }   /* an answer past the end of the line keeps its label on the slide */
