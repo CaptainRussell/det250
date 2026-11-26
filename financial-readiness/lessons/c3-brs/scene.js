@@ -193,21 +193,16 @@ function scene(st) {
   const X = st.pct, xi = Math.max(0, CHOICES.indexOf(X));
 
   // ---- the three parts, as tabs along the top
-  // line icons for the three parts (Captain Russell, 25 Nov 2026): a medal for the pension you earn by serving,
-  // a rising chart for the TSP, a stack of bills for continuation pay
-  const ICONS = [
-    'M-34 -78 L-12 -30 M34 -78 L12 -30 M-34 -78 H-10 L0 -56 L10 -78 H34 M0 -32 a40 40 0 1 0 0.01 0 Z M0 -10 l7 15 l16 2 l-12 11 l3 16 l-14 -8 l-14 8 l3 -16 l-12 -11 l16 -2 Z',
-    'M-70 64 H72 M-52 64 V28 M-20 64 V6 M12 64 V-18 M44 64 V-42 M-64 -6 L-20 -40 L8 -20 L62 -72 M36 -72 H62 V-46',
-    'M-66 -40 H50 V26 H-66 Z M-8 -7 m-20 0 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0 M-56 -30 V16 M40 -30 V16 M-54 40 H64 V-24 M-42 54 H78 V-8',
-  ];
+  const BRS_ICON = ['icons/pension.svg', 'logos/tsp-logo.webp', 'icons/handcuffs.svg'];
   const TABS = [['Pension', 'Defined benefit'], ['TSP', 'Defined contribution'], ['Continuation pay', 'Mid-career bonus']];
   TABS.forEach(([t, sub], i) => {
     const x = 300 + i * 500;
     add('tab' + i, 'rect', {}, { x: x - 220, y: 260, w: 440, h: 360, rx: 28, fill: C.panel2, stroke: C.line, sw: 3, o: 0 });
     add('tabN' + i, 'text', { size: 40, anchor: 'start', weight: 850, mono: true }, { x: x - 190, y: 316, content: String(i + 1), fill: C.faint, o: 0 });
     // the TSP card carries the official Thrift Savings Plan logo (Captain Russell, 25 Nov 2026)
-    if (i === 1) add('tabI' + i, 'img', { href: 'logos/tsp-logo.webp' }, { x: x - 66, y: 326, w: 132, h: 132, o: 0 });
-    else add('tabI' + i, 'path', { d: ICONS[i] }, { x, y: 392, stroke: [C.amber, C.green, C.cyan][i], sw: 7, draw: 0, o: 0 });
+    // the pension is a rocking chair with a $ in it, continuation pay golden handcuffs (Captain Russell, 26 Nov 2026);
+    // the same three pictures come back wherever each part is taught (BRS_ICON)
+    add('tabI' + i, 'img', { href: BRS_ICON[i] }, { x: x - 66, y: 326, w: 132, h: 132, o: 0 });
     add('tabT' + i, 'text', { size: 46, anchor: 'middle', weight: 800 }, { x, y: 520, content: t, fill: C.ink, o: 0 });
     add('tabS' + i, 'text', { size: 28, anchor: 'middle', weight: 600 }, { x, y: 568, content: sub, fill: C.soft, o: 0 });
   });
@@ -216,7 +211,8 @@ function scene(st) {
   add('since', 'text', { size: 28, anchor: 'middle', weight: 600 }, { x: 800, y: 214, content: 'Everyone who joined on or after 1 January 2018', fill: C.soft, o: 0 });
 
   // ---- 1: the pension, 2% a year
-  add('pHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Pension: 2% for every year you serve', fill: C.ink, o: 0 });
+  add('pIcon', 'img', { href: BRS_ICON[0] }, { x: 104, y: 76, w: 96, h: 96, o: 0 });
+  add('pHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 210, y: 140, content: 'Pension: 2% for every year you serve', fill: C.ink, o: 0 });
   for (let i = 0; i < 30; i++) {
     const col = i % 10, row = Math.floor(i / 10);
     add('blk' + i, 'rect', {}, { x: 120 + col * 86, y: 210 + row * 86, w: 74, h: 74, rx: 12, fill: i < 20 ? C.amber : C.panel2, stroke: C.line, sw: i < 20 ? 0 : 2, o: 0, s: 1 });
@@ -266,7 +262,8 @@ function scene(st) {
   add('eDiff', 'text', { size: 34, anchor: 'start', weight: 800 }, { x: 1290 - 40, y: 300, content: '', fill: C.green, o: 0 });
 
   // ---- 3: continuation pay
-  add('cHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 120, y: 140, content: 'Continuation pay: a bonus to stay', fill: C.ink, o: 0 });
+  add('cIcon', 'img', { href: BRS_ICON[2] }, { x: 104, y: 76, w: 96, h: 96, o: 0 });
+  add('cHead', 'text', { size: 46, anchor: 'start', weight: 800 }, { x: 210, y: 140, content: 'Continuation pay: a bonus to stay', fill: C.ink, o: 0 });
   const TX0 = 140, TX1 = 1460, tx = (y) => TX0 + (TX1 - TX0) * y / 20, TY = 430;
   add('cLine', 'rect', {}, { x: TX0, y: TY - 4, w: TX1 - TX0, h: 8, rx: 4, fill: C.line, o: 0 });
   add('cWin', 'rect', {}, { x: tx(12) - 16, y: TY - 34, w: 0, h: 68, rx: 12, fill: C.violet, fo: 0.35, stroke: C.violet, sw: 3, o: 0 });
@@ -353,10 +350,10 @@ function scene(st) {
   // ================================================================ steps
   S.step({ head: 'Three parts, one system', body: 'The BRS mixes a smaller pension with the TSP and a mid-career bonus. Most of it comes down to the choices you make.', go: [300, 440, 450, 370, 'Start with the pension'] })
     .beat(0.8, (s) => { s.title.o = 1; s.since.o = 1; })
-    .beat(1.8, (s) => { on(s, tabs); [0, 1, 2].forEach((i) => { s['tabI' + i].draw = 1; }); }, (id) => { const m = /^tab[NTSI]?(\d)$/.exec(id); return m ? { w: [+m[1] / 4, (+m[1] + 2) / 4] } : null; });
+    .beat(1.8, (s) => { on(s, tabs);  }, (id) => { const m = /^tab[NTSI]?(\d)$/.exec(id); return m ? { w: [+m[1] / 4, (+m[1] + 2) / 4] } : null; });
 
   S.step({ head: '1. The pension', body: '**2% × years served × the average of your highest 36 months of base pay.** At 20 years that is 40%, paid every month for life.', go: [1260, 340, 440, 220, 'Next: what it is worth'] })
-    .beat(0.6, (s) => { off(s); s.pHead.o = 1; s.pYears.o = 1; for (let i = 0; i < 30; i++) { s['blk' + i].o = i < 20 ? 0 : 0.5; } })
+    .beat(0.6, (s) => { off(s); s.pHead.o = 1; s.pIcon.o = 1; s.pYears.o = 1; for (let i = 0; i < 30; i++) { s['blk' + i].o = i < 20 ? 0 : 0.5; } })
     .beat(2.0, (s) => { for (let i = 0; i < 20; i++) s['blk' + i].o = 1; s.pBig.o = 1; s.pBig.num = 40; s.pBigS.o = 1; s.pBigS2.o = 1; }, (id) => { const m = /^blk(\d+)$/.exec(id); return m ? { w: [+m[1] / 22, (+m[1] + 2) / 22] } : null; })
     .beat(0.8, (s) => { s.pCatch.o = 1; s.pStat.o = 1; });
 
@@ -380,7 +377,7 @@ function scene(st) {
       (id) => { const m = /^ev?(\d)$/.exec(id); return m ? { w: [+m[1] / 5, (+m[1] + 2) / 5] } : null; });
 
   S.step({ head: '3. Continuation pay', grp: 'cp', body: 'A one-time bonus **at 12 years of service**, if you sign up for 4 more. The Air Force sets the amount each year.', go: [800, 680, 1360, 130, 'Roth or Traditional?'] })
-    .beat(0.6, (s) => { off(s); s.cHead.o = 1; s.cLine.o = 1; [2, 12, 20].forEach((y) => { s['cy' + y].o = 1; }); s.c2y.o = 1; s.c20.o = 1; })
+    .beat(0.6, (s) => { off(s); s.cHead.o = 1; s.cIcon.o = 1; s.cLine.o = 1; [2, 12, 20].forEach((y) => { s['cy' + y].o = 1; }); s.c2y.o = 1; s.c20.o = 1; })
     .beat(1.0, (s) => { s.cWin.o = 1; s.cWin.w = 32; s.cWinL.o = 1; })
     .beat(0.8, (s) => { s.cAmt.o = 1; s.cEx.o = 1; });
   S.step({ head: 'Golden handcuffs', grp: 'cp', body: 'Take it at 12 and you owe **4 more years**. At 16 the pension is 4 years away, and **almost nobody walks away from it.**' })
