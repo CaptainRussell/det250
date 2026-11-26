@@ -61,7 +61,7 @@
   }
   // promotions on the scoreboard (Captain Russell, 24 Nov 2026: use the Adventure game's rank insignia). Cutoffs out of 19,000 possible
   // points (19 scored questions, up to 1,000 each), set 26 Nov 2026 so a typical class tops out at Maj or Lt Col and Col takes nearly every answer right and fast
-  const RANKS = [['2d Lt', 0, '2dLt', 0.4], ['1st Lt', 3000, '1stLt', 0.4], ['Capt', 6000, 'Capt', 1.069], ['Maj', 9000, 'Maj', 0.953], ['Lt Col', 12500, 'LtCol', 0.953], ['Col', 15500, 'Col', 2.0]]
+  const RANKS = [['2d Lt', 0, '2dLt', 0.4], ['1st Lt', 3000, '1stLt', 0.4], ['Capt', 6000, 'Capt', 1.069], ['Maj', 9000, 'Maj', 0.953], ['Lt Col', 12500, 'LtCol', 0.953], ['Col', 15000, 'Col', 2.0]]
     .map(([rank, at, file, ar]) => ({ rank, at, file: BASE + 'insignia/' + file + '.svg', ar }));
   const rankOf = (pts) => RANKS.filter((r) => pts >= r.at).pop();
   root.FRChars = { list, get: (id) => byId[id], src, RANKS, rankOf, BASE };
