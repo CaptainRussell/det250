@@ -132,6 +132,8 @@
       const r = el('g', {}, g);
       const mk = () => el('text', { ...NF(cfg), 'font-family': cfg.mono ? MONO : FONT, 'font-size': cfg.size || 36,
         'font-weight': cfg.weight || 500, 'text-anchor': cfg.anchor || 'start', 'letter-spacing': cfg.ls || 0 }, r);
+      // cfg.glow: a CSS color for a soft halo around the text
+      if (cfg.glow) r.style.filter = `drop-shadow(0 0 10px ${cfg.glow})`;
       return { root: r, a: mk(), b: mk(), cfg, sa: null, sb: null };
     },
     update(h, p, from, to, e) {
