@@ -722,3 +722,6 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .lpie .lcols .lkey span { display: flex; align-items: center; gap: 9px; }
 .lpie .lcols .lkey i { width: 18px; height: 18px; border-radius: 5px; flex: none; }
 .lpie .lcols .lkey b { font: 800 19px var(--mono); color: var(--soft); }
+/* line item icons (Captain Russell, 27 Nov 2026): a little more room so the longest names keep clear of their dollars */
+.lpie .lcols { width: 880px; gap: 34px; }
+.lpie .lcols li span { gap: 9px; }
