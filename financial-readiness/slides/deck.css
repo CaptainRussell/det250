@@ -211,7 +211,7 @@ input.big-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 12px rgb
 .line { position: relative; height: 370px; }
 .line > i { position: absolute; left: 40px; right: 40px; top: 300px; height: 6px; border-radius: 3px; background: var(--line); }
 .line > span { position: absolute; top: 322px; transform: translateX(-50%); font: 700 22px var(--font); color: var(--faint); white-space: nowrap; }
-.pin { position: absolute; transform: translateX(-50%); margin-top: 300px; animation: popIn .7s cubic-bezier(.2,1.6,.4,1) both; }
+.pin { position: absolute; z-index: 3; transform: translateX(-50%); margin-top: 300px; animation: popIn .7s cubic-bezier(.2,1.6,.4,1) both; }
 .truth { position: absolute; top: 80px; bottom: 60px; width: 4px; margin-left: -2px; background: var(--green); box-shadow: 0 0 18px var(--green); }
 .truth b { position: absolute; top: -44px; left: 50%; transform: translateX(-50%); font: 850 32px var(--font); color: var(--green); white-space: nowrap; }
 .why { position: relative; margin-top: 4px; font: 650 28px/1.3 var(--font); color: var(--ink); animation: rise .6s .3s both; }
