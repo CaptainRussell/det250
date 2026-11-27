@@ -376,6 +376,22 @@ html.solo #stage.go { cursor: default; }
 .irafunds .if span { color: var(--soft); }
 .irafunds .if i { font-style: normal; font-weight: 800; color: var(--green); }
 .irafunds.nar .if { grid-template-columns: 60px 1fr auto; }
+.irafunds button.if { width: 100%; margin: 0; background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; color: inherit; text-align: left; cursor: pointer; }
+.irafunds button.if:hover span, .irafunds button.if:focus-visible span { color: var(--ink); }
+.irafunds button.if:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.irafunds button.if.off span, .irafunds button.if.off b { text-decoration: line-through; }
+/* the L Funds (Captain Russell, 27 Nov 2026) */
+.lfbar { position: absolute; bottom: 0; border-radius: 10px 10px 0 0; transform-origin: bottom; transform: scaleY(0); transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.lfcol.on .lfbar { transform: none; }
+.lfcol { position: absolute; top: 0; height: 100%; }
+.lfcol .nm, .lfcol .yr { position: absolute; left: -10px; right: -10px; text-align: center; opacity: 0; transition: opacity .4s ease .5s; }
+.lfcol.on .nm, .lfcol.on .yr { opacity: 1; }
+.lfcol .nm { font: 800 21px var(--font); color: var(--ink); }
+.lfcol .yr { font: 600 17px/1.2 var(--font); color: var(--faint); }
+.lfcol .ring { position: absolute; left: -12px; right: -12px; top: -16px; bottom: -96px; border: 3px solid var(--gold); border-radius: 16px; opacity: 0; transition: opacity .4s; box-shadow: 0 0 22px rgba(201,162,74,.45); }
+.lfcol .ring.b { border-color: var(--cyan); box-shadow: none; border-style: dashed; }
+.lfcol.hl .ring { opacity: 1; }
+.lfcol.hl .nm { color: var(--gold); }
 
 /* final standings (25 Nov 2026): slow climb from 10th, the top 3 in shadow, a big finish for 1st */
 .board.fin .row { height: 54px; animation-delay: var(--dl, 0s); gap: 18px; }
