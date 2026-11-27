@@ -678,20 +678,19 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .tops .fast { display: inline-flex; align-items: center; gap: 10px; margin-left: 18px; padding: 4px 16px 4px 14px; border-radius: 999px; border: 2px solid var(--gold); font: 800 20px var(--font); color: var(--gold); }
 .tops .fast b { color: var(--ink); font-size: 22px; }
 .tops .fast em { font: 800 20px var(--mono); font-style: normal; color: var(--green); }
-/* promotion pop-ups */
-#promo { position: fixed; right: 22px; bottom: 74px; z-index: 60; display: grid; gap: 8px; justify-items: end; pointer-events: none; }
-#promo .pr { display: flex; align-items: center; gap: 12px; padding: 6px 18px 6px 6px; border-radius: 999px; background: rgba(10,20,40,.96); border: 2px solid var(--gold);
-  box-shadow: 0 0 26px rgba(241,190,72,.5); opacity: 0; transform: translateY(30px) scale(.9); }
-#promo.go .pr { animation: prIn .5s cubic-bezier(.2,1.4,.4,1) calc(var(--i) * .25s) forwards, prOut .5s ease-in 4.6s forwards; }
+/* promotion credits: everyone promoted rolls up the right side and fades out at the top (Captain Russell, 27 Nov 2026) */
+#promo { position: fixed; right: 22px; bottom: 74px; width: 460px; height: 46vh; z-index: 60; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .4s;
+  -webkit-mask-image: linear-gradient(to top, #000 70%, transparent); mask-image: linear-gradient(to top, #000 70%, transparent); }
+#promo.go { opacity: 1; }
+#promo .roll { display: grid; gap: 8px; justify-items: end; }
+#promo .pr { display: flex; align-items: center; gap: 12px; padding: 6px 18px 6px 6px; border-radius: 999px; background: rgba(10,20,40,.96); border: 2px solid var(--gold); box-shadow: 0 0 18px rgba(241,190,72,.4); }
 #promo .pr .pxf { width: 40px; height: 40px; border-radius: 50%; }
 #promo .pr span { display: grid; line-height: 1.1; }
 #promo .pr em { font: 800 13px var(--mono); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
 #promo .pr b { font: 800 19px var(--font); color: var(--ink); }
-#promo .pr strong { font: 900 20px var(--font); color: var(--gold); }
-#promo .pr.more { padding: 8px 18px; font: 800 16px var(--font); color: var(--soft); }
-@keyframes prIn { to { opacity: 1; transform: none; } }
-@keyframes prOut { to { opacity: 0; transform: translateY(-10px); } }
-@media (prefers-reduced-motion: reduce) { #promo.go .pr { animation: none; opacity: 1; transform: none; } }
+#promo .pr strong { font: 900 20px var(--font); color: var(--gold); white-space: nowrap; }
+#promo .pr b { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { #promo { overflow-y: auto; -webkit-mask-image: none; mask-image: none; } }
 /* Roth vs Traditional race */
 .race { display: grid; gap: 30px; }
 .race .age { font: 800 26px var(--font); color: var(--soft); }
@@ -711,3 +710,10 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .race.taxed .tag { opacity: 1; }
 .race.taxed .tr .bar { transition: width 1s .5s; }
 .racenote { font: 600 24px/1.35 var(--font); color: var(--soft); }
+/* the 3 second get-ready countdown before a question's options come up (Captain Russell, 27 Nov 2026) */
+.qcd { height: 380px; display: grid; place-content: center; justify-items: center; gap: 10px; }
+.qcd[hidden] { display: none; }
+.qcd b { font: 900 200px/1 var(--mono); color: var(--gold); text-shadow: 0 0 40px rgba(241,190,72,.55); }
+.qcd b.tick { animation: qcdTick 1s ease-out both; }
+.qcd span { font: 800 30px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+@keyframes qcdTick { 0% { transform: scale(1.5); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 85% { opacity: 1; } 100% { transform: scale(.85); opacity: .2; } }
