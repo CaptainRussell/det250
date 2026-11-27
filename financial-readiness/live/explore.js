@@ -1,7 +1,7 @@
 /* explore.js: the deck's slider charts, small enough for a phone (Captain Russell, 25 Nov 2026: "for these charts
  * that have a slider or options, have this shown on the user's phone, so they can interact with the chart and see
  * for themselves"). The deck says which one is on the screen; the phone page mounts the same chart here.
- *   FRExplore.mount(el, id)  draws chart id ('life', 'wait', 'tsp', 'zoom') into el, returns { destroy }
+ *   FRExplore.mount(el, id)  draws chart id ('life', 'wait', 'tsp', 'zoom', 'funds') into el, returns { destroy }
  *   FRExplore.has(id)        whether there is a phone version of that chart
  * Uses FR.LIFE (../lessons/shared/fr.js) and FR.DATA.fr3 (../lessons/c3-brs/scene.js), the same numbers as the deck.
  * Code organized with help from Claude (Anthropic), Nov 2026.
@@ -150,6 +150,40 @@
       };
       btns.forEach((b, i) => b.addEventListener('click', () => pick(i)));
       pick(0, true);
+      return {};
+    },
+    // ---- $10,000 in each TSP fund, Nov 2016 to Nov 2026, in today's dollars: tap a fund to draw its line
+    // (Captain Russell, 27 Nov 2026: let the class flip through the funds themselves). FR.DATA.fr3.tspSeries, as the big screen.
+    funds(el) {
+      const D = root.FR.DATA.fr3, HI = 30000;
+      const F = [['G', 'Government securities', '#b9c6de'], ['F', 'Bonds', '#a78bfa'], ['C', 'S&amp;P 500', COL.green], ['S', 'Smaller U.S. companies', COL.cyan], ['I', 'Outside the U.S.', COL.amber]];
+      const f = frame(el, 'What is in your TSP', '$10,000 in each fund in Nov 2016, never touched, in today\'s dollars. Tap a fund to draw its line.');
+      grid(f.svg, 0, HI, 10000, (v) => (v ? '$' + v / 1000 + 'K' : '$0'));
+      const px = (t) => X0 + (X1 - X0) * t / 10, py = (v) => Y0 - (Y0 - Y1) * v / HI;
+      sv('line', { x1: X0, x2: X1, y1: py(10000), y2: py(10000), stroke: '#e8eefc', 'stroke-width': 1.5, 'stroke-dasharray': '4 5', opacity: 0.5 }, f.svg);
+      [[0, '2016'], [5.08, '2021'], [10, '2026']].forEach(([t, s]) => { sv('text', { x: px(t), y: H - 2, 'text-anchor': t ? (t === 10 ? 'end' : 'middle') : 'start', fill: COL.faint, 'font-size': 11, 'font-weight': 700 }, f.svg).textContent = s; });
+      const L = F.map(([k, , col]) => {
+        const s = D.tspSeries(k), p = sv('path', { d: pathOf(s.pts.map(([t, v]) => [px(t), py(v)])), fill: 'none', stroke: col, 'stroke-width': k === 'C' ? 3.5 : 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, f.svg);
+        const len = p.getTotalLength ? p.getTotalLength() : 600; p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.style.transition = 'stroke-dashoffset .5s ease-out, opacity .2s'; p.style.opacity = 0;
+        return { k, p, len, end: s.end, on: false };
+      });
+      const sF = stat(f.r, 'Fund', ''), sW = stat(f.r, 'Worth now', ''), sC = stat(f.r, 'After inflation', '');
+      const seg = document.createElement('div'); seg.className = 'exseg'; seg.setAttribute('aria-label', 'TSP funds');
+      seg.innerHTML = F.map(([k, name]) => `<button type="button" aria-pressed="false" title="${name}">${k} Fund</button>`).join('');
+      f.s.appendChild(seg);
+      const btns = [...seg.children];
+      const tell = (i) => {
+        if (i == null) { sF.textContent = '-'; sW.textContent = '-'; sC.textContent = '-'; sC.className = ''; return; }
+        const e = L[i].end, c = (e / 10000 - 1) * 100, up = c >= 0;
+        sF.textContent = F[i][0] + ' Fund'; sF.style.color = F[i][2]; sW.textContent = money(e);
+        sC.className = up ? 'g' : 'r'; sC.textContent = (up ? '+' : '−') + Math.abs(c).toFixed(0) + '%';
+      };
+      btns.forEach((b, i) => b.addEventListener('click', () => {
+        const l = L[i]; l.on = !l.on; l.p.style.strokeDashoffset = l.on ? 0 : l.len; if (l.on) l.p.style.opacity = 1; else setTimeout(() => { if (!l.on) l.p.style.opacity = 0; }, 500);
+        b.classList.toggle('on', l.on); b.style.background = l.on ? F[i][2] : ''; b.style.borderColor = l.on ? F[i][2] : ''; b.setAttribute('aria-pressed', l.on);
+        tell(l.on ? i : (L.map((x, j) => (x.on ? j : -1)).filter((j) => j >= 0).pop() ?? null));
+      }));
+      tell(null);
       return {};
     },
   };

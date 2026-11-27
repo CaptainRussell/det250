@@ -442,8 +442,44 @@ function scene(st) {
   return S;
 }
 
+// ---- the TSP funds: $10,000 put in each fund in Nov 2016, left alone 10 years, in today's dollars
+// (Captain Russell, 25 Nov 2026: show why bonds are a trap with a long time horizon).
+// The start and end share prices are from his tsp.gov screenshots (10-year share price history, 24 Nov 2026);
+// the path in between follows the calendar-year returns 2017 to 2025, with the rest (Dec 2016 and 2026 so far)
+// in the last stretch so each line ends on the real price.
+// Inflation: CPI-U Dec to Dec, 2026 at about 2.7% a year.
+const TSP_RET = {
+  G: [2.33, 2.91, 2.24, 0.97, 1.38, 2.98, 4.22, 4.44, 4.3],
+  F: [3.82, 0.15, 8.68, 7.50, -1.46, -12.83, 5.59, 1.33, 7.2],
+  C: [21.82, -4.41, 31.45, 18.31, 28.68, -18.13, 26.25, 25.00, 17.8],
+  S: [18.22, -9.26, 27.97, 31.85, 12.45, -26.26, 25.30, 16.93, 11],
+  I: [25.42, -13.43, 22.47, 8.17, 11.45, -13.94, 18.38, 4.98, 30],
+};
+// share price Nov 2016 -> 24 Nov 2026 (tsp.gov)
+const TSP_PX = { G: [15.15, 20.42], F: [17.38, 20.85], C: [31.1, 116.37], S: [40.8, 106.37], I: [23.9, 59.34] };
+const CPI_RET = [2.1, 1.9, 2.3, 1.4, 7.0, 6.5, 3.4, 2.9, 2.7], CPI_2026 = 2.7 * 10 / 12;
+// the two big drops inside a year (Captain Russell, 25 Nov 2026: yearly points hid the 2020 crash), as the
+// year-to-date return at that point: 2020 = year 3 (low 23 Mar, end of June), 2022 = year 5 (low 30 Sep). Approximate.
+const TSP_DIP = {
+  C: { 3: [[0.22, -30.4], [0.5, -3.1]], 5: [[0.75, -23.9]] },
+  S: { 3: [[0.22, -38.0], [0.5, -6.0]], 5: [[0.75, -25.0]] },
+  I: { 3: [[0.22, -32.0], [0.5, -11.0]], 5: [[0.75, -27.0]] },
+  F: { 3: [[0.22, 1.0]], 5: [[0.8, -16.0]] },
+  G: {},
+};
+// t runs 0 (Nov 2016) to 10 (Nov 2026): year ends 2017..2025 at t = 1.08..9.08, the rest of the move
+// (Dec 2016 + 2026 so far) to Nov 2026 at t = 10. Returns { pts: [[t, worth today]], end }.
+function tspSeries(k) {
+  const yrs = TSP_RET[k], nom = yrs.reduce((p, r) => p * (1 + r / 100), 1), rest = TSP_PX[k][1] / TSP_PX[k][0] / nom;
+  let v = 10000, cpi = 1; const pts = [[0, v]];
+  yrs.forEach((r, i) => { (TSP_DIP[k][i] || []).forEach(([f, y]) => pts.push([i + 0.08 + f, v * (1 + y / 100) / (cpi * (1 + CPI_RET[i] / 100 * f))]));
+    v *= 1 + r / 100; cpi *= 1 + CPI_RET[i] / 100; pts.push([i + 1.08, v / cpi]); });
+  v *= rest; cpi *= 1 + CPI_2026 / 100; pts.push([10, v / cpi]);
+  return { pts, end: v / cpi };
+}
+
 FR.DATA = FR.DATA || {};
-FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, zoomChart, BASE1, CAP };
+FR.DATA.fr3 = { pay, govPct, at20, ZOOMS, zoomChart, BASE1, CAP, tspSeries };
 FR.SCENES = FR.SCENES || {};
 FR.SCENES.fr3 = scene;
 })();

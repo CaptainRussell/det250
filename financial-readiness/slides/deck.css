@@ -717,3 +717,8 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 .qcd b.tick { animation: qcdTick 1s ease-out both; }
 .qcd span { font: 800 30px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
 @keyframes qcdTick { 0% { transform: scale(1.5); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 85% { opacity: 1; } 100% { transform: scale(.85); opacity: .2; } }
+/* The line items: a one-row key of the three groups above the items, which run largest to smallest (Captain Russell, 27 Nov 2026) */
+.lpie .lcols .lkey { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--line); font: 800 21px var(--font); color: var(--ink); white-space: nowrap; }
+.lpie .lcols .lkey span { display: flex; align-items: center; gap: 9px; }
+.lpie .lcols .lkey i { width: 18px; height: 18px; border-radius: 5px; flex: none; }
+.lpie .lcols .lkey b { font: 800 19px var(--mono); color: var(--soft); }
