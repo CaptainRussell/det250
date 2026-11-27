@@ -664,3 +664,50 @@ html:not(.solo):not(.notes) #prog { position: fixed; top: auto; bottom: 34px; }
 @keyframes spkIn { from { opacity: 0; transform: scale(.7); } }
 @keyframes spkGlow { 0%, 100% { box-shadow: 0 0 10px 1px rgba(241,190,72,.35); } 50% { box-shadow: 0 0 30px 8px rgba(241,190,72,.65); } }
 @media (prefers-reduced-motion: reduce) { .spk { animation: none; box-shadow: 0 0 20px 4px rgba(241,190,72,.5); } }
+
+/* the 20 second answer clock (Captain Russell, 27 Nov 2026) */
+.qclock { width: 92px; height: 92px; display: grid; place-items: center; }
+.qclock[hidden] { display: none; }
+.qclock svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.qclock circle { fill: rgba(10,20,40,.85); stroke: var(--line, #2b4370); stroke-width: 8; }
+.qclock .arc { fill: none; stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 0; transition: stroke-dashoffset .1s linear, stroke .3s; }
+.qclock b { position: relative; font: 900 34px var(--mono); color: var(--ink); }
+.qclock.low .arc { stroke: var(--red); }
+.qclock.low b { color: var(--red); }
+/* the quickest right answer, at the end of the points row */
+.tops .fast { display: inline-flex; align-items: center; gap: 10px; margin-left: 18px; padding: 4px 16px 4px 14px; border-radius: 999px; border: 2px solid var(--gold); font: 800 20px var(--font); color: var(--gold); }
+.tops .fast b { color: var(--ink); font-size: 22px; }
+.tops .fast em { font: 800 20px var(--mono); font-style: normal; color: var(--green); }
+/* promotion pop-ups */
+#promo { position: fixed; right: 22px; bottom: 74px; z-index: 60; display: grid; gap: 8px; justify-items: end; pointer-events: none; }
+#promo .pr { display: flex; align-items: center; gap: 12px; padding: 6px 18px 6px 6px; border-radius: 999px; background: rgba(10,20,40,.96); border: 2px solid var(--gold);
+  box-shadow: 0 0 26px rgba(241,190,72,.5); opacity: 0; transform: translateY(30px) scale(.9); }
+#promo.go .pr { animation: prIn .5s cubic-bezier(.2,1.4,.4,1) calc(var(--i) * .25s) forwards, prOut .5s ease-in 4.6s forwards; }
+#promo .pr .pxf { width: 40px; height: 40px; border-radius: 50%; }
+#promo .pr span { display: grid; line-height: 1.1; }
+#promo .pr em { font: 800 13px var(--mono); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+#promo .pr b { font: 800 19px var(--font); color: var(--ink); }
+#promo .pr strong { font: 900 20px var(--font); color: var(--gold); }
+#promo .pr.more { padding: 8px 18px; font: 800 16px var(--font); color: var(--soft); }
+@keyframes prIn { to { opacity: 1; transform: none; } }
+@keyframes prOut { to { opacity: 0; transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { #promo.go .pr { animation: none; opacity: 1; transform: none; } }
+/* Roth vs Traditional race */
+.race { display: grid; gap: 30px; }
+.race .age { font: 800 26px var(--font); color: var(--soft); }
+.race .age b { font: 900 40px var(--mono); color: var(--gold); }
+.race .lane { display: grid; grid-template-columns: 210px 1080px; grid-template-rows: auto auto; column-gap: 24px; align-items: center; }
+.race .nm { font: 900 40px var(--font); }
+.race .rt .nm { color: var(--green); } .race .tr .nm { color: var(--blue, #5b8def); }
+.race .trk { position: relative; height: 84px; border-radius: 14px; background: var(--panel, #0f1e3a); border: 2px solid var(--line, #2b4370); }
+.race .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 12px; }
+.race .rt .bar { background: var(--green); } .race .tr .bar { background: var(--blue, #5b8def); }
+.race .cut { position: absolute; right: calc(1080px - var(--end, 1080px)); top: 0; bottom: 0; width: 0; border-radius: 0 12px 12px 0; background: var(--red);
+  transition: transform 1s .5s cubic-bezier(.5,0,.75,0), opacity 1s .5s; right: 0; }
+.race.taxed .cut { transform: translateY(160px) rotate(8deg); opacity: 0; }
+.race .val { grid-column: 2; justify-self: start; margin-top: 8px; font: 900 44px var(--mono); color: var(--ink); }
+.race .tag { grid-column: 2; grid-row: 2; justify-self: end; margin-top: 8px; font: 800 30px var(--font); opacity: 0; transition: opacity .6s .6s; }
+.race .rt .tag { color: var(--green); } .race .tr .tag { color: var(--red); }
+.race.taxed .tag { opacity: 1; }
+.race.taxed .tr .bar { transition: width 1s .5s; }
+.racenote { font: 600 24px/1.35 var(--font); color: var(--soft); }
